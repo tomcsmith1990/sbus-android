@@ -75,12 +75,11 @@ public class HelloJni extends Activity
 				scomponent.addEndpoint("SomeEpt", "BE8A47EBEB58");
 				scomponent.addRDC("192.168.0.11:50123");
 				//scomponent.addRDC("10.0.2.2:50123");
-				Log.i("sbus","starting cpt");
 				scomponent.start("/data/data/uk.ac.cam.tcs40.sbus.sbus/files/SomeSensor.cpt", -1, true);
 				scomponent.setPermission("SomeConsumer", "", true);
 
 				while (true) {
-					final String s = scomponent.emit("Hello World", (int) (Math.random() * 1000), 41);
+					final String s = scomponent.emit("Hello World", (int) (Math.random() * 1000), 7);
 
 					runOnUiThread(new Runnable() {
 						public void run() {

@@ -43,7 +43,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
 {
 	const char *componentType = env->GetStringUTFChars(compType, 0);
 	const char *componentName = env->GetStringUTFChars(compName, 0);
-	printf("%s\n", componentName);
+
 	com = new scomponent(componentType, componentName);
 	
 	//sets the logging / output levels
