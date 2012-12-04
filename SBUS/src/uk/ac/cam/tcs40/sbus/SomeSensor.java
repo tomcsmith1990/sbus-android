@@ -16,6 +16,7 @@
 package uk.ac.cam.tcs40.sbus;
 
 import android.app.Activity;
+import android.util.Log;
 import android.widget.TextView;
 import android.os.Bundle;
 
@@ -28,9 +29,20 @@ public class SomeSensor extends Activity
 	{
 		super.onCreate(savedInstanceState);
 
+		/*
+		 * 
+		 * SBUSBootloader will be a separate application, copying this files.
+		 * This means that the application context will be different, different directories.
+		 * We'll store the .cpt file in the actual application.
+		 * 
+		 */
+		
 		// Create the SBUSBootloader.
 		// This will copy all necessary files across, then store SomeSensor.cpt.
-  		new SBUSBootloader(getApplicationContext()).store("SomeSensor.cpt");
+  		new SBUSBootloader(getApplicationContext());
+  		
+  		// Create a FileBootloader to store our component file.
+  		new FileBootloader(getApplicationContext()).store("SomeSensor.cpt");
 
   		// Add a TextView to the Activity.
 		final TextView tv = new TextView(this);
@@ -45,7 +57,8 @@ public class SomeSensor extends Activity
 				scomponent.addRDC("192.168.0.11:50123");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
-				scomponent.start("/data/data/uk.ac.cam.tcs40.sbus.sbus/files/SomeSensor.cpt", -1, true);
+				String cptFile = "SomeSensor.cpt";
+				scomponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
 				scomponent.setPermission("SomeConsumer", "", true);
 
 				while (true) {
