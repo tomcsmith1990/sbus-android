@@ -15,15 +15,12 @@
  */
 package uk.ac.cam.tcs40.sbus;
 
-import java.io.IOException;
-
 import android.app.Activity;
-import android.util.Log;
 import android.widget.TextView;
 import android.os.Bundle;
 
 
-public class HelloJni extends Activity
+public class SomeSensor extends Activity
 {
 	/** Called when the activity is first created. */
 	@Override
@@ -31,55 +28,28 @@ public class HelloJni extends Activity
 	{
 		super.onCreate(savedInstanceState);
 
-  		CreateSBUS s = new CreateSBUS(getApplicationContext());
-  		
-		s.store("SomeSensor.cpt");
+		// Create the SBUSBootloader.
+		// This will copy all necessary files across, then store SomeSensor.cpt.
+  		new SBUSBootloader(getApplicationContext()).store("SomeSensor.cpt");
 
-		s.store("idl/broker.cpt");
-		s.store("idl/builtin.cpt");
-		s.store("idl/carpark.cpt");
-		s.store("idl/cpt_metadata.idl");
-		s.store("idl/cpt_status.idl");
-		s.store("idl/demo.cpt");
-		s.store("idl/map_constraints.idl");
-		s.store("idl/rdc_default.priv");
-		s.store("idl/rdc.cpt");
-		s.store("idl/rdcacl.cpt");
-		s.store("idl/sbus.cpt");
-		s.store("idl/slowcar.cpt");
-		s.store("idl/speek.cpt");
-		s.store("idl/spersist.cpt");
-		s.store("idl/spoke.cpt");
-		s.store("idl/trafficgen.cpt");
-		s.store("idl/universalsink.cpt");
-		s.store("idl/universalsource.cpt");
-		
-        try {
-        	Log.i("set permission", "chmod 755 " + s.getDirectory() + "/idl");
-			Runtime.getRuntime().exec("chmod 755 " + s.getDirectory() + "/idl");
-		} catch (IOException e) {} 
-        
-		s.store("sbuswrapper"); 
-
-		/* Create a TextView and set its content.
-		 * the text is retrieved by calling a native
-		 * function.
-		 */
+  		// Add a TextView to the Activity.
 		final TextView tv = new TextView(this);
 		tv.setText("Some Sensor");
 		setContentView(tv);
 		
+		// Create a thread to run the sensor.
 		new Thread() {
 			public void run() {
 				SComponent scomponent = new SComponent("SomeSensor", "an_instance");
 				scomponent.addEndpoint("SomeEpt", "BE8A47EBEB58");
 				scomponent.addRDC("192.168.0.11:50123");
+				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				scomponent.start("/data/data/uk.ac.cam.tcs40.sbus.sbus/files/SomeSensor.cpt", -1, true);
 				scomponent.setPermission("SomeConsumer", "", true);
 
 				while (true) {
-					final String s = scomponent.emit("Hello World", (int) (Math.random() * 1000), 7);
+					final String s = scomponent.emit("Hello World", (int) (Math.random() * 1000), 5);
 
 					runOnUiThread(new Runnable() {
 						public void run() {
