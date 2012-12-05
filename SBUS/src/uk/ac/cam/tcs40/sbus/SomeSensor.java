@@ -63,21 +63,18 @@ public class SomeSensor extends Activity
 				SNode msg;
 				SNode somevar;
 				SNode someval;
+				scomponent.createMessage("reading");
+				
 				int i = 0;
-				SNode[] nodes = new SNode[3];
 				while (true) {
 				
 					msg = new SNode("This is message #" + i++);
 					somevar = new SNode(5, "somevar");
 					someval = new SNode((int) (Math.random() * 1000), "someval");
 					
-					nodes[0] = msg;
-					nodes[1] = someval;
-					nodes[2] = somevar;
-					
-					scomponent.pack(msg);
-					scomponent.pack(someval);
-					scomponent.pack(somevar);
+					scomponent.packString(msg);
+					scomponent.packInt(someval);
+					scomponent.packInt(somevar);
 					
 					final String s = scomponent.emit();
 
@@ -88,7 +85,7 @@ public class SomeSensor extends Activity
 					});
 
 					try {
-						Thread.sleep(3000);
+						Thread.sleep(2000);
 					} catch (InterruptedException e) { }
 				}
 			}

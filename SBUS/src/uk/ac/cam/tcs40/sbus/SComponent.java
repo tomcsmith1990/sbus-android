@@ -12,11 +12,10 @@ public class SComponent {
 	public native void start(String cptFilename, int port, boolean useRDC);
 	public native void setPermission(String cptName, String something, boolean allow);
 	
-	public native String emit(String message, int val1, int val2);
-	public native String emit(SNode msg, SNode someval, SNode somevar);
-	public native String emit(SNode[] nodes);
+	public native void createMessage(String messageType);
+	public native void packInt(SNode node);
+	public native void packString(SNode node);
 	
-	public native void pack(SNode node);
 	public native String emit();
 	
 	public native void delete();

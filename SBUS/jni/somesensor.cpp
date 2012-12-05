@@ -23,21 +23,13 @@
 #include <sys/select.h>
 #include <jni.h>
 #include <sbus.h>
-
-/* This is a trivial JNI example where we use a native method
- * to return a new VM String. See the corresponding Java source
- * file located at:
- *
- *   apps/samples/hello-jni/project/src/com/example/hellojni/HelloJni.java
- */
-snode *process_snode(JNIEnv* env, jobject java_snode);
-typedef snode *snodeptr;
  
 extern "C" {
 
 scomponent *com; //the component
 sendpoint *sender; //endpoints
-snode *sn, *sn2, *sn3, *parent; //for building/extracting message attributes	
+snode *parent; //for building/extracting message attributes
+const char *msg_type;
 
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
@@ -71,9 +63,6 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpoint( JNIEnv* env,
 	
 	env->ReleaseStringUTFChars(endName, endpointName);
 	env->ReleaseStringUTFChars(endHash, endpointHash);
-	
-	// create parent snode
-	parent = mklist("reading");
 }
 
 void
@@ -123,139 +112,65 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
 }
 
 void
-Java_uk_ac_cam_tcs40_sbus_SComponent_pack( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SComponent_createMessage( JNIEnv* env,
+		                                              jobject thiz,
+		                                              jstring name)
+{
+	msg_type = env->GetStringUTFChars(name, 0);
+	
+	// create parent snode
+	parent = mklist(msg_type);
+	
+	env->ReleaseStringUTFChars(name, 0);
+}
+
+void
+Java_uk_ac_cam_tcs40_sbus_SComponent_packInt( JNIEnv* env,
+                                                  jobject thiz,
+                                                  jobject java_snode)
+{	
+	snode *sn;
+	
+	jclass clazz = env->GetObjectClass(java_snode);
+	
+	jmethodID getNodeName = env->GetMethodID(clazz, "getNodeName", "()Ljava/lang/String;");
+	jobject result = env->CallObjectMethod(java_snode, getNodeName);
+	const char* name = env->GetStringUTFChars((jstring) result, 0);
+	
+	jmethodID getValue = env->GetMethodID(clazz, "getIntValue", "()I");
+	jint i = env->CallIntMethod(java_snode, getValue);	
+	sn = pack(i, name);
+
+	env->ReleaseStringUTFChars(0, name);
+
+	parent->append(sn);	
+}
+
+void
+Java_uk_ac_cam_tcs40_sbus_SComponent_packString( JNIEnv* env,
                                                   jobject thiz,
                                                   jobject java_snode)
 {
 	snode *sn;
 	
 	jclass clazz = env->GetObjectClass(java_snode);
-	jmethodID getNodeType = env->GetMethodID(clazz, "getNodeType", "()I");
-	jint nodeType = env->CallIntMethod(java_snode, getNodeType);
 	
 	jmethodID getNodeName = env->GetMethodID(clazz, "getNodeName", "()Ljava/lang/String;");
 	jobject result = env->CallObjectMethod(java_snode, getNodeName);
 	const char* name = env->GetStringUTFChars((jstring) result, 0);
 	
-	jmethodID getValue;
-	
-	switch (nodeType)
-	{
-		case 0:	// SInt
-			getValue = env->GetMethodID(clazz, "getIntValue", "()I");
-			jint i;
-			i = env->CallIntMethod(java_snode, getValue);	
-			sn = pack(i, name);
-			break;
-		case 1:	// SString
-			getValue = env->GetMethodID(clazz, "getStringValue", "()Ljava/lang/String;");
-			jobject str;
-			str = env->CallObjectMethod(java_snode, getValue);	
-			const char* string;
-			string = env->GetStringUTFChars((jstring) str, 0);
-			sn = pack(string, name);
-			env->ReleaseStringUTFChars(0, string);
-			break;
-		default:
-			break;
-	}
-
+	jmethodID getValue = env->GetMethodID(clazz, "getStringValue", "()Ljava/lang/String;");
+	jobject str = env->CallObjectMethod(java_snode, getValue);	
+	const char* string;
+	string = env->GetStringUTFChars((jstring) str, 0);
+	sn = pack(string, name);
+			
+	env->ReleaseStringUTFChars(0, string);
 	env->ReleaseStringUTFChars(0, name);
 
 	parent->append(sn);	
 }
-/*
-jstring
-Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
-                                                  jobject thiz,
-                                                  jstring msg,
-                                                  jint val1,
-                                                  jint val2 )
-{
-	const char *message = env->GetStringUTFChars(msg, 0);
-	
-	//pack the string
-	sn2 = pack(message);
 
-	sn = pack(val1,"someval"); //can specify the attribute name, optionally...
-
-	sn3 = pack(val2, "somevar");
-	
-	parent = pack(sn2, sn, sn3, "reading"); //build the msg (corresponding to the schema)
-
-	sender->emit(parent);
-	
-	const char *xml = parent->toxml(1);
-	
-	delete parent;
-	
-	env->ReleaseStringUTFChars(msg, message);
-	
-	return env->NewStringUTF(xml);
-}
-
-*//*
-jstring
-Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
-                                                  jobject thiz,
-                                                  jobject somestring,
-                                                  jobject someval,
-                                                  jobject somevar )
-{
-	//const char *message = env->GetStringUTFChars(msg, 0);
-	
-	//pack the string
-
-	sn = process_snode(env, someval); //can specify the attribute name, optionally...
-
-	sn3 = process_snode(env, somevar);
-	
-	sn2 = process_snode(env, somestring);
-	
-	parent = pack(sn2, sn, sn3, "reading"); //build the msg (corresponding to the schema)
-
-	sender->emit(parent);
-	
-	const char *xml = parent->toxml(1);
-	
-	delete parent;
-	
-	//env->ReleaseStringUTFChars(msg, message);
-	
-	return env->NewStringUTF(xml);
-}
-*//*
-jstring
-Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
-                                                  jobject thiz,
-                                                  jobjectArray arr)
-{
-	int i;
-	jsize len = env->GetArrayLength(arr);
-	snode **nodes;
-	
-	nodes = new snodeptr[len];
-	
-	jobject java_snode;
-	snode *node;
-	
-	for (i = 0; i < len; i++) {
-		 java_snode = env->GetObjectArrayElement(arr, i);
-		 node = process_snode(env, java_snode);
-		 nodes[i] = node;
-	}
-
-	parent = pack(nodes, len, "reading"); //build the msg (corresponding to the schema)
-
-	sender->emit(parent);
-	
-	const char *xml = parent->toxml(1);
-	
-	delete parent;
-	delete[] nodes;
-		
-	return env->NewStringUTF(xml);
-}*/
 
 jstring
 Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
@@ -265,7 +180,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 	
 	const char *xml = parent->toxml(1);
 	
-	parent = mklist("reading");
+	parent = mklist(msg_type);
 		
 	return env->NewStringUTF(xml);
 }
@@ -281,45 +196,3 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_delete( JNIEnv* env,
 }
 
 }
-
-snode *process_snode(JNIEnv* env, jobject java_snode)
-{
-	snode *sn;
-	
-	jclass clazz = env->GetObjectClass(java_snode);
-	jmethodID getNodeType = env->GetMethodID(clazz, "getNodeType", "()I");
-	jint nodeType = env->CallIntMethod(java_snode, getNodeType);
-	
-	jmethodID getNodeName = env->GetMethodID(clazz, "getNodeName", "()Ljava/lang/String;");
-	jobject result = env->CallObjectMethod(java_snode, getNodeName);
-	const char* name = env->GetStringUTFChars((jstring) result, 0);
-	
-	jmethodID getValue;
-	
-	switch (nodeType)
-	{
-		case 0:	// SInt
-			getValue = env->GetMethodID(clazz, "getIntValue", "()I");
-			jint i;
-			i = env->CallIntMethod(java_snode, getValue);	
-			sn = pack(i, name);
-			break;
-		case 1:	// SString
-			getValue = env->GetMethodID(clazz, "getStringValue", "()Ljava/lang/String;");
-			jobject str;
-			str = env->CallObjectMethod(java_snode, getValue);	
-			const char* string;
-			string = env->GetStringUTFChars((jstring) str, 0);
-			sn = pack(string, name);
-			env->ReleaseStringUTFChars(0, string);
-			break;
-		default:
-			break;
-	}
-
-	env->ReleaseStringUTFChars(0, name);
-	
-	return sn;
-	
-}
-
