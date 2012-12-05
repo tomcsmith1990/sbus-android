@@ -18,14 +18,6 @@ public class SComponent {
 	
 	public native void delete();
 	
-	public SNode pack(int n) {
-		return new SNode(n);
-	}
-	
-	public SNode pack(int n, String s) {
-		return new SNode(n, s);
-	}
-	
 	static {
         System.loadLibrary("somesensor");
     }	

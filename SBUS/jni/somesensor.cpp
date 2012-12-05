@@ -213,12 +213,12 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 	nodes = new snodeptr[len];
 	
 	jobject java_snode;
-	snode *n;
+	snode *node;
 	
 	for (i = 0; i < len; i++) {
 		 java_snode = env->GetObjectArrayElement(arr, i);
-		 n = process_snode(env, java_snode);
-		 nodes[i] = n;
+		 node = process_snode(env, java_snode);
+		 nodes[i] = node;
 	}
 
 	parent = pack(nodes, len, "reading"); //build the msg (corresponding to the schema)
@@ -228,6 +228,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 	const char *xml = parent->toxml(1);
 	
 	delete parent;
+	delete[] nodes;
 		
 	return env->NewStringUTF(xml);
 }

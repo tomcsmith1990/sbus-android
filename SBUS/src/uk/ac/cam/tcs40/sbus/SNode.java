@@ -4,8 +4,8 @@ public class SNode {
 
 	private enum NodeType { SInt, SString };
 	
-	private String name;
-	private NodeType type;
+	private String m_NodeName;
+	private NodeType m_NodeType;
 	
 	private int n; // SInt, SBool, SValue (cooked)
 	private double x; // SDouble
@@ -21,8 +21,8 @@ public class SNode {
 	public SNode(int n, String name) {
 		initialise();
 		this.n = n;
-		this.name = name;
-		this.type = NodeType.SInt;
+		this.m_NodeName = name;
+		this.m_NodeType = NodeType.SInt;
 	}
 	
 	public SNode(String s) {
@@ -32,22 +32,22 @@ public class SNode {
 	public SNode(String s, String name) {
 		initialise();
 		this.s = s;
-		this.name = name;
-		this.type = NodeType.SString;
+		this.m_NodeName = name;
+		this.m_NodeType = NodeType.SString;
 	}
 	
 	private void initialise() {
 		this.s = null;
 		this.n = -1;
-		this.name = null;
+		this.m_NodeName = null;
 	}
 	
 	private int getNodeType() {
-		return this.type.ordinal();
+		return this.m_NodeType.ordinal();
 	}
 	
 	private String getNodeName() {
-		return this.name;
+		return this.m_NodeName;
 	}
 	
 	private int getIntValue() {
