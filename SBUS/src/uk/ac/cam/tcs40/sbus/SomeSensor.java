@@ -63,14 +63,19 @@ public class SomeSensor extends Activity
 				SNode msg;
 				SNode somevar;
 				SNode someval;
-				
+				int i = 0;
+				SNode[] nodes = new SNode[3];
 				while (true) {
-					
-					msg = new SNode("Hello World");
+				
+					msg = new SNode("This is message #" + i++);
 					somevar = new SNode(5, "somevar");
 					someval = new SNode((int) (Math.random() * 1000), "someval");
 					
-					final String s = scomponent.emit(msg, someval, somevar);
+					nodes[0] = msg;
+					nodes[1] = someval;
+					nodes[2] = somevar;
+					
+					final String s = scomponent.emit(nodes);
 
 					runOnUiThread(new Runnable() {
 						public void run() {

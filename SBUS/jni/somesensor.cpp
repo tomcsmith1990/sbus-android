@@ -31,6 +31,7 @@
  *   apps/samples/hello-jni/project/src/com/example/hellojni/HelloJni.java
  */
 snode *process_snode(JNIEnv* env, jobject java_snode);
+typedef snode *snodeptr;
  
 extern "C" {
 
@@ -169,22 +170,23 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 	return env->NewStringUTF(xml);
 }
 
-*/
+*//*
 jstring
 Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
                                                   jobject thiz,
-                                                  jobject msg,
+                                                  jobject somestring,
                                                   jobject someval,
                                                   jobject somevar )
 {
 	//const char *message = env->GetStringUTFChars(msg, 0);
 	
 	//pack the string
-	sn2 = process_snode(env, msg);
 
 	sn = process_snode(env, someval); //can specify the attribute name, optionally...
 
 	sn3 = process_snode(env, somevar);
+	
+	sn2 = process_snode(env, somestring);
 	
 	parent = pack(sn2, sn, sn3, "reading"); //build the msg (corresponding to the schema)
 
@@ -198,6 +200,38 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 	
 	return env->NewStringUTF(xml);
 }
+*/
+jstring
+Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
+                                                  jobject thiz,
+                                                  jobjectArray arr)
+{
+	int i;
+	jsize len = env->GetArrayLength(arr);
+	snode **nodes;
+	
+	nodes = new snodeptr[len];
+	
+	jobject java_snode;
+	snode *n;
+	
+	for (i = 0; i < len; i++) {
+		 java_snode = env->GetObjectArrayElement(arr, i);
+		 n = process_snode(env, java_snode);
+		 nodes[i] = n;
+	}
+
+	parent = pack(nodes, len, "reading"); //build the msg (corresponding to the schema)
+
+	sender->emit(parent);
+	
+	const char *xml = parent->toxml(1);
+	
+	delete parent;
+		
+	return env->NewStringUTF(xml);
+}
+
 
 
 void
