@@ -2,7 +2,7 @@ package uk.ac.cam.tcs40.sbus;
 
 public class SNode {
 
-	private enum NodeType { SInt };
+	private enum NodeType { SInt, SString };
 	
 	private String name;
 	private NodeType type;
@@ -25,6 +25,17 @@ public class SNode {
 		this.type = NodeType.SInt;
 	}
 	
+	public SNode(String s) {
+		this(s, null);
+	}
+	
+	public SNode(String s, String name) {
+		initialise();
+		this.s = s;
+		this.name = name;
+		this.type = NodeType.SString;
+	}
+	
 	private void initialise() {
 		this.s = null;
 		this.n = -1;
@@ -39,7 +50,11 @@ public class SNode {
 		return this.name;
 	}
 	
-	private int getInt() {
+	private int getIntValue() {
 		return this.n;
+	}
+	
+	private String getStringValue() {
+		return this.s;
 	}
 }

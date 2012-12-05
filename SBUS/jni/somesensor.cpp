@@ -173,18 +173,18 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 jstring
 Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
                                                   jobject thiz,
-                                                  jstring msg,
-                                                  jint val1,
-                                                  jobject val2 )
+                                                  jobject msg,
+                                                  jobject someval,
+                                                  jobject somevar )
 {
-	const char *message = env->GetStringUTFChars(msg, 0);
+	//const char *message = env->GetStringUTFChars(msg, 0);
 	
 	//pack the string
-	sn2 = pack(message);
+	sn2 = process_snode(env, msg);
 
-	sn = pack(val1,"someval"); //can specify the attribute name, optionally...
+	sn = process_snode(env, someval); //can specify the attribute name, optionally...
 
-	sn3 = process_snode(env, val2);
+	sn3 = process_snode(env, somevar);
 	
 	parent = pack(sn2, sn, sn3, "reading"); //build the msg (corresponding to the schema)
 
@@ -194,7 +194,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 	
 	delete parent;
 	
-	env->ReleaseStringUTFChars(msg, message);
+	//env->ReleaseStringUTFChars(msg, message);
 	
 	return env->NewStringUTF(xml);
 }
@@ -216,22 +216,31 @@ snode *process_snode(JNIEnv* env, jobject java_snode)
 	snode *sn;
 	
 	jclass clazz = env->GetObjectClass(java_snode);
-	jmethodID typeMethod = env->GetMethodID(clazz, "getNodeType", "()I");
-	jint nodeType = env->CallIntMethod(java_snode, typeMethod);
+	jmethodID getNodeType = env->GetMethodID(clazz, "getNodeType", "()I");
+	jint nodeType = env->CallIntMethod(java_snode, getNodeType);
 	
-	jmethodID nameMethod = env->GetMethodID(clazz, "getNodeName", "()Ljava/lang/String;");
-	jobject result = env->CallObjectMethod(java_snode, nameMethod);
+	jmethodID getNodeName = env->GetMethodID(clazz, "getNodeName", "()Ljava/lang/String;");
+	jobject result = env->CallObjectMethod(java_snode, getNodeName);
 	const char* name = env->GetStringUTFChars((jstring) result, 0);
 	
-	jmethodID valueMethod;
+	jmethodID getValue;
 	
 	switch (nodeType)
 	{
-		case 0:
-			valueMethod = env->GetMethodID(clazz, "getInt", "()I");
+		case 0:	// SInt
+			getValue = env->GetMethodID(clazz, "getIntValue", "()I");
 			jint i;
-			i = env->CallIntMethod(java_snode, valueMethod);	
+			i = env->CallIntMethod(java_snode, getValue);	
 			sn = pack(i, name);
+			break;
+		case 1:	// SString
+			getValue = env->GetMethodID(clazz, "getStringValue", "()Ljava/lang/String;");
+			jobject str;
+			str = env->CallObjectMethod(java_snode, getValue);	
+			const char* string;
+			string = env->GetStringUTFChars((jstring) str, 0);
+			sn = pack(string, name);
+			env->ReleaseStringUTFChars(0, string);
 			break;
 		default:
 			break;

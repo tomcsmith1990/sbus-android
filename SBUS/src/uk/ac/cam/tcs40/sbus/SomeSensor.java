@@ -60,8 +60,17 @@ public class SomeSensor extends Activity
 				scomponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
 				scomponent.setPermission("SomeConsumer", "", true);
 
+				SNode msg;
+				SNode somevar;
+				SNode someval;
+				
 				while (true) {
-					final String s = scomponent.emit("Hello World", (int) (Math.random() * 1000), new SNode(5, "somevar"));
+					
+					msg = new SNode("Hello World");
+					somevar = new SNode(5, "somevar");
+					someval = new SNode((int) (Math.random() * 1000), "someval");
+					
+					final String s = scomponent.emit(msg, someval, somevar);
 
 					runOnUiThread(new Runnable() {
 						public void run() {
