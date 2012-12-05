@@ -127,21 +127,16 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_createMessage( JNIEnv* env,
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_packInt( JNIEnv* env,
                                                   jobject thiz,
-                                                  jobject java_snode)
+                                                  jint i,
+                                                  jstring n)
 {	
 	snode *sn;
 	
-	jclass clazz = env->GetObjectClass(java_snode);
+	const char *name = env->GetStringUTFChars(n, 0);
 	
-	jmethodID getNodeName = env->GetMethodID(clazz, "getNodeName", "()Ljava/lang/String;");
-	jobject result = env->CallObjectMethod(java_snode, getNodeName);
-	const char* name = env->GetStringUTFChars((jstring) result, 0);
-	
-	jmethodID getValue = env->GetMethodID(clazz, "getIntValue", "()I");
-	jint i = env->CallIntMethod(java_snode, getValue);	
 	sn = pack(i, name);
 
-	env->ReleaseStringUTFChars(0, name);
+	env->ReleaseStringUTFChars(n, name);
 
 	parent->append(sn);	
 }
@@ -149,24 +144,18 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_packInt( JNIEnv* env,
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_packString( JNIEnv* env,
                                                   jobject thiz,
-                                                  jobject java_snode)
+                                                  jstring s,
+                                                  jstring n)
 {
 	snode *sn;
 	
-	jclass clazz = env->GetObjectClass(java_snode);
-	
-	jmethodID getNodeName = env->GetMethodID(clazz, "getNodeName", "()Ljava/lang/String;");
-	jobject result = env->CallObjectMethod(java_snode, getNodeName);
-	const char* name = env->GetStringUTFChars((jstring) result, 0);
-	
-	jmethodID getValue = env->GetMethodID(clazz, "getStringValue", "()Ljava/lang/String;");
-	jobject str = env->CallObjectMethod(java_snode, getValue);	
-	const char* string;
-	string = env->GetStringUTFChars((jstring) str, 0);
+	const char* name = env->GetStringUTFChars(n, 0);
+	const char* string = env->GetStringUTFChars(s, 0);
+
 	sn = pack(string, name);
 			
-	env->ReleaseStringUTFChars(0, string);
-	env->ReleaseStringUTFChars(0, name);
+	env->ReleaseStringUTFChars(s, string);
+	env->ReleaseStringUTFChars(n, name);
 
 	parent->append(sn);	
 }

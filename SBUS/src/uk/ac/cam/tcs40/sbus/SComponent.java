@@ -13,8 +13,12 @@ public class SComponent {
 	public native void setPermission(String cptName, String something, boolean allow);
 	
 	public native void createMessage(String messageType);
-	public native void packInt(SNode node);
-	public native void packString(SNode node);
+	
+	public void packInt(int n) { packInt(n, null); }
+	public native void packInt(int n, String name);
+	
+	public void packString(String s) { packString(s, null); }
+	public native void packString(String s, String name);
 	
 	public native String emit();
 	
