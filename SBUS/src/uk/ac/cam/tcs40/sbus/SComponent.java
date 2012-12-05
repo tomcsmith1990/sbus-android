@@ -16,6 +16,9 @@ public class SComponent {
 	public native String emit(SNode msg, SNode someval, SNode somevar);
 	public native String emit(SNode[] nodes);
 	
+	public native void pack(SNode node);
+	public native String emit();
+	
 	public native void delete();
 	
 	static {

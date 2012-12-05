@@ -68,9 +68,12 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpoint( JNIEnv* env,
 	// -- corresponds to the endpoints defined in the schema file
 	// --  name, source/sink, endpoint hash (obtained by running analysecpt <somesensor.cpt>)
 	sender = com->add_endpoint(endpointName, EndpointSource, endpointHash);
-
+	
 	env->ReleaseStringUTFChars(endName, endpointName);
 	env->ReleaseStringUTFChars(endHash, endpointHash);
+	
+	// create parent snode
+	parent = mklist("reading");
 }
 
 void
@@ -119,26 +122,47 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
 	env->ReleaseStringUTFChars(s, something);
 }
 
-jobject
+void
 Java_uk_ac_cam_tcs40_sbus_SComponent_pack( JNIEnv* env,
                                                   jobject thiz,
-                                                  jint val,
-                                                  jstring n)
+                                                  jobject java_snode)
 {
-	const char *name = env->GetStringUTFChars(n, 0);
-	
 	snode *sn;
-	sn = pack(val, name);
 	
-	jclass clazz = env->FindClass("uk/ac/cam/tcs40/sbus/SNode");
+	jclass clazz = env->GetObjectClass(java_snode);
+	jmethodID getNodeType = env->GetMethodID(clazz, "getNodeType", "()I");
+	jint nodeType = env->CallIntMethod(java_snode, getNodeType);
 	
-	jmethodID constructor = env->GetMethodID(clazz, "<init>", "(ILjava/lang/String;)V");
+	jmethodID getNodeName = env->GetMethodID(clazz, "getNodeName", "()Ljava/lang/String;");
+	jobject result = env->CallObjectMethod(java_snode, getNodeName);
+	const char* name = env->GetStringUTFChars((jstring) result, 0);
 	
-	jobject object = env->NewObject(clazz, constructor, val, name);
+	jmethodID getValue;
 	
-	env->ReleaseStringUTFChars(n, name);
-	
-	return object;
+	switch (nodeType)
+	{
+		case 0:	// SInt
+			getValue = env->GetMethodID(clazz, "getIntValue", "()I");
+			jint i;
+			i = env->CallIntMethod(java_snode, getValue);	
+			sn = pack(i, name);
+			break;
+		case 1:	// SString
+			getValue = env->GetMethodID(clazz, "getStringValue", "()Ljava/lang/String;");
+			jobject str;
+			str = env->CallObjectMethod(java_snode, getValue);	
+			const char* string;
+			string = env->GetStringUTFChars((jstring) str, 0);
+			sn = pack(string, name);
+			env->ReleaseStringUTFChars(0, string);
+			break;
+		default:
+			break;
+	}
+
+	env->ReleaseStringUTFChars(0, name);
+
+	parent->append(sn);	
 }
 /*
 jstring
@@ -200,7 +224,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 	
 	return env->NewStringUTF(xml);
 }
-*/
+*//*
 jstring
 Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
                                                   jobject thiz,
@@ -231,8 +255,20 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 	delete[] nodes;
 		
 	return env->NewStringUTF(xml);
-}
+}*/
 
+jstring
+Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
+                                                  jobject thiz)
+{
+	sender->emit(parent);
+	
+	const char *xml = parent->toxml(1);
+	
+	parent = mklist("reading");
+		
+	return env->NewStringUTF(xml);
+}
 
 
 void

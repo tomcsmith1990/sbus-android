@@ -75,7 +75,11 @@ public class SomeSensor extends Activity
 					nodes[1] = someval;
 					nodes[2] = somevar;
 					
-					final String s = scomponent.emit(nodes);
+					scomponent.pack(msg);
+					scomponent.pack(someval);
+					scomponent.pack(somevar);
+					
+					final String s = scomponent.emit();
 
 					runOnUiThread(new Runnable() {
 						public void run() {
