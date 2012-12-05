@@ -16,7 +16,6 @@
 package uk.ac.cam.tcs40.sbus;
 
 import android.app.Activity;
-import android.util.Log;
 import android.widget.TextView;
 import android.os.Bundle;
 
@@ -62,7 +61,7 @@ public class SomeSensor extends Activity
 				scomponent.setPermission("SomeConsumer", "", true);
 
 				while (true) {
-					final String s = scomponent.emit("Hello World", (int) (Math.random() * 1000), 5);
+					final String s = scomponent.emit("Hello World", (int) (Math.random() * 1000), new SNode(5, "somevar"));
 
 					runOnUiThread(new Runnable() {
 						public void run() {

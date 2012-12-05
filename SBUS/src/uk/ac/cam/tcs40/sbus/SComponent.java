@@ -12,9 +12,16 @@ public class SComponent {
 	public native void start(String cptFilename, int port, boolean useRDC);
 	public native void setPermission(String cptName, String something, boolean allow);
 	public native String emit(String message, int val1, int val2);
+	public native String emit(String message, int val1, SNode val2);
 	public native void delete();
 	
-	public native String sbus();
+	public SNode pack(int n) {
+		return new SNode(n);
+	}
+	
+	public SNode pack(int n, String s) {
+		return new SNode(n, s);
+	}
 	
 	static {
         System.loadLibrary("somesensor");

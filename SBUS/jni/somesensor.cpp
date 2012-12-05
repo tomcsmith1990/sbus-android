@@ -30,6 +30,7 @@
  *
  *   apps/samples/hello-jni/project/src/com/example/hellojni/HelloJni.java
  */
+snode *process_snode(JNIEnv* env, jobject java_snode);
  
 extern "C" {
 
@@ -117,7 +118,28 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
 	env->ReleaseStringUTFChars(s, something);
 }
 
-
+jobject
+Java_uk_ac_cam_tcs40_sbus_SComponent_pack( JNIEnv* env,
+                                                  jobject thiz,
+                                                  jint val,
+                                                  jstring n)
+{
+	const char *name = env->GetStringUTFChars(n, 0);
+	
+	snode *sn;
+	sn = pack(val, name);
+	
+	jclass clazz = env->FindClass("uk/ac/cam/tcs40/sbus/SNode");
+	
+	jmethodID constructor = env->GetMethodID(clazz, "<init>", "(ILjava/lang/String;)V");
+	
+	jobject object = env->NewObject(clazz, constructor, val, name);
+	
+	env->ReleaseStringUTFChars(n, name);
+	
+	return object;
+}
+/*
 jstring
 Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
                                                   jobject thiz,
@@ -147,6 +169,37 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 	return env->NewStringUTF(xml);
 }
 
+*/
+jstring
+Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
+                                                  jobject thiz,
+                                                  jstring msg,
+                                                  jint val1,
+                                                  jobject val2 )
+{
+	const char *message = env->GetStringUTFChars(msg, 0);
+	
+	//pack the string
+	sn2 = pack(message);
+
+	sn = pack(val1,"someval"); //can specify the attribute name, optionally...
+
+	sn3 = process_snode(env, val2);
+	
+	parent = pack(sn2, sn, sn3, "reading"); //build the msg (corresponding to the schema)
+
+	sender->emit(parent);
+	
+	const char *xml = parent->toxml(1);
+	
+	delete parent;
+	
+	env->ReleaseStringUTFChars(msg, message);
+	
+	return env->NewStringUTF(xml);
+}
+
+
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_delete( JNIEnv* env,
                                                   jobject thiz
@@ -156,5 +209,37 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_delete( JNIEnv* env,
 	delete com; //component cleanup happens implicitly
 }
 
+}
+
+snode *process_snode(JNIEnv* env, jobject java_snode)
+{
+	snode *sn;
+	
+	jclass clazz = env->GetObjectClass(java_snode);
+	jmethodID typeMethod = env->GetMethodID(clazz, "getNodeType", "()I");
+	jint nodeType = env->CallIntMethod(java_snode, typeMethod);
+	
+	jmethodID nameMethod = env->GetMethodID(clazz, "getNodeName", "()Ljava/lang/String;");
+	jobject result = env->CallObjectMethod(java_snode, nameMethod);
+	const char* name = env->GetStringUTFChars((jstring) result, 0);
+	
+	jmethodID valueMethod;
+	
+	switch (nodeType)
+	{
+		case 0:
+			valueMethod = env->GetMethodID(clazz, "getInt", "()I");
+			jint i;
+			i = env->CallIntMethod(java_snode, valueMethod);	
+			sn = pack(i, name);
+			break;
+		default:
+			break;
+	}
+
+	env->ReleaseStringUTFChars(0, name);
+	
+	return sn;
+	
 }
 
