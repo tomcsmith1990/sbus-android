@@ -29,6 +29,10 @@ public class FileBootloader {
 		if (!fileExists(filename))
 			createFile(filename);
 	}
+	
+	protected void mkdir(String path) {
+		new File(new File(path).getAbsolutePath()).mkdirs();
+	}
 
 	/***
 	 * Copy filename from the assets folder to the internal storage of this application.
@@ -69,7 +73,7 @@ public class FileBootloader {
 	 */
 	protected void setPermissions(String filename) {
 		try {
-			Runtime.getRuntime().exec("chmod 755 " + filename);
+			Runtime.getRuntime().exec("chmod 755 " + getApplicationDirectory() + "/" + filename);
 		} catch (IOException e) {
 			Log.w("setPermissions", "Error setting permissions to 755 on " + filename, e);
 		}

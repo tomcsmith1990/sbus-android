@@ -2,11 +2,11 @@ package uk.ac.cam.tcs40.sbus;
 
 public class SComponent {
 
-	public SComponent(String componentType, String componentName) {
-		scomponent(componentType, componentName);
+	public SComponent(String componentName, String instanceName) {
+		scomponent(componentName, instanceName);
 	}
 	
-	public native void scomponent(String componentType, String componentName);
+	public native void scomponent(String componentName, String instanceName);
 	public native void addEndpoint(String endpointName, String endpointHash);
 	public native void addRDC(String rdcAddress);
 	public native void start(String cptFilename, int port, boolean useRDC);

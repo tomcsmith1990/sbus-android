@@ -33,18 +33,20 @@ const char *msg_type;
 
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
-                                                  jobject thiz, jstring compType, jstring compName )
+                                                  jobject thiz, 
+                                                  jstring compName, 
+                                                  jstring instanName )
 {
-	const char *componentType = env->GetStringUTFChars(compType, 0);
 	const char *componentName = env->GetStringUTFChars(compName, 0);
+	const char *instanceName = env->GetStringUTFChars(instanName, 0);
 
-	com = new scomponent(componentType, componentName);
+	com = new scomponent(componentName, instanceName);
 	
 	//sets the logging / output levels
 	scomponent::set_log_level(LogErrors | LogWarnings | LogMessages, LogErrors | LogWarnings);
 
-	env->ReleaseStringUTFChars(compType, componentType);
 	env->ReleaseStringUTFChars(compName, componentName);
+	env->ReleaseStringUTFChars(instanName, instanceName);
 }
 
 void
@@ -87,7 +89,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_start( JNIEnv* env,
 {
 	const char *cpt_filename = env->GetStringUTFChars(cpt_file, 0);
 	
-	//start the SBUS wrapper
+	// start the SBUS wrapper
 	// parameters: a) the component scehmafile, b) the port for the component, c) whether to (attempt to) register with the RDC
 	com->start(cpt_filename, port, use_rdc);
 
