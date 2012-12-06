@@ -25,6 +25,6 @@ public class SComponent {
 	public native void delete();
 	
 	static {
-        System.loadLibrary("somesensor");
+        System.loadLibrary("sbusandroid");
     }	
 }

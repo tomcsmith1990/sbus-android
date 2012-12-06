@@ -26,8 +26,8 @@ include $(CLEAR_VARS)
 
 LOCAL_PATH := ~/workspace/SBUS/jni
 LOCAL_STATIC_LIBRARIES := sbus
-LOCAL_MODULE    := somesensor
-LOCAL_SRC_FILES := somesensor.cpp
+LOCAL_MODULE    := sbusandroid
+LOCAL_SRC_FILES := sbusandroid.cpp
 
 include $(BUILD_SHARED_LIBRARY)
 
