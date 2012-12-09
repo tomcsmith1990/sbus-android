@@ -19,7 +19,7 @@ public class SComponent {
 	
 	public void packString(String s) { packString(s, null); }
 	public native void packString(String s, String name);
-	
+		
 	public native String emit();
 	
 	public native void delete();

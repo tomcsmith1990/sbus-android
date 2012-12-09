@@ -53,19 +53,18 @@ public class SomeSensor extends Activity
 			public void run() {
 				SComponent scomponent = new SComponent("SomeSensor", "an_instance");
 				scomponent.addEndpoint("SomeEpt", "BE8A47EBEB58");
-				scomponent.addRDC("192.168.0.11:50123");
+				scomponent.addRDC("192.168.0.3:50123");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				String cptFile = "SomeSensor.cpt";
 				scomponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
 				scomponent.setPermission("SomeConsumer", "", true);
-
-				scomponent.createMessage("reading");
-				
+			
 				int i = 0;
 				while (true) {
-					
-					scomponent.packString("This is message #" + i++);
+
+					scomponent.createMessage("reading");
+					scomponent.packString("This is message #" + i++, "somestring");
 					scomponent.packInt((int) (Math.random() * 1000), "someval");
 					scomponent.packInt(5, "somevar");
 					

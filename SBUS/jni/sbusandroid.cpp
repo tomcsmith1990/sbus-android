@@ -29,7 +29,6 @@ extern "C" {
 scomponent *com; //the component
 sendpoint *sender; //endpoints
 snode *parent; //for building/extracting message attributes
-const char *msg_type;
 
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
@@ -118,12 +117,12 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_createMessage( JNIEnv* env,
 		                                              jobject thiz,
 		                                              jstring name)
 {
-	msg_type = env->GetStringUTFChars(name, 0);
+	const char *msg_type = env->GetStringUTFChars(name, 0);
 	
 	// create parent snode
 	parent = mklist(msg_type);
 	
-	env->ReleaseStringUTFChars(name, 0);
+	env->ReleaseStringUTFChars(name, msg_type);
 }
 
 void
@@ -171,7 +170,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
 	
 	const char *xml = parent->toxml(1);
 	
-	parent = mklist(msg_type);
+	//parent = mklist(msg_type);
 		
 	return env->NewStringUTF(xml);
 }
