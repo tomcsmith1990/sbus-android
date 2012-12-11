@@ -41,9 +41,6 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
 
 	com = new scomponent(componentName, instanceName);
 	
-	//sets the logging / output levels
-	scomponent::set_log_level(LogErrors | LogWarnings | LogMessages, LogErrors | LogWarnings);
-
 	env->ReleaseStringUTFChars(compName, componentName);
 	env->ReleaseStringUTFChars(instanName, instanceName);
 }
@@ -133,11 +130,11 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_packInt( JNIEnv* env,
 {	
 	snode *sn;
 	
-	const char *name = env->GetStringUTFChars(n, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
 	
 	sn = pack(i, name);
 
-	env->ReleaseStringUTFChars(n, name);
+	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 
 	parent->append(sn);	
 }
@@ -150,13 +147,13 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_packString( JNIEnv* env,
 {
 	snode *sn;
 	
-	const char* name = env->GetStringUTFChars(n, 0);
+	const char* name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
 	const char* string = env->GetStringUTFChars(s, 0);
 
 	sn = pack(string, name);
 			
 	env->ReleaseStringUTFChars(s, string);
-	env->ReleaseStringUTFChars(n, name);
+	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 
 	parent->append(sn);	
 }
