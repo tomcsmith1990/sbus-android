@@ -28,6 +28,7 @@ LOCAL_PATH := ~/workspace/SBUS/jni
 LOCAL_STATIC_LIBRARIES := sbus
 LOCAL_MODULE    := sbusandroid
 LOCAL_SRC_FILES := sbusandroid.cpp
+LOCAL_LDLIBS := -llog
 
 include $(BUILD_SHARED_LIBRARY)
 
