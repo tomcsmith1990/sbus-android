@@ -1,0 +1,21 @@
+<component-metadata>
+	<name>SomeSensor</name>
+	<description>Demo client</description>
+	<keywords></keywords>
+	<designer>jat</designer>
+	<endpoints>
+		<endpoint>
+			<name>SomeEpt</name>
+			<type>#source</type>
+			<message>
+				@reading
+				{
+					txt somestring
+					int someval
+					int somevar
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+	</endpoints>
+</component-metadata>
