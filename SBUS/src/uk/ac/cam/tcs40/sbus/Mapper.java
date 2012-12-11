@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2009 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package uk.ac.cam.tcs40.sbus;
 
 import android.app.Activity;
@@ -20,24 +5,16 @@ import android.widget.TextView;
 import android.os.Bundle;
 
 
-public class SomeSensor extends Activity
+public class Mapper extends Activity
 {
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-
-		/*
-		 * 
-		 * SBUSBootloader will be a separate application, copying this files.
-		 * This means that the application context will be different, different directories.
-		 * We'll store the .cpt file in the actual application.
-		 * 
-		 */
 		
 		// Create the SBUSBootloader.
-		// This will copy all necessary files across, then store SomeSensor.cpt.
+		// This will copy all necessary SBUS files.
   		new SBUSBootloader(getApplicationContext());
   		
   		// Create a FileBootloader to store our component file.
@@ -45,7 +22,7 @@ public class SomeSensor extends Activity
 
   		// Add a TextView to the Activity.
 		final TextView tv = new TextView(this);
-		tv.setText("Some Sensor");
+		tv.setText("SBUS Mapper");
 		setContentView(tv);
 		
 		// Create a thread to run the sensor.
@@ -64,7 +41,7 @@ public class SomeSensor extends Activity
 				while (true) {
 
 					scomponent.createMessage("reading");
-					scomponent.packString("This is message #" + i++, "somestring");
+					scomponent.packString("This is message #" + i++);
 					scomponent.packInt((int) (Math.random() * 1000), "someval");
 					scomponent.packInt(5, "somevar");
 					
