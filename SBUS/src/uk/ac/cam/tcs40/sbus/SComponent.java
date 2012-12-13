@@ -24,6 +24,8 @@ public class SComponent {
 	
 	public native void delete();
 	
+	public native String endpointMap(String address);
+	
 	static {
         //System.loadLibrary("sbusandroid");
 		System.load("/data/data/uk.ac.cam.tcs40.sbus.sbus/lib/libsbusandroid.so");
