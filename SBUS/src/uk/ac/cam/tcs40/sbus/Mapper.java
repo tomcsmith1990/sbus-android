@@ -18,9 +18,6 @@ public class Mapper extends Activity
 		// This will copy all necessary SBUS files.
   		new SBUSBootloader(getApplicationContext());
   		
-  		// Create a FileBootloader to store our component file.
-  		new FileBootloader(getApplicationContext()).store("SomeSensor.cpt");;
-
   		// Add a TextView to the Activity.
 		final TextView tv = new TextView(this);
 		tv.setText("SBUS Mapper");
@@ -29,6 +26,9 @@ public class Mapper extends Activity
 		// Create a thread to run the sensor.
 		/*new Thread() {
 			public void run() {
+			  	// Create a FileBootloader to store our component file.
+  				new FileBootloader(getApplicationContext()).store("SomeSensor.cpt");
+  		
 				SComponent scomponent = new SComponent("SomeSensor", "sensor-instance");
 				scomponent.addEndpoint("SomeEpt", "BE8A47EBEB58");
 				scomponent.addRDC("192.168.0.3:50123");
