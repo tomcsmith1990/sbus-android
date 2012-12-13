@@ -36,13 +36,13 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
                                                   jstring compName, 
                                                   jstring instanName )
 {
-	const char *componentName = env->GetStringUTFChars(compName, 0);
-	const char *instanceName = env->GetStringUTFChars(instanName, 0);
-
-	com = new scomponent(componentName, instanceName);
+	const char *cpt_name = env->GetStringUTFChars(compName, 0);
+	const char *instance_name = env->GetStringUTFChars(instanName, 0);
 	
-	env->ReleaseStringUTFChars(compName, componentName);
-	env->ReleaseStringUTFChars(instanName, instanceName);
+	com = new scomponent(cpt_name, instance_name);
+
+	env->ReleaseStringUTFChars(compName, cpt_name);
+	env->ReleaseStringUTFChars(instanName, instance_name);
 }
 
 void
@@ -51,16 +51,16 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpoint( JNIEnv* env,
                                                   jstring endName, 
                                                   jstring endHash )
 {
-	const char *endpointName = env->GetStringUTFChars(endName, 0);
-	const char *endpointHash = env->GetStringUTFChars(endHash, 0);
+	const char *endpoint_name = env->GetStringUTFChars(endName, 0);
+	const char *endpoint_hash = env->GetStringUTFChars(endHash, 0);
 	
 	//add an endpoint
 	// -- corresponds to the endpoints defined in the schema file
 	// --  name, source/sink, endpoint hash (obtained by running analysecpt <somesensor.cpt>)
-	sender = com->add_endpoint(endpointName, EndpointSource, endpointHash);
-	
-	env->ReleaseStringUTFChars(endName, endpointName);
-	env->ReleaseStringUTFChars(endHash, endpointHash);
+	sender = com->add_endpoint(endpoint_name, EndpointSource, endpoint_hash);
+
+	env->ReleaseStringUTFChars(endName, endpoint_name);
+	env->ReleaseStringUTFChars(endHash, endpoint_hash);
 }
 
 void

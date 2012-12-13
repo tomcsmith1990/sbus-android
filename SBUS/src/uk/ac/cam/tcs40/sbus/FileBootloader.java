@@ -40,7 +40,7 @@ public class FileBootloader {
 	 */
 	private void createFile(String filename) {
 		File file = new File(m_Directory, filename);
-
+		
 		try {
 			// Make sure directory exists.
 			m_Directory.mkdirs();
@@ -71,9 +71,9 @@ public class FileBootloader {
 	 * Set the file permissions to rwxr-xr-x so everyone can read and execute.
 	 * @param file File to set permissions on.
 	 */
-	protected void setPermissions(String filename) {
+	protected void setPermissions(String filename, int permissions) {
 		try {
-			Runtime.getRuntime().exec("chmod 755 " + getApplicationDirectory() + "/" + filename);
+			Runtime.getRuntime().exec("chmod " + permissions + " " + getApplicationDirectory() + "/" + filename);
 		} catch (IOException e) {
 			Log.w("setPermissions", "Error setting permissions to 755 on " + filename, e);
 		}
