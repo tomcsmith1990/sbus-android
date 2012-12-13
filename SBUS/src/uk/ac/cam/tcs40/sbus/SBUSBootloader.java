@@ -32,13 +32,16 @@ public class SBUSBootloader extends FileBootloader {
 
 		// Create and set permissions on /idl directory.
 		mkdir(getApplicationDirectory() + "/idl");
-		setPermissions(getApplicationDirectory() + "/idl");
+		setPermissions("idl", 755);
+		
+		mkdir(getApplicationDirectory() + "/.sbus");
+		setPermissions(".sbus", 777);
 		
 		// Copy the idl files and sbuswrapper if they don't exist.
 		// Also sets correct permissions on them.
 		for (String filename : m_Files) {
 			store(filename);
-			setPermissions(filename);
+			setPermissions(filename, 755);
 		}
 	}
 

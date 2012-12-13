@@ -18,7 +18,7 @@ public class Mapper extends Activity
   		new SBUSBootloader(getApplicationContext());
   		
   		// Create a FileBootloader to store our component file.
-  		new FileBootloader(getApplicationContext()).store("SomeSensor.cpt");
+  		new FileBootloader(getApplicationContext()).store("SomeSensor.cpt");;
 
   		// Add a TextView to the Activity.
 		final TextView tv = new TextView(this);
@@ -28,7 +28,7 @@ public class Mapper extends Activity
 		// Create a thread to run the sensor.
 		new Thread() {
 			public void run() {
-				SComponent scomponent = new SComponent("SomeSensor", "an_instance");
+				SComponent scomponent = new SComponent("SomeSensor", "sensor-instance");
 				scomponent.addEndpoint("SomeEpt", "BE8A47EBEB58");
 				scomponent.addRDC("192.168.0.3:50123");
 				// 10.0.2.2 is the development machine when running in AVD.
@@ -59,7 +59,23 @@ public class Mapper extends Activity
 				}
 			}
 		}.start();
-
-	}    
+/*
+		new Thread() {
+			public void run() {
+				new FileBootloader(getApplicationContext()).store("map.cpt");
+				
+				SComponent mapComponent = new SComponent("map", "map_instance");
+				mapComponent.addEndpoint("map", "F46B9113DB2D");
+				String mapFile = "map.cpt";
+				mapComponent.start(mapFile,  -1, false);
+				
+				mapComponent.createMessage("map");
+				mapComponent.packString("", "certificate");
+				mapComponent.packString("SomeEpt", "endpoint");
+				mapComponent.packString(":44444", "peer_address");
+				mapComponent.packString("SomeEpt", "peer_endpoint");
+			}
+		};
+*/	}    
 
 }
