@@ -25,7 +25,7 @@ public class SComponent {
 	public native void delete();
 	
 	static {
-        System.loadLibrary("sbusandroid");
-		//System.load("/data/data/uk.ac.cam.tcs40.sbus.sbus/lib/libsbusandroid.so");
+        //System.loadLibrary("sbusandroid");
+		System.load("/data/data/uk.ac.cam.tcs40.sbus.sbus/lib/libsbusandroid.so");
     }	
 }
