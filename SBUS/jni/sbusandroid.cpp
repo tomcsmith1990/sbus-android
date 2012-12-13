@@ -63,6 +63,21 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpoint( JNIEnv* env,
 	env->ReleaseStringUTFChars(endHash, endpoint_hash);
 }
 
+jstring
+Java_uk_ac_cam_tcs40_sbus_SComponent_endpointMap( JNIEnv* env,
+				                                          jobject thiz, 
+				                                          jstring addr)
+{
+	const char *address = env->GetStringUTFChars(addr, 0);
+	
+	const char *s = sender->map(address, NULL);
+	
+	env->ReleaseStringUTFChars(addr, address);
+	
+	if (s == NULL) return env->NewStringUTF("error"); else
+	return env->NewStringUTF(s);
+}
+
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_addRDC( JNIEnv* env,
                                                   jobject thiz, 

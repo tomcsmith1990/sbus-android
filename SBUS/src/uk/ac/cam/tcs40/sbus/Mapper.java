@@ -1,6 +1,7 @@
 package uk.ac.cam.tcs40.sbus;
 
 import android.app.Activity;
+import android.util.Log;
 import android.widget.TextView;
 import android.os.Bundle;
 
@@ -26,7 +27,7 @@ public class Mapper extends Activity
 		setContentView(tv);
 		
 		// Create a thread to run the sensor.
-		new Thread() {
+		/*new Thread() {
 			public void run() {
 				SComponent scomponent = new SComponent("SomeSensor", "sensor-instance");
 				scomponent.addEndpoint("SomeEpt", "BE8A47EBEB58");
@@ -58,24 +59,34 @@ public class Mapper extends Activity
 					} catch (InterruptedException e) { }
 				}
 			}
-		}.start();
-/*
+		}.start();*/
+
 		new Thread() {
 			public void run() {
 				new FileBootloader(getApplicationContext()).store("map.cpt");
 				
-				SComponent mapComponent = new SComponent("map", "map_instance");
+				SComponent mapComponent = new SComponent("spoke", "spoke");
 				mapComponent.addEndpoint("map", "F46B9113DB2D");
 				String mapFile = "map.cpt";
-				mapComponent.start(mapFile,  -1, false);
+				mapComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile,  -1, false);
+				
+				mapComponent.endpointMap(":44444");
 				
 				mapComponent.createMessage("map");
-				mapComponent.packString("", "certificate");
 				mapComponent.packString("SomeEpt", "endpoint");
-				mapComponent.packString(":44444", "peer_address");
+				mapComponent.packString("192.168.0.3:44444", "peer_address");
 				mapComponent.packString("SomeEpt", "peer_endpoint");
+				mapComponent.packString("", "certificate");
+				
+				final String s = mapComponent.emit();
+
+				runOnUiThread(new Runnable() {
+					public void run() {
+						tv.setText(s);
+					}
+				});
 			}
-		};
-*/	}    
+		}.start();
+	}    
 
 }
