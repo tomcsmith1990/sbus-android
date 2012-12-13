@@ -35,6 +35,7 @@ public class SBUSBootloader extends FileBootloader {
 		setPermissions("idl", 755);
 		
 		mkdir(getApplicationDirectory() + "/.sbus/log");
+		setPermissions(".sbus", 777);
 		setPermissions(".sbus/log", 777);
 		
 		// Copy the idl files and sbuswrapper if they don't exist.

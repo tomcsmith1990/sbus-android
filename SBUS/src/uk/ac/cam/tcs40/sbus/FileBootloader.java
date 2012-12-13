@@ -75,7 +75,7 @@ public class FileBootloader {
 		try {
 			Runtime.getRuntime().exec("chmod " + permissions + " " + getApplicationDirectory() + "/" + filename);
 		} catch (IOException e) {
-			Log.w("setPermissions", "Error setting permissions to 755 on " + filename, e);
+			Log.w("setPermissions", "Error setting permissions to " + permissions + " on " + filename, e);
 		}
 	}
 
