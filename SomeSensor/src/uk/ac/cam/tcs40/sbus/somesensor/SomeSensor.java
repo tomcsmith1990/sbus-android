@@ -14,8 +14,8 @@ public class SomeSensor extends Activity
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-  		
-  		// Create a FileBootloader to store our component file.
+
+		// Create a FileBootloader to store our component file.
   		new FileBootloader(getApplicationContext()).store("SomeSensor.cpt");
 
   		// Add a TextView to the Activity.
@@ -32,7 +32,7 @@ public class SomeSensor extends Activity
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				String cptFile = "SomeSensor.cpt";
-				scomponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
+				scomponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, 44444, true);
 				scomponent.setPermission("SomeConsumer", "", true);
 			
 				int i = 0;
@@ -58,6 +58,5 @@ public class SomeSensor extends Activity
 			}
 		}.start();
 
-	}    
-
+	}   
 }
