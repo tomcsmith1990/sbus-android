@@ -6,6 +6,13 @@ public class MapComponent extends SComponent {
 		super(componentName, instanceName);
 	}
 
+	/***
+	 * Emits a map message to map components together.
+	 * @param localAddress The address of the component on the phone.
+	 * @param localEndpoint The endpoint of the component on the phone.
+	 * @param peerAddress The address of the other component.
+	 * @param peerEndpoint The endpoint of the other component.
+	 */
 	public void map(String localAddress, String localEndpoint, String peerAddress, String peerEndpoint) {
 		this.endpointMap(localAddress);
 

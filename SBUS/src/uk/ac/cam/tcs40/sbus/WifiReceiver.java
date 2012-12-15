@@ -25,9 +25,10 @@ public class WifiReceiver extends BroadcastReceiver {
 			NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
 
 			if(networkInfo.isConnected()) {
-				// Wifi is connected
+				// WiFi is connected.
 				Log.d("SBUS", "Wifi is connected: " + String.valueOf(networkInfo));
 
+				// Emit the map message to map once we connect to WiFi.
 				this.m_MapComponent.map(":44444", "SomeEpt", "192.168.0.6:44444", "SomeEpt");
 			}
 			
@@ -36,7 +37,7 @@ public class WifiReceiver extends BroadcastReceiver {
 			NetworkInfo networkInfo = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
 
 			if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI && ! networkInfo.isConnected()) {
-				// Wifi is disconnected
+				// WiFi is disconnected.
 				Log.d("SBUS", "Wifi is disconnected: " + String.valueOf(networkInfo));
 			}
 		}
