@@ -74,8 +74,8 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_endpointMap( JNIEnv* env,
 	
 	env->ReleaseStringUTFChars(addr, address);
 	
-	if (s == NULL) return env->NewStringUTF("error"); else
-	return env->NewStringUTF(s);
+	if (s == NULL) return env->NewStringUTF("error"); 
+	else return env->NewStringUTF(s);
 }
 
 void
