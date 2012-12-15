@@ -79,6 +79,13 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_endpointMap( JNIEnv* env,
 }
 
 void
+Java_uk_ac_cam_tcs40_sbus_SComponent_endpointUnmap( JNIEnv* env,
+				                                          jobject thiz)
+{
+	sender->unmap();
+}
+
+void
 Java_uk_ac_cam_tcs40_sbus_SComponent_addRDC( JNIEnv* env,
                                                   jobject thiz, 
                                                   jstring addr )
@@ -110,18 +117,18 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_start( JNIEnv* env,
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
                                                   jobject thiz, 
-                                                  jstring cptName,
-                                                  jstring s,
+                                                  jstring componentName,
+                                                  jstring instanceName,
                                                   jboolean allow )
 {
-	const char *cpt_name = env->GetStringUTFChars(cptName, 0);
-	const char *something = env->GetStringUTFChars(s, 0);
+	const char *component_name = env->GetStringUTFChars(componentName, 0);
+	const char *instance_name = env->GetStringUTFChars(instanceName, 0);
 	
 	//authorise the client to connect (here based on their class name)
-	com->set_permission(cpt_name, something, allow);
+	com->set_permission(component_name, instance_name, allow);
 
-	env->ReleaseStringUTFChars(cptName, cpt_name);
-	env->ReleaseStringUTFChars(s, something);
+	env->ReleaseStringUTFChars(componentName, component_name);
+	env->ReleaseStringUTFChars(instanceName, instance_name);
 }
 
 void

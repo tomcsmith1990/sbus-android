@@ -22,6 +22,8 @@ public class MapComponent extends SComponent {
 		this.packString(peerEndpoint, "peer_endpoint");
 		this.packString("", "certificate");
 
-		this.emit();		
+		this.emit();
+		
+		this.endpointUnmap();
 	}
 }
