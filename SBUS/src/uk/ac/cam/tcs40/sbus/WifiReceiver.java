@@ -10,9 +10,9 @@ import android.util.Log;
 
 public class WifiReceiver extends BroadcastReceiver {
 
-	private SComponent m_mapComponent;
+	private MapComponent m_mapComponent;
 
-	public WifiReceiver(SComponent mapComponent) {
+	public WifiReceiver(MapComponent mapComponent) {
 		super();
 		this.m_mapComponent = mapComponent;
 	}
@@ -28,16 +28,8 @@ public class WifiReceiver extends BroadcastReceiver {
 				// Wifi is connected
 				Log.d("SBUS", "Wifi is connected: " + String.valueOf(networkInfo));
 
-				this.m_mapComponent.endpointMap(":44444");
-
-				this.m_mapComponent.createMessage("map");
-				this.m_mapComponent.packString("SomeEpt", "endpoint");
-				this.m_mapComponent.packString("192.168.0.6:44444", "peer_address");
-				this.m_mapComponent.packString("SomeEpt", "peer_endpoint");
-				this.m_mapComponent.packString("", "certificate");
-
-				this.m_mapComponent.emit();
-			}
+				this.m_mapComponent.map(":44444", "SomeEpt", "192.168.0.6:44444", "SomeEpt");
+							}
 		} else if(intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
 			
 			NetworkInfo networkInfo = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);

@@ -1,8 +1,8 @@
 package uk.ac.cam.tcs40.sbus;
 
+import uk.ac.cam.tcs40.sbus.sbus.R;
 import android.app.Activity;
 import android.content.IntentFilter;
-import android.widget.TextView;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -15,17 +15,14 @@ public class Mapper extends Activity
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		
+		setContentView(R.layout.activity_mapper);
 
 		// Create the SBUSBootloader.
 		// This will copy all necessary SBUS files.
 		new SBUSBootloader(getApplicationContext());
 
 		new FileBootloader(getApplicationContext()).store("map.cpt");
-
-		// Add a TextView to the Activity.
-		final TextView tv = new TextView(this);
-		tv.setText("SBUS Mapper");
-		setContentView(tv);
 
 		// Create a thread to run the sensor.
 		/*new Thread() {
@@ -92,7 +89,7 @@ public class Mapper extends Activity
 		 */	
 		new Thread() {
 			public void run() {
-				SComponent mapComponent = new SComponent("spoke", "spoke");
+				MapComponent mapComponent = new MapComponent("spoke", "spoke");
 				mapComponent.addEndpoint("map", "F46B9113DB2D");
 				String mapFile = "map.cpt";
 				mapComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile,  -1, false);
