@@ -10,7 +10,7 @@ public class SComponent {
 	public native void addEndpoint(String endpointName, String endpointHash);
 	public native void addRDC(String rdcAddress);
 	public native void start(String cptFilename, int port, boolean useRDC);
-	public native void setPermission(String cptName, String something, boolean allow);
+	public native void setPermission(String componentName, String instanceName, boolean allow);
 	
 	public native void createMessage(String messageType);
 	
@@ -25,6 +25,7 @@ public class SComponent {
 	public native void delete();
 	
 	public native String endpointMap(String address);
+	public native void endpointUnmap();
 	
 	static {
         //System.loadLibrary("sbusandroid");
