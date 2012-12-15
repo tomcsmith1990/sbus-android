@@ -6,27 +6,64 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 
 public class Mapper extends Activity
 {
-	/** Called when the activity is first created. */
+	private MapComponent m_MapComponent;
+
+	private OnClickListener m_MapButtonListener = new OnClickListener() {
+		public void onClick(View v) {
+			m_MapComponent.map(":44444", "SomeEpt", "192.168.0.6:44444", "SomeEpt");
+		}
+	};
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		
-		setContentView(R.layout.activity_mapper);
 
 		// Create the SBUSBootloader.
 		// This will copy all necessary SBUS files.
 		new SBUSBootloader(getApplicationContext());
 
-		new FileBootloader(getApplicationContext()).store("map.cpt");
+		final String mapFile = "map.cpt";
+		
+		new FileBootloader(getApplicationContext()).store(mapFile);
+
+		this.m_MapComponent = new MapComponent("spoke", "spoke");
+		this.m_MapComponent.addEndpoint("map", "F46B9113DB2D");
+		this.m_MapComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile,  -1, false);
+	
+		setContentView(R.layout.activity_mapper);
+		
+		Button button = (Button)findViewById(R.id.map_button);
+		button.setOnClickListener(m_MapButtonListener);
+
+		new Thread() {
+			public void run() {
+				IntentFilter intentFilter = new IntentFilter();
+				intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+				intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+				registerReceiver(new WifiReceiver(m_MapComponent), intentFilter);
+
+				while(true) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}.start();
 
 		// Create a thread to run the sensor.
 		/*new Thread() {
-			public void run() {
+			public 		setContentView(R.layout.activity_mapper);void run() {
 			  	// Create a FileBootloader to store our component file.
   				new FileBootloader(getApplicationContext()).store("SomeSensor.cpt");
 
@@ -87,28 +124,5 @@ public class Mapper extends Activity
 			}
 		}.start();
 		 */	
-		new Thread() {
-			public void run() {
-				MapComponent mapComponent = new MapComponent("spoke", "spoke");
-				mapComponent.addEndpoint("map", "F46B9113DB2D");
-				String mapFile = "map.cpt";
-				mapComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile,  -1, false);
-
-				IntentFilter intentFilter = new IntentFilter();
-				intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-				intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-				registerReceiver(new WifiReceiver(mapComponent), intentFilter);
-
-				while(true) {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		}.start();
-	}    
-
+	}
 }
