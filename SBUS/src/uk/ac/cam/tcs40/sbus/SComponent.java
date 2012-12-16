@@ -1,5 +1,9 @@
 package uk.ac.cam.tcs40.sbus;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class SComponent {
 
 	public SComponent(String componentName, String instanceName) {
@@ -19,6 +23,13 @@ public class SComponent {
 	
 	public void packString(String s) { packString(s, null); }
 	public native void packString(String s, String name);
+	
+	public void packTime(Date d) { packTime(d, null); }
+	public void packTime(Date d, String name) {
+		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss+00");
+		packClock(format.format(d), name);
+	}
+	public native void packClock(String date, String name);
 		
 	public native String emit();
 	
