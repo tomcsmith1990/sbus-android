@@ -17,7 +17,7 @@ public class Mapper extends Activity
 
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			m_MapComponent.map(":44444", "SomeEpt", "192.168.0.6:44444", "SomeEpt");
+			m_MapComponent.map(":44444", "SomeEpt", "192.168.0.3:44444", "SomeEpt");
 		}
 	};
 

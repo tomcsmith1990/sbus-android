@@ -29,7 +29,7 @@ public class WifiReceiver extends BroadcastReceiver {
 				Log.d("SBUS", "Wifi is connected: " + String.valueOf(networkInfo));
 
 				// Emit the map message to map once we connect to WiFi.
-				this.m_MapComponent.map(":44444", "SomeEpt", "192.168.0.6:44444", "SomeEpt");
+				this.m_MapComponent.map(":44444", "SomeEpt", "192.168.0.3:44444", "SomeEpt");
 			}
 			
 		} else if(intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {

@@ -169,8 +169,8 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_packString( JNIEnv* env,
 {
 	snode *sn;
 	
-	const char* name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
-	const char* string = env->GetStringUTFChars(s, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	const char *string = env->GetStringUTFChars(s, 0);
 
 	sn = pack(string, name);
 			
@@ -178,6 +178,25 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_packString( JNIEnv* env,
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 
 	parent->append(sn);	
+}
+
+void
+Java_uk_ac_cam_tcs40_sbus_SComponent_packClock( JNIEnv* env,
+                                                  jobject thiz,
+                                                  jstring c,
+                                                  jstring n)
+{
+	snode *sn;
+	
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	const char *clk = env->GetStringUTFChars(c, 0);
+
+	sn = pack(clk, name);
+			
+	parent->append(sn);	
+	
+	env->ReleaseStringUTFChars(c, clk);
+	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 }
 
 
