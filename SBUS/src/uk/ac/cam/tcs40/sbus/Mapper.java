@@ -13,11 +13,12 @@ import android.widget.Button;
 
 public class Mapper extends Activity
 {
-	private MapComponent m_MapComponent;
+	private SComponent m_MapComponent;
+	private MapEndpoint m_MapEndpoint;
 
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			m_MapComponent.map(":44444", "SomeEpt", "192.168.0.3:44444", "SomeEpt");
+			m_MapEndpoint.map(":44445", "BatteryVoltage", "192.168.0.3:44444", "BatteryVoltage");
 		}
 	};
 
@@ -36,8 +37,9 @@ public class Mapper extends Activity
 		new FileBootloader(getApplicationContext()).store(mapFile);
 
 		// Initialise and start the map component.
-		this.m_MapComponent = new MapComponent("spoke", "spoke");
-		this.m_MapComponent.addEndpoint("map", "F46B9113DB2D");
+		this.m_MapComponent = new SComponent("spoke", "spoke");
+		this.m_MapEndpoint = new MapEndpoint("map", "F46B9113DB2D");
+		this.m_MapComponent.addEndpoint(this.m_MapEndpoint);
 		this.m_MapComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile,  -1, false);
 
 		// Display the layout.
@@ -54,7 +56,7 @@ public class Mapper extends Activity
 				IntentFilter intentFilter = new IntentFilter();
 				intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 				intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-				registerReceiver(new WifiReceiver(m_MapComponent), intentFilter);
+				registerReceiver(new WifiReceiver(m_MapEndpoint), intentFilter);
 
 				while(true) {
 					try {

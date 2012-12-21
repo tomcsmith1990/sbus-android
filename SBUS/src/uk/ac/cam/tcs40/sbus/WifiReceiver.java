@@ -10,11 +10,11 @@ import android.util.Log;
 
 public class WifiReceiver extends BroadcastReceiver {
 
-	private MapComponent m_MapComponent;
+	private MapEndpoint m_MapEndpoint;
 
-	public WifiReceiver(MapComponent mapComponent) {
+	public WifiReceiver(MapEndpoint mapEndpoint) {
 		super();
-		this.m_MapComponent = mapComponent;
+		this.m_MapEndpoint = mapEndpoint;
 	}
 
 	@Override
@@ -29,7 +29,7 @@ public class WifiReceiver extends BroadcastReceiver {
 				Log.d("SBUS", "Wifi is connected: " + String.valueOf(networkInfo));
 
 				// Emit the map message to map once we connect to WiFi.
-				this.m_MapComponent.map(":44444", "SomeEpt", "192.168.0.3:44444", "SomeEpt");
+				this.m_MapEndpoint.map(":44445", "BatteryVoltage", "192.168.0.3:44444", "BatteryVoltage");
 			}
 			
 		} else if(intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
