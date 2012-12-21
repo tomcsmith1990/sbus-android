@@ -4,6 +4,7 @@ import java.util.Date;
 
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.SComponent;
+import uk.ac.cam.tcs40.sbus.SEndpoint;
 import android.os.Bundle;
 import android.app.Activity;
 import android.database.Cursor;
@@ -32,7 +33,8 @@ public class AIRSActivity extends Activity {
 		new Thread() {
 			public void run() {
 				SComponent scomponent = new SComponent("SomeSensor", "airs");
-				scomponent.addEndpoint("BatteryVoltage", "6F7AA0BB0B8F");
+				SEndpoint batteryVoltageEndpoint = new SEndpoint("BatteryVoltage", "6F7AA0BB0B8F");
+				scomponent.addEndpoint(batteryVoltageEndpoint);
 				scomponent.addRDC("192.168.0.3:50123");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
@@ -66,12 +68,12 @@ public class AIRSActivity extends Activity {
 
 				while (true) {
 
-					scomponent.createMessage("reading");
-					scomponent.packString("AIRS: This is message #" + i++);
-					scomponent.packTime(new Date(timestamp), "timestamp");
-					scomponent.packInt(batteryVoltage, "batteryVoltage");
+					batteryVoltageEndpoint.createMessage("reading");
+					batteryVoltageEndpoint.packString("AIRS: This is message #" + i++);
+					batteryVoltageEndpoint.packTime(new Date(timestamp), "timestamp");
+					batteryVoltageEndpoint.packInt(batteryVoltage, "batteryVoltage");
 
-					final String s = scomponent.emit();
+					final String s = batteryVoltageEndpoint.emit();
 
 					runOnUiThread(new Runnable() {
 						public void run() {
