@@ -1,9 +1,9 @@
 package uk.ac.cam.tcs40.sbus;
 
-public class MapComponent extends SComponent {
+public class MapEndpoint extends SEndpoint {
 
-	public MapComponent(String componentName, String instanceName) {
-		super(componentName, instanceName);
+	public MapEndpoint(String endpointName, String endpointHash) {
+		super(endpointName, endpointHash);
 	}
 
 	/***

@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2009 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 #include <cstdlib>
 #include <stdio.h>
 #include <string.h>
@@ -27,8 +10,6 @@
 extern "C" {
 
 scomponent *com; //the component
-sendpoint *sender; //endpoints
-snode *parent; //for building/extracting message attributes
 
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
@@ -45,7 +26,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
 	env->ReleaseStringUTFChars(instanName, instance_name);
 }
 
-void
+jlong
 Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpoint( JNIEnv* env,
                                                   jobject thiz, 
                                                   jstring endName, 
@@ -54,23 +35,27 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpoint( JNIEnv* env,
 	const char *endpoint_name = env->GetStringUTFChars(endName, 0);
 	const char *endpoint_hash = env->GetStringUTFChars(endHash, 0);
 	
+	sendpoint *endpoint;
 	//add an endpoint
 	// -- corresponds to the endpoints defined in the schema file
 	// --  name, source/sink, endpoint hash (obtained by running analysecpt <somesensor.cpt>)
-	sender = com->add_endpoint(endpoint_name, EndpointSource, endpoint_hash);
+	endpoint = com->add_endpoint(endpoint_name, EndpointSource, endpoint_hash);
 
 	env->ReleaseStringUTFChars(endName, endpoint_name);
 	env->ReleaseStringUTFChars(endHash, endpoint_hash);
+	
+	return (long)endpoint;
 }
 
 jstring
-Java_uk_ac_cam_tcs40_sbus_SComponent_endpointMap( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_endpointMap( JNIEnv* env,
 				                                          jobject thiz, 
+				                                          jlong endpoint,
 				                                          jstring addr)
 {
 	const char *address = env->GetStringUTFChars(addr, 0);
 	
-	const char *s = sender->map(address, NULL);
+	const char *s = ((sendpoint *)endpoint)->map(address, NULL);
 	
 	env->ReleaseStringUTFChars(addr, address);
 	
@@ -79,10 +64,11 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_endpointMap( JNIEnv* env,
 }
 
 void
-Java_uk_ac_cam_tcs40_sbus_SComponent_endpointUnmap( JNIEnv* env,
-				                                          jobject thiz)
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_endpointUnmap( JNIEnv* env,
+				                                          jobject thiz,
+				                                          jlong endpoint)
 {
-	sender->unmap();
+	((sendpoint *)endpoint)->unmap();
 }
 
 void
@@ -131,22 +117,27 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
 	env->ReleaseStringUTFChars(instanceName, instance_name);
 }
 
-void
-Java_uk_ac_cam_tcs40_sbus_SComponent_createMessage( JNIEnv* env,
+jlong
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_createMessage( JNIEnv* env,
 		                                              jobject thiz,
+		                                              jlong endpoint,
 		                                              jstring name)
 {
 	const char *msg_type = env->GetStringUTFChars(name, 0);
 	
+	snode *message;
 	// create parent snode
-	parent = mklist(msg_type);
+	message = mklist(msg_type);
 	
 	env->ReleaseStringUTFChars(name, msg_type);
+	
+	return (long)message;
 }
 
 void
-Java_uk_ac_cam_tcs40_sbus_SComponent_packInt( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_packInt( JNIEnv* env,
                                                   jobject thiz,
+                                                  jlong message,
                                                   jint i,
                                                   jstring n)
 {	
@@ -158,12 +149,13 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_packInt( JNIEnv* env,
 
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 
-	parent->append(sn);	
+	((snode *)message)->append(sn);	
 }
 
 void
-Java_uk_ac_cam_tcs40_sbus_SComponent_packString( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_packString( JNIEnv* env,
                                                   jobject thiz,
+                                                  jlong message,
                                                   jstring s,
                                                   jstring n)
 {
@@ -177,12 +169,13 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_packString( JNIEnv* env,
 	env->ReleaseStringUTFChars(s, string);
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 
-	parent->append(sn);	
+	((snode *)message)->append(sn);	
 }
 
 void
-Java_uk_ac_cam_tcs40_sbus_SComponent_packClock( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_packClock( JNIEnv* env,
                                                   jobject thiz,
+                                                  jlong message,
                                                   jstring c,
                                                   jstring n)
 {
@@ -193,7 +186,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_packClock( JNIEnv* env,
 
 	sn = pack(clk, name);
 			
-	parent->append(sn);	
+	((snode *)message)->append(sn);	
 	
 	env->ReleaseStringUTFChars(c, clk);
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
@@ -201,15 +194,15 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_packClock( JNIEnv* env,
 
 
 jstring
-Java_uk_ac_cam_tcs40_sbus_SComponent_emit( JNIEnv* env,
-                                                  jobject thiz)
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_emit( JNIEnv* env,
+                                                  jobject thiz,
+                                                  jlong endpoint,
+                                                  jlong message)
 {
-	sender->emit(parent);
+	((sendpoint *)endpoint)->emit(((snode *)message));
 	
-	const char *xml = parent->toxml(1);
-	
-	//parent = mklist(msg_type);
-		
+	const char *xml = ((snode *)message)->toxml(1);
+			
 	return env->NewStringUTF(xml);
 }
 
@@ -219,8 +212,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_delete( JNIEnv* env,
                                                   jobject thiz
                                                   )
 {
-	sender->unmap(); //nicer disconnect (warning without this)
-	delete com; //component cleanup happens implicitly
+	delete com;
 }
 
 }
