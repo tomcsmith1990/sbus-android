@@ -1,0 +1,22 @@
+<component-metadata>
+	<name>spoke</name>
+	<description>Remapping utility</description>
+	<keywords></keywords>
+	<designer>Tom Smith</designer>
+	<endpoints>
+		<endpoint>
+			<name>map</name>
+			<type>#source</type>
+			<message>
+				@map
+				{
+					txt endpoint
+					txt peer_address
+					txt peer_endpoint
+					txt certificate
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+	</endpoints>
+</component-metadata>
