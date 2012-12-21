@@ -9,9 +9,7 @@
  
 extern "C" {
 
-scomponent *com; //the component
-
-void
+jlong
 Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
                                                   jobject thiz, 
                                                   jstring compName, 
@@ -20,15 +18,19 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
 	const char *cpt_name = env->GetStringUTFChars(compName, 0);
 	const char *instance_name = env->GetStringUTFChars(instanName, 0);
 	
-	com = new scomponent(cpt_name, instance_name);
+	scomponent *component;
+	component = new scomponent(cpt_name, instance_name);
 
 	env->ReleaseStringUTFChars(compName, cpt_name);
 	env->ReleaseStringUTFChars(instanName, instance_name);
+	
+	return (long)component;
 }
 
 jlong
 Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpoint( JNIEnv* env,
                                                   jobject thiz, 
+                                                  jlong component,
                                                   jstring endName, 
                                                   jstring endHash )
 {
@@ -36,7 +38,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpoint( JNIEnv* env,
 	const char *endpoint_hash = env->GetStringUTFChars(endHash, 0);
 	
 	sendpoint *endpoint;
-	endpoint = com->add_endpoint(endpoint_name, EndpointSource, endpoint_hash);
+	endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, EndpointSource, endpoint_hash);
 
 	env->ReleaseStringUTFChars(endName, endpoint_name);
 	env->ReleaseStringUTFChars(endHash, endpoint_hash);
@@ -70,12 +72,13 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_endpointUnmap( JNIEnv* env,
 
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_addRDC( JNIEnv* env,
-                                             jobject thiz, 
+                                             jobject thiz,
+                                             jlong component, 
                                              jstring addr )
 {
 	const char *rdc = env->GetStringUTFChars(addr, 0);
 	
-	com->add_rdc(rdc);
+	((scomponent *)component)->add_rdc(rdc);
 
 	env->ReleaseStringUTFChars(addr, rdc);
 }
@@ -83,13 +86,14 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addRDC( JNIEnv* env,
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_start( JNIEnv* env,
                                             jobject thiz, 
+                                            jlong component,
                                             jstring cpt_file,
                                             jint port,
                                             jboolean use_rdc )
 {
 	const char *cpt_filename = env->GetStringUTFChars(cpt_file, 0);
 	
-	com->start(cpt_filename, port, use_rdc);
+	((scomponent *)component)->start(cpt_filename, port, use_rdc);
 
 	env->ReleaseStringUTFChars(cpt_file, cpt_filename);
 }
@@ -97,6 +101,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_start( JNIEnv* env,
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
 		                                            jobject thiz, 
+		                                            jlong component,
 		                                            jstring componentName,
 		                                            jstring instanceName,
 		                                            jboolean allow )
@@ -104,7 +109,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
 	const char *component_name = env->GetStringUTFChars(componentName, 0);
 	const char *instance_name = env->GetStringUTFChars(instanceName, 0);
 	
-	com->set_permission(component_name, instance_name, allow);
+	((scomponent *)component)->set_permission(component_name, instance_name, allow);
 
 	env->ReleaseStringUTFChars(componentName, component_name);
 	env->ReleaseStringUTFChars(instanceName, instance_name);
@@ -199,9 +204,10 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_emit( JNIEnv* env,
 
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_delete( JNIEnv* env,
-                                             jobject thiz )
+                                             jobject thiz,
+                                             jlong component )
 {
-	delete com;
+	delete ((scomponent *)component);
 }
 
 }
