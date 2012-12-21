@@ -21,12 +21,8 @@ public class AIRSActivity extends Activity {
 		// Create a FileBootloader to store our component file.
 		new FileBootloader(getApplicationContext()).store("AirsSensor.cpt");
 
-		// Add a TextView to the Activity.
-		final TextView tv = new TextView(this);
-		tv.setText("AIRS Sensor");
-		setContentView(tv);
-
-		UIHandler uiHandler = new UIHandler(tv);
+		final TextView batteryTextView = (TextView) findViewById(R.id.battery);
+		final TextView weatherTextView = (TextView) findViewById(R.id.weather); 
 		
 		SComponent component = new SComponent("AirsSensor", "airs");
 		
@@ -44,8 +40,8 @@ public class AIRSActivity extends Activity {
 		component.setPermission("AirsConsumer", "", true);
 		
 		// Create a thread to run the sensor.
-		new Thread(new EndpointThread(m_AirsDb, uiHandler, batteryVoltage)).start();
-		new Thread(new EndpointThread(m_AirsDb, uiHandler, weatherCondition)).start();
+		new Thread(new EndpointThread(m_AirsDb, new UIHandler(batteryTextView), batteryVoltage)).start();
+		new Thread(new EndpointThread(m_AirsDb, new UIHandler(weatherTextView), weatherCondition)).start();
 
 	}
 }
