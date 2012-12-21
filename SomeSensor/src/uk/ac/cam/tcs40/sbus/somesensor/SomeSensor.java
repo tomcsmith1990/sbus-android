@@ -1,11 +1,11 @@
 package uk.ac.cam.tcs40.sbus.somesensor;
 
 import uk.ac.cam.tcs40.sbus.SComponent;
+import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import android.app.Activity;
 import android.widget.TextView;
 import android.os.Bundle;
-
 
 public class SomeSensor extends Activity
 {
@@ -27,7 +27,8 @@ public class SomeSensor extends Activity
 		new Thread() {
 			public void run() {
 				SComponent scomponent = new SComponent("SomeSensor", "instance");
-				scomponent.addEndpoint("SomeEpt", "BE8A47EBEB58");
+				SEndpoint sendpoint = new SEndpoint("SomeEpt", "BE8A47EBEB58");
+				scomponent.addEndpoint(sendpoint);
 				scomponent.addRDC("192.168.0.3:50123");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
@@ -38,12 +39,12 @@ public class SomeSensor extends Activity
 				int i = 0;
 				while (true) {
 
-					scomponent.createMessage("reading");
-					scomponent.packString("SomeSensor: This is message #" + i++);
-					scomponent.packInt((int) (Math.random() * 1000), "someval");
-					scomponent.packInt(34, "somevar");
+					sendpoint.createMessage("reading");
+					sendpoint.packString("SomeSensor: This is message #" + i++);
+					sendpoint.packInt((int) (Math.random() * 1000), "someval");
+					sendpoint.packInt(34, "somevar");
 					
-					final String s = scomponent.emit();
+					final String s = sendpoint.emit();
 
 					runOnUiThread(new Runnable() {
 						public void run() {
