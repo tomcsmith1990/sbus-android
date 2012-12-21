@@ -1,0 +1,34 @@
+<component-metadata>
+	<name>AirsSensor</name>
+	<description>Demo client</description>
+	<keywords></keywords>
+	<designer>Tom Smith</designer>
+	<endpoints>
+		<endpoint>
+			<name>BatteryVoltage</name>
+			<type>#source</type>
+			<message>
+				@reading
+				{
+					txt somestring
+					txt timestamp
+					int batteryVoltage
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>WeatherCondition</name>
+			<type>#source</type>
+			<message>
+				@reading
+				{
+					txt somestring
+					txt timestamp
+					txt condition
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+	</endpoints>
+</component-metadata>

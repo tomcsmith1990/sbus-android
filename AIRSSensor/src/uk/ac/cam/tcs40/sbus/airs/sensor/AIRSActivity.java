@@ -2,7 +2,7 @@ package uk.ac.cam.tcs40.sbus.airs.sensor;
 
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.SComponent;
-import uk.ac.cam.tcs40.sbus.SEndpoint;
+import uk.ac.cam.tcs40.sbus.airs.sensor.AirsEndpoint.TYPE;
 import android.os.Bundle;
 import android.app.Activity;
 import android.widget.TextView;
@@ -30,8 +30,11 @@ public class AIRSActivity extends Activity {
 		
 		SComponent component = new SComponent("AirsSensor", "airs");
 		
-		SEndpoint batteryVoltage = new SEndpoint("BatteryVoltage", "6F7AA0BB0B8F");
+		AirsEndpoint batteryVoltage = new AirsEndpoint("BatteryVoltage", "6F7AA0BB0B8F", "BV", "batteryVoltage", TYPE.SInt);
 		component.addEndpoint(batteryVoltage);
+		
+		AirsEndpoint weatherCondition = new AirsEndpoint("WeatherCondition", "3D390E79C4A8", "VC", "condition", TYPE.SText);
+		component.addEndpoint(weatherCondition);
 		
 		component.addRDC("192.168.0.3:50123");
 		// 10.0.2.2 is the development machine when running in AVD.
@@ -42,5 +45,7 @@ public class AIRSActivity extends Activity {
 		
 		// Create a thread to run the sensor.
 		new Thread(new EndpointThread(m_AirsDb, uiHandler, batteryVoltage)).start();
+		new Thread(new EndpointThread(m_AirsDb, uiHandler, weatherCondition)).start();
+
 	}
 }
