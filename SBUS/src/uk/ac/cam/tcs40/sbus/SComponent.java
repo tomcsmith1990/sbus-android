@@ -14,12 +14,12 @@ public class SComponent {
 	}
 	
 	public native void scomponent(String componentName, String instanceName);
-	private native long addEndpoint(String endpointName, String endpointHash);
 	public native void addRDC(String rdcAddress);
 	public native void start(String cptFilename, int port, boolean useRDC);
 	public native void setPermission(String componentName, String instanceName, boolean allow);
-	
 	public native void delete();
+	
+	private native long addEndpoint(String endpointName, String endpointHash);
 	
 	static {
 		System.load("/data/data/uk.ac.cam.tcs40.sbus.sbus/lib/libsbusandroid.so");
