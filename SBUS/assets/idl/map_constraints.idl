@@ -1,0 +1,29 @@
+@criteria
+{
+	^map-constraints -
+	^interface -
+}					
+
+@map-constraints
+{
+	[ txt cpt-name ]
+	[ txt instance-name ]
+	[ txt creator ]
+	[ txt pub-key ]
+	keywords ( txt keyword )
+	parents ( txt cpt )
+	ancestors ( txt cpt )
+	flg match-endpoint-names
+}
+
+@interface
+(
+	endpoint
+	{
+		[ txt name ]
+		^endpoint-type type
+		txt msg-hash + reply-hash
+	}
+)
+
+@endpoint-type < #server #client #source #sink >

@@ -1,0 +1,55 @@
+<component-metadata>
+	<name>sbus</name>
+	<description>SBUS admin command</description>
+	<keywords></keywords>
+	<designer>David Ingram</designer>
+	<endpoints>
+		<endpoint>
+			<name>list</name>
+			<type>#client</type>
+			<message>"0"</message>
+			<response>
+				@cpt-list
+				(
+					component
+					{
+						txt address
+						txt cpt-name
+						[ txt instance ]
+					}
+				)
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>dump</name>
+			<type>#client</type>
+			<message>"0"</message>
+			<response>
+				@rdc-dump
+				(
+					component
+					{
+						txt address
+						^component-metadata metadata
+						^component-state state
+					}
+				)
+
+				@"cpt_metadata.idl"
+				@"cpt_status.idl"
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>hup</name>
+			<type>#source</type>
+			<message>"0"</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>remote_start</name>
+			<type>#source</type>
+			<message>@txt cmdline</message>
+			<response>!</response>
+		</endpoint>
+	</endpoints>
+</component-metadata>
