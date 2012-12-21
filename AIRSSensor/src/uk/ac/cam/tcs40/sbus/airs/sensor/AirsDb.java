@@ -14,13 +14,13 @@ public class AirsDb {
 		m_Database = SQLiteDatabase.openDatabase(m_AirsDbPath, null, SQLiteDatabase.OPEN_READONLY);
 	}
 
-	public Cursor query() {
+	public Cursor query(String sensor) {
 		String sql = "SELECT Timestamp, Symbol, Value " +
 						"FROM 'airs_values' " +
-						"WHERE Symbol = 'BV' " +
+						"WHERE Symbol = ? " +
 						"ORDER BY Timestamp ASC " +
-						"LIMIT 0, 10";
-		Cursor values = m_Database.rawQuery(sql, null);	
+						"LIMIT 0, 50";
+		Cursor values = m_Database.rawQuery(sql, new String[] { sensor });	
 		return values;
 	}
 
