@@ -59,12 +59,6 @@ public class TCPClient
 			// read IMEI after connecting
 			readBytes(IMEI_bytes);
 			IMEI = new String(IMEI_bytes);
-			
-			// TODO: Fix this horrible hack for:
-			// TCPClient::read: Exception: java.lang.Exception: wrong length from event_body
-			// on a publish event.
-			sleep(250);
-
 		}
 		catch (Exception ignored)
 		{
@@ -446,7 +440,11 @@ public class TCPClient
 	{
 		try
 		{
-			return in.read(value);
+			int read = 0;
+			while (read < value.length)
+				read += in.read(value, read, value.length - read);
+
+			return read;
 		}
 		catch (Exception e) 
 		{
@@ -457,11 +455,11 @@ public class TCPClient
 
 	private short readShort()
 	{
-		byte  received[] = new byte[2];
+		byte received[] = new byte[2];
 
 		try
 		{
-			in.read(received);
+			readBytes(received);
 		}
 		catch (Exception e) 
 		{
@@ -472,11 +470,11 @@ public class TCPClient
 
 	private int readInt()
 	{
-		byte  received[] = new byte[4];
+		byte received[] = new byte[4];
 
 		try
 		{
-			in.read(received);
+			readBytes(received);
 		}
 		catch (Exception e) 
 		{
