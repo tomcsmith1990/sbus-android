@@ -5,9 +5,17 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class AirsEndpointRepository {
-	static public List<AirsEndpoint> list = null;
+	static private List<AirsEndpoint> list = null;
 
-	static public void removeEndpoint(String sensorCode)
+	static synchronized public void addEndpoint(AirsEndpoint endpoint)
+	{
+		if (list == null)
+			list = new LinkedList<AirsEndpoint>();
+
+		list.add(endpoint);
+	}
+
+	static synchronized public void removeEndpoint(String sensorCode)
 	{
 		Iterator<AirsEndpoint> it = list.iterator();
 
@@ -23,12 +31,16 @@ public class AirsEndpointRepository {
 		}
 	}
 
-	static synchronized public void addEndpoint(AirsEndpoint endpoint)
-	{
-		if (list == null)
-			list = new LinkedList<AirsEndpoint>();
+	static synchronized public List<String> getSensorCodes() {
+		List<String> sensorCodes = new LinkedList<String>();
 
-		list.add(endpoint);
+		Iterator<AirsEndpoint> it = list.iterator();
+
+		while(it.hasNext())
+		{
+			sensorCodes.add(it.next().getSensorCode());
+		}
+		return sensorCodes;
 	}
 
 	static synchronized public AirsEndpoint findEndpoint(String sensorCode)
