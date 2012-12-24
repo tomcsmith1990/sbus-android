@@ -4,8 +4,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 
-public class AirsDb {
-
+public class SensorReadingDB {
 
 	private static String m_AirsDbPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/com.airs/files/AIRS_backup.db"; 
 	private SQLiteDatabase m_Database; 

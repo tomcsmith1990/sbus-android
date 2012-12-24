@@ -13,9 +13,9 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.widget.TextView;
 
-public class AIRSActivity extends Activity {
+public class SensorReadingActivity extends Activity {
 
-	private AirsDb m_AirsDb;
+	private SensorReadingDB m_AirsDb;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -74,7 +74,7 @@ public class AIRSActivity extends Activity {
 		} else {
 			// Create threads for relevant sensors.
 			for (String sensorCode : AirsEndpointRepository.getSensorCodes())
-				new Thread(new EndpointThread(m_AirsDb, sensorCode)).start();
+				new Thread(new DBReadingHandler(m_AirsDb, sensorCode)).start();
 		}
 	}
 }

@@ -5,19 +5,19 @@ import java.util.Date;
 import android.database.Cursor;
 import android.os.Message;
 
-public class EndpointThread implements Runnable {
+public class DBReadingHandler implements Runnable {
 
-	private AirsDb m_AirsDb;
+	private SensorReadingDB m_AirsDb;
 	private String m_SensorCode;
 
-	public EndpointThread(AirsDb db, String sensorCode) {
+	public DBReadingHandler(SensorReadingDB db, String sensorCode) {
 		this.m_AirsDb = db;
 	}
 
 	@Override
 	public void run() {
 		// Open database and query for values.
-		m_AirsDb = new AirsDb();
+		m_AirsDb = new SensorReadingDB();
 		m_AirsDb.open();
 		Cursor records = m_AirsDb.query(this.m_SensorCode);
 
