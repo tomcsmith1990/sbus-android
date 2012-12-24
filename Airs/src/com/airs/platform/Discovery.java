@@ -23,7 +23,7 @@ package com.airs.platform;
  * 
  * Purpose: 
  */
-public class Discovery implements Callback, Runnable
+public class Discovery implements Callback
 {
 	private EventComponent 	current_EC;
 	private DIALOG_INFO		dialog=null;
@@ -65,113 +65,6 @@ public class Discovery implements Callback, Runnable
 		// register acquisition event server
 		if (this.current_EC.registerEventServer(this, "available")==false)
 			debug("Discovery::Discovery(): failure in registering 'available' event");
-
-		// start receiving thread in EventComponent
-		//new Thread(this).start();
-	}
-
-	/***********************************************************************
-	 Function    : run()
-	 Input       : 
-	 Output      :
-	 Return      :
-	 Description : Runnable thread of this class for local discovery of
-	               sensors and generating PUBLISH methods
-	 ***********************************************************************/
-	public void run() 
-	{
-		Sensor discovery_old, current, found;
-		boolean discover_changed;
-		int  i;
-		char EOL;
-		StringBuffer discovery_data;
-
-		// form new line characters
-		EOL=13;
-		// sleep until connected to application server -> event component will signal this!
-		while(current_EC.connected == false)
-			sleep(1000);
-
-		while(true)
-		{
-			debug("Discovery::run: start Discovery");
-			// copy old list
-			discovery_old = SensorRepository.root_sensor;
-			// start new list
-			SensorRepository.deleteSensor();
-			// run through all handlers and discover locally first
-			/*for (i=0; i<HandlerManager.max_handlers;i++)
-		    {
-		        // is there any handler entry?
-		        if (HandlerManager.handlers[i] != null)
-		            // call discovery function of handler 
-		            HandlerManager.handlers[i].Discover();
-		    }*/
-
-			discover_changed = false;
-
-			// now determine if new sensors are old sensors
-			current = discovery_old;
-			while(current!=null)
-			{
-				// can old sensor still be found in new ones?
-				if ((found = SensorRepository.findSensor(current.Symbol))!=null)
-					current.discovered = found.discovered = true;
-				else
-					discover_changed = true;
-				current = current.next;
-			}
-
-			// if all old ones are found, let's see if there are any new ones?
-			if (discover_changed == false)
-			{
-				current = SensorRepository.root_sensor;
-				while(current != null)
-				{
-					// something discovered that was not in old discovery?
-					if (current.discovered == false)
-						discover_changed = true;
-					current=current.next;
-				}
-			}
-
-			// now run through list for garbage collection
-			current = discovery_old;
-			while(current!=null)
-			{
-				found = current.next;
-				// dereference for garbage collection
-				current = null;
-				current = found;
-			}
-
-			// did anything change -> publish!
-			if (discover_changed == true)
-			{
-				debug("Discovery::run: ran through all handlers -> read Repository now!");
-				discovery_data = new StringBuffer();
-				i= 0 ;
-				current = SensorRepository.root_sensor;
-				while(current != null)
-				{
-					discovery_data.append(current.Symbol + "::" + current.Description + "::" + current.Unit + "::" + current.type + "::" + current.scaler + "::" + current.min + "::" + current.max);
-					discovery_data.append(EOL);
-					current = current.next;
-					i++;
-				}
-
-				// if there's no dialog -> create one
-				debug("Discovery::run: send out PUBLISH with " + i + " sensors");
-				if (dialog == null)
-					dialog=current_EC.Publish(TO.getBytes(), event_name.getBytes(), discovery_data.toString().getBytes(), (int)polltime/1000 + 5, this);
-				else
-					current_EC.Publish(dialog, TO.getBytes(), event_name.getBytes(), discovery_data.toString().getBytes(), (int)polltime/1000 + 5);					
-			}
-			else
-				debug("Discovery::there is no change in the sensors -> No PUBLISH!");
-
-			sleep(polltime);
-		}
 	}
 
 	/***********************************************************************

@@ -68,24 +68,6 @@ public class EventComponent implements Runnable
 	 Return      :
 	 Description : constructor of class, creates TCPClient and starts own thread
 	 ***********************************************************************/
-	public boolean startEC(String IPAddress, String IPPort)
-	{
-		current_TCPClient	= new TCPClient();
-		// was connection successful?
-		if (current_TCPClient.startTCP(IPAddress, IPPort) == false)
-			return false;
-
-		connected = true;
-
-		//this.airs = airs;
-
-		// start receiving thread in EventComponent
-		thread = new Thread(this);
-		thread.start();
-
-		return true;
-	}
-
 	public boolean startEC(Socket sock)
 	{
 		current_TCPClient	= new TCPClient();

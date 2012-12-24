@@ -48,51 +48,8 @@ public class TCPClient
 		System.out.println(msg);
 	}
 
-	public boolean startTCP(String IPAddress, String IPPort)
-	{
-		//this.airs = airs;
-
-		try
-		{
-			//tm  = (TelephonyManager) airs.getSystemService(Context.TELEPHONY_SERVICE);
-			//IMEI = "359465046069318";//tm.getDeviceId();
-		}
-		catch(Exception e)
-		{
-			return false;
-		}
-
-		try
-		{
-			// now connect to given IP address
-			connect(IPAddress, IPPort);
-			// write IMEI after connecting
-			writeBytes(IMEI.getBytes());
-			// now flush the stream to send it definitely
-			out.flush();
-		}
-		catch (Exception ignored)
-		{
-			debug("TCPClient: something went wrong with connect()");
-			return false;
-		}	
-		return true;
-	}
-
 	public boolean startTCP(Socket sock)
 	{
-		//this.airs = airs;
-		/*		
-		try
-		{
-			//tm  = (TelephonyManager) airs.getSystemService(Context.TELEPHONY_SERVICE);
-			//IMEI = "359465046069318";//tm.getDeviceId();
-		}
-		catch(Exception e)
-		{
-			return false;
-		}
-		 */	
 		try
 		{
 			// now connect to given IP address
@@ -112,50 +69,6 @@ public class TCPClient
 		return true;
 	}
 
-
-	/** 
-	 * connecting to application server with IP:port information obtained through SMS
-	 */
-	public void connect(String IPAddress, String Port)
-	{		
-		int connect_tries;
-		int max_tries = 5;
-
-
-		connect_tries = 0;
-		while((connected==false) && (connect_tries<max_tries))
-		{
-			try
-			{
-				// try to connect to given IP address
-				debug("TCPClient::connect:Connecting to " + IPAddress + ":" + Port);
-				socket = new Socket(IPAddress, Integer.parseInt(Port));
-				// set TCP keep alives
-				socket.setKeepAlive(true);
-				debug("TCPClient::connect:Socket Connected");
-
-				// Open stream for sending & receiving 
-				out = socket.getOutputStream();
-				in = socket.getInputStream();
-
-				connected=true;
-
-			}
-			catch (Exception e)
-			{
-				System.out.println("connect: Exception: " + e.toString());
-				connect_tries++;
-				try
-				{
-					// sleep a bit before trying again with linear increase in waiting time
-					Thread.sleep(1000+connect_tries * 500);
-				}
-				catch(InterruptedException interrupted)
-				{
-				}
-			}
-		}
-	}
 
 	public void connect(Socket sock)
 	{		
