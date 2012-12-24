@@ -56,9 +56,14 @@ public class TCPClient
 			connect(sock);
 
 			byte[] IMEI_bytes = new byte[15];
-			// write IMEI after connecting
+			// read IMEI after connecting
 			readBytes(IMEI_bytes);
 			IMEI = new String(IMEI_bytes);
+			
+			// TODO: Fix this horrible hack for:
+			// TCPClient::read: Exception: java.lang.Exception: wrong length from event_body
+			// on a publish event.
+			sleep(250);
 
 		}
 		catch (Exception ignored)
