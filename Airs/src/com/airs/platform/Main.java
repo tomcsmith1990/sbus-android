@@ -11,13 +11,14 @@ public class Main {
 		Socket sock = serverSock.accept();
 
 		EventComponent ec = new EventComponent();
-		ec.startEC(sock);
+				
+		Acquisition acquisition = new Acquisition(ec);
+		new Discovery(ec);
 		
-		Acquisition ac = new Acquisition(ec);
-		Discovery dc = new Discovery(ec);
+		ec.startEC(sock);
 		
 		byte[] FROM = "REMONT AS".getBytes();
 
-		//ec.Subscribe(FROM, "acquire".getBytes(), "Rd".getBytes(), "Rd".getBytes().length, 3600, ac);
+		ec.Subscribe(FROM, "acquire".getBytes(), "Rd".getBytes(), "Rd".getBytes().length, 3600, acquisition);
 	}
 }

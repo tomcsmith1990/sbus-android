@@ -74,7 +74,7 @@ public class EventComponent implements Runnable
 		// was connection successful?
 		if (current_TCPClient.startTCP(sock) == false)
 			return false;
-//System.out.println(current_TCPClient.IMEI);
+
 		connected = true;
 
 		//this.airs = airs;
@@ -101,11 +101,7 @@ public class EventComponent implements Runnable
 		{
 			while(current_TCPClient.connected == false)
 				sleep(250);
-			
-			// There's a race condition for reading the first 15 bytes = IMEI.
-			while(current_TCPClient.IMEI == null)
-				sleep(250);
-			
+						
 			try 
 			{
 				// signal connection to Acquisition and Discovery

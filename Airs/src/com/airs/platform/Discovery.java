@@ -63,7 +63,7 @@ public class Discovery implements Callback
 		this.current_EC = current_EC;
 
 		// register acquisition event server
-		if (this.current_EC.registerEventServer(this, "available")==false)
+		if (this.current_EC.registerEventServer(this, event_name)==false)
 			debug("Discovery::Discovery(): failure in registering 'available' event");
 	}
 
@@ -120,7 +120,7 @@ public class Discovery implements Callback
 				
 				// symbol::description::unit::type::scaler::min::max
 				String line = new String(sensor_description, offset, position-offset);
-				System.out.println(line);System.out.println(line);
+				System.out.println(line);
 				
 				// Skip over the \r
 				offset = position + 1;
