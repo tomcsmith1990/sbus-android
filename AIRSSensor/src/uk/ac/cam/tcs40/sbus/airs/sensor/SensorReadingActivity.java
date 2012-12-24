@@ -39,26 +39,32 @@ public class SensorReadingActivity extends Activity {
 		// Create a weather endpoint, add to component and to repository.
 		final TextView weatherTextView = (TextView) findViewById(R.id.weather); 
 		AirsEndpoint weatherCondition = new AirsEndpoint("WeatherCondition", "3D390E79C4A8", "VC", "condition", TYPE.SText, new UIHandler(weatherTextView));
-		//AirsEndpointRepository.addEndpoint(weatherCondition);
+		AirsEndpointRepository.addEndpoint(weatherCondition);
 		component.addEndpoint(weatherCondition);
+		
+		// Create a random number endpoint, add to component and to repository.
+		final TextView randomTextView = (TextView) findViewById(R.id.random);
+		AirsEndpoint randomNumber = new AirsEndpoint("Random", "DBCE88A476E2", "Rd", "random", TYPE.SInt, new UIHandler(randomTextView));
+		AirsEndpointRepository.addEndpoint(randomNumber);
+		component.addEndpoint(randomNumber);
 
 		// Register RDC if it is available.
 		component.addRDC("192.168.0.3:50123");
 		// 10.0.2.2 is the development machine when running in AVD.
 		//scomponent.addRDC("10.0.2.2:50123");
-		
+
 		// Start the component, load the .cpt file.
 		String cptFile = "AirsSensor.cpt";
 		component.start(getApplicationContext().getFilesDir() + "/" + cptFile, 44445, true);
 		component.setPermission("AirsConsumer", "", true);
 
 		boolean liveReadings = true;
-		
+
 		if (liveReadings) {
-	
+
 			EventComponent eventComponent = new EventComponent();
 			Acquisition acquisition = new AirsAcquisition(eventComponent);
-			
+
 			Server server = new Server(9000, eventComponent, acquisition);
 			try {
 				// Start a server waiting for AIRS Remote to connect.
@@ -70,7 +76,7 @@ public class SensorReadingActivity extends Activity {
 			} catch (IOException e) {
 
 			}
-			
+
 		} else {
 			// Create threads for relevant sensors.
 			for (String sensorCode : AirsEndpointRepository.getSensorCodes())
