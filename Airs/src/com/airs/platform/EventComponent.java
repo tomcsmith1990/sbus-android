@@ -537,8 +537,7 @@ public class EventComponent implements Runnable
 	 ***********************************************************************/
 	boolean Dispatch(Method current_method)
 	{
-		short dialog_id;
-		boolean ret_value = true, direction;
+		boolean ret_value = true;
 		DIALOG_INFO current_dialog;
 		Callback	current_callback;
 

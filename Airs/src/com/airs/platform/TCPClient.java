@@ -272,8 +272,6 @@ public class TCPClient
 	public Method read()
 	{
 		Method method=null;
-		int length;
-
 		try
 		{
 			// is there is no output stream, let's leave right away
@@ -283,10 +281,8 @@ public class TCPClient
 			// get memory to read into
 			method = new Method();
 
-			// read length of data
-			length = readInt();
-			// count bytes transferred
-			//airs.bytes_sent += length;
+			// read length of message.
+			readInt();
 
 			// read method type
 			method.method_type				= readShort();
