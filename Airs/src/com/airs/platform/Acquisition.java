@@ -14,7 +14,7 @@ License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
-*/
+ */
 package com.airs.platform;
 /**
  * @author trossen
@@ -26,8 +26,8 @@ public class Acquisition implements Callback
 {
 	private EventComponent current_EC;
 	private String Auth = "no init";
-    private int confirm;
-	
+	private int confirm;
+
 	protected static void debug(String msg) 
 	{
 		System.out.println(msg);
@@ -54,12 +54,12 @@ public class Acquisition implements Callback
 	 Output      :
 	 Return      :
 	 Description : constructor of class
-	***********************************************************************/
+	 ***********************************************************************/
 	public Acquisition(EventComponent current_EC)
 	{
 		this.current_EC = current_EC;
 		// get display for confirmation
-		
+
 		// register acquisition event server
 		if (this.current_EC.registerEventServer(this, "acquire")==false)
 			debug("Acquisition::Acquisition(): failure in registering 'acquire' event");
@@ -67,20 +67,20 @@ public class Acquisition implements Callback
 		// initialize confirmation procedure
 		initConfirmation();
 	}
-	
-	
+
+
 	/***********************************************************************
 	 Function    : callback()
 	 Input       : dialog for notification
 	 Output      :
 	 Return      :
 	 Description : callback for subscriptions
-	***********************************************************************/
+	 ***********************************************************************/
 	public void callback(DIALOG_INFO dialog)
 	{
 		QueryResolver query = null;
 		int positive = 0;
-		
+
 		debug("Acquisition::callback:received method");
 		debug("...FROM  : " + new String(dialog.current_method.FROM.string));
 		debug("...TO	 : " + new String(dialog.current_method.TO.string));
@@ -99,12 +99,12 @@ public class Acquisition implements Callback
 				{
 					askConfirmation(new String(dialog.current_method.event_body.string, 0, dialog.current_method.event_body.length));
 				}
-				
-		        if (confirm == 0)
-		        {
+
+				if (confirm == 0)
+				{
 					// create query for this subscription (thread is not yet started with this!!)
 					query = new QueryResolver(current_EC, this, dialog.dialog_id, dialog.current_method.event_body.string);
-					
+
 					// accept subscription and set state right!
 					dialog.dialog_state = dialog_state.SUBSCRIPTION_VALID;
 					debug("...and send back CONFIRM with '200 OK'");
@@ -116,15 +116,15 @@ public class Acquisition implements Callback
 					current_EC.Confirm(dialog, Ret_Codes.RC_200_OK);
 					// now start query thread after positive confirmation has been sent for this query! -> shoots off NOTIFYs
 					new Thread(query).start();
-					
+
 					positive = 0;
-		        }
-		        else
-		        	positive = 3;
+				}
+				else
+					positive = 3;
 			}
 			else
 				positive = 2;
-			
+
 			// negative confirmation?
 			if (positive != 0)
 			{
@@ -189,32 +189,56 @@ public class Acquisition implements Callback
 			debug("...there is another method - shouldn't happen");
 		}
 	}
-	
+
 	public void parseReading(byte[] reading, int length) {
 		String sensorCode = new String(reading, 0, 2);
-		
-		debug("...SENSOR : " + sensorCode);
-		
-		if (sensorCode.equals("Rd")) {
-			int value = 0;
-			value += reading[5];
-			value += (reading[4] & 0xFF) << 8;
-			value += (reading[3] & 0xFF) << 16;
-			value += (reading[2] & 0xFF) << 24;
-			debug("...VALUE : " + value);
+		Sensor sensor = SensorRepository.findSensor(sensorCode);
+
+		System.out.println("...SENSOR : " + sensorCode);
+
+		if (sensor != null) {
+			System.out.println("...DESCRIPTION: " + sensor.Description);
+			
+			if (sensor.type.equals("int")) {
+				
+				System.out.println("...VALUE :" + parseInt(reading, length) + " [" + sensor.Unit + "]");
+				
+			} else if (sensor.type.equals("txt")) {
+
+				System.out.println("...VALUE :" + parseString(reading, length) + " [" + sensor.Unit + "]");
+			}
 		} else {
-			String value = new String(reading, 2, length - 2);
-			debug("...VALUE : " + value);
+			if (length == 6 && reading[2] == 0) {
+				// guess that it is an int.
+				System.out.println("...VALUE :" + parseInt(reading, length));
+			} else {
+				System.out.println("...VALUE : " + parseString(reading, length));
+			}
 		}
+
+	}
+
+	public int parseInt(byte[] reading, int length) {
+		int value = 0;
+		value += reading[5];
+		value += (reading[4] & 0xFF) << 8;
+		value += (reading[3] & 0xFF) << 16;
+		value += (reading[2] & 0xFF) << 24;
+		return value;
+	}
+
+	public String parseString(byte[] reading, int length) {
+		String value = new String(reading, 2, length - 2);
+		return value;
 	}
 
 	synchronized void askConfirmation(String query)
 	{    
-        confirm = -1;
-        // wait for user input
-        while(confirm == -1)
-        	sleep(200);		       
- 	}
+		confirm = -1;
+		// wait for user input
+		while(confirm == -1)
+			sleep(200);		       
+	}
 
 	synchronized void initConfirmation()
 	{

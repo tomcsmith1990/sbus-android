@@ -38,7 +38,6 @@ public class EventComponent implements Runnable
 	private TCPClient	current_TCPClient=null;
 	private short		dialog_id= 0;
 	private Thread 		thread = null;
-	//public  AIRS_remote  airs;
 	public  boolean		connected = false;
 
 	protected static void debug(String msg) 
@@ -76,8 +75,6 @@ public class EventComponent implements Runnable
 			return false;
 
 		connected = true;
-
-		//this.airs = airs;
 
 		// start receiving thread in EventComponent
 		thread = new Thread(this);
