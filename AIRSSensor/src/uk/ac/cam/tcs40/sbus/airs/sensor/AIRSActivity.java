@@ -32,10 +32,10 @@ public class AIRSActivity extends Activity {
 
 		SComponent component = new SComponent("AirsSensor", "airs");
 
-		AirsEndpoint batteryVoltage = new AirsEndpoint("BatteryVoltage", "6F7AA0BB0B8F", "BV", "batteryVoltage", TYPE.SInt);
+		AirsEndpoint batteryVoltage = new AirsEndpoint("BatteryVoltage", "6F7AA0BB0B8F", "BV", "batteryVoltage", TYPE.SInt, new UIHandler(batteryTextView));
 		component.addEndpoint(batteryVoltage);
 
-		AirsEndpoint weatherCondition = new AirsEndpoint("WeatherCondition", "3D390E79C4A8", "VC", "condition", TYPE.SText);
+		AirsEndpoint weatherCondition = new AirsEndpoint("WeatherCondition", "3D390E79C4A8", "VC", "condition", TYPE.SText, new UIHandler(weatherTextView));
 		component.addEndpoint(weatherCondition);
 
 		component.addRDC("192.168.0.3:50123");
@@ -48,15 +48,17 @@ public class AIRSActivity extends Activity {
 		boolean liveReadings = true;
 
 		if (liveReadings) {
+			AirsEndpointRepository.addEndpoint(batteryVoltage);
+			AirsEndpointRepository.addEndpoint(weatherCondition);
+			
 			EventComponent eventComponent = new EventComponent();
-			Acquisition acquisition = new AirsAcquisition(eventComponent, 
-															new UIHandler(batteryTextView), 
-															batteryVoltage);
+			Acquisition acquisition = new AirsAcquisition(eventComponent);
 			
 			Server server = new Server(9000, eventComponent, acquisition);
 			try {
 				server.startConnection();
 				server.subscribe(batteryVoltage.getSensorCode());
+				server.subscribe(weatherCondition.getSensorCode());
 			} catch (IOException e) {
 
 			}
@@ -64,8 +66,8 @@ public class AIRSActivity extends Activity {
 		} else {
 
 			// Create a thread to run the sensor.
-			new Thread(new EndpointThread(m_AirsDb, new UIHandler(batteryTextView), batteryVoltage)).start();
-			new Thread(new EndpointThread(m_AirsDb, new UIHandler(weatherTextView), weatherCondition)).start();
+			new Thread(new EndpointThread(m_AirsDb, batteryVoltage)).start();
+			new Thread(new EndpointThread(m_AirsDb, weatherCondition)).start();
 		}
 	}
 }

@@ -11,13 +11,8 @@ import com.airs.platform.SensorRepository;
 
 public class AirsAcquisition extends Acquisition {
 
-	private UIHandler m_UIHandler;
-	private AirsEndpoint m_Endpoint;
-
-	public AirsAcquisition(EventComponent current_EC, UIHandler uiHandler, AirsEndpoint endpoint) {
-		super(current_EC);
-		this.m_UIHandler = uiHandler;
-		this.m_Endpoint = endpoint;
+	public AirsAcquisition(EventComponent eventComponent) {
+		super(eventComponent);
 	}
 
 	/***********************************************************************
@@ -66,41 +61,45 @@ public class AirsAcquisition extends Acquisition {
 
 	public void parseReading(byte[] reading, int length) {
 		String sensorCode = new String(reading, 0, 2);
-		Sensor sensor = SensorRepository.findSensor(sensorCode);
 
-		//System.out.println("...SENSOR : " + sensorCode);
+		AirsEndpoint endpoint = AirsEndpointRepository.findEndpoint(sensorCode);
 
-		this.m_Endpoint.createMessage("reading");
-		this.m_Endpoint.packString("AIRS: " + this.m_Endpoint.getEndpointName());
+		if (endpoint != null) {
+			endpoint.createMessage("reading");
+			endpoint.packString("AIRS: " + endpoint.getEndpointName());
 
-		this.m_Endpoint.packTime(new Date(), "timestamp");
+			endpoint.packTime(new Date(), "timestamp");
 
+			Sensor sensor = SensorRepository.findSensor(sensorCode);
+			//System.out.println("...SENSOR : " + sensorCode);
 
-		if (sensor != null) {
-			//System.out.println("...DESCRIPTION: " + sensor.Description);
+			if (sensor != null) {
+				//System.out.println("...DESCRIPTION: " + sensor.Description);
 
-			if (sensor.type.equals("int")) {
+				if (sensor.type.equals("int")) {
 
-				this.m_Endpoint.packInt(parseInt(reading, length), this.m_Endpoint.getValueName());
+					endpoint.packInt(parseInt(reading, length), endpoint.getValueName());
 
-			} else if (sensor.type.equals("txt")) {
+				} else if (sensor.type.equals("txt")) {
 
-				this.m_Endpoint.packString(parseString(reading, length), this.m_Endpoint.getValueName());
-			}
-		} else {
-			if (length == 6 && reading[2] == 0) {
-				// guess that it is an int.
-				this.m_Endpoint.packInt(parseInt(reading, length), this.m_Endpoint.getValueName());
+					endpoint.packString(parseString(reading, length), endpoint.getValueName());
+				}
 			} else {
-				this.m_Endpoint.packString(parseString(reading, length), this.m_Endpoint.getValueName());
+				if (length == 6 && reading[2] == 0) {
+					// guess that it is an int.
+					endpoint.packInt(parseInt(reading, length), endpoint.getValueName());
+				} else {
+					endpoint.packString(parseString(reading, length), endpoint.getValueName());
+				}
 			}
+
+			final String s = endpoint.emit();
+
+			UIHandler handler = endpoint.getUIHandler();
+			Message msg = Message.obtain(handler);
+			msg.obj = s;
+			handler.sendMessage(msg);
 		}
-
-		final String s = this.m_Endpoint.emit();
-
-		Message msg = Message.obtain(m_UIHandler);
-		msg.obj = s;
-		m_UIHandler.sendMessage(msg);
 	}
 
 	public int parseInt(byte[] reading, int length) {
