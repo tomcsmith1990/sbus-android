@@ -18,7 +18,14 @@ public class Server {
 	}
 	
 	public Server(int port) {
-		m_Port = port;
+		this.m_Port = port;
+	}
+	
+	public Server(int port, EventComponent eventComponent, Acquisition acquisition) {
+		this.m_Port = port;
+		this.m_EventComponent = eventComponent;
+		this.m_Acquisition = acquisition;
+		
 	}
 
 	public void startConnection() throws IOException {
@@ -26,10 +33,12 @@ public class Server {
 		// wait for a connection.
 		Socket sock = serverSock.accept();
 		
-		this.m_EventComponent = new EventComponent();
+		if (this.m_EventComponent == null)
+			this.m_EventComponent = new EventComponent();
 
 		// For reading sensor values.
-		this.m_Acquisition = new Acquisition(this.m_EventComponent);
+		if (this.m_Acquisition == null)
+			this.m_Acquisition = new Acquisition(this.m_EventComponent);
 		
 		// For reading sensor descriptions.
 		new Discovery(this.m_EventComponent);
@@ -48,7 +57,9 @@ public class Server {
 	public static void main(String[] args) throws IOException {
 		Server server = new Server();
 		server.startConnection();
+		// Random number
 		server.subscribe("Rd");
+		// WLAN SSID
 		server.subscribe("WI");
 	}
 }

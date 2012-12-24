@@ -1,5 +1,11 @@
 package uk.ac.cam.tcs40.sbus.airs.sensor;
 
+import java.io.IOException;
+
+import com.airs.platform.Acquisition;
+import com.airs.platform.EventComponent;
+import com.airs.platform.Server;
+
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.airs.sensor.AirsEndpoint.TYPE;
@@ -23,25 +29,43 @@ public class AIRSActivity extends Activity {
 
 		final TextView batteryTextView = (TextView) findViewById(R.id.battery);
 		final TextView weatherTextView = (TextView) findViewById(R.id.weather); 
-		
+
 		SComponent component = new SComponent("AirsSensor", "airs");
-		
+
 		AirsEndpoint batteryVoltage = new AirsEndpoint("BatteryVoltage", "6F7AA0BB0B8F", "BV", "batteryVoltage", TYPE.SInt);
 		component.addEndpoint(batteryVoltage);
-		
+
 		AirsEndpoint weatherCondition = new AirsEndpoint("WeatherCondition", "3D390E79C4A8", "VC", "condition", TYPE.SText);
 		component.addEndpoint(weatherCondition);
-		
+
 		component.addRDC("192.168.0.3:50123");
 		// 10.0.2.2 is the development machine when running in AVD.
 		//scomponent.addRDC("10.0.2.2:50123");
 		String cptFile = "AirsSensor.cpt";
 		component.start(getApplicationContext().getFilesDir() + "/" + cptFile, 44445, true);
 		component.setPermission("AirsConsumer", "", true);
-		
-		// Create a thread to run the sensor.
-		new Thread(new EndpointThread(m_AirsDb, new UIHandler(batteryTextView), batteryVoltage)).start();
-		new Thread(new EndpointThread(m_AirsDb, new UIHandler(weatherTextView), weatherCondition)).start();
 
+		boolean liveReadings = true;
+
+		if (liveReadings) {
+			EventComponent eventComponent = new EventComponent();
+			Acquisition acquisition = new AirsAcquisition(eventComponent, 
+															new UIHandler(batteryTextView), 
+															batteryVoltage);
+			
+			Server server = new Server(9000, eventComponent, acquisition);
+			try {
+				server.startConnection();
+				server.subscribe(batteryVoltage.getSensorCode());
+			} catch (IOException e) {
+
+			}
+
+		} else {
+
+			// Create a thread to run the sensor.
+			new Thread(new EndpointThread(m_AirsDb, new UIHandler(batteryTextView), batteryVoltage)).start();
+			new Thread(new EndpointThread(m_AirsDb, new UIHandler(weatherTextView), weatherCondition)).start();
+		}
 	}
 }
