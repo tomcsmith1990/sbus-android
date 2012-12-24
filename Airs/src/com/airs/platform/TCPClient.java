@@ -21,8 +21,6 @@ import java.io.OutputStream;
 import java.io.InputStream;
 import java.net.Socket;
 
-//import com.airs.AIRS_remote;
-
 public class TCPClient
 {
 	private Socket socket = null;
@@ -30,7 +28,6 @@ public class TCPClient
 	private InputStream in = null;
 	public boolean 	 connected=false;
 	public String IMEI=null;
-	//private AIRS_remote airs;
 
 	protected void sleep(long millis) 
 	{

@@ -19,8 +19,6 @@ package com.airs.platform;
 
 import java.net.Socket;
 
-//import com.airs.AIRS_remote;
-
 /**
  * @author trossen
  *

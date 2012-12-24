@@ -17,8 +17,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 */
 package com.airs.platform;
 
-//import com.airs.handlers.*;
-
 /**
  * @author trossen
  * @date Oct 13, 2005

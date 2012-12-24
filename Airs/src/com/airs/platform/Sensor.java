@@ -17,7 +17,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 */
 package com.airs.platform;
 
-//import com.airs.handlers.*;
 
 /**
  * @author trossen
@@ -27,7 +26,6 @@ package com.airs.platform;
  */
 public class Sensor 
 {
-  //  public Handler 	handler;			// points to handler serving this sensor
     // entries according to SSI for now
     public String  	Symbol;				// symbol of the sensor
     public String  	Unit;				// unit of the sensor
