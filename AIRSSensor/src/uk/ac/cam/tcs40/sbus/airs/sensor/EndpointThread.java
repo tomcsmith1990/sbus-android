@@ -8,12 +8,10 @@ import android.os.Message;
 public class EndpointThread implements Runnable {
 
 	private AirsDb m_AirsDb;
-	private UIHandler m_UIHandler;
 	private AirsEndpoint m_Endpoint;
 
-	public EndpointThread(AirsDb db, UIHandler uiHandler, AirsEndpoint endpoint) {
+	public EndpointThread(AirsDb db, AirsEndpoint endpoint) {
 		this.m_AirsDb = db;
-		this.m_UIHandler = uiHandler;
 		this.m_Endpoint = endpoint;
 	}
 
@@ -56,9 +54,10 @@ public class EndpointThread implements Runnable {
 
 			final String s = this.m_Endpoint.emit();
 
-			Message msg = Message.obtain(m_UIHandler);
+			UIHandler handler = this.m_Endpoint.getUIHandler();
+			Message msg = Message.obtain(handler);
 			msg.obj = s;
-			m_UIHandler.sendMessage(msg);
+			handler.sendMessage(msg);
 
 			// Move to next record if possible.
 			// If not, go back to start.
