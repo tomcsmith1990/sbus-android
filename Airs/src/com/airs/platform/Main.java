@@ -20,5 +20,7 @@ public class Main {
 		byte[] FROM = "REMONT AS".getBytes();
 
 		ec.Subscribe(FROM, "acquire".getBytes(), "Rd".getBytes(), "Rd".getBytes().length, 3600, acquisition);
+		ec.Subscribe(FROM, "acquire".getBytes(), "WI".getBytes(), "WI".getBytes().length, 3600, acquisition);
+
 	}
 }
