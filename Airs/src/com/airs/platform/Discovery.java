@@ -26,9 +26,6 @@ package com.airs.platform;
 public class Discovery implements Callback
 {
 	private EventComponent 	current_EC;
-	private DIALOG_INFO		dialog=null;
-	private int 			polltime=15000;
-	private String			TO = new String("REMONT AS");
 	private String  		event_name = new String("available");
 
 	protected static void debug(String msg) 
