@@ -67,7 +67,7 @@ public class Discovery implements Callback, Runnable
 			debug("Discovery::Discovery(): failure in registering 'available' event");
 
 		// start receiving thread in EventComponent
-		new Thread(this).start();
+		//new Thread(this).start();
 	}
 
 	/***********************************************************************
@@ -218,18 +218,22 @@ public class Discovery implements Callback, Runnable
 	public void parse(byte[] sensor_description, int length, int expires) {
 		int number_sensors = 0;
 		int offset = 0;
-		int i = 0;
+		int position = 0;
 
 		// count lines first -> number of sensors
-		while (i < length) {
-			if (sensor_description[i] == '\r') {
+		while (position < length) {
+			if (sensor_description[position] == '\r') {
 				number_sensors++;
 				
 				// symbol::description::unit::type::scaler::min::max
-				String line = new String(sensor_description, offset, i-offset);
-				offset = i;
+				String line = new String(sensor_description, offset, position-offset);
+				System.out.println(line);System.out.println(line);
+				
+				// Skip over the \r
+				offset = position + 1;
+				
 				String[] params = line.split("::");
-				System.out.println(line);
+				
 				SensorRepository.insertSensor(params[0], 
 												params[2], 
 												params[1], 
@@ -240,7 +244,7 @@ public class Discovery implements Callback, Runnable
 												false, 30);
 			}
 
-			i++;
+			position++;
 		}
 
 		debug("Discovery::parse: found sensors: " + number_sensors);

@@ -14,7 +14,7 @@ License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
-*/
+ */
 package com.airs.platform;
 
 import java.io.OutputStream;
@@ -31,7 +31,7 @@ public class TCPClient
 	public boolean 	 connected=false;
 	public String IMEI=null;
 	//private AIRS_remote airs;
-	
+
 	protected void sleep(long millis) 
 	{
 		try 
@@ -51,17 +51,17 @@ public class TCPClient
 	public boolean startTCP(String IPAddress, String IPPort)
 	{
 		//this.airs = airs;
-		
+
 		try
 		{
 			//tm  = (TelephonyManager) airs.getSystemService(Context.TELEPHONY_SERVICE);
-			IMEI = "359465046069318";//tm.getDeviceId();
+			//IMEI = "359465046069318";//tm.getDeviceId();
 		}
 		catch(Exception e)
 		{
 			return false;
 		}
-		
+
 		try
 		{
 			// now connect to given IP address
@@ -82,25 +82,27 @@ public class TCPClient
 	public boolean startTCP(Socket sock)
 	{
 		//this.airs = airs;
-		
+		/*		
 		try
 		{
 			//tm  = (TelephonyManager) airs.getSystemService(Context.TELEPHONY_SERVICE);
-			IMEI = "359465046069318";//tm.getDeviceId();
+			//IMEI = "359465046069318";//tm.getDeviceId();
 		}
 		catch(Exception e)
 		{
 			return false;
 		}
-		
+		 */	
 		try
 		{
 			// now connect to given IP address
 			connect(sock);
+
+			byte[] IMEI_bytes = new byte[15];
 			// write IMEI after connecting
-			//writeBytes(IMEI.getBytes());
-			// now flush the stream to send it definitely
-			out.flush();
+			readBytes(IMEI_bytes);
+			IMEI = new String(IMEI_bytes);
+
 		}
 		catch (Exception ignored)
 		{
@@ -110,15 +112,15 @@ public class TCPClient
 		return true;
 	}
 
-	
+
 	/** 
-	* connecting to application server with IP:port information obtained through SMS
-	*/
+	 * connecting to application server with IP:port information obtained through SMS
+	 */
 	public void connect(String IPAddress, String Port)
 	{		
 		int connect_tries;
 		int max_tries = 5;
-	
+
 
 		connect_tries = 0;
 		while((connected==false) && (connect_tries<max_tries))
@@ -131,13 +133,13 @@ public class TCPClient
 				// set TCP keep alives
 				socket.setKeepAlive(true);
 				debug("TCPClient::connect:Socket Connected");
-				
+
 				// Open stream for sending & receiving 
 				out = socket.getOutputStream();
 				in = socket.getInputStream();
-								
+
 				connected=true;
-				
+
 			}
 			catch (Exception e)
 			{
@@ -154,51 +156,29 @@ public class TCPClient
 			}
 		}
 	}
-	
+
 	public void connect(Socket sock)
 	{		
-		int connect_tries;
-		int max_tries = 5;
-	
+		try {
+			socket = sock;
+			// set TCP keep alives
+			socket.setKeepAlive(true);
+			debug("TCPClient::connect:Socket Connected");
 
-		connect_tries = 0;
-		while((connected==false) && (connect_tries<max_tries))
+			// Open stream for sending & receiving 
+			out = socket.getOutputStream();
+			in = socket.getInputStream();
+
+			connected=true;
+		} catch (Exception e)
 		{
-			try
-			{
-				// try to connect to given IP address
-				
-				socket = sock;
-				// set TCP keep alives
-				socket.setKeepAlive(true);
-				debug("TCPClient::connect:Socket Connected");
-				
-				// Open stream for sending & receiving 
-				out = socket.getOutputStream();
-				in = socket.getInputStream();
-								
-				connected=true;
-				
-			}
-			catch (Exception e)
-			{
-				System.out.println("connect: Exception: " + e.toString());
-				connect_tries++;
-				try
-				{
-					// sleep a bit before trying again with linear increase in waiting time
-					Thread.sleep(1000+connect_tries * 500);
-				}
-				catch(InterruptedException interrupted)
-				{
-				}
-			}
+			System.out.println("connect: Exception: " + e.toString());
 		}
 	}
 
 	/** 
-	* disconnecting from application server with eventually restarting Imlet
-	*/
+	 * disconnecting from application server with eventually restarting Imlet
+	 */
 	public synchronized void disconnect()
 	{
 		try
@@ -217,7 +197,7 @@ public class TCPClient
 			in   = null;
 			out  = null;
 			socket = null;
-			
+
 			debug("TCPClient::disconnect:closed all resources -> you need to restart now");
 		}
 		catch (Exception e) 
@@ -227,12 +207,12 @@ public class TCPClient
 	}
 
 	/** 
-	* writes Method to TCP connection
-	*/
+	 * writes Method to TCP connection
+	 */
 	public synchronized boolean write(Method method)
 	{
 		int length=0;
-		
+
 		// is there is no output stream, let's leave right away
 		if (out==null)
 			return false;
@@ -249,35 +229,35 @@ public class TCPClient
 			length += method.event_name.length;	// event_name.string
 			switch(method.method_type)
 			{
-				case method_type.method_SUBSCRIBE:
-					length += 2 + 2 + 4;
-					break;
-				case method_type.method_NOTIFY:
+			case method_type.method_SUBSCRIBE:
+				length += 2 + 2 + 4;
+				break;
+			case method_type.method_NOTIFY:
+				length += 2 + 2;
+				break;
+			case method_type.method_PUBLISH:
+				length += 4 + 4;
+				break;
+			case method_type.method_CONFIRM:
+				length += 2;
+				switch(method.conf.confirm_type)
+				{
+				case confirm_type.confirm_OTHERS:
 					length += 2 + 2;
 					break;
-				case method_type.method_PUBLISH:
-					length += 4 + 4;
-					break;
-				case method_type.method_CONFIRM:
-					length += 2;
-					switch(method.conf.confirm_type)
-					{
-						case confirm_type.confirm_OTHERS:
-							length += 2 + 2;
-							break;
-						case confirm_type.confirm_PUBLISH:
-							length += 4;
-					}
-					length += 4;		// lifetime
-					length += 2;		// ret_code.length
-					length += method.conf.ret_code.length;	// ret_code.string
-					break;
-				case method_type.method_BYE:
-					length += 2 + 2 + 2;
-					length += method.BYE.reason.length;
-					break;
+				case confirm_type.confirm_PUBLISH:
+					length += 4;
+				}
+				length += 4;		// lifetime
+				length += 2;		// ret_code.length
+				length += method.conf.ret_code.length;	// ret_code.string
+				break;
+			case method_type.method_BYE:
+				length += 2 + 2 + 2;
+				length += method.BYE.reason.length;
+				break;
 			}
-			
+
 			length += 4;						// event_body.length
 			length += method.event_body.length; // event_body.string
 		}
@@ -285,7 +265,7 @@ public class TCPClient
 		{
 			debug("write: Exception: " + e.toString());
 		} 
-		
+
 		// create output stream
 		try
 		{
@@ -293,7 +273,7 @@ public class TCPClient
 			writeInt(length);
 			// count bytes transferred
 			//airs.bytes_sent += length;
-			
+
 			// write method type first
 			writeShort(method.method_type);
 			// then the FROM octetstring
@@ -311,53 +291,53 @@ public class TCPClient
 			// now the method-specific fields
 			switch(method.method_type)
 			{
-				case method_type.method_SUBSCRIBE:
-					// dialog_id and CSeq and lifetime
-					writeShort(method.sub.dialog_id);
-					writeShort(method.sub.CSeq);
-					writeInt(method.sub.Expires);
+			case method_type.method_SUBSCRIBE:
+				// dialog_id and CSeq and lifetime
+				writeShort(method.sub.dialog_id);
+				writeShort(method.sub.CSeq);
+				writeInt(method.sub.Expires);
+				break;
+			case method_type.method_NOTIFY:
+				// only dialog_id and CSeq
+				writeShort(method.not.dialog_id);
+				writeShort(method.not.CSeq);
+				break;
+			case method_type.method_PUBLISH:
+				// e_tag and lifetime
+				writeInt(method.pub.e_tag);
+				writeInt(method.pub.Expires);
+				break;
+			case method_type.method_CONFIRM:
+				// depending on confirmation type
+				writeShort(method.conf.confirm_type);
+				// differentiate confirmation type
+				switch(method.conf.confirm_type)
+				{
+				// first for the other confirmation than PUBLISH
+				case confirm_type.confirm_OTHERS:
+					writeShort(method.conf.dialog.dialog_id);
+					writeShort(method.conf.dialog.CSeq);
 					break;
-				case method_type.method_NOTIFY:
-					// only dialog_id and CSeq
-					writeShort(method.not.dialog_id);
-					writeShort(method.not.CSeq);
+					// then for PUBLISH
+				case confirm_type.confirm_PUBLISH:
+					writeInt(method.conf.e_tag);
 					break;
-				case method_type.method_PUBLISH:
-					// e_tag and lifetime
-					writeInt(method.pub.e_tag);
-					writeInt(method.pub.Expires);
-					break;
-				case method_type.method_CONFIRM:
-					// depending on confirmation type
-					writeShort(method.conf.confirm_type);
-					// differentiate confirmation type
-					switch(method.conf.confirm_type)
-					{
-						// first for the other confirmation than PUBLISH
-						case confirm_type.confirm_OTHERS:
-							writeShort(method.conf.dialog.dialog_id);
-							writeShort(method.conf.dialog.CSeq);
-							break;
-						// then for PUBLISH
-						case confirm_type.confirm_PUBLISH:
-							writeInt(method.conf.e_tag);
-							break;
-					}
-					// lifetime
-					writeInt(method.conf.Expires);
-					// return code
-					writeShort(method.conf.ret_code.length);
-					if (method.conf.ret_code.length !=0)
-						writeBytes(method.conf.ret_code.string);
-					break;
-				case method_type.method_BYE:
-					// dialog_id and CSeq and reason
-					writeShort(method.BYE.dialog_id);
-					writeShort(method.BYE.CSeq);
-					writeShort(method.BYE.reason.length);
-					if (method.BYE.reason.length !=0)
-						writeBytes(method.BYE.reason.string);
-					break;
+				}
+				// lifetime
+				writeInt(method.conf.Expires);
+				// return code
+				writeShort(method.conf.ret_code.length);
+				if (method.conf.ret_code.length !=0)
+					writeBytes(method.conf.ret_code.string);
+				break;
+			case method_type.method_BYE:
+				// dialog_id and CSeq and reason
+				writeShort(method.BYE.dialog_id);
+				writeShort(method.BYE.CSeq);
+				writeShort(method.BYE.reason.length);
+				if (method.BYE.reason.length !=0)
+					writeBytes(method.BYE.reason.string);
+				break;
 			}
 			// add the length of the body
 			writeInt(method.event_body.length);
@@ -375,13 +355,13 @@ public class TCPClient
 	}
 
 	/** 
-	* reads Method from TCP connection
-	*/
+	 * reads Method from TCP connection
+	 */
 	public Method read()
 	{
 		Method method=null;
 		int length;
-		
+
 		try
 		{
 			// is there is no output stream, let's leave right away
@@ -395,7 +375,7 @@ public class TCPClient
 			length = readInt();
 			// count bytes transferred
 			//airs.bytes_sent += length;
-			
+
 			// read method type
 			method.method_type				= readShort();
 			// read FROM octetstring
@@ -444,15 +424,15 @@ public class TCPClient
 				// differentiate confirmation type
 				switch(method.conf.confirm_type)
 				{
-					// first for the other confirmation than PUBLISH
-					case confirm_type.confirm_OTHERS:
-						method.conf.dialog.dialog_id	= readShort();
-						method.conf.dialog.CSeq			= readShort();
-						break;
+				// first for the other confirmation than PUBLISH
+				case confirm_type.confirm_OTHERS:
+					method.conf.dialog.dialog_id	= readShort();
+					method.conf.dialog.CSeq			= readShort();
+					break;
 					// then for PUBLISH
-					case confirm_type.confirm_PUBLISH:
-						method.conf.e_tag				= readInt();
-						break;
+				case confirm_type.confirm_PUBLISH:
+					method.conf.e_tag				= readInt();
+					break;
 				}
 				// lifetime
 				method.conf.Expires			= readInt();
@@ -473,7 +453,7 @@ public class TCPClient
 					throw new Exception("wrong length from BYE.reason");
 				break;
 			}
-			
+
 			// read event_body octetstring
 			method.event_body.length		= readInt();
 			// anything to read?
@@ -485,7 +465,7 @@ public class TCPClient
 			}
 			else
 				method.event_body.string = null;
-			
+
 			debug("TCPClient::read:read new method");
 			return method;
 		}
@@ -493,7 +473,7 @@ public class TCPClient
 		{
 			debug("TCPClient::read: Exception: " + exception.toString());
 		}
-		
+
 		return null;
 	}
 
@@ -509,11 +489,11 @@ public class TCPClient
 			debug("TCPClient::writeShort: Exception: " + e.toString());
 		}
 	}
-	
+
 	private void writeShort(short value)
 	{
 		byte sent[] = new byte[2];
-		
+
 		sent[0] = (byte)((value>>8) & 0xff);
 		sent[1] = (byte)(value & 0xff);
 		try
@@ -525,11 +505,11 @@ public class TCPClient
 			debug("TCPClient::writeShort: Exception: " + e.toString());
 		}
 	}
-	
+
 	private void writeInt(int value)
 	{
 		byte sent[] = new byte[4];
-		
+
 		sent[0] = (byte)((value>>24) & 0xff);
 		sent[1] = (byte)((value>>16) & 0xff);
 		sent[2] = (byte)((value>>8)  & 0xff);
@@ -543,7 +523,7 @@ public class TCPClient
 			debug("TCPClient::writeInt: Exception: " + e.toString());
 		}
 	}
-	
+
 	private int readBytes(byte[] value)
 	{
 		try
@@ -556,11 +536,11 @@ public class TCPClient
 			return 0;
 		}
 	}
-	
+
 	private short readShort()
 	{
 		byte  received[] = new byte[2];
-		
+
 		try
 		{
 			in.read(received);
@@ -571,11 +551,11 @@ public class TCPClient
 		}
 		return (short)((received[0]<<8)|(received[1] & 0xff ));
 	}
-	
+
 	private int readInt()
 	{
 		byte  received[] = new byte[4];
-		
+
 		try
 		{
 			in.read(received);
