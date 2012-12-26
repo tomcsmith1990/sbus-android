@@ -63,7 +63,7 @@ public class SEndpoint {
 		packTime(d, null);
 	}
 	public void packTime(Date d, String name) {
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss+00");
+		DateFormat format = new SimpleDateFormat("dd/MM/yyyy,HH:mm:ss");
 		packClock(m_MessagePointer, format.format(d), name);
 	}
 
