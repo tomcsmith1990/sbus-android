@@ -35,19 +35,19 @@ public class SensorReadingActivity extends Activity {
 
 		// Create a battery voltage endpoint, add to component and to repository.
 		final TextView batteryTextView = (TextView) findViewById(R.id.battery);
-		AirsEndpoint batteryVoltage = new AirsEndpoint("BatteryVoltage", "6F7AA0BB0B8F", "BV", "batteryVoltage", TYPE.SInt, new UIHandler(batteryTextView));
+		AirsEndpoint batteryVoltage = new AirsEndpoint("BatteryVoltage", "0F17DB5AECC6", "BV", "batteryVoltage", TYPE.SInt, new UIHandler(batteryTextView));
 		AirsEndpointRepository.addEndpoint(batteryVoltage);
 		component.addEndpoint(batteryVoltage);
 
 		// Create a weather endpoint, add to component and to repository.
 		final TextView weatherTextView = (TextView) findViewById(R.id.weather); 
-		AirsEndpoint weatherCondition = new AirsEndpoint("WeatherCondition", "3D390E79C4A8", "VC", "condition", TYPE.SText, new UIHandler(weatherTextView));
+		AirsEndpoint weatherCondition = new AirsEndpoint("WeatherCondition", "07A6F46058A8", "VC", "condition", TYPE.SText, new UIHandler(weatherTextView));
 		AirsEndpointRepository.addEndpoint(weatherCondition);
 		component.addEndpoint(weatherCondition);
 
 		// Create a random number endpoint, add to component and to repository.
 		final TextView randomTextView = (TextView) findViewById(R.id.random);
-		AirsEndpoint randomNumber = new AirsEndpoint("Random", "DBCE88A476E2", "Rd", "random", TYPE.SInt, new UIHandler(randomTextView));
+		AirsEndpoint randomNumber = new AirsEndpoint("Random", "CFAE86F7E614", "Rd", "random", TYPE.SInt, new UIHandler(randomTextView));
 		AirsEndpointRepository.addEndpoint(randomNumber);
 		component.addEndpoint(randomNumber);
 

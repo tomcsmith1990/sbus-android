@@ -11,7 +11,7 @@
 				@reading
 				{
 					txt somestring
-					txt timestamp
+					clk timestamp
 					int batteryVoltage
 				}
 			</message>
@@ -24,7 +24,7 @@
 				@reading
 				{
 					txt somestring
-					txt timestamp
+					clk timestamp
 					txt condition
 				}
 			</message>
@@ -37,7 +37,7 @@
 				@reading
 				{
 					txt somestring
-					txt timestamp
+					clk timestamp
 					int random
 				}
 			</message>

@@ -179,7 +179,9 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_packClock( JNIEnv* env,
 	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
 	const char *clk = env->GetStringUTFChars(c, 0);
 
-	sn = pack(clk, name);
+	sdatetime *datetime = new sdatetime(clk);
+	
+	sn = pack(datetime, name);
 			
 	((snode *)message)->append(sn);	
 	
