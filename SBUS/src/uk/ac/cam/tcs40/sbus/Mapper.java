@@ -18,9 +18,13 @@ public class Mapper extends Activity
 
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			m_MapEndpoint.map(":44445", "Random", "192.168.0.3:44444", "Random");
+			remap(m_MapEndpoint);
 		}
 	};
+	
+	public static void remap(MapEndpoint endpoint) {
+		endpoint.map(":44445", "Random", "192.168.0.3:44444", "Random");
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
