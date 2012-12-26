@@ -149,6 +149,23 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_packInt( JNIEnv* env,
 }
 
 void
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_packDouble( JNIEnv* env,
+                                             jobject thiz,
+                                             jlong message,
+                                             jdouble d,
+                                             jstring n )
+{	
+	snode *sn;
+	
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	
+	sn = pack(d, name);
+	((snode *)message)->append(sn);	
+
+	if (n != NULL) env->ReleaseStringUTFChars(n, name);
+}
+
+void
 Java_uk_ac_cam_tcs40_sbus_SEndpoint_packString( JNIEnv* env,
                                                 jobject thiz,
                                                 jlong message,
@@ -179,9 +196,9 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_packClock( JNIEnv* env,
 	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
 	const char *clk = env->GetStringUTFChars(c, 0);
 
-	sdatetime *datetime = new sdatetime(clk);
+	sdatetime datetime(clk);
 	
-	sn = pack(datetime, name);
+	sn = pack(&datetime, name);
 			
 	((snode *)message)->append(sn);	
 	

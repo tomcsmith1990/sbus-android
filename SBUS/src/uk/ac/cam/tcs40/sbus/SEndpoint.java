@@ -51,6 +51,13 @@ public class SEndpoint {
 	public void packInt(int n, String name) {
 		packInt(m_MessagePointer, n, name);
 	}
+	
+	public void packDouble(double d) { 
+		packDouble(d, null); 
+	}
+	public void packDouble(double d, String name) {
+		packDouble(m_MessagePointer, d, name);
+	}
 
 	public void packString(String s) { 
 		packString(s, null); 
@@ -74,6 +81,7 @@ public class SEndpoint {
 	private native void endpointUnmap(long endpointPtr);
 
 	private native void packInt(long messagePtr, int n, String name);
+	private native void packDouble(long messagePtr, double d, String name);
 	private native void packString(long messagePtr, String s, String name);
 	private native void packClock(long messagePtr, String date, String name);
 }
