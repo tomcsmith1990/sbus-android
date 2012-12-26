@@ -1,6 +1,7 @@
 package uk.ac.cam.tcs40.sbus.airs.sensor;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.airs.platform.Acquisition;
 import com.airs.platform.EventComponent;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 public class SensorReadingActivity extends Activity {
 
 	private SensorReadingDB m_AirsDb;
+	private TextView m_StatusTextView;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -23,7 +25,8 @@ public class SensorReadingActivity extends Activity {
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_airs);
-
+		this.m_StatusTextView = (TextView) findViewById(R.id.status);
+		
 		// Create a FileBootloader to store our component file.
 		new FileBootloader(getApplicationContext()).store("AirsSensor.cpt");
 
@@ -41,7 +44,7 @@ public class SensorReadingActivity extends Activity {
 		AirsEndpoint weatherCondition = new AirsEndpoint("WeatherCondition", "3D390E79C4A8", "VC", "condition", TYPE.SText, new UIHandler(weatherTextView));
 		AirsEndpointRepository.addEndpoint(weatherCondition);
 		component.addEndpoint(weatherCondition);
-		
+
 		// Create a random number endpoint, add to component and to repository.
 		final TextView randomTextView = (TextView) findViewById(R.id.random);
 		AirsEndpoint randomNumber = new AirsEndpoint("Random", "DBCE88A476E2", "Rd", "random", TYPE.SInt, new UIHandler(randomTextView));
@@ -62,25 +65,53 @@ public class SensorReadingActivity extends Activity {
 
 		if (liveReadings) {
 
-			EventComponent eventComponent = new EventComponent();
-			Acquisition acquisition = new AirsAcquisition(eventComponent);
+			new Thread() {
+				@Override
+				public void run() {
+					
+					EventComponent eventComponent = new EventComponent();
+					Acquisition acquisition = new AirsAcquisition(eventComponent);
 
-			Server server = new Server(9000, eventComponent, acquisition);
-			try {
-				// Start a server waiting for AIRS Remote to connect.
-				server.startConnection();
-				// Subscribe to the relevant sensors.
-				for (String sensorCode : AirsEndpointRepository.getSensorCodes())
-					server.subscribe(sensorCode);
+					Server server = new Server(9000, eventComponent, acquisition);
+					try {
+						setStatusText("waiting for AIRS to connect");						
+						// Start a server waiting for AIRS Remote to connect.
+						server.startConnection();
+						
+						setStatusText("subscribing to AIRS sensors");
+						
+						// Get the relevant sensor codes.
+						List<String> sensorCodes = AirsEndpointRepository.getSensorCodes();
+						
+						StringBuilder builder = new StringBuilder(sensorCodes.size() * 3);
+						
+						// Subscribe to the relevant sensors.
+						for (String sensorCode : sensorCodes) {
+							server.subscribe(sensorCode);
+							builder.append(sensorCode).append(";");
+						}
+						
+						setStatusText("subscribed to: " + builder.toString());
+							
+					} catch (IOException e) {
 
-			} catch (IOException e) {
+					}
+				}
+			}.start();
 
-			}
 
 		} else {
 			// Create threads for relevant sensors.
 			for (String sensorCode : AirsEndpointRepository.getSensorCodes())
 				new Thread(new DBReadingHandler(m_AirsDb, sensorCode)).start();
 		}
+	}
+	
+	public void setStatusText(final String message) {
+		runOnUiThread(new Runnable() {
+			public void run() {
+				m_StatusTextView.setText(message);
+			}
+		});
 	}
 }
