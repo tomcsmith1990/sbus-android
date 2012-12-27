@@ -1,6 +1,10 @@
 #include "sbusandroid.h"
- 
+
 extern "C" {
+
+// Declaration
+long addEndpoint(JNIEnv* env, jobject thiz, jlong component, jstring endName, EndpointType type, jstring endHash);
+
 
 jlong
 Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
@@ -21,22 +25,38 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
 }
 
 jlong
-Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpoint( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointSource( JNIEnv* env,
                                                   jobject thiz, 
                                                   jlong component,
-                                                  jstring endName,
-                                                  jboolean source, 
+                                                  jstring endName, 
                                                   jstring endHash )
+{
+	return addEndpoint(env, thiz, component, endName, EndpointSource, endHash);
+}
+
+jlong
+Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointSink( JNIEnv* env,
+                                                  jobject thiz, 
+                                                  jlong component,
+                                                  jstring endName, 
+                                                  jstring endHash )
+{
+	return addEndpoint(env, thiz, component, endName, EndpointSink, endHash);
+}
+
+long addEndpoint( JNIEnv* env,
+                  jobject thiz, 
+                  jlong component,
+                  jstring endName,
+                  EndpointType type,
+                  jstring endHash )
 {
 	const char *endpoint_name = env->GetStringUTFChars(endName, 0);
 	const char *endpoint_hash = env->GetStringUTFChars(endHash, 0);
 	
 	sendpoint *endpoint;
 	
-	if (source)
-		endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, EndpointSource, endpoint_hash);
-	else
-		endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, EndpointSink, endpoint_hash);
+	endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, type, endpoint_hash);
 
 	env->ReleaseStringUTFChars(endName, endpoint_name);
 	env->ReleaseStringUTFChars(endHash, endpoint_hash);

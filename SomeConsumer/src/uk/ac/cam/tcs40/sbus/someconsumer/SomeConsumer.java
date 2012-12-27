@@ -27,7 +27,7 @@ public class SomeConsumer extends Activity {
 		new Thread() {
 			public void run() {
 				SComponent scomponent = new SComponent("SomeConsumer", "instance");
-				SEndpoint sendpoint = scomponent.addEndpoint("SomeEpt", false, "BE8A47EBEB58");
+				SEndpoint sendpoint = scomponent.addEndpointSink("SomeEpt", "BE8A47EBEB58");
 				scomponent.addRDC("192.168.0.3:50123");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");

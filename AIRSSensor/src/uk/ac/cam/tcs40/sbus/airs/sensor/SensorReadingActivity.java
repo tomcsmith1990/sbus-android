@@ -36,17 +36,17 @@ public class SensorReadingActivity extends Activity {
 
 		// Create a RAM endpoint, add to component and to repository.
 		final TextView ramTextView = (TextView) findViewById(R.id.ram);
-		AirsEndpoint ram = new AirsEndpoint(this.m_AirsComponent.addEndpoint("RAM", "2AD6AE7D73C6"), "Rm", "ram", TYPE.SInt, new UIHandler(ramTextView));
+		AirsEndpoint ram = new AirsEndpoint(this.m_AirsComponent.addEndpointSource("RAM", "2AD6AE7D73C6"), "Rm", "ram", TYPE.SInt, new UIHandler(ramTextView));
 		AirsEndpointRepository.addEndpoint(ram);
 		
 		// Create a weather endpoint, add to component and to repository.
 		final TextView weatherTextView = (TextView) findViewById(R.id.weather); 
-		AirsEndpoint weatherCondition = new AirsEndpoint(this.m_AirsComponent.addEndpoint("WeatherCondition", "07A6F46058A8"), "VC", "condition", TYPE.SText, new UIHandler(weatherTextView));
+		AirsEndpoint weatherCondition = new AirsEndpoint(this.m_AirsComponent.addEndpointSource("WeatherCondition", "07A6F46058A8"), "VC", "condition", TYPE.SText, new UIHandler(weatherTextView));
 		AirsEndpointRepository.addEndpoint(weatherCondition);
 
 		// Create a random number endpoint, add to component and to repository.
 		final TextView randomTextView = (TextView) findViewById(R.id.random);
-		AirsEndpoint randomNumber = new AirsEndpoint(this.m_AirsComponent.addEndpoint("Random", "CFAE86F7E614"), "Rd", "random", TYPE.SInt, new UIHandler(randomTextView));
+		AirsEndpoint randomNumber = new AirsEndpoint(this.m_AirsComponent.addEndpointSource("Random", "CFAE86F7E614"), "Rd", "random", TYPE.SInt, new UIHandler(randomTextView));
 		AirsEndpointRepository.addEndpoint(randomNumber);
 
 		// Register RDC if it is available.
