@@ -2,6 +2,7 @@ package uk.ac.cam.tcs40.sbus.mapper;
 
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.SComponent;
+import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.sbus.R;
 import android.app.Activity;
 import android.content.IntentFilter;
@@ -44,8 +45,8 @@ public class Mapper extends Activity
 
 		// Initialise and start the map component.
 		this.m_MapComponent = new SComponent("spoke", "spoke");
-		this.m_MapEndpoint = new MapEndpoint("map", "F46B9113DB2D");
-		this.m_MapComponent.addEndpoint(this.m_MapEndpoint);
+		SEndpoint ept = this.m_MapComponent.addEndpoint("map", "F46B9113DB2D");
+		this.m_MapEndpoint = new MapEndpoint(ept);
 		this.m_MapComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile,  -1, false);
 
 		// Display the layout.

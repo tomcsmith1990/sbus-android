@@ -8,11 +8,9 @@ public class SComponent {
 		this.m_ComponentPointer = scomponent(componentName, instanceName);
 	}
 	
-	public void addEndpoint(SEndpoint sendpoint) {
-		String name = sendpoint.getEndpointName();
-		String hash = sendpoint.getEndpointHash();
+	public SEndpoint addEndpoint(String name, String hash) {
 		long ptr = addEndpoint(m_ComponentPointer, name, hash);
-		sendpoint.setPointer(ptr);
+		return new SEndpoint(ptr, name, hash);
 	}
 	
 	public void addRDC(String rdcAddress) {

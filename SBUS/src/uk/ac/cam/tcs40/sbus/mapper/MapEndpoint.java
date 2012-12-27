@@ -3,10 +3,12 @@ package uk.ac.cam.tcs40.sbus.mapper;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.SNode;
 
-public class MapEndpoint extends SEndpoint {
+public class MapEndpoint {
 
-	public MapEndpoint(String endpointName, String endpointHash) {
-		super(endpointName, endpointHash);
+	private SEndpoint m_Endpoint;
+	
+	public MapEndpoint(SEndpoint ept) {
+		this.m_Endpoint = ept;
 	}
 
 	/***
@@ -17,16 +19,16 @@ public class MapEndpoint extends SEndpoint {
 	 * @param peerEndpoint The endpoint of the other component.
 	 */
 	public void map(String localAddress, String localEndpoint, String peerAddress, String peerEndpoint) {
-		this.endpointMap(localAddress);
+		this.m_Endpoint.endpointMap(localAddress);
 
-		SNode node = this.createMessage("map");
+		SNode node = this.m_Endpoint.createMessage("map");
 		node.packString(localEndpoint, "endpoint");
 		node.packString(peerAddress, "peer_address");
 		node.packString(peerEndpoint, "peer_endpoint");
 		node.packString("", "certificate");
 
-		this.emit(node);
+		this.m_Endpoint.emit(node);
 		
-		this.endpointUnmap();
+		this.m_Endpoint.endpointUnmap();
 	}
 }
