@@ -18,6 +18,7 @@ public class SensorReadingActivity extends Activity {
 
 	private SensorReadingDB m_AirsDb;
 	private TextView m_StatusTextView;
+	private SComponent m_AirsComponent;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -31,35 +32,35 @@ public class SensorReadingActivity extends Activity {
 		new FileBootloader(getApplicationContext()).store("AirsSensor.cpt");
 
 		// Create the component.
-		SComponent component = new SComponent("AirsSensor", "airs");
+		this.m_AirsComponent = new SComponent("AirsSensor", "airs");
 
-		// Create a battery voltage endpoint, add to component and to repository.
-		final TextView batteryTextView = (TextView) findViewById(R.id.battery);
-		AirsEndpoint batteryVoltage = new AirsEndpoint("BatteryVoltage", "0F17DB5AECC6", "BV", "batteryVoltage", TYPE.SInt, new UIHandler(batteryTextView));
-		AirsEndpointRepository.addEndpoint(batteryVoltage);
-		component.addEndpoint(batteryVoltage);
+		// Create a RAM endpoint, add to component and to repository.
+		final TextView ramTextView = (TextView) findViewById(R.id.ram);
+		AirsEndpoint ram = new AirsEndpoint("RAM", "2AD6AE7D73C6", "Rm", "ram", TYPE.SInt, new UIHandler(ramTextView));
+		AirsEndpointRepository.addEndpoint(ram);
+		this.m_AirsComponent.addEndpoint(ram);
 
 		// Create a weather endpoint, add to component and to repository.
 		final TextView weatherTextView = (TextView) findViewById(R.id.weather); 
 		AirsEndpoint weatherCondition = new AirsEndpoint("WeatherCondition", "07A6F46058A8", "VC", "condition", TYPE.SText, new UIHandler(weatherTextView));
 		AirsEndpointRepository.addEndpoint(weatherCondition);
-		component.addEndpoint(weatherCondition);
+		this.m_AirsComponent.addEndpoint(weatherCondition);
 
 		// Create a random number endpoint, add to component and to repository.
 		final TextView randomTextView = (TextView) findViewById(R.id.random);
 		AirsEndpoint randomNumber = new AirsEndpoint("Random", "CFAE86F7E614", "Rd", "random", TYPE.SInt, new UIHandler(randomTextView));
 		AirsEndpointRepository.addEndpoint(randomNumber);
-		component.addEndpoint(randomNumber);
+		this.m_AirsComponent.addEndpoint(randomNumber);
 
 		// Register RDC if it is available.
-		component.addRDC("192.168.0.3:50123");
+		this.m_AirsComponent.addRDC("192.168.0.3:50123");
 		// 10.0.2.2 is the development machine when running in AVD.
 		//scomponent.addRDC("10.0.2.2:50123");
 
 		// Start the component, load the .cpt file.
 		String cptFile = "AirsSensor.cpt";
-		component.start(getApplicationContext().getFilesDir() + "/" + cptFile, 44445, true);
-		component.setPermission("AirsConsumer", "", true);
+		this.m_AirsComponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, 44445, true);
+		this.m_AirsComponent.setPermission("AirsConsumer", "", true);
 
 		boolean liveReadings = true;
 
@@ -99,12 +100,17 @@ public class SensorReadingActivity extends Activity {
 				}
 			}.start();
 
-
 		} else {
 			// Create threads for relevant sensors.
 			for (String sensorCode : AirsEndpointRepository.getSensorCodes())
 				new Thread(new DBReadingHandler(m_AirsDb, sensorCode)).start();
 		}
+	}
+	
+	@Override
+	protected void onDestroy() {
+		this.m_AirsComponent.delete();
+		super.onDestroy();
 	}
 	
 	public void setStatusText(final String message) {

@@ -5,14 +5,14 @@
 	<designer>Tom Smith</designer>
 	<endpoints>
 		<endpoint>
-			<name>BatteryVoltage</name>
+			<name>RAM</name>
 			<type>#source</type>
 			<message>
 				@reading
 				{
 					txt somestring
 					clk timestamp
-					int batteryVoltage
+					int ram
 				}
 			</message>
 			<response>!</response>
