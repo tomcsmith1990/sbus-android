@@ -9,7 +9,11 @@ public class SComponent {
 	}
 	
 	public SEndpoint addEndpoint(String name, String hash) {
-		long ptr = addEndpoint(m_ComponentPointer, name, hash);
+		return addEndpoint(name, true, hash);
+	}
+	
+	public SEndpoint addEndpoint(String name, boolean source, String hash) {
+		long ptr = addEndpoint(m_ComponentPointer, name, source, hash);
 		return new SEndpoint(ptr, name, hash);
 	}
 	
@@ -31,7 +35,7 @@ public class SComponent {
 	}
 	
 	private native long scomponent(String componentName, String instanceName);
-	private native long addEndpoint(long componentPtr, String endpointName, String endpointHash);
+	private native long addEndpoint(long componentPtr, String endpointName, boolean source, String endpointHash);
 	private native void addRDC(long componentPtr, String rdcAddress);
 	private native void start(long componentPtr, String cptFilename, int port, boolean useRDC);
 	private native void setPermission(long componentPtr, String componentName, String instanceName, boolean allow);

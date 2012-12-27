@@ -24,14 +24,19 @@ jlong
 Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpoint( JNIEnv* env,
                                                   jobject thiz, 
                                                   jlong component,
-                                                  jstring endName, 
+                                                  jstring endName,
+                                                  jboolean source, 
                                                   jstring endHash )
 {
 	const char *endpoint_name = env->GetStringUTFChars(endName, 0);
 	const char *endpoint_hash = env->GetStringUTFChars(endHash, 0);
 	
 	sendpoint *endpoint;
-	endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, EndpointSource, endpoint_hash);
+	
+	if (source)
+		endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, EndpointSource, endpoint_hash);
+	else
+		endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, EndpointSink, endpoint_hash);
 
 	env->ReleaseStringUTFChars(endName, endpoint_name);
 	env->ReleaseStringUTFChars(endHash, endpoint_hash);
