@@ -1,5 +1,6 @@
-package uk.ac.cam.tcs40.sbus;
+package uk.ac.cam.tcs40.sbus.mapper;
 
+import uk.ac.cam.tcs40.sbus.FileBootloader;
 import android.content.Context;
 
 public class SBUSBootloader extends FileBootloader {

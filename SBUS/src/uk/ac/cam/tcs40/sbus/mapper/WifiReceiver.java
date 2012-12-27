@@ -1,4 +1,4 @@
-package uk.ac.cam.tcs40.sbus;
+package uk.ac.cam.tcs40.sbus.mapper;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

@@ -1,4 +1,7 @@
-package uk.ac.cam.tcs40.sbus;
+package uk.ac.cam.tcs40.sbus.mapper;
+
+import uk.ac.cam.tcs40.sbus.SEndpoint;
+import uk.ac.cam.tcs40.sbus.SNode;
 
 public class MapEndpoint extends SEndpoint {
 
