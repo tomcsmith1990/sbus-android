@@ -1,5 +1,7 @@
-package uk.ac.cam.tcs40.sbus;
+package uk.ac.cam.tcs40.sbus.mapper;
 
+import uk.ac.cam.tcs40.sbus.FileBootloader;
+import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.sbus.R;
 import android.app.Activity;
 import android.content.IntentFilter;
