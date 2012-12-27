@@ -4,10 +4,11 @@ public class SEndpoint {
 
 	private String m_EndpointName;
 	private String m_EndpointHash;
-
+	
 	private long m_EndpointPointer;
 
-	public SEndpoint(String endpointName, String endpointHash) {
+	public SEndpoint(long ptr, String endpointName, String endpointHash) {
+		this.m_EndpointPointer = ptr;
 		this.m_EndpointName = endpointName;
 		this.m_EndpointHash = endpointHash;	
 	}
@@ -18,10 +19,6 @@ public class SEndpoint {
 
 	public String getEndpointHash() {
 		return this.m_EndpointHash;
-	}
-
-	public void setPointer(long ptr) {
-		m_EndpointPointer = ptr;
 	}
 
 	public SNode createMessage(String messageRoot) {
