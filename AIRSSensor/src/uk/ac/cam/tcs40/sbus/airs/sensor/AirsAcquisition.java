@@ -67,8 +67,8 @@ public class AirsAcquisition extends Acquisition {
 		AirsEndpoint endpoint = AirsEndpointRepository.findEndpoint(sensorCode);
 
 		if (endpoint != null) {
-			SNode node = endpoint.createMessage("reading");
-			node.packString("AIRS: " + endpoint.getEndpointName());
+			SNode node = endpoint.getEndpoint().createMessage("reading");
+			node.packString("AIRS: " + endpoint.getEndpoint().getEndpointName());
 
 			node.packTime(new Date(), "timestamp");
 
@@ -95,7 +95,7 @@ public class AirsAcquisition extends Acquisition {
 				}
 			}
 
-			final String s = endpoint.emit(node);
+			final String s = endpoint.getEndpoint().emit(node);
 
 			UIHandler handler = endpoint.getUIHandler();
 			Message msg = Message.obtain(handler);
