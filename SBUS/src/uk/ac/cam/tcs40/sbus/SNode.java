@@ -49,10 +49,26 @@ public class SNode {
 		packClock(this.m_NodePtr, format.format(d), name);
 	}
 	
-	private native void packInt(long messagePtr, int n, String name);
-	private native void packDouble(long messagePtr, double d, String name);
-	private native void packString(long messagePtr, String s, String name);
-	private native void packClock(long messagePtr, String date, String name);
+	public int extractInt(String name) {
+		return extractInt(this.m_NodePtr, name);
+	}
+	
+	public double extractDouble(String name) {
+		return extractDouble(this.m_NodePtr, name);
+	}
+	
+	public String extractString(String name) {
+		return extractString(this.m_NodePtr, name);
+	}
+	
+	private native void packInt(long nodePtr, int n, String name);
+	private native void packDouble(long nodePtr, double d, String name);
+	private native void packString(long nodePtr, String s, String name);
+	private native void packClock(long nodePtr, String date, String name);
+	
+	private native int extractInt(long nodePtr, String name);
+	private native double extractDouble(long nodePtr, String name);
+	private native String extractString(long nodePtr, String name);
 	
 	private native void delete(long messagePtr);
 }

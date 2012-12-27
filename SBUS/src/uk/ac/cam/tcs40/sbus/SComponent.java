@@ -26,6 +26,7 @@ public class SComponent {
 	}
 	
 	public void delete() {
+		// Also deletes endpoint.
 		delete(m_ComponentPointer);
 	}
 	

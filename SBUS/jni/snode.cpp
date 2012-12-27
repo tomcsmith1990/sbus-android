@@ -85,4 +85,49 @@ Java_uk_ac_cam_tcs40_sbus_SNode_delete( JNIEnv* env,
 	delete ((snode *)node);
 }
 
+jint
+Java_uk_ac_cam_tcs40_sbus_SNode_extractInt( JNIEnv* env,
+                                             jobject thiz,
+                                             jlong node,
+                                             jstring n )
+{	
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	
+	int i = ((snode *)node)->extract_int(name);	
+
+	if (n != NULL) env->ReleaseStringUTFChars(n, name);
+	
+	return i;
+}
+
+jdouble
+Java_uk_ac_cam_tcs40_sbus_SNode_extractDouble( JNIEnv* env,
+                                             jobject thiz,
+                                             jlong node,
+                                             jstring n )
+{	
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	
+	double d = ((snode *)node)->extract_dbl(name);	
+
+	if (n != NULL) env->ReleaseStringUTFChars(n, name);
+	
+	return d;
+}
+
+jstring
+Java_uk_ac_cam_tcs40_sbus_SNode_extractString( JNIEnv* env,
+                                             jobject thiz,
+                                             jlong node,
+                                             jstring n )
+{	
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	
+	const char *s = ((snode *)node)->extract_txt(name);
+			
+	if (n != NULL) env->ReleaseStringUTFChars(n, name);
+	
+	return env->NewStringUTF(s);	
+}
+
 }

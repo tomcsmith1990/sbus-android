@@ -89,6 +89,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_delete( JNIEnv* env,
                                              jobject thiz,
                                              jlong component )
 {
+	// Also deletes endpoints.
 	delete ((scomponent *)component);
 }
 
