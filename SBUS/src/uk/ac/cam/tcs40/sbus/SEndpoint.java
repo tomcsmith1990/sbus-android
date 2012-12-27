@@ -39,12 +39,12 @@ public class SEndpoint {
 	public void endpointUnmap() {
 		endpointUnmap(m_EndpointPointer);
 	}
-	/*
+	
 	public SMessage receive() {
 		long ptr = receive(m_EndpointPointer);
 		return new SMessage(ptr);
 	}
-*/
+
 	private native long createMessage(long endpointPtr, String messageType);
 	private native String emit(long endpointPtr, long messagePtr);
 

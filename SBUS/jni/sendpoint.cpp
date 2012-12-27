@@ -58,12 +58,31 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_emit( JNIEnv* env,
 
 jlong
 Java_uk_ac_cam_tcs40_sbus_SEndpoint_receive( JNIEnv* env,
-                                          jobject thiz,
-                                          jlong endpoint)
+                                         	 jobject thiz,
+                                         	 jlong endpoint)
 {
 	smessage *message;
+	// blocks until it receives a message.
 	message = ((sendpoint *)endpoint)->rcv();
 	return (long)message;
+}
+
+void
+Java_uk_ac_cam_tcs40_sbus_SMessage_delete( JNIEnv* env,
+                                          	jobject thiz,
+                                          	jlong message)
+{
+	delete ((smessage *)message);
+}
+
+jlong
+Java_uk_ac_cam_tcs40_sbus_SMessage_getTree( JNIEnv* env,
+                                          	jobject thiz,
+                                          	jlong message)
+{
+	snode *sn;
+	sn = ((smessage *)message)->tree;
+	return (long)sn;
 }
 
 }
