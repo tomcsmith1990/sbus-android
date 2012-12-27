@@ -1,0 +1,11 @@
+<resources>
+
+    <string name="app_name">SomeConsumer</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_some_consumer">SomeConsumerActivity</string>
+    <string name="somestring">somestring</string>
+    <string name="someval">someval</string>
+    <string name="somevar">somevar</string>
+
+</resources>
