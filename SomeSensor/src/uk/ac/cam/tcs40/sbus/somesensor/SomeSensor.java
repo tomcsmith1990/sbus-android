@@ -3,6 +3,7 @@ package uk.ac.cam.tcs40.sbus.somesensor;
 import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.FileBootloader;
+import uk.ac.cam.tcs40.sbus.SNode;
 import android.app.Activity;
 import android.widget.TextView;
 import android.os.Bundle;
@@ -37,14 +38,15 @@ public class SomeSensor extends Activity
 				scomponent.setPermission("SomeConsumer", "", true);
 			
 				int i = 0;
+				SNode node;
 				while (true) {
 
-					sendpoint.createMessage("reading");
-					sendpoint.packString("SomeSensor: This is message #" + i++);
-					sendpoint.packInt((int) (Math.random() * 1000), "someval");
-					sendpoint.packInt(34, "somevar");
+					node = sendpoint.createMessage("reading");
+					node.packString("SomeSensor: This is message #" + i++);
+					node.packInt((int) (Math.random() * 1000), "someval");
+					node.packInt(34, "somevar");
 					
-					final String s = sendpoint.emit();
+					final String s = sendpoint.emit(node);
 
 					runOnUiThread(new Runnable() {
 						public void run() {

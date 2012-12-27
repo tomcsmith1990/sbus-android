@@ -132,9 +132,9 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_createMessage( JNIEnv* env,
 }
 
 void
-Java_uk_ac_cam_tcs40_sbus_SEndpoint_packInt( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SNode_packInt( JNIEnv* env,
                                              jobject thiz,
-                                             jlong message,
+                                             jlong node,
                                              jint i,
                                              jstring n )
 {	
@@ -143,15 +143,15 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_packInt( JNIEnv* env,
 	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
 	
 	sn = pack(i, name);
-	((snode *)message)->append(sn);	
+	((snode *)node)->append(sn);	
 
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 }
 
 void
-Java_uk_ac_cam_tcs40_sbus_SEndpoint_packDouble( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SNode_packDouble( JNIEnv* env,
                                              jobject thiz,
-                                             jlong message,
+                                             jlong node,
                                              jdouble d,
                                              jstring n )
 {	
@@ -160,15 +160,15 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_packDouble( JNIEnv* env,
 	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
 	
 	sn = pack(d, name);
-	((snode *)message)->append(sn);	
+	((snode *)node)->append(sn);	
 
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 }
 
 void
-Java_uk_ac_cam_tcs40_sbus_SEndpoint_packString( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SNode_packString( JNIEnv* env,
                                                 jobject thiz,
-                                                jlong message,
+                                                jlong node,
                                                 jstring s,
                                                 jstring n )
 {
@@ -178,16 +178,16 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_packString( JNIEnv* env,
 	const char *string = env->GetStringUTFChars(s, 0);
 
 	sn = pack(string, name);
-	((snode *)message)->append(sn);
+	((snode *)node)->append(sn);
 	
 	env->ReleaseStringUTFChars(s, string);
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 }
 
 void
-Java_uk_ac_cam_tcs40_sbus_SEndpoint_packClock( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SNode_packClock( JNIEnv* env,
                                                jobject thiz,
-                                               jlong message,
+                                               jlong node,
                                                jstring c,
                                                jstring n )
 {
@@ -200,7 +200,7 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_packClock( JNIEnv* env,
 	
 	sn = pack(&datetime, name);
 			
-	((snode *)message)->append(sn);	
+	((snode *)node)->append(sn);	
 	
 	env->ReleaseStringUTFChars(c, clk);
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
@@ -220,6 +220,23 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_emit( JNIEnv* env,
 	return env->NewStringUTF(xml);
 }
 
+jlong
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_receive( JNIEnv* env,
+                                          jobject thiz,
+                                          jlong endpoint)
+{
+	smessage *message;
+	message = ((sendpoint *)endpoint)->rcv();
+	return (long)message;
+}
+
+void
+Java_uk_ac_cam_tcs40_sbus_SNode_delete( JNIEnv* env,
+                                             jobject thiz,
+                                             jlong node )
+{
+	delete ((snode *)node);
+}
 
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_delete( JNIEnv* env,

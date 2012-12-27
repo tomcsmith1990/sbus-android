@@ -2,6 +2,8 @@ package uk.ac.cam.tcs40.sbus.airs.sensor;
 
 import java.util.Date;
 
+import uk.ac.cam.tcs40.sbus.SNode;
+
 import android.database.Cursor;
 import android.os.Message;
 
@@ -38,23 +40,23 @@ public class DBReadingHandler implements Runnable {
 			
 			while (true) {
 
-				endpoint.createMessage("reading");
-				endpoint.packString("AIRS: " + endpoint.getEndpointName() + " #" + count++);
+				SNode node = endpoint.createMessage("reading");
+				node.packString("AIRS: " + endpoint.getEndpointName() + " #" + count++);
 
 				timestamp = records.getLong(timeColumn);
-				endpoint.packTime(new Date(timestamp), "timestamp");
+				node.packTime(new Date(timestamp), "timestamp");
 
 				switch (endpoint.getValueType()) {
 				case SInt:
 					int i = Integer.valueOf(records.getString(valueColumn));
-					endpoint.packInt(i, endpoint.getValueName());
+					node.packInt(i, endpoint.getValueName());
 					break;
 				case SText:
 					String s = records.getString(valueColumn);
-					endpoint.packString(s, endpoint.getValueName());
+					node.packString(s, endpoint.getValueName());
 				}
 
-				final String s = endpoint.emit();
+				final String s = endpoint.emit(node);
 
 				UIHandler handler = endpoint.getUIHandler();
 				Message msg = Message.obtain(handler);
