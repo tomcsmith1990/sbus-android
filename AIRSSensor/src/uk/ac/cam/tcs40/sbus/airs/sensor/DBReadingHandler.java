@@ -40,8 +40,8 @@ public class DBReadingHandler implements Runnable {
 			
 			while (true) {
 
-				SNode node = endpoint.createMessage("reading");
-				node.packString("AIRS: " + endpoint.getEndpointName() + " #" + count++);
+				SNode node = endpoint.getEndpoint().createMessage("reading");
+				node.packString("AIRS: " + endpoint.getEndpoint().getEndpointName() + " #" + count++);
 
 				timestamp = records.getLong(timeColumn);
 				node.packTime(new Date(timestamp), "timestamp");
@@ -56,7 +56,7 @@ public class DBReadingHandler implements Runnable {
 					node.packString(s, endpoint.getValueName());
 				}
 
-				final String s = endpoint.emit(node);
+				final String s = endpoint.getEndpoint().emit(node);
 
 				UIHandler handler = endpoint.getUIHandler();
 				Message msg = Message.obtain(handler);
