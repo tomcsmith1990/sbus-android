@@ -45,7 +45,7 @@ public class Mapper extends Activity
 
 		// Initialise and start the map component.
 		this.m_MapComponent = new SComponent("spoke", "spoke");
-		SEndpoint ept = this.m_MapComponent.addEndpoint("map", "F46B9113DB2D");
+		SEndpoint ept = this.m_MapComponent.addEndpointSource("map", "F46B9113DB2D");
 		this.m_MapEndpoint = new MapEndpoint(ept);
 		this.m_MapComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile,  -1, false);
 
