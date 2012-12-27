@@ -8,14 +8,24 @@ public class SNode {
 
 	private long m_NodePtr;
 	
-	public SNode(long ptr) {
+	SNode(long ptr) {
+		/*
+		 *  Note - no modifier means package only access.
+		 *  Can only create SNode through:
+		 *  	- SEndpoint.createMessage()
+		 *  	- SEndpoint.receive().getTree()
+		 */
 		this.m_NodePtr = ptr;
 	}
 	
-	public long getPointer() {
+	long getPointer() {
+		// Package only access- called from SEndpoint.emit()
 		return this.m_NodePtr;
 	}
 	
+	/**
+	 * Delete the native representation of this snode.
+	 */
 	public void delete() {
 		delete(this.m_NodePtr);
 	}
