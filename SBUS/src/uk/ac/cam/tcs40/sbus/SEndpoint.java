@@ -1,16 +1,11 @@
 package uk.ac.cam.tcs40.sbus;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class SEndpoint {
 
 	private String m_EndpointName;
 	private String m_EndpointHash;
 
 	private long m_EndpointPointer;
-	private long m_MessagePointer;
 
 	public SEndpoint(String endpointName, String endpointHash) {
 		this.m_EndpointName = endpointName;
@@ -29,12 +24,15 @@ public class SEndpoint {
 		m_EndpointPointer = ptr;
 	}
 
-	public void createMessage(String messageType) {
-		this.m_MessagePointer = createMessage(m_EndpointPointer, messageType);
+	public SNode createMessage(String messageRoot) {
+		long ptr = createMessage(m_EndpointPointer, messageRoot);
+		return new SNode(ptr);
 	}
 
-	public String emit() {
-		return emit(m_EndpointPointer, m_MessagePointer);
+	public String emit(SNode node) {
+		String s = emit(m_EndpointPointer, node.getPointer());
+		node.delete();
+		return s;
 	}
 
 	public String endpointMap(String address) {
@@ -44,44 +42,17 @@ public class SEndpoint {
 	public void endpointUnmap() {
 		endpointUnmap(m_EndpointPointer);
 	}
-
-	public void packInt(int n) { 
-		packInt(n, null); 
+	/*
+	public SMessage receive() {
+		long ptr = receive(m_EndpointPointer);
+		return new SMessage(ptr);
 	}
-	public void packInt(int n, String name) {
-		packInt(m_MessagePointer, n, name);
-	}
-	
-	public void packDouble(double d) { 
-		packDouble(d, null); 
-	}
-	public void packDouble(double d, String name) {
-		packDouble(m_MessagePointer, d, name);
-	}
-
-	public void packString(String s) { 
-		packString(s, null); 
-	}
-	public void packString(String s, String name) {
-		packString(m_MessagePointer, s, name);
-	}
-
-	public void packTime(Date d) { 
-		packTime(d, null);
-	}
-	public void packTime(Date d, String name) {
-		DateFormat format = new SimpleDateFormat("dd/MM/yyyy,HH:mm:ss");
-		packClock(m_MessagePointer, format.format(d), name);
-	}
-
+*/
 	private native long createMessage(long endpointPtr, String messageType);
 	private native String emit(long endpointPtr, long messagePtr);
 
 	private native String endpointMap(long endpointPtr, String address);
 	private native void endpointUnmap(long endpointPtr);
-
-	private native void packInt(long messagePtr, int n, String name);
-	private native void packDouble(long messagePtr, double d, String name);
-	private native void packString(long messagePtr, String s, String name);
-	private native void packClock(long messagePtr, String date, String name);
+	
+	private native long receive(long endpointPtr);
 }

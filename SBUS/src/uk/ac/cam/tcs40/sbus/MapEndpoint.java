@@ -16,13 +16,13 @@ public class MapEndpoint extends SEndpoint {
 	public void map(String localAddress, String localEndpoint, String peerAddress, String peerEndpoint) {
 		this.endpointMap(localAddress);
 
-		this.createMessage("map");
-		this.packString(localEndpoint, "endpoint");
-		this.packString(peerAddress, "peer_address");
-		this.packString(peerEndpoint, "peer_endpoint");
-		this.packString("", "certificate");
+		SNode node = this.createMessage("map");
+		node.packString(localEndpoint, "endpoint");
+		node.packString(peerAddress, "peer_address");
+		node.packString(peerEndpoint, "peer_endpoint");
+		node.packString("", "certificate");
 
-		this.emit();
+		this.emit(node);
 		
 		this.endpointUnmap();
 	}

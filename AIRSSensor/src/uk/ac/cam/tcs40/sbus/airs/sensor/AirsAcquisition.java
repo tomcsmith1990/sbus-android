@@ -2,6 +2,8 @@ package uk.ac.cam.tcs40.sbus.airs.sensor;
 
 import java.util.Date;
 
+import uk.ac.cam.tcs40.sbus.SNode;
+
 import android.os.Message;
 
 import com.airs.platform.Acquisition;
@@ -65,10 +67,10 @@ public class AirsAcquisition extends Acquisition {
 		AirsEndpoint endpoint = AirsEndpointRepository.findEndpoint(sensorCode);
 
 		if (endpoint != null) {
-			endpoint.createMessage("reading");
-			endpoint.packString("AIRS: " + endpoint.getEndpointName());
+			SNode node = endpoint.createMessage("reading");
+			node.packString("AIRS: " + endpoint.getEndpointName());
 
-			endpoint.packTime(new Date(), "timestamp");
+			node.packTime(new Date(), "timestamp");
 
 			Sensor sensor = SensorRepository.findSensor(sensorCode);
 			//System.out.println("...SENSOR : " + sensorCode);
@@ -78,22 +80,22 @@ public class AirsAcquisition extends Acquisition {
 
 				if (sensor.type.equals("int")) {
 
-					endpoint.packInt(parseInt(reading, length), endpoint.getValueName());
+					node.packInt(parseInt(reading, length), endpoint.getValueName());
 
 				} else if (sensor.type.equals("txt")) {
 
-					endpoint.packString(parseString(reading, length), endpoint.getValueName());
+					node.packString(parseString(reading, length), endpoint.getValueName());
 				}
 			} else {
 				if (length == 6 && reading[2] == 0) {
 					// guess that it is an int.
-					endpoint.packInt(parseInt(reading, length), endpoint.getValueName());
+					node.packInt(parseInt(reading, length), endpoint.getValueName());
 				} else {
-					endpoint.packString(parseString(reading, length), endpoint.getValueName());
+					node.packString(parseString(reading, length), endpoint.getValueName());
 				}
 			}
 
-			final String s = endpoint.emit();
+			final String s = endpoint.emit(node);
 
 			UIHandler handler = endpoint.getUIHandler();
 			Message msg = Message.obtain(handler);
