@@ -25,9 +25,10 @@ public class FileBootloader {
 		return m_Directory.getAbsolutePath();
 	}
 
-	public void store(String filename) {
+	public FileBootloader store(String filename) {
 		if (!fileExists(filename))
 			createFile(filename);
+		return this;
 	}
 	
 	protected void mkdir(String path) {

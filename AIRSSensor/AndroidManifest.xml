@@ -15,7 +15,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".SensorReadingActivity"
+            android:name="uk.ac.cam.tcs40.sbus.airs.sensor.SensorReadingActivity"
             android:label="@string/title_activity_airs" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

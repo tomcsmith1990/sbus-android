@@ -1,0 +1,20 @@
+<component-metadata>
+	<name>create_ept</name>
+	<description>Create endpoint sinks on this component</description>
+	<keywords></keywords>
+	<designer>Tom Smith</designer>
+	<endpoints>
+		<endpoint>
+			<name>addept</name>
+			<type>#sink</type>
+			<message>
+			@ept
+			{
+				txt endptname
+				txt schema
+			}
+			</message>
+			<response>!</response>
+		</endpoint>	
+	</endpoints>
+</component-metadata>

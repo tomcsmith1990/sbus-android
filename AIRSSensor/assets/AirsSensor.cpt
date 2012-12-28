@@ -12,7 +12,7 @@
 				{
 					txt somestring
 					clk timestamp
-					int ram
+					int var
 				}
 			</message>
 			<response>!</response>
@@ -25,7 +25,7 @@
 				{
 					txt somestring
 					clk timestamp
-					txt condition
+					txt val
 				}
 			</message>
 			<response>!</response>
@@ -38,7 +38,7 @@
 				{
 					txt somestring
 					clk timestamp
-					int random
+					int var
 				}
 			</message>
 			<response>!</response>
