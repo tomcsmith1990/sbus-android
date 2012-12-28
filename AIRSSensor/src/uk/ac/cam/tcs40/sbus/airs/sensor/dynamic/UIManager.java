@@ -8,9 +8,11 @@ import android.widget.TextView;
 
 public class UIManager {
 
+	// Singleton instance of UIManager.
 	private static UIManager s_Instance;
 
 	private Activity m_Activity;
+	// Thread safe queue of UIHandlers for new TextViews.
 	private final MessageQueue<UIHandler> m_Queue = new SafeMessageQueue<UIHandler>();
 
 	private UIManager(Activity activity) {
@@ -46,6 +48,10 @@ public class UIManager {
 		m_Queue.put(new UIHandler(tv));
 	}
 
+	/**
+	 * 
+	 * @return a UIHandler to a new TextView which has been added to the Activity.
+	 */
 	public UIHandler getUIHandler() {
 		createTextView();
 		return m_Queue.take();

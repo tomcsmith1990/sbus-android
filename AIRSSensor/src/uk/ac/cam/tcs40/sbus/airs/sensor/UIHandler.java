@@ -14,9 +14,9 @@ public class UIHandler extends Handler {
 	}
 	
 	@Override
-    public void handleMessage(Message msg) {
+    public void handleMessage(Message message) {
         // a message is received; update UI text view
-		this.m_TextView.setText(msg.obj.toString());
-        super.handleMessage(msg);
+		this.m_TextView.setText(message.obj.toString());
+        super.handleMessage(message);
     }
 }
