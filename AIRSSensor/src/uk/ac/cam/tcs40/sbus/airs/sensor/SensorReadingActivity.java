@@ -20,11 +20,11 @@ public class SensorReadingActivity extends Activity {
 	private ArrayAdapter<String> m_Adapter;
 
 	private List<String> m_Sensors = new LinkedList<String>();
-	
+
 	private OnItemClickListener m_ListClick = new OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> parent, android.view.View view, int position, long id) {
-			m_Gateway.subscribe(m_Sensors.get(position));
+			m_Gateway.subscribe(m_Adapter.getItem(position));
 		}
 	};
 
@@ -46,7 +46,7 @@ public class SensorReadingActivity extends Activity {
 		this.m_Adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, m_Sensors);
 		this.m_SensorList.setAdapter(this.m_Adapter);
 		this.m_SensorList.setOnItemClickListener(m_ListClick);
-		
+
 		addSensor("Rm");
 		addSensor("Rd");
 		addSensor("VC");
@@ -58,15 +58,20 @@ public class SensorReadingActivity extends Activity {
 			}
 		}.start();
 	}
-	
-	public void addSensor(String sensor) {
-		this.m_Sensors.add(sensor);
-		this.m_Adapter.notifyDataSetChanged();
+
+	public void addSensor(final String sensor) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				m_Adapter.add(sensor);
+				m_Adapter.notifyDataSetChanged();
+			}
+		});
 	}
 
 	public void setStatusText(final String message) {
 		if (m_StatusTextView == null) return;
-		
+
 		runOnUiThread(new Runnable() {
 			public void run() {
 				m_StatusTextView.setText(message);
