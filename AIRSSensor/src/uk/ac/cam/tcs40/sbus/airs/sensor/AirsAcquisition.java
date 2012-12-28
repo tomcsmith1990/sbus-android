@@ -5,6 +5,7 @@ import java.util.Date;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.SNode;
 import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.EndpointManager;
+import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.UIManager;
 
 import android.os.Message;
 
@@ -77,7 +78,7 @@ public class AirsAcquisition extends Acquisition {
 			if (this.m_EptManager == null) return;
 			
 			String schema = "@reading { txt somestring clk timestamp int var }";
-			
+
 			if (sensor != null) {
 				if (sensor.type.equals("int")) schema = "@reading { txt somestring clk timestamp int var }";
 				else if (sensor.type.equals("txt")) schema = "@reading { txt somestring clk timestamp txt val }";
@@ -87,7 +88,7 @@ public class AirsAcquisition extends Acquisition {
 			}
 			
 			SEndpoint ept = this.m_EptManager.createEndpoint(sensorCode, schema);
-			endpoint = new AirsEndpoint(ept, sensorCode, null);
+			endpoint = new AirsEndpoint(ept, sensorCode, UIManager.getInstance().getUIHandler());
 			AirsEndpointRepository.addEndpoint(endpoint);
 		}
 
@@ -123,9 +124,9 @@ public class AirsAcquisition extends Acquisition {
 
 		UIHandler handler = endpoint.getUIHandler();
 		if (handler != null) {
-			Message msg = Message.obtain(handler);
-			msg.obj = s;
-			handler.sendMessage(msg);
+			Message mesage = Message.obtain(handler);
+			mesage.obj = s;
+			handler.sendMessage(mesage);
 		}
 	}
 

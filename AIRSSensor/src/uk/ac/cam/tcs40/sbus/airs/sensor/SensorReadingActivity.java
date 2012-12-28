@@ -12,6 +12,7 @@ import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.airs.sensor.AirsEndpoint.TYPE;
 import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.EndpointManager;
+import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.UIManager;
 import android.os.Bundle;
 import android.app.Activity;
 import android.widget.TextView;
@@ -28,6 +29,8 @@ public class SensorReadingActivity extends Activity {
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_airs);
+		
+		UIManager.getInstance(this);
 
 		this.m_StatusTextView = (TextView) findViewById(R.id.status);
 
@@ -63,7 +66,7 @@ public class SensorReadingActivity extends Activity {
 			new Thread() {
 				@Override
 				public void run() {
-
+					
 					EventComponent eventComponent = new EventComponent();
 					Acquisition acquisition;
 
@@ -86,9 +89,9 @@ public class SensorReadingActivity extends Activity {
 
 						if (dynamicEndpoints) {
 							sensorCodes = new LinkedList<String>();
-							sensorCodes.add("Rd");
 							sensorCodes.add("Rm");
 							sensorCodes.add("VC");
+							sensorCodes.add("Rd");
 						} else {
 							// Get the relevant sensor codes.
 							sensorCodes = AirsEndpointRepository.getSensorCodes();
@@ -139,18 +142,15 @@ public class SensorReadingActivity extends Activity {
 
 	private void createEndpoints() {
 		// Create a RAM endpoint, add to component and to repository.
-		final TextView ramTextView = (TextView) findViewById(R.id.ram);
-		AirsEndpoint ram = new AirsEndpoint(this.m_AirsComponent.addEndpointSource("RAM", "2AD6AEFD7646"), "Rm", TYPE.SInt, new UIHandler(ramTextView));
+		AirsEndpoint ram = new AirsEndpoint(this.m_AirsComponent.addEndpointSource("RAM", "2AD6AEFD7646"), "Rm", TYPE.SInt, UIManager.getInstance().getUIHandler());
 		AirsEndpointRepository.addEndpoint(ram);
 
 		// Create a weather endpoint, add to component and to repository.
-		final TextView weatherTextView = (TextView) findViewById(R.id.weather); 
-		AirsEndpoint weatherCondition = new AirsEndpoint(this.m_AirsComponent.addEndpointSource("WeatherCondition", "5726AEFD7346"), "VC", TYPE.SText, new UIHandler(weatherTextView));
+		AirsEndpoint weatherCondition = new AirsEndpoint(this.m_AirsComponent.addEndpointSource("WeatherCondition", "5726AEFD7346"), "VC", TYPE.SText, UIManager.getInstance().getUIHandler());
 		AirsEndpointRepository.addEndpoint(weatherCondition);
 
 		// Create a random number endpoint, add to component and to repository.
-		final TextView randomTextView = (TextView) findViewById(R.id.random);
-		AirsEndpoint randomNumber = new AirsEndpoint(this.m_AirsComponent.addEndpointSource("Random", "2AD6AEFD7646"), "Rd", TYPE.SInt, new UIHandler(randomTextView));
+		AirsEndpoint randomNumber = new AirsEndpoint(this.m_AirsComponent.addEndpointSource("Random", "2AD6AEFD7646"), "Rd", TYPE.SInt, UIManager.getInstance().getUIHandler());
 		AirsEndpointRepository.addEndpoint(randomNumber);
 	}
 }
