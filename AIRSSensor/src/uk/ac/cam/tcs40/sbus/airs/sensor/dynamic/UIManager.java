@@ -34,7 +34,7 @@ public class UIManager {
 			@Override
 			public void run() {
 				TextView tv = new TextView(m_Activity.getApplicationContext());
-				LinearLayout layout = (LinearLayout) m_Activity.findViewById(R.id.layout);
+				LinearLayout layout = (LinearLayout) m_Activity.findViewById(R.id.output);
 				layout.addView(tv);
 
 				addTextView(tv);
