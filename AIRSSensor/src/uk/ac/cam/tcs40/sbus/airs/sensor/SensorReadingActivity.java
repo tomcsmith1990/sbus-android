@@ -30,6 +30,7 @@ public class SensorReadingActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_airs);
 		
+		// Set this as the activity so we can create TextViews.
 		UIManager.getInstance(this);
 
 		this.m_StatusTextView = (TextView) findViewById(R.id.status);
@@ -38,6 +39,7 @@ public class SensorReadingActivity extends Activity {
 		final boolean liveReadings = true;
 		final boolean dynamicEndpoints = true;
 
+		// Store the component files used.
 		storeComponentFiles();
 
 		// Create the component.
@@ -45,6 +47,7 @@ public class SensorReadingActivity extends Activity {
 
 		String cptFile;
 
+		// The component file to use.
 		if (dynamicEndpoints) {
 			cptFile = "AirsSensorDynamic.cpt";
 		} else {
@@ -67,6 +70,7 @@ public class SensorReadingActivity extends Activity {
 				@Override
 				public void run() {
 					
+					// Set up the stuff for the AIRS server.
 					EventComponent eventComponent = new EventComponent();
 					Acquisition acquisition;
 
@@ -87,6 +91,7 @@ public class SensorReadingActivity extends Activity {
 
 						List<String> sensorCodes;
 
+						// Get the sensors to subscribe to.
 						if (dynamicEndpoints) {
 							sensorCodes = new LinkedList<String>();
 							sensorCodes.add("Rm");
@@ -97,6 +102,7 @@ public class SensorReadingActivity extends Activity {
 							sensorCodes = AirsEndpointRepository.getSensorCodes();
 						}
 
+						// Display what we have subscribed to.
 						if (sensorCodes != null) {
 							StringBuilder builder = new StringBuilder(sensorCodes.size() * 3);
 

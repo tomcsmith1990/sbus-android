@@ -16,6 +16,7 @@ public class EndpointManager {
 	public EndpointManager(Context context, SComponent airs) {
 
 		this.m_AirsComponent = airs;
+		// This creates a component which reads schemata and creates the endpoints.
 /*
 		String cptFile = "CreateEpt.cpt";
 		new FileBootloader(context).store(cptFile);
