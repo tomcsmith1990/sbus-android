@@ -49,11 +49,11 @@ public class DBReadingHandler implements Runnable {
 				switch (endpoint.getValueType()) {
 				case SInt:
 					int i = Integer.valueOf(records.getString(valueColumn));
-					node.packInt(i, endpoint.getValueName());
+					node.packInt(i, "var");
 					break;
 				case SText:
 					String s = records.getString(valueColumn);
-					node.packString(s, endpoint.getValueName());
+					node.packString(s, "val");
 				}
 
 				final String s = endpoint.getEndpoint().emit(node);

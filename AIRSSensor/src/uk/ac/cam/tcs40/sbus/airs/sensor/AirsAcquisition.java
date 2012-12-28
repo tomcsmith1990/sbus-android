@@ -2,7 +2,9 @@ package uk.ac.cam.tcs40.sbus.airs.sensor;
 
 import java.util.Date;
 
+import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.SNode;
+import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.EndpointManager;
 
 import android.os.Message;
 
@@ -13,8 +15,11 @@ import com.airs.platform.SensorRepository;
 
 public class AirsAcquisition extends Acquisition {
 
-	public AirsAcquisition(EventComponent eventComponent) {
+	private EndpointManager m_EptManager;
+
+	public AirsAcquisition(EventComponent eventComponent, EndpointManager eptManager) {
 		super(eventComponent);
+		this.m_EptManager = eptManager;
 	}
 
 	/***********************************************************************
@@ -64,40 +69,60 @@ public class AirsAcquisition extends Acquisition {
 	public void parseReading(byte[] reading, int length) {
 		String sensorCode = new String(reading, 0, 2);
 
+		Sensor sensor = SensorRepository.findSensor(sensorCode);
+
 		AirsEndpoint endpoint = AirsEndpointRepository.findEndpoint(sensorCode);
 
-		if (endpoint != null) {
-			SNode node = endpoint.getEndpoint().createMessage("reading");
-			node.packString("AIRS: " + endpoint.getEndpoint().getEndpointName());
-
-			node.packTime(new Date(), "timestamp");
-
-			Sensor sensor = SensorRepository.findSensor(sensorCode);
-			//System.out.println("...SENSOR : " + sensorCode);
-
+		if (endpoint == null) {
+			if (this.m_EptManager == null) return;
+			
+			String schema = "@reading { txt somestring clk timestamp int var }";
+			
 			if (sensor != null) {
-				//System.out.println("...DESCRIPTION: " + sensor.Description);
-
-				if (sensor.type.equals("int")) {
-
-					node.packInt(parseInt(reading, length), endpoint.getValueName());
-
-				} else if (sensor.type.equals("txt")) {
-
-					node.packString(parseString(reading, length), endpoint.getValueName());
-				}
+				if (sensor.type.equals("int")) schema = "@reading { txt somestring clk timestamp int var }";
+				else if (sensor.type.equals("txt")) schema = "@reading { txt somestring clk timestamp txt val }";
 			} else {
-				if (length == 6 && reading[2] == 0) {
-					// guess that it is an int.
-					node.packInt(parseInt(reading, length), endpoint.getValueName());
-				} else {
-					node.packString(parseString(reading, length), endpoint.getValueName());
-				}
+				if (length == 6 && reading[2] == 0) schema = "@reading { txt somestring clk timestamp int var }";
+				else schema = "@reading { txt somestring clk timestamp txt val }";
 			}
+			
+			SEndpoint ept = this.m_EptManager.createEndpoint(sensorCode, schema);
+			endpoint = new AirsEndpoint(ept, sensorCode, null);
+			AirsEndpointRepository.addEndpoint(endpoint);
+		}
 
-			final String s = endpoint.getEndpoint().emit(node);
+		SNode node = endpoint.getEndpoint().createMessage("reading");
+		node.packString("AIRS: " + endpoint.getEndpoint().getEndpointName());
 
-			UIHandler handler = endpoint.getUIHandler();
+		node.packTime(new Date(), "timestamp");
+
+		//System.out.println("...SENSOR : " + sensorCode);
+
+		if (sensor != null) {
+			//System.out.println("...DESCRIPTION: " + sensor.Description);
+
+			if (sensor.type.equals("int")) {
+
+				node.packInt(parseInt(reading, length), "var");
+				
+			} else if (sensor.type.equals("txt")) {
+
+				node.packString(parseString(reading, length), "val");
+			}
+		} else {
+			if (length == 6 && reading[2] == 0) {
+				// guess that it is an int.
+				node.packInt(parseInt(reading, length), "var");
+
+			} else {
+				node.packString(parseString(reading, length), "val");
+			}
+		}
+
+		final String s = endpoint.getEndpoint().emit(node);
+
+		UIHandler handler = endpoint.getUIHandler();
+		if (handler != null) {
 			Message msg = Message.obtain(handler);
 			msg.obj = s;
 			handler.sendMessage(msg);

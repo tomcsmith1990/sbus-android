@@ -17,6 +17,8 @@ public class AirsEndpointRepository {
 
 	static synchronized public void removeEndpoint(String sensorCode)
 	{
+		if (list == null) return;
+		
 		Iterator<AirsEndpoint> it = list.iterator();
 
 		AirsEndpoint current;
@@ -32,6 +34,9 @@ public class AirsEndpointRepository {
 	}
 
 	static synchronized public List<String> getSensorCodes() {
+		
+		if (list == null) return null;
+		
 		List<String> sensorCodes = new LinkedList<String>();
 
 		Iterator<AirsEndpoint> it = list.iterator();
@@ -45,6 +50,8 @@ public class AirsEndpointRepository {
 
 	static synchronized public AirsEndpoint findEndpoint(String sensorCode)
 	{
+		if (list == null) return null;
+		
 		Iterator<AirsEndpoint> it = list.iterator();
 
 		AirsEndpoint current;

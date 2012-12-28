@@ -8,14 +8,18 @@ public class AirsEndpoint {
 	
 	public enum TYPE { SInt, SText };
 	private String m_SensorCode;
-	private String m_ValueName;
 	private UIHandler m_UIHandler;
 	private TYPE m_ValueType;
 
-	public AirsEndpoint(SEndpoint ept, String sensor, String valueName, TYPE valueType, UIHandler uiHandler) {
+	public AirsEndpoint(SEndpoint ept, String sensor, UIHandler uiHandler) {
 		this.m_Endpoint = ept;
 		this.m_SensorCode = sensor;
-		this.m_ValueName = valueName;
+		this.m_UIHandler = uiHandler;
+	}
+	
+	public AirsEndpoint(SEndpoint ept, String sensor, TYPE valueType, UIHandler uiHandler) {
+		this.m_Endpoint = ept;
+		this.m_SensorCode = sensor;
 		this.m_ValueType = valueType;
 		this.m_UIHandler = uiHandler;
 	}
@@ -27,11 +31,7 @@ public class AirsEndpoint {
 	public String getSensorCode() {
 		return this.m_SensorCode;
 	}
-	
-	public String getValueName() {
-		return m_ValueName;
-	}
-	
+		
 	public TYPE getValueType() {
 		return this.m_ValueType;
 	}
