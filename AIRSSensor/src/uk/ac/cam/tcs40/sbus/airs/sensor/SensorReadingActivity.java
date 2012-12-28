@@ -15,6 +15,10 @@ import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.EndpointManager;
 import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.UIManager;
 import android.os.Bundle;
 import android.app.Activity;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 public class SensorReadingActivity extends Activity {
@@ -22,6 +26,15 @@ public class SensorReadingActivity extends Activity {
 	private SensorReadingDB m_AirsDb;
 	private TextView m_StatusTextView;
 	private SComponent m_AirsComponent;
+	private Server m_Server;
+
+	private String[] m_Sensors = new String[] { "Rd", "BV", "VC", "Rm" };
+	private OnItemClickListener m_ListClick = new OnItemClickListener() {
+		@Override
+		public void onItemClick(AdapterView<?> parent, android.view.View view, int position, long id) {
+			m_Server.subscribe(m_Sensors[position]);
+		}
+	};
 
 	/** Called when the activity is first created. */
 	@Override
@@ -29,11 +42,17 @@ public class SensorReadingActivity extends Activity {
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_airs);
-		
+
 		// Set this as the activity so we can create TextViews.
 		UIManager.getInstance(this);
 
 		this.m_StatusTextView = (TextView) findViewById(R.id.status);
+
+		ListView list = (ListView) findViewById(R.id.sensors);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, android.R.id.text1, m_Sensors);
+		list.setAdapter(adapter);
+		list.setOnItemClickListener(m_ListClick);
 
 		/*** CONFIGURATION ***/
 		final boolean liveReadings = true;
@@ -69,7 +88,7 @@ public class SensorReadingActivity extends Activity {
 			new Thread() {
 				@Override
 				public void run() {
-					
+
 					// Set up the stuff for the AIRS server.
 					EventComponent eventComponent = new EventComponent();
 					Acquisition acquisition;
@@ -81,11 +100,12 @@ public class SensorReadingActivity extends Activity {
 						acquisition = new AirsAcquisition(eventComponent, null);
 					}
 
-					Server server = new Server(9000, eventComponent, acquisition);
+					m_Server = new Server(9000, eventComponent, acquisition);
+					
 					try {
 						setStatusText("waiting for AIRS to connect");						
 						// Start a server waiting for AIRS Remote to connect.
-						server.startConnection();
+						m_Server.startConnection();
 
 						setStatusText("subscribing to AIRS sensors");
 
@@ -94,9 +114,9 @@ public class SensorReadingActivity extends Activity {
 						// Get the sensors to subscribe to.
 						if (dynamicEndpoints) {
 							sensorCodes = new LinkedList<String>();
-							sensorCodes.add("Rm");
-							sensorCodes.add("VC");
-							sensorCodes.add("Rd");
+							//sensorCodes.add("Rm");
+							//sensorCodes.add("VC");
+							//sensorCodes.add("Rd");
 						} else {
 							// Get the relevant sensor codes.
 							sensorCodes = AirsEndpointRepository.getSensorCodes();
@@ -108,7 +128,7 @@ public class SensorReadingActivity extends Activity {
 
 							// Subscribe to the relevant sensors.
 							for (String sensorCode : sensorCodes) {
-								server.subscribe(sensorCode);
+								m_Server.subscribe(sensorCode);
 								builder.append(sensorCode).append(";");
 							}
 							setStatusText("subscribed to: " + builder.toString());
