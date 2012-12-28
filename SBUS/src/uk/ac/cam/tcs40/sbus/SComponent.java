@@ -65,6 +65,15 @@ public class SComponent {
 	}
 	
 	/**
+	 * Declare a new schema on this component.
+	 * @param schema The schema being declared.
+	 * @return The hash of the schema.
+	 */
+	public String declareSchema(String schema) {
+		return declareSchema(m_ComponentPointer, schema);
+	}
+	
+	/**
 	 * Delete this component (and its endpoints).
 	 * Must be called when finished, deletes the native representation.
 	 */
@@ -79,6 +88,7 @@ public class SComponent {
 	private native void addRDC(long componentPtr, String rdcAddress);
 	private native void start(long componentPtr, String cptFilename, int port, boolean useRDC);
 	private native void setPermission(long componentPtr, String componentName, String instanceName, boolean allow);
+	private native String declareSchema(long componentPtr, String schema);
 	private native void delete(long componentPtr);
 	
 	static {

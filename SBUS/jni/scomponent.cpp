@@ -109,6 +109,21 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
 	env->ReleaseStringUTFChars(instanceName, instance_name);
 }
 
+jstring
+Java_uk_ac_cam_tcs40_sbus_SComponent_declareSchema( JNIEnv* env,
+		                                            jobject thiz, 
+		                                            jlong component,
+		                                            jstring javaSchema )
+{
+	const char *schema = env->GetStringUTFChars(javaSchema, 0);
+	
+	const char *hash = ((scomponent *)component)->declare_schema(schema)->tostring();
+
+	env->ReleaseStringUTFChars(javaSchema, schema);
+		
+	return env->NewStringUTF(hash);
+}
+
 void
 Java_uk_ac_cam_tcs40_sbus_SComponent_delete( JNIEnv* env,
                                              jobject thiz,
