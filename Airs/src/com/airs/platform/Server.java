@@ -49,7 +49,7 @@ public class Server {
 	public void subscribe(String sensorCode) {
 		
 		byte[] sensor = sensorCode.getBytes();
-		int expires = 3600;
+		int expires = 0;
 		
 		this.m_EventComponent.Subscribe(this.m_From, this.m_EventName, sensor, sensor.length, expires, this.m_Acquisition);
 	}
