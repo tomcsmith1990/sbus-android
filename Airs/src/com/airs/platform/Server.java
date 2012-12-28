@@ -9,6 +9,7 @@ public class Server {
 	private int m_Port;
 	private EventComponent m_EventComponent;
 	private Acquisition m_Acquisition;
+	private Discovery m_Discovery;
 	private final byte[] m_From = "REMONT AS".getBytes();
 	private final byte[] m_EventName = "acquire".getBytes();
 
@@ -21,11 +22,11 @@ public class Server {
 		this.m_Port = port;
 	}
 	
-	public Server(int port, EventComponent eventComponent, Acquisition acquisition) {
+	public Server(int port, EventComponent eventComponent, Acquisition acquisition, Discovery discovery) {
 		this.m_Port = port;
 		this.m_EventComponent = eventComponent;
 		this.m_Acquisition = acquisition;
-		
+		this.m_Discovery = discovery;
 	}
 
 	public void startConnection() throws IOException {
@@ -41,7 +42,9 @@ public class Server {
 			this.m_Acquisition = new Acquisition(this.m_EventComponent);
 		
 		// For reading sensor descriptions.
-		new Discovery(this.m_EventComponent);
+		if (this.m_Discovery == null)
+			this.m_Discovery = new Discovery(this.m_EventComponent);
+		
 
 		m_EventComponent.startEC(sock);
 	}

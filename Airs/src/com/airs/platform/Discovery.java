@@ -58,7 +58,7 @@ public class Discovery implements Callback
 	public Discovery(EventComponent current_EC)
 	{
 		this.current_EC = current_EC;
-
+		
 		// register acquisition event server
 		if (this.current_EC.registerEventServer(this, event_name)==false)
 			debug("Discovery::Discovery(): failure in registering 'available' event");
@@ -114,24 +114,24 @@ public class Discovery implements Callback
 		while (position < length) {
 			if (sensor_description[position] == '\r') {
 				number_sensors++;
-				
+
 				// symbol::description::unit::type::scaler::min::max
 				String line = new String(sensor_description, offset, position-offset);
 				System.out.println(line);
-				
+
 				// Skip over the \r
 				offset = position + 1;
-				
+
 				String[] params = line.split("::");
-				
+
 				SensorRepository.insertSensor(params[0], 
-												params[2], 
-												params[1], 
-												params[3], 
-												Integer.parseInt(params[4]), 
-												Integer.parseInt(params[5]), 
-												Integer.parseInt(params[6]),
-												false, 30);
+						params[2], 
+						params[1], 
+						params[3], 
+						Integer.parseInt(params[4]), 
+						Integer.parseInt(params[5]), 
+						Integer.parseInt(params[6]),
+						false, 30);
 			}
 
 			position++;
