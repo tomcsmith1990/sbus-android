@@ -29,13 +29,11 @@ public class AirsAcquisition extends Acquisition implements Callback {
 		if (dialog.current_method.method_type == method_type.method_NOTIFY) {
 			parseReading(dialog.current_method.event_body.string, dialog.current_method.event_body.length);
 		}
-
 		// unlock dialog -> do not forget otherwise the dialog becomes unusuable!
 		dialog.locked = false;
 	}
 
-	@Override
-	public void parseReading(byte[] reading, int length) {
+	private void parseReading(byte[] reading, int length) {
 		String sensorCode = new String(reading, 0, 2);
 
 		Sensor sensor = SensorRepository.findSensor(sensorCode);
@@ -98,21 +96,5 @@ public class AirsAcquisition extends Acquisition implements Callback {
 			mesage.obj = s;
 			handler.sendMessage(mesage);
 		}
-	}
-
-	@Override
-	public int parseInt(byte[] reading, int length) {
-		int value = 0;
-		value += reading[5];
-		value += (reading[4] & 0xFF) << 8;
-		value += (reading[3] & 0xFF) << 16;
-		value += (reading[2] & 0xFF) << 24;
-		return value;
-	}
-
-	@Override
-	public String parseString(byte[] reading, int length) {
-		String value = new String(reading, 2, length - 2);
-		return value;
 	}
 }
