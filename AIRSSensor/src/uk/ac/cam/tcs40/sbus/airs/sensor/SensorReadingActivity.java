@@ -24,7 +24,10 @@ public class SensorReadingActivity extends Activity {
 	private OnItemClickListener m_ListClick = new OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> parent, android.view.View view, int position, long id) {
-			m_Gateway.subscribe(m_Adapter.getItem(position));
+			if (m_SensorList.getCheckedItemPositions().get(position)) {
+				// If we have just checked the sensor, subscribe.
+				m_Gateway.subscribe(m_Adapter.getItem(position));
+			}
 		}
 	};
 
@@ -43,17 +46,20 @@ public class SensorReadingActivity extends Activity {
 
 		// The sensor ListView.
 		this.m_SensorList = (ListView) findViewById(R.id.sensors);
-		this.m_Adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, m_Sensors);
+		this.m_Adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, m_Sensors);
 		this.m_SensorList.setAdapter(this.m_Adapter);
 		this.m_SensorList.setOnItemClickListener(m_ListClick);
 
+		// Will try to add sensors if we get a PUBLISH message - add these for now.
 		addSensor("Rm");
 		addSensor("Rd");
 		addSensor("VC");
 
+		// Create the component.
 		this.m_Gateway = new AirsSbusGateway(this);
 		new Thread() {
 			public void run() {
+				// Start waiting for AIRS to connect.
 				m_Gateway.startReadings();
 			}
 		}.start();
