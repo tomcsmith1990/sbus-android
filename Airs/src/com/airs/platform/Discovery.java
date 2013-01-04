@@ -58,7 +58,7 @@ public class Discovery implements Callback
 	public Discovery(EventComponent current_EC)
 	{
 		this.current_EC = current_EC;
-		
+
 		// register acquisition event server
 		if (this.current_EC.registerEventServer(this, event_name)==false)
 			debug("Discovery::Discovery(): failure in registering 'available' event");
@@ -105,7 +105,7 @@ public class Discovery implements Callback
 
 	}
 
-	public void parse(byte[] sensor_description, int length, int expires) {
+	private void parse(byte[] sensor_description, int length, int expires) {
 		int number_sensors = 0;
 		int offset = 0;
 		int position = 0;
@@ -136,9 +136,6 @@ public class Discovery implements Callback
 
 			position++;
 		}
-
 		debug("Discovery::parse: found sensors: " + number_sensors);
-
-
 	}
 }
