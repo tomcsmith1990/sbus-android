@@ -3,8 +3,6 @@ package uk.ac.cam.tcs40.sbus.airs.sensor;
 import java.io.IOException;
 import java.util.List;
 
-import com.airs.platform.Acquisition;
-import com.airs.platform.Discovery;
 import com.airs.platform.EventComponent;
 import com.airs.platform.Server;
 
@@ -79,8 +77,8 @@ public class AirsSbusGateway {
 	private void startLiveReadings() {
 		// Set up the stuff for the AIRS server.
 		EventComponent eventComponent = new EventComponent();
-		Acquisition acquisition;
-		Discovery discovery = new AirsDiscovery(eventComponent, this.m_Activity);
+		AirsAcquisition acquisition;
+		AirsDiscovery discovery = new AirsDiscovery(eventComponent, this.m_Activity);
 
 		if (this.m_DynamicEndpoints) {
 			EndpointManager endpointManager = new EndpointManager(this.m_Context, this.m_Component);
@@ -95,7 +93,10 @@ public class AirsSbusGateway {
 			this.m_Activity.setStatusText("waiting for AIRS to connect");						
 			// Start a server waiting for AIRS Remote to connect.
 			this.m_Server.startConnection();
-
+			
+			this.m_Activity.setStatusText("loading AIRS sensor list");						
+			discovery.loadSensorFile();
+			
 			this.m_Activity.setStatusText("ready for AIRS subscriptions");
 
 			if (!this.m_DynamicEndpoints) {

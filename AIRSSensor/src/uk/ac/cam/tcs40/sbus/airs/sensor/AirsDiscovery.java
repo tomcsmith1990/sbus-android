@@ -1,18 +1,29 @@
 package uk.ac.cam.tcs40.sbus.airs.sensor;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import android.util.Log;
+
 import com.airs.platform.Discovery;
 import com.airs.platform.EventComponent;
 import com.airs.platform.SensorRepository;
 
 public class AirsDiscovery extends Discovery {
-	
+
 	private SensorReadingActivity m_Activity;
+	private final String m_SensorFileName = "sensors.txt";
+	private final Object m_SensorFileLock = new Object();
 
 	public AirsDiscovery(EventComponent current_EC, SensorReadingActivity activity) {
 		super(current_EC);
 		this.m_Activity = activity;
 	}
-	
+
 	/***********************************************************************
 	 Function    : callback()
 	 Input       : dialog for notification
@@ -40,7 +51,9 @@ public class AirsDiscovery extends Discovery {
 			if (dialog.current_method.event_body.length > 0) {
 
 				debug("Discovery::callback: received PUBLISH with at least one sensor");
-				parse(dialog.current_method.event_body.string, dialog.current_method.event_body.length, dialog.current_method.pub.Expires);
+				
+				saveSensorFile(dialog.current_method.event_body.string);
+				
 			} else {
 
 				debug("Discovery::callback: received PUBLISH with no sensor information");
@@ -62,30 +75,85 @@ public class AirsDiscovery extends Discovery {
 		while (position < length) {
 			if (sensor_description[position] == '\r') {				
 				// symbol::description::unit::type::scaler::min::max
-				String line = new String(sensor_description, offset, position-offset);
+				String line = new String(sensor_description, offset, position - offset);
 				//System.out.println(line);
-				
+
 				// Skip over the \r
 				offset = position + 1;
-				
+
 				String[] params = line.split("::");
-				
+
 				this.m_Activity.addSensor(params[0]);
-				
+
 				SensorRepository.insertSensor(params[0], 
-												params[2], 
-												params[1], 
-												params[3], 
-												Integer.parseInt(params[4]), 
-												Integer.parseInt(params[5]), 
-												Integer.parseInt(params[6]),
-												false, 30);
+						params[2], 
+						params[1], 
+						params[3], 
+						Integer.parseInt(params[4]), 
+						Integer.parseInt(params[5]), 
+						Integer.parseInt(params[6]),
+						false, 30);
 			}
 
 			position++;
 		}
 
 		//debug("Discovery::parse: found sensors: " + number_sensors);
+	}
+
+	public void loadSensorFile() {
+		synchronized (this.m_SensorFileLock) {
+			
+			File file = new File(this.m_Activity.getApplicationContext().getFilesDir(), this.m_SensorFileName);
+
+			// Returns 0 if file does not exist.
+			int length = (int) file.length();
+			byte[] buffer = new byte[0];
+
+			if (length > 0) {
+				try {
+
+					// Open an InputStream for the file.
+					InputStream in = new FileInputStream(file);
+
+					buffer = new byte[length];
+
+					// Read the sensor descriptions from the file.
+					in.read(buffer);
+
+					// Close the file stream.
+					in.close();
+
+				} catch (IOException e) {
+					Log.w("AirsDiscovery::callback", "Error reading sensor descriptions", e);
+				}
+
+				// Update sensor descriptions in the app.
+				parse(buffer, length, 0);
+			}
+		}
+	}
+
+	private void saveSensorFile(byte[] sensorDescription) {
+		synchronized (this.m_SensorFileLock) {
+
+			File file = new File(this.m_Activity.getApplicationContext().getFilesDir(), this.m_SensorFileName);
+
+			try {
+
+				// Open an OutputStream for the file.
+				OutputStream os = new FileOutputStream(file);
+
+				// Write sensor descriptions to the file.
+				os.write(sensorDescription);
+
+				// Close the file streams.
+				os.close();
+
+			} catch (IOException e) {
+				Log.w("AirsDiscovery::callback", "Error writing sensor descriptions", e);
+			}
+		}
 	}
 
 }
