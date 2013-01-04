@@ -117,4 +117,9 @@ public class Sensor
 	        last_read = System.currentTimeMillis() - polltime;
     	}
     }
+    
+    @Override
+    public String toString() {
+    	return Description;
+    }
 }
