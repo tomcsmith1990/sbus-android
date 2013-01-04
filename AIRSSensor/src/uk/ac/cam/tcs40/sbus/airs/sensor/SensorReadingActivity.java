@@ -63,7 +63,7 @@ public class SensorReadingActivity extends Activity {
 		}.start();
 	}
 
-	public void addSensor(final String sensor) {
+	public void addSensorToList(final String sensor) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {

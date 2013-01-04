@@ -95,7 +95,7 @@ public class AirsSbusGateway {
 			this.m_Server.startConnection();
 			
 			this.m_Activity.setStatusText("loading AIRS sensor list");						
-			discovery.loadSensorFile();
+			discovery.loadSensorsFromFile();
 			
 			this.m_Activity.setStatusText("ready for AIRS subscriptions");
 
