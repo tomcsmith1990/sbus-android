@@ -9,11 +9,12 @@ import java.io.OutputStream;
 
 import android.util.Log;
 
+import com.airs.platform.Callback;
 import com.airs.platform.Discovery;
 import com.airs.platform.EventComponent;
 import com.airs.platform.SensorRepository;
 
-public class AirsDiscovery extends Discovery {
+public class AirsDiscovery extends Discovery implements Callback {
 
 	private SensorReadingActivity m_Activity;
 	private final String m_SensorFileName = "sensors.txt";
@@ -24,13 +25,6 @@ public class AirsDiscovery extends Discovery {
 		this.m_Activity = activity;
 	}
 
-	/***********************************************************************
-	 Function    : callback()
-	 Input       : dialog for notification
-	 Output      :
-	 Return      :
-	 Description : callback for CONFIRMs of the publications
-	 ***********************************************************************/
 	public void callback(DIALOG_INFO dialog)
 	{
 		// Only care about PUBLISH, do nothing on other (if any) types.
@@ -52,6 +46,7 @@ public class AirsDiscovery extends Discovery {
 		dialog.locked = false;
 	}
 
+	@Override
 	public void parse(byte[] sensor_description, int length, int expires) {
 		saveSensorsToFile(sensor_description);
 		updateSensorList(sensor_description, length, expires);
