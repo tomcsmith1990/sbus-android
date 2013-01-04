@@ -69,8 +69,6 @@ public class AirsDiscovery extends Discovery implements Callback {
 				// symbol::description::unit::type::scaler::min::max
 				String[] params = line.split("::");
 
-				this.m_Activity.addSensorToList(params[0]);
-
 				SensorRepository.insertSensor(params[0], 
 						params[2], 
 						params[1], 
@@ -79,6 +77,9 @@ public class AirsDiscovery extends Discovery implements Callback {
 						Integer.parseInt(params[5]), 
 						Integer.parseInt(params[6]),
 						false, 30);
+				
+				this.m_Activity.addSensorToList(SensorRepository.findSensor(params[0]));
+
 			}
 
 			position++;

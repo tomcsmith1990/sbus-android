@@ -3,6 +3,8 @@ package uk.ac.cam.tcs40.sbus.airs.sensor;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.airs.platform.Sensor;
+
 import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.UIManager;
 import android.os.Bundle;
 import android.app.Activity;
@@ -17,9 +19,9 @@ public class SensorReadingActivity extends Activity {
 	private AirsSbusGateway m_Gateway;
 	private TextView m_StatusTextView;
 	private ListView m_SensorList;
-	private ArrayAdapter<String> m_Adapter;
+	private ArrayAdapter<Sensor> m_Adapter;
 
-	private List<String> m_Sensors = new LinkedList<String>();
+	private List<Sensor> m_Sensors = new LinkedList<Sensor>();
 
 	private OnItemClickListener m_ListClick = new OnItemClickListener() {
 		@Override
@@ -28,7 +30,7 @@ public class SensorReadingActivity extends Activity {
 
 				if (m_SensorList.getCheckedItemPositions().get(position)) {
 					// If we have just checked the sensor, subscribe.
-					m_Gateway.subscribe(m_Adapter.getItem(position));
+					m_Gateway.subscribe(m_Adapter.getItem(position).Symbol);
 				}
 			}
 		}
@@ -49,7 +51,7 @@ public class SensorReadingActivity extends Activity {
 
 		// The sensor ListView.
 		this.m_SensorList = (ListView) findViewById(R.id.sensors);
-		this.m_Adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, m_Sensors);
+		this.m_Adapter = new ArrayAdapter<Sensor>(this, android.R.layout.simple_list_item_multiple_choice, m_Sensors);
 		this.m_SensorList.setAdapter(this.m_Adapter);
 		this.m_SensorList.setOnItemClickListener(m_ListClick);
 		
@@ -63,7 +65,7 @@ public class SensorReadingActivity extends Activity {
 		}.start();
 	}
 
-	public void addSensorToList(final String sensor) {
+	public void addSensorToList(final Sensor sensor) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
