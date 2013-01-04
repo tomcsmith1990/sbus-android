@@ -67,6 +67,8 @@ public class AirsSbusGateway {
 	}
 
 	public void subscribe(String sensorCode) {
+		if (this.m_Server == null) return;
+		
 		this.m_Server.subscribe(sensorCode);
 	}
 
