@@ -24,7 +24,7 @@ public class SensorReadingActivity extends Activity {
 	private OnItemClickListener m_ListClick = new OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> parent, android.view.View view, int position, long id) {
-			if (m_SensorList == null || m_Gateway == null) {
+			if (m_SensorList != null && m_Gateway != null && m_Adapter != null) {
 
 				if (m_SensorList.getCheckedItemPositions().get(position)) {
 					// If we have just checked the sensor, subscribe.
