@@ -47,7 +47,13 @@ public class AirsDiscovery extends Discovery implements Callback {
 		dialog.locked = false;
 	}
 
-	private void parseSensors(byte[] sensor_description, int length, int expires) {
+
+	protected void parse(byte[] sensor_description, int length, int expires) {
+		saveSensorsToFile(sensor_description);
+		updateSensorList(sensor_description, length, expires);
+	}
+
+	private void updateSensorList(byte[] sensor_description, int length, int expires) {
 		int offset = 0;
 		int position = 0;
 
@@ -107,7 +113,7 @@ public class AirsDiscovery extends Discovery implements Callback {
 				}
 
 				// Update sensor descriptions in the app.
-				parseSensors(buffer, length, 0);
+				updateSensorList(buffer, length, 0);
 			}
 		}
 	}
