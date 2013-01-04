@@ -33,57 +33,47 @@ public class AirsDiscovery extends Discovery {
 	 ***********************************************************************/
 	public void callback(DIALOG_INFO dialog)
 	{
-		//debug("Discovery::callback:received method");
-		//debug("...FROM  : " + new String(dialog.current_method.FROM.string));
-		//debug("...TO	 : " + new String(dialog.current_method.TO.string));
+		// Only care about PUBLISH, do nothing on other (if any) types.
+		if (dialog.current_method.method_type == method_type.method_PUBLISH) {
 
-		// what method type??
-		switch(dialog.current_method.method_type)
-		{
-		case method_type.method_CONFIRM:
-			// set state rightin order to send further NOTIFYs
-			dialog.dialog_state = dialog_state.PUBLICATION_VALID;
-			debug("...it's a CONFIRM - doing nothing");
-			// unlock dialog -> do not forget otherwise the dialog becomes unusuable!
-			dialog.locked = false;								
-			break;
-		case method_type.method_PUBLISH:
 			if (dialog.current_method.event_body.length > 0) {
 
 				debug("Discovery::callback: received PUBLISH with at least one sensor");
-				
-				saveSensorFile(dialog.current_method.event_body.string);
-				
+
+				saveSensorsToFile(dialog.current_method.event_body.string);
+
 			} else {
 
 				debug("Discovery::callback: received PUBLISH with no sensor information");
 			}
-			break;
-		default:
-			// unlock dialog -> do not forget otherwise the dialog becomes unusuable!
-			dialog.locked = false;
-			debug("...there is another method - shouldn't happen");
 		}
 
+		// unlock dialog -> do not forget otherwise the dialog becomes unusuable!
+		dialog.locked = false;
 	}
 
 	public void parse(byte[] sensor_description, int length, int expires) {
+		saveSensorsToFile(sensor_description);
+		updateSensorList(sensor_description, length, expires);
+	}
+
+	public void updateSensorList(byte[] sensor_description, int length, int expires) {
 		int offset = 0;
 		int position = 0;
 
 		// count lines first -> number of sensors
 		while (position < length) {
 			if (sensor_description[position] == '\r') {				
-				// symbol::description::unit::type::scaler::min::max
+
 				String line = new String(sensor_description, offset, position - offset);
-				//System.out.println(line);
 
 				// Skip over the \r
 				offset = position + 1;
 
+				// symbol::description::unit::type::scaler::min::max
 				String[] params = line.split("::");
 
-				this.m_Activity.addSensor(params[0]);
+				this.m_Activity.addSensorToList(params[0]);
 
 				SensorRepository.insertSensor(params[0], 
 						params[2], 
@@ -97,13 +87,11 @@ public class AirsDiscovery extends Discovery {
 
 			position++;
 		}
-
-		//debug("Discovery::parse: found sensors: " + number_sensors);
 	}
 
-	public void loadSensorFile() {
+	public void loadSensorsFromFile() {
 		synchronized (this.m_SensorFileLock) {
-			
+
 			File file = new File(this.m_Activity.getApplicationContext().getFilesDir(), this.m_SensorFileName);
 
 			// Returns 0 if file does not exist.
@@ -129,12 +117,12 @@ public class AirsDiscovery extends Discovery {
 				}
 
 				// Update sensor descriptions in the app.
-				parse(buffer, length, 0);
+				updateSensorList(buffer, length, 0);
 			}
 		}
 	}
 
-	private void saveSensorFile(byte[] sensorDescription) {
+	private void saveSensorsToFile(byte[] sensorDescription) {
 		synchronized (this.m_SensorFileLock) {
 
 			File file = new File(this.m_Activity.getApplicationContext().getFilesDir(), this.m_SensorFileName);
@@ -142,13 +130,13 @@ public class AirsDiscovery extends Discovery {
 			try {
 
 				// Open an OutputStream for the file.
-				OutputStream os = new FileOutputStream(file);
+				OutputStream out = new FileOutputStream(file);
 
 				// Write sensor descriptions to the file.
-				os.write(sensorDescription);
+				out.write(sensorDescription);
 
 				// Close the file streams.
-				os.close();
+				out.close();
 
 			} catch (IOException e) {
 				Log.w("AirsDiscovery::callback", "Error writing sensor descriptions", e);
