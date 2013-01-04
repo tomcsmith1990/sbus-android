@@ -15,7 +15,8 @@
     <ListView
         android:id="@+id/sensors"
         android:layout_width="match_parent"
-        android:layout_height="190dp" >
+        android:layout_height="190dp"
+        android:choiceMode="multipleChoice" >
     </ListView>
 
     <ScrollView
