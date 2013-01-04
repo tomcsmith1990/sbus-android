@@ -120,6 +120,6 @@ public class Sensor
     
     @Override
     public String toString() {
-    	return Description;
+    	return "[" + Symbol + "] " + Description;
     }
 }
