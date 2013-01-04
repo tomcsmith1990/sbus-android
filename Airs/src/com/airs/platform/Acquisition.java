@@ -190,7 +190,7 @@ public class Acquisition implements Callback
 		}
 	}
 
-	public void parseReading(byte[] reading, int length) {
+	private void parseReading(byte[] reading, int length) {
 		String sensorCode = new String(reading, 0, 2);
 		Sensor sensor = SensorRepository.findSensor(sensorCode);
 
@@ -218,7 +218,7 @@ public class Acquisition implements Callback
 
 	}
 
-	public int parseInt(byte[] reading, int length) {
+	protected int parseInt(byte[] reading, int length) {
 		int value = 0;
 		value += reading[5];
 		value += (reading[4] & 0xFF) << 8;
@@ -227,7 +227,7 @@ public class Acquisition implements Callback
 		return value;
 	}
 
-	public String parseString(byte[] reading, int length) {
+	protected String parseString(byte[] reading, int length) {
 		String value = new String(reading, 2, length - 2);
 		return value;
 	}
