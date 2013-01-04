@@ -190,7 +190,8 @@ public class Acquisition implements Callback
 		}
 	}
 
-	private void parseReading(byte[] reading, int length) {
+	protected void parseReading(byte[] reading, int length) {
+		
 		String sensorCode = new String(reading, 0, 2);
 		Sensor sensor = SensorRepository.findSensor(sensorCode);
 
