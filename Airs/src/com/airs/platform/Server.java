@@ -51,6 +51,8 @@ public class Server {
 	
 	public void subscribe(String sensorCode) {
 		
+		if (this.m_EventComponent == null) return;
+		
 		byte[] sensor = sensorCode.getBytes();
 		int expires = 0;
 		
