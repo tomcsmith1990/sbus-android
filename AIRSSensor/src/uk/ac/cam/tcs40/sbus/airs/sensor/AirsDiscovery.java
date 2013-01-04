@@ -35,7 +35,8 @@ public class AirsDiscovery extends Discovery implements Callback {
 				debug("Discovery::callback: received PUBLISH with at least one sensor");
 
 				saveSensorsToFile(dialog.current_method.event_body.string);
-
+				loadSensorsFromFile();
+				
 			} else {
 
 				debug("Discovery::callback: received PUBLISH with no sensor information");
@@ -46,13 +47,7 @@ public class AirsDiscovery extends Discovery implements Callback {
 		dialog.locked = false;
 	}
 
-	@Override
-	public void parse(byte[] sensor_description, int length, int expires) {
-		saveSensorsToFile(sensor_description);
-		updateSensorList(sensor_description, length, expires);
-	}
-
-	public void updateSensorList(byte[] sensor_description, int length, int expires) {
+	private void parseSensors(byte[] sensor_description, int length, int expires) {
 		int offset = 0;
 		int position = 0;
 
@@ -112,7 +107,7 @@ public class AirsDiscovery extends Discovery implements Callback {
 				}
 
 				// Update sensor descriptions in the app.
-				updateSensorList(buffer, length, 0);
+				parseSensors(buffer, length, 0);
 			}
 		}
 	}
