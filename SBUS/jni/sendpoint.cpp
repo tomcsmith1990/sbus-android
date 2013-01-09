@@ -6,13 +6,16 @@ jstring
 Java_uk_ac_cam_tcs40_sbus_SEndpoint_endpointMap( JNIEnv* env,
 				                                 jobject thiz, 
 			                                     jlong endpoint,
-			                                     jstring addr )
+			                                     jstring addr,
+			                                     jstring ept )
 {
 	const char *address = env->GetStringUTFChars(addr, 0);
+	const char *endpt = env->GetStringUTFChars(ept, 0);
 	
-	const char *s = ((sendpoint *)endpoint)->map(address, NULL);
+	const char *s = ((sendpoint *)endpoint)->map(address, endpt);
 	
 	env->ReleaseStringUTFChars(addr, address);
+	env->ReleaseStringUTFChars(ept, endpt);
 	
 	if (s == NULL) return env->NewStringUTF("error"); 
 	else return env->NewStringUTF(s);

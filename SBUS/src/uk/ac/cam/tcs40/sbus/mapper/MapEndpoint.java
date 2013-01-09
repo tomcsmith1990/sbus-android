@@ -19,7 +19,7 @@ public class MapEndpoint {
 	 * @param peerEndpoint The endpoint of the other component.
 	 */
 	public void map(String localAddress, String localEndpoint, String peerAddress, String peerEndpoint) {
-		this.m_Endpoint.endpointMap(localAddress);
+		this.m_Endpoint.endpointMap(localAddress, null);
 
 		SNode node = this.m_Endpoint.createMessage("map");
 		node.packString(localEndpoint, "endpoint");
@@ -27,6 +27,17 @@ public class MapEndpoint {
 		node.packString(peerEndpoint, "peer_endpoint");
 		node.packString("", "certificate");
 
+		this.m_Endpoint.emit(node);
+		
+		this.m_Endpoint.endpointUnmap();
+	}
+	
+	public void registerRdc(String localAddress, String rdcAddress) {
+		this.m_Endpoint.endpointMap(localAddress, "register_rdc");
+		
+		SNode node = this.m_Endpoint.createMessage("event");
+		node.packString(rdcAddress, "rdc_address");
+		
 		this.m_Endpoint.emit(node);
 		
 		this.m_Endpoint.endpointUnmap();

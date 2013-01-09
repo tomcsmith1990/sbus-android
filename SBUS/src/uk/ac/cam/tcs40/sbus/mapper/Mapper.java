@@ -16,8 +16,15 @@ import android.widget.Button;
 
 public class Mapper extends Activity
 {
-	private SComponent m_MapComponent;
+	private SComponent m_ConnectComponent;
 	private MapEndpoint m_MapEndpoint;
+	private RdcEndpoint m_RdcEndpoint;
+	
+	public static final String COMPONENT_ADDR = ":44444";
+	public static final String COMPONENT_EPT = "Rd";
+	public static final String TARGET_ADDR = "192.168.0.3:44444";
+	public static final String TARGET_EPT = "Random";
+	public static final String RDC_ADDRESS = "128.232.128.128:50123";
 
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
@@ -25,8 +32,18 @@ public class Mapper extends Activity
 		}
 	};
 	
+	private OnClickListener m_RdcButtonListener = new OnClickListener() {
+		public void onClick(View v) {
+			registerRdc(m_RdcEndpoint);
+		}
+	};
+	
 	public static void remap(MapEndpoint endpoint) {
-		endpoint.map(":44445", "Random", "192.168.0.3:44444", "Random");
+		endpoint.map(Mapper.COMPONENT_ADDR, Mapper.COMPONENT_EPT, Mapper.TARGET_ADDR, Mapper.TARGET_EPT);
+	}
+	
+	public static void registerRdc(RdcEndpoint endpoint) {
+		endpoint.registerRdc(Mapper.COMPONENT_ADDR, Mapper.RDC_ADDRESS);
 	}
 
 	@Override
@@ -38,23 +55,31 @@ public class Mapper extends Activity
 		new SBUSBootloader(getApplicationContext());
 
 		// .cpt file for this component.
-		final String mapFile = "map.cpt";
+		final String mapFile = "connect.cpt";
 
 		// Copy the .cpt file to the application directory.
 		new FileBootloader(getApplicationContext()).store(mapFile);
 
 		// Initialise and start the map component.
-		this.m_MapComponent = new SComponent("spoke", "spoke");
-		SEndpoint ept = this.m_MapComponent.addEndpointSource("map", "F46B9113DB2D");
-		this.m_MapEndpoint = new MapEndpoint(ept);
-		this.m_MapComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile,  -1, false);
+		this.m_ConnectComponent = new SComponent("spoke", "spoke");
+		SEndpoint map = this.m_ConnectComponent.addEndpointSource("map", "F46B9113DB2D");
+		this.m_MapEndpoint = new MapEndpoint(map);
+		
+		SEndpoint rdc = this.m_ConnectComponent.addEndpointSource("emit", "3D3F1711E783");
+		this.m_RdcEndpoint = new RdcEndpoint(rdc);
+		
+		this.m_ConnectComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile, -1, false);
 
 		// Display the layout.
 		setContentView(R.layout.activity_mapper);
 
 		// Add event listener to the map button.
-		Button button = (Button)findViewById(R.id.map_button);
-		button.setOnClickListener(m_MapButtonListener);
+		Button mapButton = (Button)findViewById(R.id.map_button);
+		mapButton.setOnClickListener(m_MapButtonListener);
+		
+		// Add event listener to the rdc button.
+		Button rdcButton = (Button)findViewById(R.id.rdc_button);
+		rdcButton.setOnClickListener(m_RdcButtonListener);
 
 		new Thread() {
 			public void run() {
@@ -63,7 +88,7 @@ public class Mapper extends Activity
 				IntentFilter intentFilter = new IntentFilter();
 				intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 				intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-				registerReceiver(new WifiReceiver(m_MapEndpoint), intentFilter);
+				registerReceiver(new WifiReceiver(m_MapEndpoint, m_RdcEndpoint), intentFilter);
 
 				while(true) {
 					try {

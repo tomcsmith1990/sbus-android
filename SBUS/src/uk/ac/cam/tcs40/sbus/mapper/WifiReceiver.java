@@ -11,10 +11,12 @@ import android.util.Log;
 public class WifiReceiver extends BroadcastReceiver {
 
 	private MapEndpoint m_MapEndpoint;
+	private RdcEndpoint m_RdcEndpoint;
 
-	public WifiReceiver(MapEndpoint mapEndpoint) {
+	public WifiReceiver(MapEndpoint mapEndpoint, RdcEndpoint registerRdcEndpoint) {
 		super();
 		this.m_MapEndpoint = mapEndpoint;
+		this.m_RdcEndpoint = registerRdcEndpoint;
 	}
 
 	@Override
@@ -30,6 +32,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
 				// Emit the map message to map once we connect to WiFi.
 				Mapper.remap(m_MapEndpoint);
+				
+				// Connect to the new RDC.
+				Mapper.registerRdc(m_RdcEndpoint);
 			}
 			
 		} else if(intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
