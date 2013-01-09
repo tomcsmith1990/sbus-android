@@ -19,11 +19,11 @@ public class Mapper extends Activity
 	private SComponent m_ConnectComponent;
 	private MapEndpoint m_MapEndpoint;
 	private RdcEndpoint m_RdcEndpoint;
-	
+
 	public static final String COMPONENT_ADDR = ":44444";
-	public static final String COMPONENT_EPT = "Rd";
-	public static final String TARGET_ADDR = "192.168.0.3:44444";
-	public static final String TARGET_EPT = "Random";
+	public static final String COMPONENT_EPT = "SomeEpt";
+	public static final String TARGET_ADDR = "128.232.128.128:44444";
+	public static final String TARGET_EPT = "SomeEpt";
 	public static final String RDC_ADDRESS = "128.232.128.128:50123";
 
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
@@ -31,17 +31,17 @@ public class Mapper extends Activity
 			remap(m_MapEndpoint);
 		}
 	};
-	
+
 	private OnClickListener m_RdcButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			registerRdc(m_RdcEndpoint);
 		}
 	};
-	
+
 	public static void remap(MapEndpoint endpoint) {
 		endpoint.map(Mapper.COMPONENT_ADDR, Mapper.COMPONENT_EPT, Mapper.TARGET_ADDR, Mapper.TARGET_EPT);
 	}
-	
+
 	public static void registerRdc(RdcEndpoint endpoint) {
 		endpoint.registerRdc(Mapper.COMPONENT_ADDR, Mapper.RDC_ADDRESS);
 	}
@@ -50,6 +50,16 @@ public class Mapper extends Activity
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		// Display the layout.
+		setContentView(R.layout.activity_mapper);
+
+		// Add event listener to the map button.
+		Button mapButton = (Button)findViewById(R.id.map_button);
+		mapButton.setOnClickListener(m_MapButtonListener);
+
+		// Add event listener to the rdc button.
+		Button rdcButton = (Button)findViewById(R.id.rdc_button);
+		rdcButton.setOnClickListener(m_RdcButtonListener);
 
 		// Copy the needed SBUS files if they do not already exist.
 		new SBUSBootloader(getApplicationContext());
@@ -64,25 +74,15 @@ public class Mapper extends Activity
 		this.m_ConnectComponent = new SComponent("spoke", "spoke");
 		SEndpoint map = this.m_ConnectComponent.addEndpointSource("map", "F46B9113DB2D");
 		this.m_MapEndpoint = new MapEndpoint(map);
-		
+
 		SEndpoint rdc = this.m_ConnectComponent.addEndpointSource("emit", "3D3F1711E783");
 		this.m_RdcEndpoint = new RdcEndpoint(rdc);
-		
+
 		this.m_ConnectComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile, -1, false);
-
-		// Display the layout.
-		setContentView(R.layout.activity_mapper);
-
-		// Add event listener to the map button.
-		Button mapButton = (Button)findViewById(R.id.map_button);
-		mapButton.setOnClickListener(m_MapButtonListener);
-		
-		// Add event listener to the rdc button.
-		Button rdcButton = (Button)findViewById(R.id.rdc_button);
-		rdcButton.setOnClickListener(m_RdcButtonListener);
 
 		new Thread() {
 			public void run() {
+
 				// Register a broadcast receiver.
 				// Detects when we connect/disconnect to a Wifi network.
 				IntentFilter intentFilter = new IntentFilter();
