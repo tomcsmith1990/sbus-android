@@ -52,6 +52,7 @@ const char *divert_schema_str =
 "@divert { txt endpoint txt new_address txt new_endpoint [txt peer_address] [txt peer_endpoint] txt certificate }";
 const char *subscribe_schema_str =
 		"@subscribe { txt endpoint txt peer txt subscription txt topic }";
+const char *register_with_rdc_schema_str = "@event { txt rdc_address }";
 const char *register_schema_str = "@event { txt address flg arrived }";
 const char *lookup_cpt_rep = "@results ( txt address )";
 const char *lookup_schema_msg = "@txt hashcode";
@@ -460,6 +461,11 @@ void swrapper::verify_builtin(smidpoint *mp)
 	else if(!strcmp(mp->name, "subscribe"))
 	{
 		mp->msg_schema = Schema::create(subscribe_schema_str, &err);
+		mp->reply_schema = Schema::create("!", &err);
+	}
+	else if(!strcmp(mp->name, "register_rdc"))
+	{
+		mp->msg_schema = Schema::create(register_with_rdc_schema_str, &err);
 		mp->reply_schema = Schema::create("!", &err);
 	}
 	else if(!strcmp(mp->name, "register"))
@@ -2063,6 +2069,18 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 		log_level = sn->extract_int("log");
 		echo_level = sn->extract_int("echo");
 	}
+	else if(!strcmp(fn_endpoint, "register_rdc"))
+	{		
+		// get the address of this new rdc
+		rdc->add_noduplicates(sn->extract_txt("rdc_address"));
+	
+		// register the component with the rdc
+		register_cpt(1);
+
+		// this informs the rdc about privileges		
+		register_with_rdc = true;
+		setdefaultprivs();
+	}
 	else if(!strcmp(fn_endpoint, "terminate"))
 	{
 		warning("Abort: Wrapper terminating in response to remote request");
@@ -2191,6 +2209,7 @@ void swrapper::add_builtin_endpoints()
 	add_builtin("unmap", EndpointSink, "FCEDAD0B6FE1");
 	add_builtin("divert", EndpointSink, "C648D3D07AE8");
 	add_builtin("subscribe", EndpointSink, "72904AC06922");
+	add_builtin("register_rdc", EndpointSink, "3D3F1711E783");
 
 	register_mp = add_builtin("register", EndpointSource, "B3572388E4A4");
 	lookup_cpt_mp = add_builtin("lookup_cpt", EndpointClient, "AE7945554959",
