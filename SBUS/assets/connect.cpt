@@ -18,5 +18,16 @@
 			</message>
 			<response>!</response>
 		</endpoint>
+		<endpoint>
+			<name>emit</name>
+			<type>#source</type>
+			<message>
+				@event
+				{
+					txt rdc_address
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
 	</endpoints>
 </component-metadata>
