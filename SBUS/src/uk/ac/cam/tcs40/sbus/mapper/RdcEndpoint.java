@@ -17,13 +17,13 @@ public class RdcEndpoint {
 	 * @param rdcAddress The adddress of the RDC to connect to.
 	 */
 	public void registerRdc(String localAddress, String rdcAddress) {
-		this.m_Endpoint.endpointMap(localAddress, "register_rdc");
+		this.m_Endpoint.map(localAddress, "register_rdc");
 		
 		SNode node = this.m_Endpoint.createMessage("event");
 		node.packString(rdcAddress, "rdc_address");
 		
 		this.m_Endpoint.emit(node);
 		
-		this.m_Endpoint.endpointUnmap();
+		this.m_Endpoint.unmap();
 	}
 }
