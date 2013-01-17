@@ -34,7 +34,7 @@ public class Mapper extends Activity
 	private SComponent m_ConnectComponent;
 	private MapEndpoint m_MapEndpoint;
 	private RdcEndpoint m_RdcEndpoint;
-	private final List<String> m_Registered = new LinkedList<String>();
+	private static final List<String> s_Registered = new LinkedList<String>();
 
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
@@ -53,7 +53,8 @@ public class Mapper extends Activity
 	}
 
 	public static void registerRdc(RdcEndpoint endpoint) {
-		endpoint.registerRdc(Mapper.COMPONENT_ADDR, Mapper.RDC_ADDRESS);
+		for (String localAddress : Mapper.s_Registered)
+			endpoint.registerRdc(localAddress, Mapper.RDC_ADDRESS);
 	}
 
 	@Override
@@ -140,14 +141,14 @@ public class Mapper extends Activity
 					arrived = snode.extractBoolean("arrived");
 
 					if (arrived) {
-						if (m_Registered.contains(address)) {
+						if (Mapper.s_Registered.contains(address)) {
 							Log.i("MPC", "Attempting to register already registered component.");
 						} else {
-							m_Registered.add(address);
+							Mapper.s_Registered.add(address);
 							Log.i("MPC", "Registered component " + address);
 						}
 					} else {
-						m_Registered.remove(address);
+						Mapper.s_Registered.remove(address);
 						Log.i("MPC", "Deregistered component " + address);
 					}
 
