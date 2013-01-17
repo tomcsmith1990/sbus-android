@@ -27,7 +27,7 @@ include $(CLEAR_VARS)
 LOCAL_PATH := ~/workspace/SBUS/jni
 LOCAL_STATIC_LIBRARIES := sbus
 LOCAL_MODULE    := sbusandroid
-LOCAL_SRC_FILES := scomponent.cpp sendpoint.cpp snode.cpp
+LOCAL_SRC_FILES := scomponent.cpp sendpoint.cpp smessage.cpp snode.cpp
 
 include $(BUILD_SHARED_LIBRARY)
 

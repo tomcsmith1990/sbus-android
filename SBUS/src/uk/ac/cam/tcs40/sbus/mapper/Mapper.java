@@ -1,14 +1,20 @@
 package uk.ac.cam.tcs40.sbus.mapper;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
+import uk.ac.cam.tcs40.sbus.SMessage;
+import uk.ac.cam.tcs40.sbus.SNode;
 import uk.ac.cam.tcs40.sbus.sbus.R;
 import android.app.Activity;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -16,15 +22,19 @@ import android.widget.Button;
 
 public class Mapper extends Activity
 {
-	private SComponent m_ConnectComponent;
-	private MapEndpoint m_MapEndpoint;
-	private RdcEndpoint m_RdcEndpoint;
+	private final int DEFAULT_RDC_PORT = 50123;
+	private final String CPT_FILE = "connect.cpt";
 
 	public static final String COMPONENT_ADDR = ":44444";
 	public static final String COMPONENT_EPT = "SomeEpt";
-	public static final String TARGET_ADDR = "128.232.128.128:44444";
+	public static final String TARGET_ADDR = "192.168.0.3:44444";
 	public static final String TARGET_EPT = "SomeEpt";
-	public static final String RDC_ADDRESS = "128.232.128.128:50123";
+	public static final String RDC_ADDRESS = "192.168.0.3:50123";
+
+	private SComponent m_ConnectComponent;
+	private MapEndpoint m_MapEndpoint;
+	private RdcEndpoint m_RdcEndpoint;
+	private final List<String> m_Registered = new LinkedList<String>();
 
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
@@ -64,21 +74,35 @@ public class Mapper extends Activity
 		// Copy the needed SBUS files if they do not already exist.
 		new SBUSBootloader(getApplicationContext());
 
-		// .cpt file for this component.
-		final String mapFile = "connect.cpt";
-
 		// Copy the .cpt file to the application directory.
-		new FileBootloader(getApplicationContext()).store(mapFile);
+		new FileBootloader(getApplicationContext()).store(CPT_FILE);
 
-		// Initialise and start the map component.
-		this.m_ConnectComponent = new SComponent("spoke", "spoke");
+		doMapping();
+	}
+
+	private void doMapping() {
+		// Our mapping/rdc component.
+		this.m_ConnectComponent = new SComponent("rdc", "rdc");
+
+		// For components registering to the rdc.
+		final SEndpoint register_ep = this.m_ConnectComponent.addEndpointSink("register", "B3572388E4A4");
+
+		// For components sending permissions after registering.
+		final SEndpoint acl_ep = this.m_ConnectComponent.addEndpointSink("set_acl", "6AF2ED96750B");
+
+		// For remapping components to other components.
 		SEndpoint map = this.m_ConnectComponent.addEndpointSource("map", "F46B9113DB2D");
 		this.m_MapEndpoint = new MapEndpoint(map);
 
-		SEndpoint rdc = this.m_ConnectComponent.addEndpointSource("emit", "3D3F1711E783");
+		// For telling components to connect to an rdc.
+		SEndpoint rdc = this.m_ConnectComponent.addEndpointSource("register_rdc", "3D3F1711E783");
 		this.m_RdcEndpoint = new RdcEndpoint(rdc);
 
-		this.m_ConnectComponent.start(getApplicationContext().getFilesDir() + "/" + mapFile, -1, false);
+		// Start the component on the default rdc port.
+		this.m_ConnectComponent.start(getApplicationContext().getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
+
+		// Allow all components to connect to endpoints (for register).
+		this.m_ConnectComponent.setPermission("", "", true);
 
 		new Thread() {
 			public void run() {
@@ -98,6 +122,38 @@ public class Mapper extends Activity
 						e.printStackTrace();
 					}
 				}
+			}
+		}.start();
+
+		new Thread() {
+			public void run() {
+
+				String address;
+				boolean arrived;
+				SMessage message;
+				SNode snode;
+
+				while (true) {
+					message = register_ep.receive();
+					snode = message.getTree();
+					address = snode.extractString("address");
+					arrived = snode.extractBoolean("arrived");
+
+					if (arrived) {
+						if (m_Registered.contains(address)) {
+							Log.i("MPC", "Attempting to register already registered component.");
+						} else {
+							m_Registered.add(address);
+							Log.i("MPC", "Registered component " + address);
+						}
+					} else {
+						m_Registered.remove(address);
+						Log.i("MPC", "Deregistered component " + address);
+					}
+
+					message.delete();
+				}
+
 			}
 		}.start();
 	}
