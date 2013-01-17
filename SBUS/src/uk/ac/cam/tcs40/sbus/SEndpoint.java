@@ -53,12 +53,12 @@ public class SEndpoint {
 		return s;
 	}
 
-	public String endpointMap(String address, String endpoint) {
-		return endpointMap(m_EndpointPointer, address, endpoint);
+	public String map(String address, String endpoint) {
+		return map(m_EndpointPointer, address, endpoint);
 	}
 
-	public void endpointUnmap() {
-		endpointUnmap(m_EndpointPointer);
+	public void unmap() {
+		unmap(m_EndpointPointer);
 	}
 	
 	/**
@@ -73,8 +73,8 @@ public class SEndpoint {
 	private native long createMessage(long endpointPtr, String messageType);
 	private native String emit(long endpointPtr, long messagePtr);
 
-	private native String endpointMap(long endpointPtr, String address, String endpoint);
-	private native void endpointUnmap(long endpointPtr);
+	private native String map(long endpointPtr, String address, String endpoint);
+	private native void unmap(long endpointPtr);
 	
 	private native long receive(long endpointPtr);
 }

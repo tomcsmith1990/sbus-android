@@ -3,7 +3,7 @@
 extern "C" {
 
 jstring
-Java_uk_ac_cam_tcs40_sbus_SEndpoint_endpointMap( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_map( JNIEnv* env,
 				                                 jobject thiz, 
 			                                     jlong endpoint,
 			                                     jstring addr,
@@ -22,7 +22,7 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_endpointMap( JNIEnv* env,
 }
 
 void
-Java_uk_ac_cam_tcs40_sbus_SEndpoint_endpointUnmap( JNIEnv* env,
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_unmap( JNIEnv* env,
 				                                   jobject thiz,
 			                                       jlong endpoint )
 {
