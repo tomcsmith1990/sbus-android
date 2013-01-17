@@ -1,9 +1,39 @@
 <component-metadata>
-	<name>spoke</name>
+	<name>rdc</name>
 	<description>Remapping utility</description>
 	<keywords></keywords>
 	<designer>Tom Smith</designer>
 	<endpoints>
+		<endpoint>
+			<name>register</name>
+			<type>#sink</type>
+			<message>
+				@event
+				{
+					txt address
+					flg arrived
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>set_acl</name>
+			<type>#sink</type>
+			<message>
+				@event
+				{
+   					txt target_cpt
+   					txt target_inst
+   					txt target_address
+   					txt target_endpt
+   					txt principal_cpt
+   					txt principal_inst
+   					flg add_perm
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+			
 		<endpoint>
 			<name>map</name>
 			<type>#source</type>
@@ -19,7 +49,7 @@
 			<response>!</response>
 		</endpoint>
 		<endpoint>
-			<name>emit</name>
+			<name>register_rdc</name>
 			<type>#source</type>
 			<message>
 				@event

@@ -3,6 +3,27 @@
 extern "C" {
 
 void
+Java_uk_ac_cam_tcs40_sbus_SNode_packBoolean( JNIEnv* env,
+                                             jobject thiz,
+                                             jlong node,
+                                             jboolean b,
+                                             jstring n )
+{	
+	snode *sn;
+	
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	
+	if (b)
+		sn = pack_bool(1, name);
+	else
+		sn = pack_bool(0, name);
+		
+	((snode *)node)->append(sn);	
+
+	if (n != NULL) env->ReleaseStringUTFChars(n, name);
+}
+
+void
 Java_uk_ac_cam_tcs40_sbus_SNode_packInt( JNIEnv* env,
                                              jobject thiz,
                                              jlong node,
@@ -83,6 +104,24 @@ Java_uk_ac_cam_tcs40_sbus_SNode_delete( JNIEnv* env,
                                              jlong node )
 {
 	delete ((snode *)node);
+}
+
+jboolean
+Java_uk_ac_cam_tcs40_sbus_SNode_extractBoolean( JNIEnv* env,
+                                             jobject thiz,
+                                             jlong node,
+                                             jstring n )
+{	
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	
+	int i = ((snode *)node)->extract_flg(name);	
+
+	if (n != NULL) env->ReleaseStringUTFChars(n, name);
+	
+	if (i == 1)
+		return JNI_TRUE;
+	else
+		return JNI_FALSE;
 }
 
 jint

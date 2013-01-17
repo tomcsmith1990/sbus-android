@@ -30,6 +30,14 @@ public class SNode {
 		delete(this.m_NodePtr);
 	}
 	
+	public void packBoolean(boolean b) {
+		packBoolean(b, null);
+	}
+	
+	public void packBoolean(boolean b, String name) {
+		packBoolean(this.m_NodePtr, b, name);
+	}
+	
 	public void packInt(int n) { 
 		packInt(n, null); 
 	}
@@ -59,6 +67,10 @@ public class SNode {
 		packClock(this.m_NodePtr, format.format(d), name);
 	}
 	
+	public boolean extractBoolean(String name) {
+		return extractBoolean(this.m_NodePtr, name);
+	}
+	
 	public int extractInt(String name) {
 		return extractInt(this.m_NodePtr, name);
 	}
@@ -71,11 +83,13 @@ public class SNode {
 		return extractString(this.m_NodePtr, name);
 	}
 	
+	private native void packBoolean(long nodePtr, boolean b, String name);
 	private native void packInt(long nodePtr, int n, String name);
 	private native void packDouble(long nodePtr, double d, String name);
 	private native void packString(long nodePtr, String s, String name);
 	private native void packClock(long nodePtr, String date, String name);
 	
+	private native boolean extractBoolean(long nodePtr, String name);
 	private native int extractInt(long nodePtr, String name);
 	private native double extractDouble(long nodePtr, String name);
 	private native String extractString(long nodePtr, String name);
