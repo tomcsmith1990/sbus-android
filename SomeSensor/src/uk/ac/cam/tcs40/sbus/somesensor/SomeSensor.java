@@ -29,7 +29,6 @@ public class SomeSensor extends Activity
 			public void run() {
 				SComponent scomponent = new SComponent("SomeSensor", "instance");
 				SEndpoint sendpoint = scomponent.addEndpointSource("SomeEpt", "BE8A47EBEB58");
-				scomponent.addRDC("128.232.128.128:50123");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				String cptFile = "SomeSensor.cpt";
