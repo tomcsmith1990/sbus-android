@@ -30,7 +30,6 @@ public class PhoneRDC {
 	private static SEndpoint s_Map;
 	private static SEndpoint s_RegisterRdc;
 
-	private static final List<String> s_RegisteredComponents = new LinkedList<String>();
 	private static String s_IP = "127.0.0.1";	// localhost to begin with.
 	private static Context s_Context;
 
@@ -66,9 +65,9 @@ public class PhoneRDC {
 	public static void registerRDC() {
 		if (PhoneRDC.s_RegisterRdc == null) return;
 
-		for (String localAddress : PhoneRDC.s_RegisteredComponents) {
+		for (Registration registration : RegistrationRepository.list()) {
 			// Send a message to each registered component with the new RDC address.
-			PhoneRDC.s_RegisterRdc.map(PhoneRDC.s_IP + ":" + localAddress, "register_rdc");
+			PhoneRDC.s_RegisterRdc.map(PhoneRDC.s_IP + ":" + registration.getPort(), "register_rdc");
 
 			SNode node = PhoneRDC.s_RegisterRdc.createMessage("event");
 			node.packString(PhoneRDC.RDC_ADDRESS, "rdc_address");
@@ -120,14 +119,13 @@ public class PhoneRDC {
 				continue;
 
 			if (arrived) {
-				if (PhoneRDC.s_RegisteredComponents.contains(port)) {
-					Log.i(PhoneRDC.TAG, "Attempting to register already registered component.");
-				} else {
-					PhoneRDC.s_RegisteredComponents.add(port);
+				if (RegistrationRepository.add(port)) {
 					Log.i(PhoneRDC.TAG, "Registered component " + port);
+				} else {
+					Log.i(PhoneRDC.TAG, "Attempting to register already registered component.");
 				}
 			} else {
-				PhoneRDC.s_RegisteredComponents.remove(port);
+				RegistrationRepository.remove(port);
 				Log.i(PhoneRDC.TAG, "Deregistered component " + port);
 			}
 
