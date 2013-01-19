@@ -27,8 +27,8 @@ public class PhoneRDC {
 	private static SComponent s_RDCComponent;
 	private static SEndpoint s_Register;
 	private static SEndpoint s_SetACL;
-	private static MapEndpoint s_Map;
-	private static RdcEndpoint s_RegisterRdc;
+	private static SEndpoint s_Map;
+	private static SEndpoint s_RegisterRdc;
 
 	private static final List<String> s_RegisteredComponents = new LinkedList<String>();
 	private static String s_IP = "127.0.0.1";	// localhost to begin with.
@@ -38,7 +38,7 @@ public class PhoneRDC {
 		PhoneRDC.s_Context = context;
 
 		startRDC();
-		
+
 		new Thread() {
 			public void run() {
 				acceptRegistrations();
@@ -49,14 +49,33 @@ public class PhoneRDC {
 	public static void remap() {
 		if (PhoneRDC.s_Map == null) return;
 
-		PhoneRDC.s_Map.map(PhoneRDC.COMPONENT_ADDR, PhoneRDC.COMPONENT_EPT, PhoneRDC.TARGET_ADDR, PhoneRDC.TARGET_EPT);
+		// Send a message to map this component to another.
+		PhoneRDC.s_Map.map(PhoneRDC.COMPONENT_ADDR, null);
+
+		SNode node = PhoneRDC.s_Map.createMessage("map");
+		node.packString(PhoneRDC.COMPONENT_EPT, "endpoint");
+		node.packString(PhoneRDC.TARGET_ADDR, "peer_address");
+		node.packString(PhoneRDC.TARGET_EPT, "peer_endpoint");
+		node.packString("", "certificate");
+
+		PhoneRDC.s_Map.emit(node);
+
+		PhoneRDC.s_Map.unmap();
 	}
 
 	public static void registerRDC() {
 		if (PhoneRDC.s_RegisterRdc == null) return;
 
-		for (String localAddress : PhoneRDC.s_RegisteredComponents)
-			PhoneRDC.s_RegisterRdc.registerRdc(PhoneRDC.s_IP + ":" + localAddress, PhoneRDC.RDC_ADDRESS);
+		for (String localAddress : PhoneRDC.s_RegisteredComponents) {
+			// Send a message to each registered component with the new RDC address.
+			PhoneRDC.s_RegisterRdc.map(PhoneRDC.s_IP + ":" + localAddress, "register_rdc");
+
+			SNode node = PhoneRDC.s_RegisterRdc.createMessage("event");
+			node.packString(PhoneRDC.RDC_ADDRESS, "rdc_address");
+
+			PhoneRDC.s_RegisterRdc.emit(node);
+			PhoneRDC.s_RegisterRdc.unmap();
+		}
 	}
 
 	private void startRDC() {
@@ -70,12 +89,10 @@ public class PhoneRDC {
 		PhoneRDC.s_SetACL = PhoneRDC.s_RDCComponent.addEndpointSink("set_acl", "6AF2ED96750B");
 
 		// For mapping components to other components.
-		SEndpoint map = PhoneRDC.s_RDCComponent.addEndpointSource("map", "F46B9113DB2D");
-		PhoneRDC.s_Map = new MapEndpoint(map);
+		PhoneRDC.s_Map = PhoneRDC.s_RDCComponent.addEndpointSource("map", "F46B9113DB2D");
 
 		// For telling components to connect to an rdc.
-		SEndpoint rdc = PhoneRDC.s_RDCComponent.addEndpointSource("register_rdc", "3D3F1711E783");
-		PhoneRDC.s_RegisterRdc = new RdcEndpoint(rdc);
+		PhoneRDC.s_RegisterRdc = PhoneRDC.s_RDCComponent.addEndpointSource("register_rdc", "3D3F1711E783");
 
 		// Start the component on the default rdc port.
 		PhoneRDC.s_RDCComponent.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
@@ -98,10 +115,10 @@ public class PhoneRDC {
 
 			host = address.split(":")[0];
 			port = address.split(":")[1];
-			
+
 			if (!host.equals(PhoneRDC.s_IP))
 				continue;
-			
+
 			if (arrived) {
 				if (PhoneRDC.s_RegisteredComponents.contains(port)) {
 					Log.i(PhoneRDC.TAG, "Attempting to register already registered component.");
@@ -117,7 +134,7 @@ public class PhoneRDC {
 			message.delete();
 		}
 	}
-	
+
 	public static void setIP(String ip) {
 		PhoneRDC.s_IP = ip;
 	}
