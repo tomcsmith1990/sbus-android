@@ -31,7 +31,7 @@ public class PhoneRDC {
 	private static RdcEndpoint s_RegisterRdc;
 
 	private static final List<String> s_RegisteredComponents = new LinkedList<String>();
-
+	private static String s_IP = "127.0.0.1";	// localhost to begin with.
 	private static Context s_Context;
 
 	public PhoneRDC(Context context) {
@@ -56,7 +56,7 @@ public class PhoneRDC {
 		if (PhoneRDC.s_RegisterRdc == null) return;
 
 		for (String localAddress : PhoneRDC.s_RegisteredComponents)
-			PhoneRDC.s_RegisterRdc.registerRdc(localAddress, PhoneRDC.RDC_ADDRESS);
+			PhoneRDC.s_RegisterRdc.registerRdc(PhoneRDC.s_IP + ":" + localAddress, PhoneRDC.RDC_ADDRESS);
 	}
 
 	private void startRDC() {
@@ -85,7 +85,7 @@ public class PhoneRDC {
 	}
 
 	private void acceptRegistrations() {
-		String address;
+		String address, host, port;
 		boolean arrived;
 		SMessage message;
 		SNode snode;
@@ -96,19 +96,29 @@ public class PhoneRDC {
 			address = snode.extractString("address");
 			arrived = snode.extractBoolean("arrived");
 
+			host = address.split(":")[0];
+			port = address.split(":")[1];
+			
+			if (!host.equals(PhoneRDC.s_IP))
+				continue;
+			
 			if (arrived) {
-				if (PhoneRDC.s_RegisteredComponents.contains(address)) {
+				if (PhoneRDC.s_RegisteredComponents.contains(port)) {
 					Log.i(PhoneRDC.TAG, "Attempting to register already registered component.");
 				} else {
-					PhoneRDC.s_RegisteredComponents.add(address);
-					Log.i(PhoneRDC.TAG, "Registered component " + address);
+					PhoneRDC.s_RegisteredComponents.add(port);
+					Log.i(PhoneRDC.TAG, "Registered component " + port);
 				}
 			} else {
-				PhoneRDC.s_RegisteredComponents.remove(address);
-				Log.i(PhoneRDC.TAG, "Deregistered component " + address);
+				PhoneRDC.s_RegisteredComponents.remove(port);
+				Log.i(PhoneRDC.TAG, "Deregistered component " + port);
 			}
 
 			message.delete();
 		}
+	}
+	
+	public static void setIP(String ip) {
+		PhoneRDC.s_IP = ip;
 	}
 }
