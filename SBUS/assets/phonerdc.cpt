@@ -33,7 +33,15 @@
 			</message>
 			<response>!</response>
 		</endpoint>
-			
+		<endpoint>
+			<name>get_status</name>
+			<type>#client</type>
+			<message>"0"</message>
+			<response>
+				@"/data/data/uk.ac.cam.tcs40.sbus.sbus/files/idl/cpt_status.idl"					
+				@^component-state -
+			</response>
+		</endpoint>
 		<endpoint>
 			<name>map</name>
 			<type>#source</type>

@@ -44,6 +44,29 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointSink( JNIEnv* env,
 	return addEndpoint(env, thiz, component, endName, EndpointSink, endHash);
 }
 
+jlong
+Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointClient( JNIEnv* env,
+                                                  jobject thiz, 
+                                                  jlong component,
+                                                  jstring endName, 
+                                                  jstring endHash,
+                                                  jstring hashResponse )
+{
+	const char *endpoint_name = env->GetStringUTFChars(endName, 0);
+	const char *endpoint_hash = env->GetStringUTFChars(endHash, 0);
+	const char *endpoint_response = env->GetStringUTFChars(hashResponse, 0);
+	
+	sendpoint *endpoint;
+	
+	endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, EndpointClient, endpoint_hash, endpoint_response);
+
+	env->ReleaseStringUTFChars(endName, endpoint_name);
+	env->ReleaseStringUTFChars(endHash, endpoint_hash);
+	env->ReleaseStringUTFChars(hashResponse, endpoint_response);
+	
+	return (long)endpoint;
+}
+
 long addEndpoint( JNIEnv* env,
                   jobject thiz, 
                   jlong component,

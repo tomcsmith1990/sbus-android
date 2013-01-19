@@ -41,4 +41,17 @@ public class RegistrationRepository {
 			registrations.add(r);
 		return registrations;
 	}
+	
+	public static synchronized Registration getOldest() {
+		if (s_Registrations.size() == 0) return null;
+		
+		Registration registration = s_Registrations.get(0);
+		for (Registration r : s_Registrations) {
+			if (r.getDate().before(registration.getDate())) {
+				registration = r;	
+			}
+		}
+		registration.update();
+		return registration;
+	}
 }
