@@ -36,6 +36,11 @@ public class SComponent {
 		return new SEndpoint(ptr, name, hash);
 	}
 	
+	public SEndpoint addEndpointClient(String name, String hash, String hashResponse) {
+		long ptr = addEndpointClient(m_ComponentPointer, name, hash, hashResponse);
+		return new SEndpoint(ptr, name, hash);
+	}
+	
 	/**
 	 * Add the address to the list of RDCs for when this component starts.
 	 * @param rdcAddress The address (IP:port) of the RDC.
@@ -90,6 +95,8 @@ public class SComponent {
 	private native void setPermission(long componentPtr, String componentName, String instanceName, boolean allow);
 	private native String declareSchema(long componentPtr, String schema);
 	private native void delete(long componentPtr);
+	
+	private native long addEndpointClient(long componentPtr, String endpointName, String endpointHash, String endpointResponseHash);
 	
 	static {
 		System.load("/data/data/uk.ac.cam.tcs40.sbus.sbus/lib/libsbusandroid.so");

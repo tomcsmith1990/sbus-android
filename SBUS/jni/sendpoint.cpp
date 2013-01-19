@@ -17,7 +17,7 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_map( JNIEnv* env,
 	env->ReleaseStringUTFChars(addr, address);
 	env->ReleaseStringUTFChars(ept, endpt);
 	
-	if (s == NULL) return env->NewStringUTF("error"); 
+	if (s == NULL) return NULL;
 	else return env->NewStringUTF(s);
 }
 

@@ -1,8 +1,5 @@
 package uk.ac.cam.tcs40.sbus.mapper;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import android.content.Context;
 import android.util.Log;
 
@@ -27,6 +24,7 @@ public class PhoneRDC {
 	private static SComponent s_RDCComponent;
 	private static SEndpoint s_Register;
 	private static SEndpoint s_SetACL;
+	private static SEndpoint s_Status;
 	private static SEndpoint s_Map;
 	private static SEndpoint s_RegisterRdc;
 
@@ -41,6 +39,12 @@ public class PhoneRDC {
 		new Thread() {
 			public void run() {
 				acceptRegistrations();
+			}
+		}.start();
+
+		new Thread() {
+			public void run() {
+				checkAlive();
 			}
 		}.start();
 	}
@@ -87,6 +91,8 @@ public class PhoneRDC {
 		// For components sending permissions after registering.
 		PhoneRDC.s_SetACL = PhoneRDC.s_RDCComponent.addEndpointSink("set_acl", "6AF2ED96750B");
 
+		PhoneRDC.s_Status = PhoneRDC.s_RDCComponent.addEndpointClient("get_status", "000000000000", "253BAC1C33C7");
+
 		// For mapping components to other components.
 		PhoneRDC.s_Map = PhoneRDC.s_RDCComponent.addEndpointSource("map", "F46B9113DB2D");
 
@@ -130,6 +136,30 @@ public class PhoneRDC {
 			}
 
 			message.delete();
+		}
+	}
+
+	private void checkAlive() {
+		while (true) {
+			Registration registration = RegistrationRepository.getOldest();
+			if (registration != null) {
+				String port = registration.getPort();
+				String status = PhoneRDC.s_Status.map(":" + port, "get_status");
+				if (status == null) {
+					RegistrationRepository.remove(port);
+					Log.i(PhoneRDC.TAG, "Ping indicates component :" + port + " vanished without deregistering; removing it from list");
+				} else {
+					Log.i(PhoneRDC.TAG, status);
+				}
+				PhoneRDC.s_Status.unmap();
+			}
+
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
