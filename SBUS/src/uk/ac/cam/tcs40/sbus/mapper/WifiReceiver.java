@@ -1,5 +1,6 @@
 package uk.ac.cam.tcs40.sbus.mapper;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -50,12 +51,8 @@ public class WifiReceiver extends BroadcastReceiver {
 		}
 	}
 
+	@SuppressLint("DefaultLocale")
 	private String formatIP(int ip) {
-		return String.format(
-				"%d.%d.%d.%d",
-				(ip & 0xff),
-				(ip >> 8 & 0xff),
-				(ip >> 16 & 0xff),
-				(ip >> 24 & 0xff));
+		return String.format("%d.%d.%d.%d", (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff));
 	}
 }

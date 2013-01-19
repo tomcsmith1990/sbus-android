@@ -22,11 +22,7 @@ public class PhoneRDC {
 	public static final String TAG = "PhoneRDC";
 
 	private static SComponent s_RDCComponent;
-	private static SEndpoint s_Register;
-	private static SEndpoint s_SetACL;
-	private static SEndpoint s_Status;
-	private static SEndpoint s_Map;
-	private static SEndpoint s_RegisterRdc;
+	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_RegisterRdc;
 
 	private static String s_IP = "127.0.0.1";	// localhost to begin with.
 	private static Context s_Context;
@@ -91,6 +87,7 @@ public class PhoneRDC {
 		// For components sending permissions after registering.
 		PhoneRDC.s_SetACL = PhoneRDC.s_RDCComponent.addEndpointSink("set_acl", "6AF2ED96750B");
 
+		// Fpr checking components are still alive.
 		PhoneRDC.s_Status = PhoneRDC.s_RDCComponent.addEndpointClient("get_status", "000000000000", "253BAC1C33C7");
 
 		// For mapping components to other components.
@@ -148,8 +145,6 @@ public class PhoneRDC {
 				if (status == null) {
 					RegistrationRepository.remove(port);
 					Log.i(PhoneRDC.TAG, "Ping indicates component :" + port + " vanished without deregistering; removing it from list");
-				} else {
-					Log.i(PhoneRDC.TAG, status);
 				}
 				PhoneRDC.s_Status.unmap();
 			}
