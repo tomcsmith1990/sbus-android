@@ -10,31 +10,27 @@ import android.util.Log;
 
 public class WifiReceiver extends BroadcastReceiver {
 
-	private MapEndpoint m_MapEndpoint;
-	private RdcEndpoint m_RdcEndpoint;
-
-	public WifiReceiver(MapEndpoint mapEndpoint, RdcEndpoint registerRdcEndpoint) {
+	public WifiReceiver() {
 		super();
-		this.m_MapEndpoint = mapEndpoint;
-		this.m_RdcEndpoint = registerRdcEndpoint;
 	}
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-
+		// This is called on the main thread.
+		
 		if(intent.getAction().equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
 
 			NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
 
 			if(networkInfo.isConnected()) {
 				// WiFi is connected.
-				Log.d("SBUS", "Wifi is connected: " + String.valueOf(networkInfo));
+				Log.d(PhoneRDC.TAG, "Wifi is connected: " + String.valueOf(networkInfo));
 
 				// Emit the map message to map once we connect to WiFi.
-				Mapper.remap(m_MapEndpoint);
+				PhoneRDC.remap();
 				
 				// Connect to the new RDC.
-				Mapper.registerRdc(m_RdcEndpoint);
+				PhoneRDC.registerRDC();
 			}
 			
 		} else if(intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
@@ -43,7 +39,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
 			if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI && ! networkInfo.isConnected()) {
 				// WiFi is disconnected.
-				Log.d("SBUS", "Wifi is disconnected: " + String.valueOf(networkInfo));
+				Log.d(PhoneRDC.TAG, "Wifi is disconnected: " + String.valueOf(networkInfo));
 			}
 		}
 	}
