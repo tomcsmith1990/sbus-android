@@ -40,7 +40,7 @@ public class SMessage {
 	 */
 	public String getSourceInstance() {
 		if (this.m_SourceInst == null)
-			this.m_SourceInst = getSourceEndpoint(this.m_MessagePtr);
+			this.m_SourceInst = getSourceInstance(this.m_MessagePtr);
 		
 		return this.m_SourceInst;
 	}

@@ -126,7 +126,7 @@ public class PhoneRDC {
 
 			if (arrived) {
 				if (RegistrationRepository.add(port, sourceComponent, sourceInstance)) {
-					Log.i(PhoneRDC.TAG, "Registered component " + sourceComponent + ":" + sourceInstance + " at :" + port);
+					Log.i(PhoneRDC.TAG, "Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
 				} else {
 					Log.i(PhoneRDC.TAG, "Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
 				}
