@@ -36,9 +36,9 @@ public class SComponent {
 		return new SEndpoint(ptr, name, hash);
 	}
 	
-	public SEndpoint addEndpointClient(String name, String hash, String hashResponse) {
-		long ptr = addEndpointClient(m_ComponentPointer, name, hash, hashResponse);
-		return new SEndpoint(ptr, name, hash);
+	public SEndpoint addEndpointClient(String name, String messageHash, String responseHash) {
+		long ptr = addEndpointClient(m_ComponentPointer, name, messageHash, responseHash);
+		return new SEndpoint(ptr, name, messageHash);
 	}
 	
 	/**
@@ -90,14 +90,13 @@ public class SComponent {
 	private native long scomponent(String componentName, String instanceName);
 	private native long addEndpointSource(long componentPtr, String endpointName, String endpointHash);
 	private native long addEndpointSink(long componentPtr, String endpointName, String endpointHash);
+	private native long addEndpointClient(long componentPtr, String endpointName, String messageHash, String responseHash);
 	private native void addRDC(long componentPtr, String rdcAddress);
 	private native void start(long componentPtr, String cptFilename, int port, boolean useRDC);
 	private native void setPermission(long componentPtr, String componentName, String instanceName, boolean allow);
 	private native String declareSchema(long componentPtr, String schema);
 	private native void delete(long componentPtr);
-	
-	private native long addEndpointClient(long componentPtr, String endpointName, String endpointHash, String endpointResponseHash);
-	
+		
 	static {
 		System.load("/data/data/uk.ac.cam.tcs40.sbus.sbus/lib/libsbusandroid.so");
     }	
