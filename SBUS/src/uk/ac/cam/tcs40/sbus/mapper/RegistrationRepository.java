@@ -18,9 +18,9 @@ public class RegistrationRepository {
 		return exists;
 	}
 	
-	public static synchronized boolean add(String port) {
+	public static synchronized boolean add(String port, String component, String instance) {
 		if (find(port) == false) {
-			s_Registrations.add(new Registration(port));
+			s_Registrations.add(new Registration(port, component, instance));
 			return true;
 		}
 		return false;

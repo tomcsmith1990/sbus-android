@@ -104,13 +104,16 @@ public class PhoneRDC {
 	}
 
 	private void acceptRegistrations() {
-		String address, host, port;
+		String address, host, port, sourceComponent, sourceInstance;
 		boolean arrived;
 		SMessage message;
 		SNode snode;
 
 		while (true) {
 			message = PhoneRDC.s_Register.receive();
+			sourceComponent = message.getSourceComponent();
+			sourceInstance = message.getSourceInstance();
+			
 			snode = message.getTree();
 			address = snode.extractString("address");
 			arrived = snode.extractBoolean("arrived");
@@ -122,14 +125,14 @@ public class PhoneRDC {
 				continue;
 
 			if (arrived) {
-				if (RegistrationRepository.add(port)) {
-					Log.i(PhoneRDC.TAG, "Registered component " + port);
+				if (RegistrationRepository.add(port, sourceComponent, sourceInstance)) {
+					Log.i(PhoneRDC.TAG, "Registered component " + sourceComponent + ":" + sourceInstance + " at :" + port);
 				} else {
-					Log.i(PhoneRDC.TAG, "Attempting to register already registered component.");
+					Log.i(PhoneRDC.TAG, "Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
 				}
 			} else {
-				RegistrationRepository.remove(port);
-				Log.i(PhoneRDC.TAG, "Deregistered component " + port);
+				Registration removed = RegistrationRepository.remove(port);
+				Log.i(PhoneRDC.TAG, "Deregistered component " + removed.getComponentName() + ":" + removed.getInstanceName() + " at :" + port);
 			}
 
 			message.delete();
@@ -144,7 +147,8 @@ public class PhoneRDC {
 				String status = PhoneRDC.s_Status.map(":" + port, "get_status");
 				if (status == null) {
 					RegistrationRepository.remove(port);
-					Log.i(PhoneRDC.TAG, "Ping indicates component :" + port + " vanished without deregistering; removing it from list");
+					Log.i(PhoneRDC.TAG, "Ping indicates component " + registration.getComponentName() + " at :" + port +  
+							" vanished without deregistering; removing it from list");
 				}
 				PhoneRDC.s_Status.unmap();
 			}
