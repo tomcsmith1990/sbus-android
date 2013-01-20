@@ -22,7 +22,7 @@ public class PhoneRDCActivity extends Activity
 
 	private OnClickListener m_RdcButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			PhoneRDC.registerRDC();
+			PhoneRDC.registerRDC(true);
 		}
 	};
 

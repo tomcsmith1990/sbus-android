@@ -62,7 +62,7 @@ public class PhoneRDC {
 		PhoneRDC.s_Map.unmap();
 	}
 
-	public static void registerRDC() {
+	public static void registerRDC(boolean arrived) {
 		if (PhoneRDC.s_RegisterRdc == null) return;
 
 		for (Registration registration : RegistrationRepository.list()) {
@@ -71,6 +71,7 @@ public class PhoneRDC {
 
 			SNode node = PhoneRDC.s_RegisterRdc.createMessage("event");
 			node.packString(PhoneRDC.RDC_ADDRESS, "rdc_address");
+			node.packBoolean(arrived,  "arrived");
 
 			PhoneRDC.s_RegisterRdc.emit(node);
 			PhoneRDC.s_RegisterRdc.unmap();
@@ -94,7 +95,7 @@ public class PhoneRDC {
 		PhoneRDC.s_Map = PhoneRDC.s_RDCComponent.addEndpointSource("map", "F46B9113DB2D");
 
 		// For telling components to connect to an rdc.
-		PhoneRDC.s_RegisterRdc = PhoneRDC.s_RDCComponent.addEndpointSource("register_rdc", "3D3F1711E783");
+		PhoneRDC.s_RegisterRdc = PhoneRDC.s_RDCComponent.addEndpointSource("register_rdc", "13ACF49714C5");
 
 		// Start the component on the default rdc port.
 		PhoneRDC.s_RDCComponent.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
