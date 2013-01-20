@@ -63,6 +63,7 @@
 				@event
 				{
 					txt rdc_address
+					flg arrived
 				}
 			</message>
 			<response>!</response>
