@@ -3,11 +3,13 @@ package uk.ac.cam.tcs40.sbus.someconsumer;
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
+import uk.ac.cam.tcs40.sbus.Multiplex;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.SMessage;
 import uk.ac.cam.tcs40.sbus.SNode;
 import android.os.Bundle;
 import android.app.Activity;
+import android.util.Log;
 import android.widget.TextView;
 
 public class SomeConsumer extends Activity {
@@ -19,7 +21,7 @@ public class SomeConsumer extends Activity {
 
 		// Create a FileBootloader to store our component file.
 		new FileBootloader(getApplicationContext()).store("SomeConsumer.cpt");
-		
+
 		final TextView someStringTV = (TextView) findViewById(R.id.somestring);
 		final TextView someValTV = (TextView) findViewById(R.id.someval);
 		final TextView someVarTV = (TextView) findViewById(R.id.somevar);
@@ -35,28 +37,40 @@ public class SomeConsumer extends Activity {
 				String cptFile = "SomeConsumer.cpt";
 				scomponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, 44443, true);
 				scomponent.setPermission("SomeSensor", "", true);
-
+				SEndpoint rdc = scomponent.RDCUpdateNotificationsEndpoint();
+				
 				SMessage message;
 				SNode node;
-				
+				SEndpoint endpoint;
+				Multiplex multi = scomponent.getMultiplex();
+				multi.add(sendpoint);
+				multi.add(rdc);
+
 				while (true) {
 
-					message = sendpoint.receive();
-					node = message.getTree();
-					
-					final String somestring = node.extractString("somestring");
-					final int someval = node.extractInt("someval");
-					final int somevar = node.extractInt("somevar");
+					endpoint = multi.waitForMessage();
 
-					runOnUiThread(new Runnable() {
-						public void run() {
-							someStringTV.setText("somestring: " + somestring);
-							someValTV.setText("someval: " + someval);
-							someVarTV.setText("somevar: " + somevar);
-						}
-					});
-					
-					message.delete();
+					if (endpoint.getEndpointName().equals("SomeEpt"))
+					{
+						message = sendpoint.receive();
+						node = message.getTree();
+
+						final String somestring = node.extractString("somestring");
+						final int someval = node.extractInt("someval");
+						final int somevar = node.extractInt("somevar");
+
+						runOnUiThread(new Runnable() {
+							public void run() {
+								someStringTV.setText("somestring: " + somestring);
+								someValTV.setText("someval: " + someval);
+								someVarTV.setText("somevar: " + somevar);
+							}
+						});
+
+						message.delete();
+					} else if (endpoint.getEndpointName().equals("rdc_update"))	{
+						Log.i("RDC", "Update");
+					}
 
 					try {
 						Thread.sleep(2000);
