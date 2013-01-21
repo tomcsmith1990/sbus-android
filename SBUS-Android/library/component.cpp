@@ -223,12 +223,20 @@ sendpoint *scomponent::clone(sendpoint *ep)
 
 sendpoint *scomponent::rdc_update_notifications_endpoint()
 {
-	const char *rdc_update_schema = "@event { txt rdc_address flg arrived }";
-	HashCode *hc;
+	const char *ept_name = "rdc_update";
+	sendpoint *rdc_update_ep;
 	
-	hc = declare_schema(rdc_update_schema);
+	rdc_update_ep = get_endpoint(ept_name);
+	if (rdc_update_ep == NULL)
+	{
+		const char *rdc_update_schema = "@event { txt rdc_address flg arrived }";
+		HashCode *hc;
 	
-	return add_endpoint("rdc_update", EndpointSink, hc->tostring());
+		hc = declare_schema(rdc_update_schema);
+	
+		rdc_update_ep = add_endpoint(ept_name, EndpointSink, hc->tostring());
+	}
+	return rdc_update_ep;
 }
 
 HashCode *scomponent::declare_schema(const char *schema)
