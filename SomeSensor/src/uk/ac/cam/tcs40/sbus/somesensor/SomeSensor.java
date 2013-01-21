@@ -1,6 +1,7 @@
 package uk.ac.cam.tcs40.sbus.somesensor;
 
 import uk.ac.cam.tcs40.sbus.SComponent;
+import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.SNode;
@@ -28,7 +29,7 @@ public class SomeSensor extends Activity
 		new Thread() {
 			public void run() {
 				SComponent scomponent = new SComponent("SomeSensor", "instance");
-				SEndpoint sendpoint = scomponent.addEndpointSource("SomeEpt", "BE8A47EBEB58");
+				SEndpoint sendpoint = scomponent.addEndpoint("SomeEpt", EndpointType.EndpointSource, "BE8A47EBEB58");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				String cptFile = "SomeSensor.cpt";

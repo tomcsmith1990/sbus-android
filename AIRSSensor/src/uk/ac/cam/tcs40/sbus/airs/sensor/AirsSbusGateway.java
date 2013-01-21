@@ -9,6 +9,7 @@ import com.airs.platform.Server;
 import android.content.Context;
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.SComponent;
+import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
 import uk.ac.cam.tcs40.sbus.airs.sensor.AirsEndpoint.TYPE;
 import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.EndpointManager;
 import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.UIManager;
@@ -128,15 +129,15 @@ public class AirsSbusGateway {
 
 	private void createEndpoints() {
 		// Create a RAM endpoint, add to component and to repository.
-		AirsEndpoint ram = new AirsEndpoint(this.m_Component.addEndpointSource("RAM", "2AD6AEFD7646"), "Rm", TYPE.SInt, UIManager.getInstance().getUIHandler());
+		AirsEndpoint ram = new AirsEndpoint(this.m_Component.addEndpoint("RAM", EndpointType.EndpointSource, "2AD6AEFD7646"), "Rm", TYPE.SInt, UIManager.getInstance().getUIHandler());
 		AirsEndpointRepository.addEndpoint(ram);
 
 		// Create a weather endpoint, add to component and to repository.
-		AirsEndpoint weatherCondition = new AirsEndpoint(this.m_Component.addEndpointSource("WeatherCondition", "5726AEFD7346"), "VC", TYPE.SText, UIManager.getInstance().getUIHandler());
+		AirsEndpoint weatherCondition = new AirsEndpoint(this.m_Component.addEndpoint("WeatherCondition", EndpointType.EndpointSource, "5726AEFD7346"), "VC", TYPE.SText, UIManager.getInstance().getUIHandler());
 		AirsEndpointRepository.addEndpoint(weatherCondition);
 
 		// Create a random number endpoint, add to component and to repository.
-		AirsEndpoint randomNumber = new AirsEndpoint(this.m_Component.addEndpointSource("Random", "2AD6AEFD7646"), "Rd", TYPE.SInt, UIManager.getInstance().getUIHandler());
+		AirsEndpoint randomNumber = new AirsEndpoint(this.m_Component.addEndpoint("Random", EndpointType.EndpointSource, "2AD6AEFD7646"), "Rd", TYPE.SInt, UIManager.getInstance().getUIHandler());
 		AirsEndpointRepository.addEndpoint(randomNumber);
 	}
 }
