@@ -3,16 +3,18 @@ package uk.ac.cam.tcs40.sbus;
 public class SEndpoint {
 
 	private String m_EndpointName;
-	private String m_EndpointHash;
+	private String m_MessageHash;
+	private String m_ResponseHash;
 	
 	private long m_EndpointPointer;
 
-	SEndpoint(long ptr, String endpointName, String endpointHash) {
+	SEndpoint(long ptr, String endpointName, String messageHash, String responseHash) {
 		// Note - no modifier means package only access.
 		// Can only create endpoint through addEndpoint().
 		this.m_EndpointPointer = ptr;
 		this.m_EndpointName = endpointName;
-		this.m_EndpointHash = endpointHash;	
+		this.m_MessageHash = messageHash;
+		this.m_ResponseHash = responseHash;
 	}
 
 	/**
@@ -25,10 +27,18 @@ public class SEndpoint {
 
 	/**
 	 * 
-	 * @return The hash code for this endpoint schema.
+	 * @return The hash code for this endpoint message schema.
 	 */
-	public String getEndpointHash() {
-		return this.m_EndpointHash;
+	public String getMessageHash() {
+		return this.m_MessageHash;
+	}
+	
+	/**
+	 * 
+	 * @return The hash code for this endpoint response schema.
+	 */
+	public String getResponseHash() {
+		return this.m_ResponseHash;
 	}
 
 	/**
