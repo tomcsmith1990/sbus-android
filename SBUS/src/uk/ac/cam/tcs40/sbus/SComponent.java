@@ -16,53 +16,44 @@ public class SComponent {
 		this.m_ComponentPointer = scomponent(componentName, instanceName);
 	}
 	
+	/**
+	 * Add an endpoint to this component.
+	 * @param name The name of the endpoint.
+	 * @param type The type of endpoint.
+	 * @param messageHash The hash of the endpoint message schema.
+	 * @return An SEndpoint representing this endpoint.
+	 */
 	public SEndpoint addEndpoint(String name, EndpointType type, String messageHash) {
 		return addEndpoint(name, type, messageHash, null);
 	}
 
-	public SEndpoint addEndpoint(String name, EndpointType type, String messageHash, String responseHash) {
-		switch (type) {
-		case EndpointSink:
-			return addEndpointSink(name, messageHash, responseHash);
-
-		case EndpointSource:
-			return addEndpointSource(name, messageHash, responseHash);
-
-		case EndpointClient:
-			return addEndpointClient(name, messageHash, responseHash);
-			
-		default:
-			return null;
-		}
-	}
-
 	/**
-	 * Add an endpoint source to this component.
+	 * Add an endpoint to this component.
 	 * @param name The name of the endpoint.
+	 * @param type The type of endpoint.
 	 * @param messageHash The hash of the endpoint message schema.
 	 * @param responseHash The hash of the the endpoint response schema.
 	 * @return An SEndpoint representing this endpoint.
 	 */
-	private SEndpoint addEndpointSource(String name, String messageHash, String responseHash) {
-		long ptr = addEndpointSource(m_ComponentPointer, name, messageHash, responseHash);
-		return new SEndpoint(ptr, name, messageHash, responseHash);
-	}
+	public SEndpoint addEndpoint(String name, EndpointType type, String messageHash, String responseHash) {
+		long ptr;
+		
+		switch (type) {
+		case EndpointSink:
+			ptr = addEndpointSink(m_ComponentPointer, name, messageHash, responseHash);
+			return new SEndpoint(ptr, name, messageHash, responseHash);
 
-	/**
-	 * Add an endpoint sink to this component.
-	 * @param name The name of the endpoint.
-	 * @param messageHash The hash of the endpoint schema.
-	 * @param responseHash The hash of the the endpoint response schema.
-	 * @return An SEndpoint representing this endpoint.
-	 */
-	private SEndpoint addEndpointSink(String name, String messageHash, String responseHash) {
-		long ptr = addEndpointSink(m_ComponentPointer, name, messageHash, responseHash);
-		return new SEndpoint(ptr, name, messageHash, responseHash);
-	}
+		case EndpointSource:
+			ptr = addEndpointSource(m_ComponentPointer, name, messageHash, responseHash);
+			return new SEndpoint(ptr, name, messageHash, responseHash);
 
-	private SEndpoint addEndpointClient(String name, String messageHash, String responseHash) {
-		long ptr = addEndpointClient(m_ComponentPointer, name, messageHash, responseHash);
-		return new SEndpoint(ptr, name, messageHash, responseHash);
+		case EndpointClient:
+			ptr = addEndpointClient(m_ComponentPointer, name, messageHash, responseHash);
+			return new SEndpoint(ptr, name, messageHash, responseHash);
+			
+		default:
+			return null;
+		}
 	}
 
 	/**
@@ -107,7 +98,7 @@ public class SComponent {
 	 * Must be called when finished, deletes the native representation.
 	 */
 	public void delete() {
-		// Also deletes endpoint.
+		// Also deletes endpoints.
 		delete(m_ComponentPointer);
 	}
 
@@ -117,6 +108,8 @@ public class SComponent {
 	private native long addEndpointClient(long componentPtr, String endpointName, String messageHash, String responseHash);
 	private native void addRDC(long componentPtr, String rdcAddress);
 	private native void start(long componentPtr, String cptFilename, int port, boolean useRDC);
+	
+	// May only call after start().
 	private native void setPermission(long componentPtr, String componentName, String instanceName, boolean allow);
 	private native String declareSchema(long componentPtr, String schema);
 	private native void delete(long componentPtr);

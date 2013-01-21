@@ -54,19 +54,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointClient( JNIEnv* env,
                                                   jstring messageHash,
                                                   jstring responseHash )
 {
-	const char *endpoint_name = env->GetStringUTFChars(endName, 0);
-	const char *endpoint_hash = env->GetStringUTFChars(messageHash, 0);
-	const char *endpoint_response = env->GetStringUTFChars(responseHash, 0);
-	
-	sendpoint *endpoint;
-	
-	endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, EndpointClient, endpoint_hash, endpoint_response);
-
-	env->ReleaseStringUTFChars(endName, endpoint_name);
-	env->ReleaseStringUTFChars(messageHash, endpoint_hash);
-	env->ReleaseStringUTFChars(responseHash, endpoint_response);
-	
-	return (long)endpoint;
+	return addEndpoint(env, thiz, component, endName, EndpointClient, messageHash, responseHash);
 }
 
 long addEndpoint( JNIEnv* env,
@@ -78,14 +66,16 @@ long addEndpoint( JNIEnv* env,
                   jstring responseHash )
 {
 	const char *endpoint_name = env->GetStringUTFChars(endName, 0);
-	const char *endpoint_hash = env->GetStringUTFChars(messageHash, 0);
+	const char *message_hash = env->GetStringUTFChars(messageHash, 0);
+	const char *response_hash = env->GetStringUTFChars(responseHash, 0);
 	
 	sendpoint *endpoint;
 	
-	endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, type, endpoint_hash);
+	endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, type, message_hash, response_hash);
 
 	env->ReleaseStringUTFChars(endName, endpoint_name);
-	env->ReleaseStringUTFChars(messageHash, endpoint_hash);
+	env->ReleaseStringUTFChars(messageHash, message_hash);
+	env->ReleaseStringUTFChars(responseHash, response_hash);
 	
 	return (long)endpoint;
 }
