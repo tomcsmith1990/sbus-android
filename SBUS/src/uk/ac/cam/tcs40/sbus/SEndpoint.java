@@ -16,6 +16,10 @@ public class SEndpoint {
 		this.m_MessageHash = messageHash;
 		this.m_ResponseHash = responseHash;
 	}
+	
+	long getPointer() {
+		return this.m_EndpointPointer;
+	}
 
 	/**
 	 * 
