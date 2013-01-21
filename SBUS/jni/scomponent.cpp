@@ -125,6 +125,14 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
 	env->ReleaseStringUTFChars(instanceName, instance_name);
 }
 
+jlong
+Java_uk_ac_cam_tcs40_sbus_SComponent_RDCUpdateNotificationsEndpoint( 	JNIEnv* env,
+												                        jobject thiz, 
+												                        jlong component )
+{
+	return (long)((scomponent *)component)->rdc_update_notifications_endpoint();
+}
+
 jstring
 Java_uk_ac_cam_tcs40_sbus_SComponent_declareSchema( JNIEnv* env,
 		                                            jobject thiz, 

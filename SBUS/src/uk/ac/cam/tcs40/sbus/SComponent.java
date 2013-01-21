@@ -73,6 +73,11 @@ public class SComponent {
 	public void start(String cptFilename, int port, boolean useRDC) {
 		start(m_ComponentPointer, cptFilename, port, useRDC);
 	}
+	
+	public SEndpoint RDCUpdateNotificationsEndpoint() {
+		long ptr = RDCUpdateNotificationsEndpoint(m_ComponentPointer);
+		return new SEndpoint(ptr, "rdc_update", null, null);
+	}
 
 	/**
 	 * Set permissions for this other components connecting.
@@ -111,6 +116,7 @@ public class SComponent {
 	
 	// May only call after start().
 	private native void setPermission(long componentPtr, String componentName, String instanceName, boolean allow);
+	private native long RDCUpdateNotificationsEndpoint(long componentPtr);
 	private native String declareSchema(long componentPtr, String schema);
 	private native void delete(long componentPtr);
 
