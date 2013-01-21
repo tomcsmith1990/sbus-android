@@ -221,6 +221,16 @@ sendpoint *scomponent::clone(sendpoint *ep)
 	return add_endpoint(ep->name, ep->type, ep->msg_hc, ep->reply_hc);
 }
 
+sendpoint *scomponent::rdc_update_notifications_endpoint()
+{
+	const char *rdc_update_schema = "@event { txt rdc_address flg arrived }";
+	HashCode *hc;
+	
+	hc = declare_schema(rdc_update_schema);
+	
+	return add_endpoint("rdc_update", EndpointSink, hc->tostring());
+}
+
 HashCode *scomponent::declare_schema(const char *schema)
 {
 	return do_declare_schema(schema, 0);
