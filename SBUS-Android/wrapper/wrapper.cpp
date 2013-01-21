@@ -138,6 +138,7 @@ void swrapper::bootstrap()
 	listen_port = start->listen_port;
 	uniq = start->unique;
 	register_with_rdc = start->rdc_register;
+	notify_rdc_updates = false;
 	log_level = start->log_level;
 	echo_level = start->echo_level;
 	if(listen_port == 0)
@@ -2092,8 +2093,31 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 			// Note: we may still be registered, the rdc will detect this if we leave the network.
 			rdc->remove(address);
 		}
-	
 		
+		if (notify_rdc_updates)
+		{
+			HashCode *hc;
+			hc = new HashCode();
+			hc->fromschema("@event { txt rdc_address flg arrived }");
+			
+			snode *sn;
+			sn = pack(pack(address, "rdc_address"), pack(arrived, "arrived"));
+			
+			smessage *msg;
+	
+			msg = new smessage();
+			msg->type = MessageRcv;
+			msg->source_cpt = NULL;
+			msg->source_inst = NULL;
+			msg->source_ep = NULL;
+			msg->topic = NULL;
+			msg->source_ep_id = 0;
+			msg->seq = 0;
+			msg->hc = new HashCode(hc);
+			msg->tree = sn; // Consumes sn
+			
+			rdc_update_mp->deliver_local(msg);
+		}
 	}
 	else if(!strcmp(fn_endpoint, "terminate"))
 	{
@@ -3382,6 +3406,12 @@ void swrapper::serve_boot()
 		Schema *sch;
 		
 		mp = add_endpoint(add);
+		
+		if(!strcmp(mp->name, "rdc_update"))
+		{
+			notify_rdc_updates = true;
+			rdc_update_mp = mp;
+		}
 		
 		sch = cache->lookup(add->msg_hc);
 		if(sch == NULL)
