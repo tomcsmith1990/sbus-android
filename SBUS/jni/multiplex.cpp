@@ -18,6 +18,21 @@ Java_uk_ac_cam_tcs40_sbus_Multiplex_add( JNIEnv* env,
 	((multiplex *)multi)->add((sendpoint *)endpoint);
 }
 
+jlong
+Java_uk_ac_cam_tcs40_sbus_Multiplex_waitForMessage(	 JNIEnv* env,
+						                             jobject thiz,
+						                             jlong multi,
+						                             jlong component )
+{
+	int fd = ((multiplex *)multi)->wait();
+	if (fd < 0) return -1;
+	
+	sendpoint *ept;
+	ept = ((scomponent *)component)->fd_to_endpoint(fd);
+	
+	return (long)ept;
+}
+
 void
 Java_uk_ac_cam_tcs40_sbus_Multiplex_delete( JNIEnv* env,
                                              jobject thiz,

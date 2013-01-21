@@ -1,5 +1,7 @@
 package uk.ac.cam.tcs40.sbus;
 
+import java.util.LinkedList;
+import java.util.List;
 
 public class SComponent {
 
@@ -7,6 +9,7 @@ public class SComponent {
 
 	private long m_ComponentPointer;
 	private SEndpoint m_RDCUpdateNotifications;
+	private List<SEndpoint> m_Endpoints = new LinkedList<SEndpoint>();
 
 	/**
 	 * 
@@ -38,23 +41,27 @@ public class SComponent {
 	 */
 	public SEndpoint addEndpoint(String name, EndpointType type, String messageHash, String responseHash) {
 		long ptr;
-
+		SEndpoint endpoint;
+		
 		switch (type) {
 		case EndpointSink:
 			ptr = addEndpointSink(m_ComponentPointer, name, messageHash, responseHash);
-			return new SEndpoint(ptr, name, messageHash, responseHash);
-
+			break;
+			
 		case EndpointSource:
 			ptr = addEndpointSource(m_ComponentPointer, name, messageHash, responseHash);
-			return new SEndpoint(ptr, name, messageHash, responseHash);
-
+			break;
+			
 		case EndpointClient:
 			ptr = addEndpointClient(m_ComponentPointer, name, messageHash, responseHash);
-			return new SEndpoint(ptr, name, messageHash, responseHash);
-
+			break;
+			
 		default:
 			return null;
 		}
+		endpoint = new SEndpoint(ptr, name, messageHash, responseHash);
+		m_Endpoints.add(endpoint);
+		return endpoint;
 	}
 
 	/**
@@ -79,6 +86,7 @@ public class SComponent {
 		if (m_RDCUpdateNotifications == null) {
 			long ptr = RDCUpdateNotificationsEndpoint(m_ComponentPointer);
 			m_RDCUpdateNotifications = new SEndpoint(ptr, "rdc_update", "13ACF49714C5", null);
+			m_Endpoints.add(m_RDCUpdateNotifications);
 		}
 		return m_RDCUpdateNotifications;
 	}
@@ -100,6 +108,22 @@ public class SComponent {
 	 */
 	public String declareSchema(String schema) {
 		return declareSchema(m_ComponentPointer, schema);
+	}
+	
+	public Multiplex getMultiplex() {
+		return new Multiplex(this);
+	}
+	
+	SEndpoint getEndpointByPtr(long ptr) {
+		for (SEndpoint endpoint : m_Endpoints) {
+			if (endpoint.getPointer() == ptr)
+				return endpoint;
+		}
+		return null;
+	}
+	
+	long getPointer() {
+		return this.m_ComponentPointer;
 	}
 
 	/**
