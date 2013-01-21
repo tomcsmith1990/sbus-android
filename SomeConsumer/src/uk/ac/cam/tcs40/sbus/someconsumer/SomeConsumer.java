@@ -2,6 +2,7 @@ package uk.ac.cam.tcs40.sbus.someconsumer;
 
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.SComponent;
+import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.SMessage;
 import uk.ac.cam.tcs40.sbus.SNode;
@@ -27,7 +28,7 @@ public class SomeConsumer extends Activity {
 		new Thread() {
 			public void run() {
 				SComponent scomponent = new SComponent("SomeConsumer", "instance");
-				SEndpoint sendpoint = scomponent.addEndpointSink("SomeEpt", "BE8A47EBEB58");
+				SEndpoint sendpoint = scomponent.addEndpoint("SomeEpt", EndpointType.EndpointSink, "BE8A47EBEB58");
 				scomponent.addRDC("192.168.0.3:50123");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");

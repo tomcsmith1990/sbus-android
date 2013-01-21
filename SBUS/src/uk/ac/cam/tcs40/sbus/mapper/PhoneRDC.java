@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import uk.ac.cam.tcs40.sbus.SComponent;
+import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.SMessage;
 import uk.ac.cam.tcs40.sbus.SNode;
@@ -83,19 +84,19 @@ public class PhoneRDC {
 		PhoneRDC.s_RDCComponent = new SComponent("rdc", "rdc");
 
 		// For components registering to the rdc.
-		PhoneRDC.s_Register = PhoneRDC.s_RDCComponent.addEndpointSink("register", "B3572388E4A4");
+		PhoneRDC.s_Register = PhoneRDC.s_RDCComponent.addEndpoint("register", EndpointType.EndpointSink, "B3572388E4A4");
 
 		// For components sending permissions after registering.
-		PhoneRDC.s_SetACL = PhoneRDC.s_RDCComponent.addEndpointSink("set_acl", "6AF2ED96750B");
+		PhoneRDC.s_SetACL = PhoneRDC.s_RDCComponent.addEndpoint("set_acl", EndpointType.EndpointSink, "6AF2ED96750B");
 
 		// Fpr checking components are still alive.
-		PhoneRDC.s_Status = PhoneRDC.s_RDCComponent.addEndpointClient("get_status", "000000000000", "253BAC1C33C7");
+		PhoneRDC.s_Status = PhoneRDC.s_RDCComponent.addEndpoint("get_status", EndpointType.EndpointClient, "000000000000", "253BAC1C33C7");
 
 		// For mapping components to other components.
-		PhoneRDC.s_Map = PhoneRDC.s_RDCComponent.addEndpointSource("map", "F46B9113DB2D");
+		PhoneRDC.s_Map = PhoneRDC.s_RDCComponent.addEndpoint("map", EndpointType.EndpointSource, "F46B9113DB2D");
 
 		// For telling components to connect to an rdc.
-		PhoneRDC.s_RegisterRdc = PhoneRDC.s_RDCComponent.addEndpointSource("register_rdc", "13ACF49714C5");
+		PhoneRDC.s_RegisterRdc = PhoneRDC.s_RDCComponent.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
 
 		// Start the component on the default rdc port.
 		PhoneRDC.s_RDCComponent.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
