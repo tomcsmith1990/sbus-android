@@ -6,6 +6,7 @@ public class SComponent {
 	public enum EndpointType { EndpointSink, EndpointSource, EndpointClient, EndpointServer };
 
 	private long m_ComponentPointer;
+	private SEndpoint m_RDCUpdateNotifications;
 
 	/**
 	 * 
@@ -15,7 +16,7 @@ public class SComponent {
 	public SComponent(String componentName, String instanceName) {
 		this.m_ComponentPointer = scomponent(componentName, instanceName);
 	}
-	
+
 	/**
 	 * Add an endpoint to this component.
 	 * @param name The name of the endpoint.
@@ -37,7 +38,7 @@ public class SComponent {
 	 */
 	public SEndpoint addEndpoint(String name, EndpointType type, String messageHash, String responseHash) {
 		long ptr;
-		
+
 		switch (type) {
 		case EndpointSink:
 			ptr = addEndpointSink(m_ComponentPointer, name, messageHash, responseHash);
@@ -50,7 +51,7 @@ public class SComponent {
 		case EndpointClient:
 			ptr = addEndpointClient(m_ComponentPointer, name, messageHash, responseHash);
 			return new SEndpoint(ptr, name, messageHash, responseHash);
-			
+
 		default:
 			return null;
 		}
@@ -73,10 +74,13 @@ public class SComponent {
 	public void start(String cptFilename, int port, boolean useRDC) {
 		start(m_ComponentPointer, cptFilename, port, useRDC);
 	}
-	
+
 	public SEndpoint RDCUpdateNotificationsEndpoint() {
-		long ptr = RDCUpdateNotificationsEndpoint(m_ComponentPointer);
-		return new SEndpoint(ptr, "rdc_update", null, null);
+		if (m_RDCUpdateNotifications == null) {
+			long ptr = RDCUpdateNotificationsEndpoint(m_ComponentPointer);
+			m_RDCUpdateNotifications = new SEndpoint(ptr, "rdc_update", "13ACF49714C5", null);
+		}
+		return m_RDCUpdateNotifications;
 	}
 
 	/**
@@ -113,7 +117,7 @@ public class SComponent {
 	private native long addEndpointClient(long componentPtr, String endpointName, String messageHash, String responseHash);
 	private native void addRDC(long componentPtr, String rdcAddress);
 	private native void start(long componentPtr, String cptFilename, int port, boolean useRDC);
-	
+
 	// May only call after start().
 	private native void setPermission(long componentPtr, String componentName, String instanceName, boolean allow);
 	private native long RDCUpdateNotificationsEndpoint(long componentPtr);
