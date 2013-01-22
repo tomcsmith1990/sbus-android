@@ -138,6 +138,8 @@ void swrapper::bootstrap()
 	listen_port = start->listen_port;
 	uniq = start->unique;
 	register_with_rdc = start->rdc_register;
+	rdc_update_notify = start->rdc_update_notify;
+	rdc_update_autoconnect = start->rdc_update_autoconnect;
 	log_level = start->log_level;
 	echo_level = start->echo_level;
 	if(listen_port == 0)
@@ -2105,7 +2107,6 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 		const char *address = sn->extract_txt("rdc_address");
 		int arrived = sn->extract_flg("arrived");
 
-		rdc_update_autoconnect = true;
 		if (rdc_update_autoconnect)
 		{
 			if (arrived)
