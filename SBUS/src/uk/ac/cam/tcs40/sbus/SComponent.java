@@ -71,6 +71,14 @@ public class SComponent {
 	public void addRDC(String rdcAddress) {
 		addRDC(m_ComponentPointer, rdcAddress);
 	}
+	
+	/**
+	 * Set whether the component should autoconnect to new RDCs.
+	 * @param autoconnect Whether to autoconnect or not.
+	 */
+	public void setRDCUpdateAutoconnect(boolean autoconnect) {
+		setRDCUpdateAutoconnect(m_ComponentPointer, autoconnect);
+	}
 
 	/**
 	 * Start the component.
@@ -150,6 +158,7 @@ public class SComponent {
 	private native long addEndpointClient(long componentPtr, String endpointName, String messageHash, String responseHash);
 	
 	private native void addRDC(long componentPtr, String rdcAddress);
+	private native void setRDCUpdateAutoconnect(long componentPtr, boolean autoconnect);
 	private native void start(long componentPtr, String cptFilename, int port, boolean useRDC);
 
 	// May only call after start().
