@@ -524,24 +524,23 @@ void scomponent::start_wrapper()
 		bootstrap_fd = acceptsock(callback_fd);
 		if(bootstrap_fd < 0)
 			error("Couldn't accept connection back from wrapper");
-			
-		// Close open file descriptors (except stdio):
-		for(int i = getdtablesize() - 1; i > 2; i--)
-		{
-			// printf("Closing file descriptor %d\n", i);
-			#ifndef __ANDROID__
-			close(i);
-			#else
-			//if (i != bootstrap_fd && i != callback_fd)
-				//close(i);
-			#endif
-		}
-		
 		log("Wrapper (PID %d) running and connected to library", pid);
 		return;
 	}
-	
+
 	// Child process (become the wrapper):
+
+	// Close open file descriptors (except stdio):
+	for(int i = getdtablesize() - 1; i > 2; i--)
+	{
+		// printf("Closing file descriptor %d\n", i);
+		#ifndef __ANDROID__
+		close(i);
+		#else
+		//if (i != bootstrap_fd && i != callback_fd)
+			//close(i);
+		#endif
+	}
 
 	// Set up some command-line arguments and exec:
 	char **newargs;
