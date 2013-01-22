@@ -50,7 +50,12 @@ public class SomeConsumer extends Activity {
 
 				while (true) {
 
-					endpoint = multi.waitForMessage();
+					try {
+						endpoint = multi.waitForMessage();
+					} catch (Exception e) {
+						// Exception thrown if waitForMessage() returns with an endpoint not on the component which owns the Multiplex.
+						break;
+					}
 					
 					if (endpoint.getEndpointName().equals("rdc_update")) {
 						
