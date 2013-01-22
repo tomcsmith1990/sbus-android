@@ -533,13 +533,7 @@ void scomponent::start_wrapper()
 	// Close open file descriptors (except stdio):
 	for(int i = getdtablesize() - 1; i > 2; i--)
 	{
-		// printf("Closing file descriptor %d\n", i);
-		#ifndef __ANDROID__
 		close(i);
-		#else
-		//if (i != bootstrap_fd && i != callback_fd)
-			//close(i);
-		#endif
 	}
 
 	// Set up some command-line arguments and exec:
