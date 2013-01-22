@@ -82,6 +82,10 @@ public class SComponent {
 		start(m_ComponentPointer, cptFilename, port, useRDC);
 	}
 
+	/**
+	 * 
+	 * @return An endpoint which will receive messages when an RDC is added/removed.
+	 */
 	public SEndpoint RDCUpdateNotificationsEndpoint() {
 		if (m_RDCUpdateNotifications == null) {
 			long ptr = RDCUpdateNotificationsEndpoint(m_ComponentPointer);
@@ -110,6 +114,10 @@ public class SComponent {
 		return declareSchema(m_ComponentPointer, schema);
 	}
 	
+	/**
+	 * 
+	 * @return The Multiplex for this component - for waiting for messages to arrive.
+	 */
 	public Multiplex getMultiplex() {
 		return new Multiplex(this);
 	}
@@ -136,16 +144,19 @@ public class SComponent {
 	}
 
 	private native long scomponent(String componentName, String instanceName);
+	
 	private native long addEndpointSource(long componentPtr, String endpointName, String messageHash, String responseHash);
 	private native long addEndpointSink(long componentPtr, String endpointName, String messageHash, String responseHash);
 	private native long addEndpointClient(long componentPtr, String endpointName, String messageHash, String responseHash);
+	
 	private native void addRDC(long componentPtr, String rdcAddress);
 	private native void start(long componentPtr, String cptFilename, int port, boolean useRDC);
 
 	// May only call after start().
-	private native void setPermission(long componentPtr, String componentName, String instanceName, boolean allow);
-	private native long RDCUpdateNotificationsEndpoint(long componentPtr);
 	private native String declareSchema(long componentPtr, String schema);
+	private native long RDCUpdateNotificationsEndpoint(long componentPtr);
+	private native void setPermission(long componentPtr, String componentName, String instanceName, boolean allow);
+	
 	private native void delete(long componentPtr);
 
 	static {
