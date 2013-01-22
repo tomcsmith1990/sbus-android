@@ -876,7 +876,7 @@ void swrapper::lost(speer *peer)
 	}
 }
 
-void swrapper::register_cpt(int arrive)
+void swrapper::register_cpt(int arrive, const char *address)
 {
 	const char *rdc_address;
 	snode *sn;
@@ -894,27 +894,54 @@ void swrapper::register_cpt(int arrive)
 
 	params = new registerparams();
 	params->arrive = arrive;
-	params->count = rdc->count();
+	if (address == NULL)
+		params->count = rdc->count();
+	else
+		params->count = 1;
 	params->failed = params->succeeded = 0;
-	
-	for(int i = 0; i < rdc->count(); i++)
-	{
-		rdc_address = rdc->item(i);
-		if(rdc_address[0] == '!')
-			continue;
-		ok = begin_visit(VisitRegister, rdc_address, "rdc", "register",
-				 register_mp, sn, NULL, params, NULL);
 
-		if(ok < 0)
+	if (address == NULL)
+	{
+		for(int i = 0; i < rdc->count(); i++)
 		{
-			params->failed++;
-			if(arrive)
-				log("Note: could not register with RDC at %s", rdc_address);
+			rdc_address = rdc->item(i);
+			if(rdc_address[0] == '!')
+				continue;
+			ok = begin_visit(VisitRegister, rdc_address, "rdc", "register",
+					 register_mp, sn, NULL, params, NULL);
+
+			if(ok < 0)
+			{
+				params->failed++;
+				if(arrive)
+					log("Note: could not register with RDC at %s", rdc_address);
+			}
+			else
+			{
+				/* OK so far, but a non-blocking connect may well still fail,
+					so this doesn't count as a success yet */
+			}
 		}
-		else
+	}
+	else
+	{
+		rdc_address = address;
+		if(rdc_address[0] != '!')
 		{
-			/* OK so far, but a non-blocking connect may well still fail,
-				so this doesn't count as a success yet */
+			ok = begin_visit(VisitRegister, rdc_address, "rdc", "register",
+					 register_mp, sn, NULL, params, NULL);
+
+			if(ok < 0)
+			{
+				params->failed++;
+				if(arrive)
+					log("Note: could not register with RDC at %s", rdc_address);
+			}
+			else
+			{
+				/* OK so far, but a non-blocking connect may well still fail,
+					so this doesn't count as a success yet */
+			}
 		}
 	}
 	if(params->failed == params->count)
@@ -922,15 +949,18 @@ void swrapper::register_cpt(int arrive)
 		// All failed at the first hurdle, i.e. initial connection
 		if(arrive)
 		{
-			warning("Warning: no RDCs available to register with");
+			if (address == NULL)
+				warning("Warning: no RDCs available to register with");
+			else
+				warning("Warning: could not register with RDC %s", address);
 			//couldnt find the RDC, so let's disconnect
 			register_with_rdc = false;
 			setdefaultprivs();
 		}
-			else
+		else
 		{
 			// warning("Note: no RDCs available to deregister from");
-			exit(0);
+			
 		}
 		delete params;
 	}
@@ -1173,7 +1203,7 @@ void swrapper::continue_visit(int fd)
 			/* Deregistration prior to wrapper termination: now that we've
 				got the deregistration message out to at least one RDC,
 				we exit without further ado: */
-			exit(0);
+			//exit(0);
 		}
 		
 		if(reply_schema == NULL)
@@ -1185,7 +1215,7 @@ void swrapper::continue_visit(int fd)
 			
 			if(close(fd) < 0) error("Error in close()");
 			fdstate[fd] = FDUnused;
-			return;
+			return;me
 		}
 		delete abst;
 
@@ -2085,12 +2115,14 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 			// register_with_rdc is true so that setdefaultprivs() is called
 			// this informs the rdc about privileges		
 			register_with_rdc = true;
-			register_cpt(1);
+			register_cpt(1, address);
 		}
 		else
 		{
-			// remove the rdc from our list.
-			// Note: we may still be registered, the rdc will detect this if we leave the network.
+			// deregister from rdc and remove the rdc from our list.
+			// Note: we may still be registered (cannot send message because left the network).
+			// The rdc will detect this if we leave the network.
+			register_cpt(0, address);
 			rdc->remove(address);
 		}
 		
@@ -2123,9 +2155,9 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 	{
 		warning("Abort: Wrapper terminating in response to remote request");
 		if (register_with_rdc)
-			register_cpt(0); // This will call exit() for us
-		else
-			exit(0);
+			register_cpt(0);
+		
+		exit(0);
 	}
 	else if(!strcmp(fn_endpoint,"access_control"))
 	{
@@ -2494,8 +2526,6 @@ void swrapper::abort_visit(AbstractMessage *abst)
 			if(reg_params->failed == reg_params->count && arrive)
 					warning("Warning: no RDCs available to register with");
 			delete reg_params;
-			if(!arrive)
-				exit(0);
 		}
 	}
 	else if(abst->purpose == VisitResolveConstraints)
@@ -2707,9 +2737,7 @@ void swrapper::finalise_sink_visit(AbstractMessage *abst)
 			// All done:
 			delete reg_params;
 
-			if(!arrive)
-				exit(0);
-			else
+			if(arrive)
 				setdefaultprivs(); //now we've sent the registered msgs, let's load the default privs.
 		}
 	}
@@ -3433,9 +3461,9 @@ void swrapper::serve_boot()
 	{
 		log("Wrapper instructed to stop by the application");
 		if (register_with_rdc)
-			register_cpt(0); // This will call exit() for us
-		else
-			exit(0);
+			register_cpt(0);
+
+		exit(0);
 	}
 	else if(ret == MessageGetStatus)
 	{
