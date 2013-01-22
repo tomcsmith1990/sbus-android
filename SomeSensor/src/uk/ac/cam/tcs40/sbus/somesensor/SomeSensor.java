@@ -33,6 +33,7 @@ public class SomeSensor extends Activity
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				String cptFile = "SomeSensor.cpt";
+				scomponent.setRDCUpdateAutoconnect(true);
 				scomponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, 44444, true);
 				scomponent.setPermission("SomeConsumer", "", true);
 			
