@@ -13,10 +13,7 @@ Java_uk_ac_cam_tcs40_sbus_SNode_packBoolean( JNIEnv* env,
 	
 	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
 	
-	if (b)
-		sn = pack_bool(1, name);
-	else
-		sn = pack_bool(0, name);
+	sn = pack_bool(b == JNI_TRUE, name);
 		
 	((snode *)node)->append(sn);	
 

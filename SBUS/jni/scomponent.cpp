@@ -99,7 +99,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setRDCUpdateAutoconnect( JNIEnv* env,
 										                         jlong component, 
 										                         jboolean connect )
 {
-	((scomponent *)component)->set_rdc_update_autoconnect(connect);
+	((scomponent *)component)->set_rdc_update_autoconnect(connect == JNI_TRUE);
 }
 
 void
@@ -112,7 +112,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_start( JNIEnv* env,
 {
 	const char *cpt_filename = env->GetStringUTFChars(cpt_file, 0);
 	
-	((scomponent *)component)->start(cpt_filename, port, use_rdc);
+	((scomponent *)component)->start(cpt_filename, port, use_rdc == JNI_TRUE);
 
 	env->ReleaseStringUTFChars(cpt_file, cpt_filename);
 }
@@ -128,7 +128,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
 	const char *component_name = env->GetStringUTFChars(componentName, 0);
 	const char *instance_name = env->GetStringUTFChars(instanceName, 0);
 	
-	((scomponent *)component)->set_permission(component_name, instance_name, allow);
+	((scomponent *)component)->set_permission(component_name, instance_name, allow == JNI_TRUE);
 
 	env->ReleaseStringUTFChars(componentName, component_name);
 	env->ReleaseStringUTFChars(instanceName, instance_name);
