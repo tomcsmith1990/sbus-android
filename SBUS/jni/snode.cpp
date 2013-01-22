@@ -114,7 +114,7 @@ Java_uk_ac_cam_tcs40_sbus_SNode_extractBoolean( JNIEnv* env,
 {	
 	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
 	
-	int i = ((snode *)node)->extract_int(name);	
+	int i = ((snode *)node)->extract_flg(name);	
 
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 	
