@@ -68,7 +68,7 @@ public class SNode {
 	}
 	
 	public boolean extractBoolean(String name) {
-		return extractBoolean(this.m_NodePtr, name);
+		return (extractBoolean(this.m_NodePtr, name) == 1);
 	}
 	
 	public int extractInt(String name) {
@@ -89,7 +89,7 @@ public class SNode {
 	private native void packString(long nodePtr, String s, String name);
 	private native void packClock(long nodePtr, String date, String name);
 	
-	private native boolean extractBoolean(long nodePtr, String name);
+	private native int extractBoolean(long nodePtr, String name);
 	private native int extractInt(long nodePtr, String name);
 	private native double extractDouble(long nodePtr, String name);
 	private native String extractString(long nodePtr, String name);
