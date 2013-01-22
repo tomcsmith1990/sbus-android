@@ -37,27 +37,43 @@ public class SomeConsumer extends Activity {
 				String cptFile = "SomeConsumer.cpt";
 				scomponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, 44443, true);
 				scomponent.setPermission("SomeSensor", "", true);
-				SEndpoint rdc = scomponent.RDCUpdateNotificationsEndpoint();
+				
+				SEndpoint rdcUpdate = scomponent.RDCUpdateNotificationsEndpoint();
 				
 				SMessage message;
 				SNode node;
 				SEndpoint endpoint;
+				
 				Multiplex multi = scomponent.getMultiplex();
 				multi.add(sendpoint);
-				multi.add(rdc);
+				multi.add(rdcUpdate);
 
 				while (true) {
 
 					endpoint = multi.waitForMessage();
-
-					if (endpoint.getEndpointName().equals("SomeEpt"))
-					{
+					
+					if (endpoint.getEndpointName().equals("rdc_update")) {
+						
+						message = rdcUpdate.receive();
+						node = message.getTree();
+						
+						String rdcAddress = node.extractString("rdc_address");
+						boolean arrived = node.extractBoolean("arrived");
+						
+						message.delete();
+						
+						Log.i("SomeConsumer", "RDC Update: " + rdcAddress + " has just " + (arrived ? "arrived" : "left"));
+						
+					} else if (endpoint.getEndpointName().equals("SomeEpt")) {
+						
 						message = sendpoint.receive();
 						node = message.getTree();
 
 						final String somestring = node.extractString("somestring");
 						final int someval = node.extractInt("someval");
 						final int somevar = node.extractInt("somevar");
+						
+						message.delete();
 
 						runOnUiThread(new Runnable() {
 							public void run() {
@@ -65,16 +81,8 @@ public class SomeConsumer extends Activity {
 								someValTV.setText("someval: " + someval);
 								someVarTV.setText("somevar: " + somevar);
 							}
-						});
-
-						message.delete();
-					} else if (endpoint.getEndpointName().equals("rdc_update"))	{
-						Log.i("RDC", "Update");
+						});	
 					}
-
-					try {
-						Thread.sleep(2000);
-					} catch (InterruptedException e) { }
 				}
 			}
 		}.start();
