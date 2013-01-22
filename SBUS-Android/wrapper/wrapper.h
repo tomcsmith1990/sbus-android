@@ -247,7 +247,8 @@ class swrapper
 	int external_master_sock;
 	int listen_port;
 	int register_with_rdc; //should we register with the rdc.
-	int notify_rdc_updates; // should we send a callback message when we get a new rdc message.
+	int rdc_update_notify; // should we send a callback message when we get a new rdc message.
+	int rdc_update_autoconnect;
 	CptUniqueness uniq;
 	char *canonical_address;
 	char *local_address;
