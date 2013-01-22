@@ -67,10 +67,19 @@ public class SEndpoint {
 		return s;
 	}
 
+	/**
+	 * Map this endpoint to another endpoint.
+	 * @param address The address of the endpoint to map to.
+	 * @param endpoint The name of the endpoint to map to.
+	 * @return The result of the map operation.
+	 */
 	public String map(String address, String endpoint) {
 		return map(m_EndpointPointer, address, endpoint);
 	}
 
+	/**
+	 * Unmap this endpoint from all other endpoints.
+	 */
 	public void unmap() {
 		unmap(m_EndpointPointer);
 	}
