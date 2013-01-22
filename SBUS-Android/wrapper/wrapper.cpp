@@ -1215,7 +1215,7 @@ void swrapper::continue_visit(int fd)
 			
 			if(close(fd) < 0) error("Error in close()");
 			fdstate[fd] = FDUnused;
-			return;me
+			return;
 		}
 		delete abst;
 
