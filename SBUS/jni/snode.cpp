@@ -106,22 +106,19 @@ Java_uk_ac_cam_tcs40_sbus_SNode_delete( JNIEnv* env,
 	delete ((snode *)node);
 }
 
-jboolean
+jint
 Java_uk_ac_cam_tcs40_sbus_SNode_extractBoolean( JNIEnv* env,
-                                             jobject thiz,
-                                             jlong node,
-                                             jstring n )
+			                                     jobject thiz,
+			                                     jlong node,
+			                                     jstring n )
 {	
 	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
 	
-	int i = ((snode *)node)->extract_flg(name);	
+	int i = ((snode *)node)->extract_int(name);	
 
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 	
-	if (i == 1)
-		return JNI_TRUE;
-	else
-		return JNI_FALSE;
+	return i;
 }
 
 jint
