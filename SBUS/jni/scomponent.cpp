@@ -97,6 +97,15 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addRDC( JNIEnv* env,
 }
 
 void
+Java_uk_ac_cam_tcs40_sbus_SComponent_setRDCUpdateAutoconnect( JNIEnv* env,
+		                                            jobject thiz, 
+		                                            jlong component,
+		                                            jboolean autoconnect )
+{
+	((scomponent *)component)->set_rdc_update_autoconnect(autoconnect == JNI_TRUE);
+}
+
+void
 Java_uk_ac_cam_tcs40_sbus_SComponent_start( JNIEnv* env,
                                             jobject thiz, 
                                             jlong component,
