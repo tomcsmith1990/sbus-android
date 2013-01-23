@@ -395,6 +395,8 @@ void scomponent::start(const char *metadata_filename, int port, int register_wit
 	start->log_level = log_level;
 	start->echo_level = echo_level;
 	start->rdc_register = register_with_rdc;
+	start->rdc_update_notify = false;
+	start->rdc_update_autoconnect = true;
 	start->rdc = new svector();
 	for(int i = 0; i < rdc->count(); i++)
 		start->rdc->add(rdc->item(i));

@@ -138,8 +138,8 @@ void swrapper::bootstrap()
 	listen_port = start->listen_port;
 	uniq = start->unique;
 	register_with_rdc = start->rdc_register;
-	rdc_update_notify = false;
-	rdc_update_autoconnect = true;
+	rdc_update_notify = start->rdc_update_notify;
+	rdc_update_autoconnect = start->rdc_update_autoconnect;
 	log_level = start->log_level;
 	echo_level = start->echo_level;
 	if(listen_port == 0)
