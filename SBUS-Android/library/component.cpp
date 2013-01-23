@@ -53,7 +53,6 @@ scomponent::scomponent(const char *cpt_name, const char *instance_name,
 	uniq = unique;
 	canonical_address = NULL;
 	wrapper_started = false;
-
 	char *rdc_path;
 	rdc_path = getenv("SBUS_RDC_PATH");
 	if(rdc_path != NULL)
@@ -222,16 +221,6 @@ sendpoint *scomponent::clone(sendpoint *ep)
 	return add_endpoint(ep->name, ep->type, ep->msg_hc, ep->reply_hc);
 }
 
-void scomponent::set_rdc_update_autoconnect(int autoconnect)
-{
-	rdc_update_autoconnect = autoconnect;
-}
-
-void scomponent::set_rdc_update_notify(int notify)
-{
-	rdc_update_notify = notify;
-}
-
 sendpoint *scomponent::rdc_update_notifications_endpoint()
 {
 	const char *ept_name = "rdc_update";
@@ -247,7 +236,6 @@ sendpoint *scomponent::rdc_update_notifications_endpoint()
 	
 		rdc_update_ep = add_endpoint(ept_name, EndpointSink, hc->tostring());
 	}
-	rdc_update_notify = true;
 	return rdc_update_ep;
 }
 
@@ -407,8 +395,6 @@ void scomponent::start(const char *metadata_filename, int port, int register_wit
 	start->log_level = log_level;
 	start->echo_level = echo_level;
 	start->rdc_register = register_with_rdc;
-	start->rdc_update_notify = rdc_update_notify;
-	start->rdc_update_autoconnect = rdc_update_autoconnect;
 	start->rdc = new svector();
 	for(int i = 0; i < rdc->count(); i++)
 		start->rdc->add(rdc->item(i));
@@ -523,18 +509,19 @@ void scomponent::start_wrapper()
 		// Parent process (return to application):
 		bootstrap_fd = acceptsock(callback_fd);
 		if(bootstrap_fd < 0)
-			error("Couldn't accept connection back from wrapper");
+			error("Couldn't accept connection back from wrapper");		
 		log("Wrapper (PID %d) running and connected to library", pid);
 		return;
 	}
-
+	
 	// Child process (become the wrapper):
-
+	
 	// Close open file descriptors (except stdio):
-	for(int i = getdtablesize() - 1; i > 2; i--)
-	{
-		close(i);
-	}
+		for(int i = getdtablesize() - 1; i > 2; i--)
+		{
+			// printf("Closing file descriptor %d\n", i);
+			close(i);
+		}
 
 	// Set up some command-line arguments and exec:
 	char **newargs;
