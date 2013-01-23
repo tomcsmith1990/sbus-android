@@ -1038,6 +1038,8 @@ sstartwrapper::sstartwrapper()
 	cpt_name = instance_name = creator = metadata_address = NULL;
 	rdc = new svector();
 	unique = UniqueMultiple;
+	rdc_update_notify = false;
+	rdc_update_autoconnect = false;
 }
 
 sstartwrapper::~sstartwrapper()
@@ -1087,7 +1089,7 @@ AbstractMessage *sstartwrapper::wrap(int fd)
 	StringBuf *sb;
 	AbstractMessage *abst;
 	char *s;
-	
+
 	sb = begin_msg(MessageStart);
 	sb->cat_string(cpt_name);
 	sb->cat_string(instance_name);
@@ -1097,6 +1099,9 @@ AbstractMessage *sstartwrapper::wrap(int fd)
 	sb->cat_byte(unique);
 	sb->cat_byte(log_level);
 	sb->cat_byte(echo_level);
+	//sb->cat_byte(rdc_register);
+	//sb->cat_byte(rdc_update_notify);
+	//sb->cat_byte(rdc_update_autoconnect);
 	
 	// RDCs:
 	sb->cat(rdc->count());
@@ -1127,7 +1132,8 @@ int sstartwrapper::write(int sock)
 	sb->cat_byte(log_level);
 	sb->cat_byte(echo_level);
 	sb->cat_byte(rdc_register);
-	
+	sb->cat_byte(rdc_update_notify);
+	sb->cat_byte(rdc_update_autoconnect);
 	// RDCs:
 	sb->cat(rdc->count());
 	for(int i = 0; i < rdc->count(); i++)
@@ -1176,6 +1182,8 @@ int read_startup(AbstractMessage *abst, saddendpoint *add, sstartwrapper *start)
 		start->log_level = decode_byte(&pos);
 		start->echo_level = decode_byte(&pos);
 		start->rdc_register = decode_byte(&pos);
+		start->rdc_update_notify = decode_byte(&pos);
+		start->rdc_update_autoconnect = decode_byte(&pos);
 		num_rdc = decode_count(&pos);
 		start->rdc->clear();
 		for(int i = 0; i < num_rdc; i++)
@@ -1233,6 +1241,8 @@ int read_startup(int sock, saddendpoint *add, sstartwrapper *start)
 		start->log_level = decode_byte(&pos);
 		start->echo_level = decode_byte(&pos);
 		start->rdc_register = decode_byte(&pos);
+		start->rdc_update_notify = decode_byte(&pos);
+		start->rdc_update_autoconnect = decode_byte(&pos);
 		num_rdc = decode_count(&pos);
 		start->rdc->clear();
 		for(int i = 0; i < num_rdc; i++)

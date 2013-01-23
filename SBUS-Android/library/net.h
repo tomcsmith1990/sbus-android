@@ -287,6 +287,8 @@ class sstartwrapper
 	int log_level;
 	int echo_level;
 	int rdc_register;
+	int rdc_update_notify;
+	int rdc_update_autoconnect;
 	svector *rdc;
 };
 
