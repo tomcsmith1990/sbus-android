@@ -138,8 +138,7 @@ void swrapper::bootstrap()
 	listen_port = start->listen_port;
 	uniq = start->unique;
 	register_with_rdc = start->rdc_register;
-	rdc_update_notify = start->rdc_update_notify;
-	rdc_update_autoconnect = start->rdc_update_autoconnect;
+	rdc_update_notify = false;
 	log_level = start->log_level;
 	echo_level = start->echo_level;
 	if(listen_port == 0)
@@ -2106,28 +2105,25 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 		// get the address of this new rdc and whether it is to be added or removed.
 		const char *address = sn->extract_txt("rdc_address");
 		int arrived = sn->extract_flg("arrived");
-
-		if (rdc_update_autoconnect)
+		
+		if (arrived)
 		{
-			if (arrived)
-			{
-				// add the rdc if it is not already.
-				rdc->add_noduplicates(address);
+			// add the rdc if it is not already.
+			rdc->add_noduplicates(address);
 			
-				// register the component with the rdc
-				// register_with_rdc is true so that setdefaultprivs() is called
-				// this informs the rdc about privileges		
-				register_with_rdc = true;
-				register_cpt(1, address);
-			}
-			else
-			{
-				// deregister from rdc and remove the rdc from our list.
-				// Note: we may still be registered (cannot send message because left the network).
-				// The rdc will detect this if we leave the network.
-				register_cpt(0, address);
-				rdc->remove(address);
-			}
+			// register the component with the rdc
+			// register_with_rdc is true so that setdefaultprivs() is called
+			// this informs the rdc about privileges		
+			register_with_rdc = true;
+			register_cpt(1, address);
+		}
+		else
+		{
+			// deregister from rdc and remove the rdc from our list.
+			// Note: we may still be registered (cannot send message because left the network).
+			// The rdc will detect this if we leave the network.
+			register_cpt(0, address);
+			rdc->remove(address);
 		}
 		
 		if (rdc_update_notify)

@@ -1127,8 +1127,6 @@ int sstartwrapper::write(int sock)
 	sb->cat_byte(log_level);
 	sb->cat_byte(echo_level);
 	sb->cat_byte(rdc_register);
-	sb->cat_byte(rdc_update_notify);
-	sb->cat_byte(rdc_update_autoconnect);
 	
 	// RDCs:
 	sb->cat(rdc->count());
@@ -1178,8 +1176,6 @@ int read_startup(AbstractMessage *abst, saddendpoint *add, sstartwrapper *start)
 		start->log_level = decode_byte(&pos);
 		start->echo_level = decode_byte(&pos);
 		start->rdc_register = decode_byte(&pos);
-		start->rdc_update_notify = decode_byte(&pos);
-		start->rdc_update_autoconnect = decode_byte(&pos);
 		num_rdc = decode_count(&pos);
 		start->rdc->clear();
 		for(int i = 0; i < num_rdc; i++)
@@ -1237,8 +1233,6 @@ int read_startup(int sock, saddendpoint *add, sstartwrapper *start)
 		start->log_level = decode_byte(&pos);
 		start->echo_level = decode_byte(&pos);
 		start->rdc_register = decode_byte(&pos);
-		start->rdc_update_notify = decode_byte(&pos);
-		start->rdc_update_autoconnect = decode_byte(&pos);
 		num_rdc = decode_count(&pos);
 		start->rdc->clear();
 		for(int i = 0; i < num_rdc; i++)
