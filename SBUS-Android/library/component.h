@@ -54,6 +54,8 @@ class scomponent
 	const char *get_schema(HashCode *hc); // Caller should delete string
 	
 	sendpoint *rdc_update_notifications_endpoint();
+	void set_rdc_update_notify(int notify);
+	void set_rdc_update_autoconnect(int autoconnect);
 
 	HashCode *declare_schema(const char *schema);
 	HashCode *load_schema(const char *file);
@@ -72,6 +74,9 @@ class scomponent
 
 	int listen_port;
 	const char *canonical_address;
+	
+	int rdc_update_notify;
+	int rdc_update_autoconnect;
 		
 	void start_wrapper();
 	void running();

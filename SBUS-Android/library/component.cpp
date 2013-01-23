@@ -221,6 +221,16 @@ sendpoint *scomponent::clone(sendpoint *ep)
 	return add_endpoint(ep->name, ep->type, ep->msg_hc, ep->reply_hc);
 }
 
+void scomponent::set_rdc_update_autoconnect(int autoconnect)
+{
+	rdc_update_autoconnect = autoconnect;
+}
+
+void scomponent::set_rdc_update_notify(int notify)
+{
+	rdc_update_notify = notify;
+}
+
 sendpoint *scomponent::rdc_update_notifications_endpoint()
 {
 	const char *ept_name = "rdc_update";
@@ -236,6 +246,7 @@ sendpoint *scomponent::rdc_update_notifications_endpoint()
 	
 		rdc_update_ep = add_endpoint(ept_name, EndpointSink, hc->tostring());
 	}
+	set_rdc_update_notify(true);
 	return rdc_update_ep;
 }
 
@@ -395,8 +406,8 @@ void scomponent::start(const char *metadata_filename, int port, int register_wit
 	start->log_level = log_level;
 	start->echo_level = echo_level;
 	start->rdc_register = register_with_rdc;
-	start->rdc_update_notify = false;
-	start->rdc_update_autoconnect = true;
+	start->rdc_update_notify = rdc_update_notify;
+	start->rdc_update_autoconnect = rdc_update_autoconnect;
 	start->rdc = new svector();
 	for(int i = 0; i < rdc->count(); i++)
 		start->rdc->add(rdc->item(i));
