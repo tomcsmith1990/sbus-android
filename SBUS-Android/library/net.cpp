@@ -1099,9 +1099,6 @@ AbstractMessage *sstartwrapper::wrap(int fd)
 	sb->cat_byte(unique);
 	sb->cat_byte(log_level);
 	sb->cat_byte(echo_level);
-	//sb->cat_byte(rdc_register);
-	//sb->cat_byte(rdc_update_notify);
-	//sb->cat_byte(rdc_update_autoconnect);
 	
 	// RDCs:
 	sb->cat(rdc->count());
