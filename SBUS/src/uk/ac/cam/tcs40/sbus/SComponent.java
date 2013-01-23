@@ -73,8 +73,8 @@ public class SComponent {
 	}
 	
 	/**
-	 * Set whether to autoconnect when we get a new RDC on register_rdc endpoint.
-	 * @param autoconnect Whether to autoconnect or not.
+	 * Whether or not the component should automatically connect to new RDCs.
+	 * @param autoconnect
 	 */
 	public void setRDCUpdateAutoconnect(boolean autoconnect) {
 		setRDCUpdateAutoconnect(m_ComponentPointer, autoconnect);
