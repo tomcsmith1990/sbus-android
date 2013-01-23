@@ -67,7 +67,9 @@ long addEndpoint( JNIEnv* env,
 {
 	const char *endpoint_name = env->GetStringUTFChars(endName, 0);
 	const char *message_hash = env->GetStringUTFChars(messageHash, 0);
-	const char *response_hash = env->GetStringUTFChars(responseHash, 0);
+	const char *response_hash = NULL;
+	if (responseHash != NULL)
+		response_hash = env->GetStringUTFChars(responseHash, 0);
 	
 	sendpoint *endpoint;
 	
@@ -75,7 +77,8 @@ long addEndpoint( JNIEnv* env,
 
 	env->ReleaseStringUTFChars(endName, endpoint_name);
 	env->ReleaseStringUTFChars(messageHash, message_hash);
-	env->ReleaseStringUTFChars(responseHash, response_hash);
+	if (responseHash != NULL)
+		env->ReleaseStringUTFChars(responseHash, response_hash);
 	
 	return (long)endpoint;
 }
