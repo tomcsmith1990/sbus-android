@@ -31,7 +31,7 @@ public class SomeConsumer extends Activity {
 			public void run() {
 				SComponent scomponent = new SComponent("SomeConsumer", "instance");
 				SEndpoint sendpoint = scomponent.addEndpoint("SomeEpt", EndpointType.EndpointSink, "BE8A47EBEB58");
-				scomponent.addRDC("192.168.0.3:50123");
+				scomponent.setRDCUpdateAutoconnect(true);
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				String cptFile = "SomeConsumer.cpt";
