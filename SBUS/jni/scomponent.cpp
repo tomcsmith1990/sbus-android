@@ -12,8 +12,8 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
                                                   jstring compName, 
                                                   jstring instanName )
 {
-	const char *cpt_name = env->GetStringUTFChars(compName, 0);
-	const char *instance_name = env->GetStringUTFChars(instanName, 0);
+	const char *cpt_name = env->GetStringUTFChars(compName, NULL);
+	const char *instance_name = env->GetStringUTFChars(instanName, NULL);
 	
 	scomponent *component;
 	component = new scomponent(cpt_name, instance_name);
@@ -65,11 +65,11 @@ long addEndpoint( JNIEnv* env,
                   jstring messageHash,
                   jstring responseHash )
 {
-	const char *endpoint_name = env->GetStringUTFChars(endName, 0);
-	const char *message_hash = env->GetStringUTFChars(messageHash, 0);
+	const char *endpoint_name = env->GetStringUTFChars(endName, NULL);
+	const char *message_hash = env->GetStringUTFChars(messageHash, NULL);
 	const char *response_hash = NULL;
 	if (responseHash != NULL)
-		response_hash = env->GetStringUTFChars(responseHash, 0);
+		response_hash = env->GetStringUTFChars(responseHash, NULL);
 	
 	sendpoint *endpoint;
 	
@@ -89,7 +89,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addRDC( JNIEnv* env,
                                              jlong component, 
                                              jstring addr )
 {
-	const char *rdc = env->GetStringUTFChars(addr, 0);
+	const char *rdc = env->GetStringUTFChars(addr, NULL);
 	
 	((scomponent *)component)->add_rdc(rdc);
 
@@ -102,7 +102,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setRDCUpdateAutoconnect( JNIEnv* env,
 		                                            jlong component,
 		                                            jboolean autoconnect )
 {
-	((scomponent *)component)->set_rdc_update_autoconnect(autoconnect == JNI_TRUE);
+	((scomponent *)component)->set_rdc_update_autoconnect(autoconnect ? JNI_TRUE : JNI_FALSE);
 }
 
 void
@@ -113,9 +113,9 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_start( JNIEnv* env,
                                             jint port,
                                             jboolean use_rdc )
 {
-	const char *cpt_filename = env->GetStringUTFChars(cpt_file, 0);
+	const char *cpt_filename = env->GetStringUTFChars(cpt_file, NULL);
 	
-	((scomponent *)component)->start(cpt_filename, port, use_rdc == JNI_TRUE);
+	((scomponent *)component)->start(cpt_filename, port, use_rdc ? JNI_TRUE : JNI_FALSE);
 
 	env->ReleaseStringUTFChars(cpt_file, cpt_filename);
 }
@@ -128,10 +128,10 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_setPermission( JNIEnv* env,
 		                                            jstring instanceName,
 		                                            jboolean allow )
 {
-	const char *component_name = env->GetStringUTFChars(componentName, 0);
-	const char *instance_name = env->GetStringUTFChars(instanceName, 0);
+	const char *component_name = env->GetStringUTFChars(componentName, NULL);
+	const char *instance_name = env->GetStringUTFChars(instanceName, NULL);
 	
-	((scomponent *)component)->set_permission(component_name, instance_name, allow == JNI_TRUE);
+	((scomponent *)component)->set_permission(component_name, instance_name, allow ? JNI_TRUE : JNI_FALSE);
 
 	env->ReleaseStringUTFChars(componentName, component_name);
 	env->ReleaseStringUTFChars(instanceName, instance_name);
@@ -151,7 +151,7 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_declareSchema( JNIEnv* env,
 		                                            jlong component,
 		                                            jstring javaSchema )
 {
-	const char *schema = env->GetStringUTFChars(javaSchema, 0);
+	const char *schema = env->GetStringUTFChars(javaSchema, NULL);
 	
 	const char *hash = ((scomponent *)component)->declare_schema(schema)->tostring();
 
