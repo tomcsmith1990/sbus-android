@@ -9,8 +9,8 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_map( JNIEnv* env,
 			                                     jstring addr,
 			                                     jstring ept )
 {
-	const char *address = env->GetStringUTFChars(addr, 0);
-	const char *endpt = env->GetStringUTFChars(ept, 0);
+	const char *address = env->GetStringUTFChars(addr, NULL);
+	const char *endpt = env->GetStringUTFChars(ept, NULL);
 	
 	const char *s = ((sendpoint *)endpoint)->map(address, endpt);
 	
@@ -35,7 +35,7 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_createMessage( JNIEnv* env,
 	                                               jlong endpoint,
 	                                               jstring name )
 {
-	const char *msg_type = env->GetStringUTFChars(name, 0);
+	const char *msg_type = env->GetStringUTFChars(name, NULL);
 	
 	snode *message;
 	message = mklist(msg_type);

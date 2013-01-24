@@ -11,7 +11,7 @@ Java_uk_ac_cam_tcs40_sbus_SNode_packBoolean( JNIEnv* env,
 {	
 	snode *sn;
 	
-	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
 	
 	sn = pack_bool(b ? JNI_TRUE : JNI_FALSE, name);
 		
@@ -29,7 +29,7 @@ Java_uk_ac_cam_tcs40_sbus_SNode_packInt( JNIEnv* env,
 {	
 	snode *sn;
 	
-	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
 	
 	sn = pack(i, name);
 	((snode *)node)->append(sn);	
@@ -46,7 +46,7 @@ Java_uk_ac_cam_tcs40_sbus_SNode_packDouble( JNIEnv* env,
 {	
 	snode *sn;
 	
-	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
 	
 	sn = pack(d, name);
 	((snode *)node)->append(sn);	
@@ -63,8 +63,8 @@ Java_uk_ac_cam_tcs40_sbus_SNode_packString( JNIEnv* env,
 {
 	snode *sn;
 	
-	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
-	const char *string = env->GetStringUTFChars(s, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
+	const char *string = env->GetStringUTFChars(s, NULL);
 
 	sn = pack(string, name);
 	((snode *)node)->append(sn);
@@ -82,8 +82,8 @@ Java_uk_ac_cam_tcs40_sbus_SNode_packClock( JNIEnv* env,
 {
 	snode *sn;
 	
-	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
-	const char *clk = env->GetStringUTFChars(c, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
+	const char *clk = env->GetStringUTFChars(c, NULL);
 
 	sdatetime datetime(clk);
 	
@@ -109,7 +109,7 @@ Java_uk_ac_cam_tcs40_sbus_SNode_extractBoolean( JNIEnv* env,
 			                                     jlong node,
 			                                     jstring n )
 {	
-	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
 	
 	int i = ((snode *)node)->extract_flg(name);	
 
@@ -124,7 +124,7 @@ Java_uk_ac_cam_tcs40_sbus_SNode_extractInt( JNIEnv* env,
                                              jlong node,
                                              jstring n )
 {	
-	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
 	
 	int i = ((snode *)node)->extract_int(name);	
 
@@ -139,7 +139,7 @@ Java_uk_ac_cam_tcs40_sbus_SNode_extractDouble( JNIEnv* env,
                                              jlong node,
                                              jstring n )
 {	
-	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
 	
 	double d = ((snode *)node)->extract_dbl(name);	
 
@@ -154,7 +154,7 @@ Java_uk_ac_cam_tcs40_sbus_SNode_extractString( JNIEnv* env,
                                              jlong node,
                                              jstring n )
 {	
-	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, 0);
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
 	
 	const char *s = ((snode *)node)->extract_txt(name);
 			
