@@ -53,6 +53,8 @@ scomponent::scomponent(const char *cpt_name, const char *instance_name,
 	uniq = unique;
 	canonical_address = NULL;
 	wrapper_started = false;
+	rdc_update_autoconnect = false;
+	rdc_update_notify = false;
 	char *rdc_path;
 	rdc_path = getenv("SBUS_RDC_PATH");
 	if(rdc_path != NULL)
