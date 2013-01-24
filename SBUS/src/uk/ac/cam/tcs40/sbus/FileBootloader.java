@@ -26,7 +26,7 @@ public class FileBootloader {
 	}
 
 	public FileBootloader store(String filename) {
-		if (!fileExists(filename))
+		//if (!fileExists(filename))
 			createFile(filename);
 		return this;
 	}
