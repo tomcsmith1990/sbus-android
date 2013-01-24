@@ -251,44 +251,59 @@ char *get_local_ip()
 char *get_local_ip_socket()
 {
 	
-	int sockfd;
-	struct sockaddr_in server;
-	struct sockaddr_in local;
-	int socketSize;
-	struct hostent *hp;
-	char *ip;
-	const int buflen = 100;
-	
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd < 0)
-		error("Error opening socket");
-		
-	ip = new char[buflen];
-		
-	hp = gethostbyname("google.com");
-	if (hp == NULL)
-	{
-		strcpy(ip, "127.0.0.1");
+	int sock;
+    struct ifconf ifconf;
+    struct ifreq ifreq[20];
+    int interfaces;
+ 	char ip[INET_ADDRSTRLEN];
+    char *address;
+    address = new char[INET_ADDRSTRLEN];
+ 	
+    // Create a socket or return an error.
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0)
+       strcpy(address, "127.0.0.1");
+ 
+    // Point ifconf's ifc_buf to our array of interface ifreqs.
+    ifconf.ifc_buf = (char *) ifreq;
+    
+    // Set ifconf's ifc_len to the length of our array of interface ifreqs.
+    ifconf.ifc_len = sizeof ifreq;
+ 
+    //  Populate ifconf.ifc_buf (ifreq) with a list of interface names and addresses.
+    if (ioctl(sock, SIOCGIFCONF, &ifconf) == -1)
+        strcpy(address, "127.0.0.1");
+ 
+    // Divide the length of the interface list by the size of each entry.
+    // This gives us the number of interfaces on the system.
+    interfaces = ifconf.ifc_len / sizeof(ifreq[0]);
+    
+    // Loop through the array of interfaces, printing each one's name and IP.
+    for (int i = 0; i < interfaces; i++) {
+        char net[INET_ADDRSTRLEN];
+        struct sockaddr_in *address = (struct sockaddr_in *) &ifreq[i].ifr_addr;
+ 
+        // Convert the binary IP address into a readable string.
+        //inet_ntop(AF_INET, &address->sin_addr, net, sizeof(net));
+ 
+        //printf("%s-%s\n", ifreq[i].ifr_name, net);
+        
+        if (!strcmp(ifreq[i].ifr_name, "eth0"))
+        {
+        	inet_ntop(AF_INET, &address->sin_addr, ip, sizeof(ip));
+        }
+    }
+ 
+    close(sock);
+    
+    if (ip != NULL)
+    {
+		// Copy it to a char *.
+		for (int i = 0; i < INET_ADDRSTRLEN; i++)
+			address[i] = ip[i];
 	}
-	else
-	{	
-		bzero((char *) &server, sizeof(server));
-		server.sin_family = AF_INET;
-		bcopy(hp->h_addr, &server.sin_addr, hp->h_length);
-		server.sin_port = htons((u_short) 80);
 
-		connect(sockfd, (struct sockaddr *) &server, sizeof(server));
-
-		socketSize = sizeof(local);
-
-		getsockname(sockfd, (struct sockaddr *) &local, (socklen_t*) &socketSize);
-
-		inet_ntop(AF_INET, &local.sin_addr.s_addr, ip, buflen);
-	}
-	
-	close(sockfd);
-	
-	return ip;
+    return address;
 }
 
 int acceptsock(int master_sock, char **remote_address)
