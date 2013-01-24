@@ -2137,7 +2137,7 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 			hc->fromschema("@event { txt rdc_address flg arrived }");
 			
 			snode *sn;
-			sn = pack(pack(address, "rdc_address"), pack(arrived, "arrived"));
+			sn = pack(pack(address, "rdc_address"), pack_bool(arrived, "arrived"));
 			
 			smessage *msg;
 	
