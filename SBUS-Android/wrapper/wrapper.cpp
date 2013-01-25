@@ -863,7 +863,6 @@ void swrapper::lost(speer *peer)
 	{
 		log("Lost contact with component %s at %s; informing RDCs", cpt, addr);
 	}
-	#ifndef __ANDROID__
 	sn = pack(pack(addr, "address"), pack_bool(0, "arrived"), "event");
 
 	for(int i = 0; i < rdc->count(); i++)
@@ -876,7 +875,6 @@ void swrapper::lost(speer *peer)
 		if(ok < 0)
 			log("Note: could not send lost message to RDC at %s", rdc_address);
 	}
-	#endif
 }
 
 void swrapper::register_cpt(int arrive, const char *address)
@@ -1475,14 +1473,9 @@ void swrapper::run()
 	external_master_sock = passivesock(&listen_port);
 	
 	canonical_address = get_local_address(external_master_sock);
-	/*
-	#ifndef __ANDROID__
-	local_address = get_local_ip(); 
-	#else
-	local_address = get_local_ip_socket();
-	#endif
+	
 	fdstate[external_master_sock] = FDListen;
-*/
+
 	running(listen_port);
 	warning("Component %s listening on port %d", cpt_name, listen_port);
 	
@@ -2119,7 +2112,7 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 			if (arrived)
 			{
 				// add the rdc if it is not already.
-				//rdc->add_noduplicates(address);
+				rdc->add_noduplicates(address);
 			
 				// register the component with the rdc
 				// register_with_rdc is true so that setdefaultprivs() is called
