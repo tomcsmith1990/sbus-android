@@ -2109,10 +2109,11 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 		
 		if (rdc_update_autoconnect)
 		{
+			// Removing the address from rdc seems to break the wrapper - let's just not bother using it for now.
 			if (arrived)
 			{
 				// add the rdc if it is not already.
-				rdc->add_noduplicates(address);
+				//rdc->add_noduplicates(address);
 			
 				// register the component with the rdc
 				// register_with_rdc is true so that setdefaultprivs() is called
@@ -2126,7 +2127,7 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 				// Note: we may still be registered (cannot send message because left the network).
 				// The rdc will detect this if we leave the network.
 				register_cpt(0, address);
-				rdc->remove(address);
+				//rdc->remove(address);
 			}
 		}
 		
