@@ -863,6 +863,7 @@ void swrapper::lost(speer *peer)
 	{
 		log("Lost contact with component %s at %s; informing RDCs", cpt, addr);
 	}
+	#ifndef __ANDROID__
 	sn = pack(pack(addr, "address"), pack_bool(0, "arrived"), "event");
 
 	for(int i = 0; i < rdc->count(); i++)
@@ -875,6 +876,7 @@ void swrapper::lost(speer *peer)
 		if(ok < 0)
 			log("Note: could not send lost message to RDC at %s", rdc_address);
 	}
+	#endif
 }
 
 void swrapper::register_cpt(int arrive, const char *address)
@@ -1473,14 +1475,14 @@ void swrapper::run()
 	external_master_sock = passivesock(&listen_port);
 	
 	canonical_address = get_local_address(external_master_sock);
-	
+	/*
 	#ifndef __ANDROID__
 	local_address = get_local_ip(); 
 	#else
 	local_address = get_local_ip_socket();
 	#endif
 	fdstate[external_master_sock] = FDListen;
-
+*/
 	running(listen_port);
 	warning("Component %s listening on port %d", cpt_name, listen_port);
 	
@@ -2106,6 +2108,10 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 		// get the address of this new rdc and whether it is to be added or removed.
 		const char *address = sn->extract_txt("rdc_address");
 		int arrived = sn->extract_flg("arrived");
+		
+		// Usually we'd send a message to register_rdc when connecting to a new network.
+		// Therefore, it stands to reason that our IP could be different, so we need to get the new one.
+		canonical_address = get_local_address(external_master_sock);
 		
 		if (rdc_update_autoconnect)
 		{

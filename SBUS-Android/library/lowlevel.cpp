@@ -263,7 +263,7 @@ char *get_local_ip_socket()
     // Create a socket or return an error.
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0)
-       strcpy(address, "127.0.0.1");
+       strcpy(ip, "127.0.0.1");
  
     // Point ifconf's ifc_buf to our array of interface ifreqs.
     ifconf.ifc_buf = (char *) ifreq;
@@ -273,7 +273,7 @@ char *get_local_ip_socket()
  
     //  Populate ifconf.ifc_buf (ifreq) with a list of interface names and addresses.
     if (ioctl(sock, SIOCGIFCONF, &ifconf) == -1)
-        strcpy(address, "127.0.0.1");
+        strcpy(ip, "127.0.0.1");
  
     // Divide the length of the interface list by the size of each entry.
     // This gives us the number of interfaces on the system.
@@ -289,6 +289,11 @@ char *get_local_ip_socket()
  
         //printf("%s-%s\n", ifreq[i].ifr_name, net);
         
+        if (!strcmp(ifreq[i].ifr_name, "lo") && ip == NULL)
+        {
+        	inet_ntop(AF_INET, &address->sin_addr, ip, sizeof(ip));
+        }
+        
         if (!strcmp(ifreq[i].ifr_name, "eth0"))
         {
         	inet_ntop(AF_INET, &address->sin_addr, ip, sizeof(ip));
@@ -302,6 +307,10 @@ char *get_local_ip_socket()
 		// Copy it to a char *.
 		for (int i = 0; i < INET_ADDRSTRLEN; i++)
 			address[i] = ip[i];
+	}
+	else
+	{
+		strcpy(address, "127.0.0.1");
 	}
 
     return address;
