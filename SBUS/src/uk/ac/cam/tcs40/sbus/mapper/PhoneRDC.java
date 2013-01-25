@@ -115,7 +115,7 @@ public class PhoneRDC {
 			message = PhoneRDC.s_Register.receive();
 			sourceComponent = message.getSourceComponent();
 			sourceInstance = message.getSourceInstance();
-			
+
 			snode = message.getTree();
 			address = snode.extractString("address");
 			arrived = snode.extractBoolean("arrived");
@@ -123,7 +123,7 @@ public class PhoneRDC {
 			host = address.split(":")[0];
 			port = address.split(":")[1];
 
-			if (!host.equals(PhoneRDC.s_IP))
+			if (!host.equals(PhoneRDC.s_IP) && !host.equals("127.0.0.1") && !host.equals(""))
 				continue;
 
 			if (arrived) {
