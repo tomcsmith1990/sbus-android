@@ -802,15 +802,16 @@ AbstractMessage *sstopwrapper::wrap(int fd)
 /* saddendpoint, sstopwrapper and shook: */
 
 int read_bootupdate(AbstractMessage *abst, saddendpoint *add,
-		sstopwrapper *stop, shook *hook)
+		sstopwrapper *stop, shook *hook, srdc *rdc)
 {
 	/* Returns:
-		MessageAddEndpoint = filled add,
-		MessageStop        = filled stop,
-		MessageGetStatus   = filled hook,
-		MessageGetSchema   = filled hook,
-		MessageDeclare     = filled hook,
-		-2                 = none of these message types matches */
+		MessageAddEndpoint	= filled add,
+		MessageStop			= filled stop,
+		MessageGetStatus	= filled hook,
+		MessageGetSchema	= filled hook,
+		MessageDeclare		= filled hook,
+		MessageRdc			= filled rdc,
+		-2					= none of these message types matches */
 	unsigned char *buf, *pos;
 	MessageType t;
 
@@ -851,6 +852,13 @@ int read_bootupdate(AbstractMessage *abst, saddendpoint *add,
 				return -2;
 		}
 	}
+	else if(t == MessageRdc)
+	{
+		rdc->address = decode_string(&pos);
+		rdc->arrived = decode_byte(&pos);
+		rdc->notify = decode_byte(&pos);
+		rdc->autoconnect = decode_byte(&pos);
+	}
 	else
 	{
 		return -2;
@@ -860,16 +868,17 @@ int read_bootupdate(AbstractMessage *abst, saddendpoint *add,
 }
 
 int read_bootupdate(int sock, saddendpoint *add, sstopwrapper *stop,
-		shook *hook)
+		shook *hook, srdc *rdc)
 {
 	/* Returns:
-		MessageAddEndpoint = filled add,
-		MessageStop        = filled stop,
-		MessageGetStatus   = filled hook,
-		MessageGetSchema   = filled hook,
-		MessageDeclare     = filled hook,
-		-1                 = disconnect,
-		-2                 = bad protocol */
+		MessageAddEndpoint	= filled add,
+		MessageStop			= filled stop,
+		MessageGetStatus	= filled hook,
+		MessageGetSchema	= filled hook,
+		MessageDeclare		= filled hook,
+		MessageRdc			= filled rdc,
+		-1					= disconnect,
+		-2					= bad protocol */
 	unsigned char *buf, *pos;
 	int msg_length;
 	MessageType t;
@@ -922,6 +931,13 @@ int read_bootupdate(int sock, saddendpoint *add, sstopwrapper *stop,
 			if(hook->tree == NULL)
 				return -2;
 		}
+	}
+	else if(t == MessageRdc)
+	{
+		rdc->address = decode_string(&pos);
+		rdc->arrived = decode_byte(&pos);
+		rdc->notify = decode_byte(&pos);
+		rdc->autoconnect = decode_byte(&pos);
 	}
 	else
 	{
@@ -1343,6 +1359,55 @@ AbstractMessage *scontrol::wrap(int fd)
 		sb->cat_string(address); // May be NULL
 		sb->cat_string(target_endpoint); // May be NULL
 	}
+	abst = new AbstractMessage(fd, sb);
+	delete sb;
+	return abst;
+}
+
+/* srdc */
+
+srdc::srdc()
+{
+	address = NULL;
+	arrived = notify = autoconnect = -1;
+}
+
+srdc::~srdc()
+{
+	if(address != NULL) delete[] address;
+}
+
+int srdc::reveal(AbstractMessage *abst)
+{
+	unsigned char *pos;
+	
+	type = abst->get_type();
+	if(type != MessageRdc)
+	{
+		return -1;
+	}
+	
+	pos = abst->get_data();
+	
+	address = decode_string(&pos);
+	arrived = decode_byte(&pos);
+	notify = decode_byte(&pos);
+	autoconnect = decode_byte(&pos);
+	
+	return 0;
+}
+
+AbstractMessage *srdc::wrap(int fd)
+{
+	StringBuf *sb;
+	AbstractMessage *abst;
+	
+	sb = begin_msg(MessageRdc);
+	sb->cat_string(address);
+	sb->cat_byte(arrived);
+	sb->cat_byte(notify);
+	sb->cat_byte(autoconnect);
+	
 	abst = new AbstractMessage(fd, sb);
 	delete sb;
 	return abst;

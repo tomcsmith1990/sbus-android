@@ -32,6 +32,7 @@ class scomponent
 	sendpoint *add_endpoint(const char *name, EndpointType type,
 			HashCode *msg_hc, HashCode *reply_hc = NULL);
 	void add_rdc(const char *address);
+	void remove_rdc(const char *address);
 	void start(const char *metadata_filename, int port = -1, int register_with_rdc = true);
 	void stop();
 	sendpoint *clone(sendpoint *ep); // Convenience method, wraps add_endpoint()
@@ -40,6 +41,9 @@ class scomponent
 	sendpoint *get_endpoint(int index);
 	sendpoint *get_endpoint(const char *name);
 	sendpoint *fd_to_endpoint(int fd);
+	
+	void set_rdc_update_notify(int notify);
+	void set_rdc_update_autoconnect(int autoconnect);
 	
 	static void set_log_level(int log, int echo);
 		
@@ -54,8 +58,6 @@ class scomponent
 	const char *get_schema(HashCode *hc); // Caller should delete string
 	
 	sendpoint *rdc_update_notifications_endpoint();
-	void set_rdc_update_notify(int notify);
-	void set_rdc_update_autoconnect(int autoconnect);
 
 	HashCode *declare_schema(const char *schema);
 	HashCode *load_schema(const char *file);
@@ -80,6 +82,8 @@ class scomponent
 		
 	void start_wrapper();
 	void running();
+	
+	void update_rdc_settings(const char *address = NULL, int arrived = -1);
 	
 	int wrapper_started;
 

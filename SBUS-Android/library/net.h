@@ -24,6 +24,7 @@ enum MessageType
 	MessageGetSchema, MessageSchema, // Bootstrap pipe runtime
 	MessageDeclare, MessageHash,     // Bootstrap pipe runtime
 	MessageMap, MessageUnmap, MessageIsmap, // Local mapping control messages
+	MessageRdc,
 	MessageReturnCode, // Mapping control reply
 	MessageSubscribe,  // Local control message
 	MessageEmit, MessageRPC, MessageReply, // Library to wrapper
@@ -164,6 +165,25 @@ class scontrol : public sproto
 	//for loading permissions from a file...
 	char *filename;
 
+};
+
+class srdc : public sproto
+{
+	public:
+
+	srdc();
+	~srdc();
+
+	int reveal(AbstractMessage *abst); // returns -1 if wrong msg type, else 0
+	AbstractMessage *wrap(int fd);
+				
+	MessageType type; // MessageRdc
+	
+	// For the three mapping calls:
+	char *address;
+	int arrived;
+	int notify;
+	int autoconnect;
 };
 
 class srunning : public sproto
@@ -358,9 +378,9 @@ class sinternal : public sproto
 	-1 = disconnect, -2 = bad protocol (the latter for sock version only): */
 
 int read_bootupdate(int sock, saddendpoint *add, sstopwrapper *stop,
-		shook *hook);
+		shook *hook, srdc *rdc);
 int read_bootupdate(AbstractMessage *abst, saddendpoint *add,
-		sstopwrapper *stop, shook *hook);
+		sstopwrapper *stop, shook *hook, srdc *rdc);
 	
 // Return 0 = filled add, 1 = filled start, -1 = disconnect, -2 = bad protocol:
 int read_startup(int sock, saddendpoint *add, sstartwrapper *start);
