@@ -97,10 +97,32 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addRDC( JNIEnv* env,
 }
 
 void
+Java_uk_ac_cam_tcs40_sbus_SComponent_removeRDC( JNIEnv* env,
+		                                         jobject thiz,
+		                                         jlong component, 
+		                                         jstring addr )
+{
+	const char *rdc = env->GetStringUTFChars(addr, NULL);
+	
+	((scomponent *)component)->remove_rdc(rdc);
+
+	env->ReleaseStringUTFChars(addr, rdc);
+}
+
+void
+Java_uk_ac_cam_tcs40_sbus_SComponent_setRDCUpdateNotify( JNIEnv* env,
+						                                    jobject thiz, 
+						                                    jlong component,
+						                                    jboolean notify )
+{
+	((scomponent *)component)->set_rdc_update_notify(notify ? JNI_TRUE : JNI_FALSE);
+}
+
+void
 Java_uk_ac_cam_tcs40_sbus_SComponent_setRDCUpdateAutoconnect( JNIEnv* env,
-		                                            jobject thiz, 
-		                                            jlong component,
-		                                            jboolean autoconnect )
+								                                jobject thiz, 
+								                                jlong component,
+								                                jboolean autoconnect )
 {
 	((scomponent *)component)->set_rdc_update_autoconnect(autoconnect ? JNI_TRUE : JNI_FALSE);
 }
