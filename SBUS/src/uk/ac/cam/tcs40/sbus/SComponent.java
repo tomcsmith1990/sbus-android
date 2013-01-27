@@ -66,10 +66,28 @@ public class SComponent {
 
 	/**
 	 * Add the address to the list of RDCs for when this component starts.
+	 * Try to register with the RDC is it is already started.
 	 * @param rdcAddress The address (IP:port) of the RDC.
 	 */
 	public void addRDC(String rdcAddress) {
 		addRDC(m_ComponentPointer, rdcAddress);
+	}
+	
+	/**
+	 * Remove the address from the list of RDCs for when this component starts.
+	 * Try to deregister from the RDC is it is already started.
+	 * @param rdcAddress The address (IP:port) of the RDC.
+	 */
+	public void removeRDC(String rdcAddress) {
+		removeRDC(m_ComponentPointer, rdcAddress);
+	}
+	
+	/**
+	 * Whether or not the rdc_update notification endpoint should be sent notifications.
+	 * @param notify
+	 */
+	public void setRDCUpdateNotify(boolean notify) {
+		setRDCUpdateNotify(m_ComponentPointer, notify);
 	}
 	
 	/**
@@ -147,7 +165,6 @@ public class SComponent {
 	 * Must be called when finished, deletes the native representation.
 	 */
 	public void delete() {
-		// Also deletes endpoints.
 		delete(m_ComponentPointer);
 	}
 
@@ -158,7 +175,10 @@ public class SComponent {
 	private native long addEndpointClient(long componentPtr, String endpointName, String messageHash, String responseHash);
 	
 	private native void addRDC(long componentPtr, String rdcAddress);
+	private native void removeRDC(long componentPtr, String rdcAddress);
 	private native void setRDCUpdateAutoconnect(long componentPtr, boolean autoconnect);
+	private native void setRDCUpdateNotify(long componentPtr, boolean notify);
+	
 	private native void start(long componentPtr, String cptFilename, int port, boolean useRDC);
 
 	// May only call after start().
