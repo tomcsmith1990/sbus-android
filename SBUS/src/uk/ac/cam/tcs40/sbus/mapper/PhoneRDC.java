@@ -3,6 +3,7 @@ package uk.ac.cam.tcs40.sbus.mapper;
 import android.content.Context;
 import android.util.Log;
 
+import uk.ac.cam.tcs40.sbus.Multiplex;
 import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
@@ -35,7 +36,7 @@ public class PhoneRDC {
 
 		new Thread() {
 			public void run() {
-				acceptRegistrations();
+				receive();
 			}
 		}.start();
 
@@ -105,39 +106,101 @@ public class PhoneRDC {
 		PhoneRDC.s_RDCComponent.setPermission("", "", true);
 	}
 
-	private void acceptRegistrations() {
+	private void receive() {
+		Multiplex multi = PhoneRDC.s_RDCComponent.getMultiplex();
+		multi.add(PhoneRDC.s_Register);
+		multi.add(PhoneRDC.s_SetACL);
+
+		SEndpoint endpoint;
+		String name;
+
+		while (true) {
+			try {
+				endpoint = multi.waitForMessage();
+			} catch (Exception e) {
+				// this just means we've added an endpoint which isn't on this component.
+				continue;
+			}
+			name = endpoint.getEndpointName();
+
+			if (name.equals("register")) {
+				acceptRegistration();
+			} else if (name.equals("set_acl")) {
+				changePermissions();
+			}
+		}
+	}
+
+	private void acceptRegistration() {
 		String address, host, port, sourceComponent, sourceInstance;
 		boolean arrived;
 		SMessage message;
 		SNode snode;
 
-		while (true) {
-			message = PhoneRDC.s_Register.receive();
-			sourceComponent = message.getSourceComponent();
-			sourceInstance = message.getSourceInstance();
+		message = PhoneRDC.s_Register.receive();
+		sourceComponent = message.getSourceComponent();
+		sourceInstance = message.getSourceInstance();
 
-			snode = message.getTree();
-			address = snode.extractString("address");
-			arrived = snode.extractBoolean("arrived");
+		snode = message.getTree();
+		address = snode.extractString("address");
+		arrived = snode.extractBoolean("arrived");
 
-			host = address.split(":")[0];
-			port = address.split(":")[1];
+		message.delete();
 
-			if (!host.equals(PhoneRDC.s_IP) && !host.equals("127.0.0.1") && !host.equals(""))
-				continue;
+		host = address.split(":")[0];
+		port = address.split(":")[1];
 
-			if (arrived) {
-				if (RegistrationRepository.add(port, sourceComponent, sourceInstance)) {
-					Log.i(PhoneRDC.TAG, "Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
-				} else {
-					Log.i(PhoneRDC.TAG, "Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
-				}
+		if (!host.equals(PhoneRDC.s_IP) && !host.equals("127.0.0.1") && !host.equals(""))
+			return;
+
+		if (arrived) {
+			if (RegistrationRepository.add(port, sourceComponent, sourceInstance)) {
+				Log.i(PhoneRDC.TAG, "Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
 			} else {
-				Registration removed = RegistrationRepository.remove(port);
-				Log.i(PhoneRDC.TAG, "Deregistered component " + removed.getComponentName() + ":" + removed.getInstanceName() + " at :" + port);
+				Log.i(PhoneRDC.TAG, "Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
 			}
+		} else {
+			Registration removed = RegistrationRepository.remove(port);
+			Log.i(PhoneRDC.TAG, "Deregistered component " + removed.getComponentName() + ":" + removed.getInstanceName() + " at :" + port);
+		}
+	}
 
-			message.delete();
+	private void changePermissions() {
+		String targetComponent, targetInstance, //targetAddress, targetEndpoint,
+		principalComponent, principalInstance, 
+		sourceComponent, sourceInstance;
+		boolean allow;
+
+		SMessage message;
+		SNode snode;
+
+		message = PhoneRDC.s_SetACL.receive();
+		sourceComponent = message.getSourceComponent();
+		sourceInstance = message.getSourceInstance();
+
+		snode = message.getTree();
+
+		targetComponent = snode.extractString("target_cpt");
+		targetInstance = snode.extractString("target_inst");
+		//targetAddress = snode.extractString("target_address");
+		//targetEndpoint = snode.extractString("target_endpt");
+		principalComponent = snode.extractString("principal_cpt");
+		principalInstance = snode.extractString("principal_inst");
+		allow = snode.extractBoolean("add_perm");
+
+		message.delete();
+
+		if (!targetComponent.equals(sourceComponent) || !targetInstance.equals(sourceInstance))
+			return;	// components can only update own permissions.
+
+		if (targetComponent.equals("rdc") || targetComponent.equals("RDC")) {
+			// local rule, handled by wrapper.
+			PhoneRDC.s_RDCComponent.setPermission(principalComponent, principalInstance, allow);
+		} else {
+			Registration registration = RegistrationRepository.find(targetComponent, targetInstance);
+			if (registration != null) {
+				registration.addPermission(principalComponent, principalInstance, allow);
+			}
 		}
 	}
 
