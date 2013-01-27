@@ -237,6 +237,7 @@ class swrapper
 	void continue_connect(int fd);
 	
 	void register_cpt(int arrive, const char *address = NULL);
+	void handle_new_rdc(int arrive, const char *address);
 	void check_dirn(int dirn, int expected, const char *fd_type);
 	void lost(speer *peer);
 	

@@ -226,11 +226,15 @@ sendpoint *scomponent::clone(sendpoint *ep)
 void scomponent::set_rdc_update_autoconnect(int autoconnect)
 {
 	rdc_update_autoconnect = autoconnect;
+	if (wrapper_started)
+		update_rdc_settings();
 }
 
 void scomponent::set_rdc_update_notify(int notify)
 {
 	rdc_update_notify = notify;
+	if (wrapper_started)
+		update_rdc_settings();
 }
 
 sendpoint *scomponent::rdc_update_notifications_endpoint()
@@ -363,7 +367,33 @@ void scomponent::stop()
 
 void scomponent::add_rdc(const char *address)
 {
-	rdc->add(address);
+	if (!wrapper_started)
+		rdc->add(address);
+	else
+		update_rdc_settings(address, 1);	
+}
+
+void scomponent::remove_rdc(const char *address)
+{
+	if (!wrapper_started)
+		rdc->remove(address);
+	else
+		update_rdc_settings(address, 0);
+}
+
+void scomponent::update_rdc_settings(const char *address, int arrived)
+{
+	srdc *rdc_message;
+
+	rdc_message = new srdc();
+	rdc_message->address = sdup(address);
+	rdc_message->arrived = arrived;
+	rdc_message->notify = rdc_update_notify;
+	rdc_message->autoconnect = rdc_update_autoconnect;
+	
+	if(rdc_message->write(bootstrap_fd) < 0)
+		error("Cannot write rdc message in add_rdc");
+	delete rdc_message;	
 }
 
 void scomponent::start(const char *metadata_filename, int port, int register_with_rdc)

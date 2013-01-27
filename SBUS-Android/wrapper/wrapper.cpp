@@ -968,6 +968,30 @@ void swrapper::register_cpt(int arrive, const char *address)
 	// Otherwise, wait and see...
 }
 
+void swrapper::handle_new_rdc(int arrive, const char *address)
+{
+	// Removing the address from rdc seems to break the wrapper - let's just not bother using it for now.
+	if (arrive)
+	{
+		// add the rdc if it is not already.
+		rdc->add_noduplicates(address);
+
+		// register the component with the rdc
+		// register_with_rdc is true so that setdefaultprivs() is called
+		// this informs the rdc about privileges		
+		register_with_rdc = true;
+		register_cpt(1, address);
+	}
+	else
+	{
+		// deregister from rdc and remove the rdc from our list.
+		// Note: we may still be registered (cannot send message because left the network).
+		// The rdc will detect this if we leave the network.
+		register_cpt(0, address);
+		//rdc->remove(address);
+	}
+}
+
 void swrapper::departure(speer *peer, int unexpected)
 {
 	smidpoint *mp = peer->owner;
@@ -2108,26 +2132,8 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 		
 		if (rdc_update_autoconnect)
 		{
-			// Removing the address from rdc seems to break the wrapper - let's just not bother using it for now.
-			if (arrived)
-			{
-				// add the rdc if it is not already.
-				rdc->add_noduplicates(address);
-			
-				// register the component with the rdc
-				// register_with_rdc is true so that setdefaultprivs() is called
-				// this informs the rdc about privileges		
-				register_with_rdc = true;
-				register_cpt(1, address);
-			}
-			else
-			{
-				// deregister from rdc and remove the rdc from our list.
-				// Note: we may still be registered (cannot send message because left the network).
-				// The rdc will detect this if we leave the network.
-				register_cpt(0, address);
-				//rdc->remove(address);
-			}
+			// register/deregister with the rdc.
+			handle_new_rdc(arrived, address);
 		}
 		
 		if (rdc_update_notify)
@@ -3416,12 +3422,14 @@ void swrapper::serve_boot()
 	sstopwrapper *stop;
 	saddendpoint *add;
 	shook *hook;
+	srdc *rdc_message;
 	int ret;
 
 	stop = new sstopwrapper();
 	add = new saddendpoint();
 	hook = new shook();
-	ret = read_bootupdate(bootstrap_fd, add, stop, hook);
+	rdc_message = new srdc();
+	ret = read_bootupdate(bootstrap_fd, add, stop, hook, rdc_message);
 	
 	if(ret == -2)
 	{
@@ -3533,10 +3541,27 @@ void swrapper::serve_boot()
 		sg->write(bootstrap_fd);
 		delete sg;
 	}
+	else if(ret == MessageRdc)
+	{
+		if (rdc_message->address != NULL && (rdc_message->arrived == 0 || rdc_message->arrived == 1))
+		{
+			// register/deregister with the new rdc.
+			handle_new_rdc(rdc_message->arrived, rdc_message->address);
+		}
+		if (rdc_message->notify == 0 || rdc_message->notify == 1)
+		{
+			rdc_update_notify = rdc_message->notify;
+		}
+		if (rdc_message->autoconnect == 0 || rdc_message->autoconnect == 1)
+		{
+			rdc_update_autoconnect = rdc_message->autoconnect;
+		}
+	}
 
 	delete stop;
 	delete add;
 	delete hook;
+	delete rdc_message;
 }
 
 void swrapper::serve_endpoint(AbstractMessage *abst, smidpoint *mp)
