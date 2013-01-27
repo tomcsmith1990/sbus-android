@@ -18,6 +18,19 @@ public class RegistrationRepository {
 		return exists;
 	}
 	
+	public static synchronized Registration find(String component, String instance) {
+		if (s_Registrations.size() == 0) return null;
+		
+		Registration registration = null;
+		for (Registration r : s_Registrations) {
+			if (r.getComponentName().equals(component) && r.getInstanceName().equals(instance)) {
+				registration = r;
+				break;
+			}
+		}
+		return registration;
+	}
+	
 	public static synchronized boolean add(String port, String component, String instance) {
 		if (find(port) == false) {
 			s_Registrations.add(new Registration(port, component, instance));
