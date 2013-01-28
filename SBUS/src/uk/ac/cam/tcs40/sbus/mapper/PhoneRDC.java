@@ -91,12 +91,14 @@ public class PhoneRDC {
 		// Allow all components to connect to endpoints (for register).
 		PhoneRDC.s_RDCComponent.setPermission("", "", true);
 		
+		// Start receiving messages.
 		new Thread() {
 			public void run() {
 				receive();
 			}
 		}.start();
 
+		// Check components are still alive.
 		new Thread() {
 			public void run() {
 				checkAlive();
@@ -107,6 +109,12 @@ public class PhoneRDC {
 	public void stopRDC() {
 		PhoneRDC.s_RDCComponent.delete();
 		PhoneRDC.s_RDCComponent = null;
+		PhoneRDC.s_Map = null;
+		PhoneRDC.s_Register = null;
+		PhoneRDC.s_RegisterRdc = null;
+		PhoneRDC.s_SetACL = null;
+		PhoneRDC.s_Status = null;
+		PhoneRDC.s_IP = "127.0.0.1";
 	}
 
 	private void receive() {
@@ -121,7 +129,8 @@ public class PhoneRDC {
 			try {
 				endpoint = multi.waitForMessage();
 			} catch (Exception e) {
-				// this just means we've added an endpoint which isn't on this component.
+				// This means we've added an endpoint which isn't on this component,
+				// or that the component has been destroyed by the activity ending.
 				continue;
 			}
 			name = endpoint.getEndpointName();
