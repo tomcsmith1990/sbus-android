@@ -11,6 +11,8 @@ import android.os.Bundle;
 
 public class SomeSensor extends Activity
 {
+	private SComponent m_Component;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -28,18 +30,18 @@ public class SomeSensor extends Activity
 		// Create a thread to run the sensor.
 		new Thread() {
 			public void run() {
-				SComponent scomponent = new SComponent("SomeSensor", "instance");
-				SEndpoint sendpoint = scomponent.addEndpoint("SomeEpt", EndpointType.EndpointSource, "BE8A47EBEB58");
+				m_Component = new SComponent("SomeSensor", "instance");
+				SEndpoint sendpoint = m_Component.addEndpoint("SomeEpt", EndpointType.EndpointSource, "BE8A47EBEB58");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				String cptFile = "SomeSensor.cpt";
-				scomponent.setRDCUpdateAutoconnect(true);
-				scomponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
-				scomponent.setPermission("SomeConsumer", "", true);
+				m_Component.setRDCUpdateAutoconnect(true);
+				m_Component.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
+				m_Component.setPermission("SomeConsumer", "", true);
 			
 				int i = 0;
 				SNode node;
-				while (true) {
+				while (m_Component != null) {
 
 					node = sendpoint.createMessage("reading");
 					node.packString("SomeSensor: This is message #" + i++);
@@ -60,6 +62,12 @@ public class SomeSensor extends Activity
 				}
 			}
 		}.start();
-
-	}   
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		m_Component.delete();
+		m_Component = null;
+	}
 }
