@@ -16,6 +16,8 @@ import android.widget.TextView;
 
 public class SomeConsumer extends Activity {
 
+	private SComponent m_Component;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -33,25 +35,25 @@ public class SomeConsumer extends Activity {
 		// Create a thread to run the sensor.
 		new Thread() {
 			public void run() {
-				final SComponent scomponent = new SComponent("SomeConsumer", "instance");
-				final SEndpoint sendpoint = scomponent.addEndpoint("SomeEpt", EndpointType.EndpointSink, "BE8A47EBEB58");
+				m_Component = new SComponent("SomeConsumer", "instance");
+				final SEndpoint sendpoint = m_Component.addEndpoint("SomeEpt", EndpointType.EndpointSink, "BE8A47EBEB58");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				final String cptFile = "SomeConsumer.cpt";
-				scomponent.start(getApplicationContext().getFilesDir() + "/" + cptFile, 44443, true);
-				scomponent.setPermission("SomeSensor", "", true);
+				m_Component.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
+				m_Component.setPermission("SomeSensor", "", true);
 
-				final SEndpoint rdcUpdate = scomponent.RDCUpdateNotificationsEndpoint();
+				final SEndpoint rdcUpdate = m_Component.RDCUpdateNotificationsEndpoint();
 
 				SMessage message;
 				SNode node;
 				SEndpoint endpoint;
 
-				final Multiplex multi = scomponent.getMultiplex();
+				final Multiplex multi = m_Component.getMultiplex();
 				multi.add(sendpoint);
 				multi.add(rdcUpdate);
 
-				while (true) {
+				while (m_Component != null) {
 
 					try {
 						endpoint = multi.waitForMessage();
@@ -78,9 +80,9 @@ public class SomeConsumer extends Activity {
 									public void onClick(DialogInterface dialog, int id) {
 										// User clicked OK button
 										if (arrived)
-											scomponent.addRDC(rdcAddress);
+											m_Component.addRDC(rdcAddress);
 										else
-											scomponent.removeRDC(rdcAddress);
+											m_Component.removeRDC(rdcAddress);
 									}
 								});
 								builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -120,6 +122,12 @@ public class SomeConsumer extends Activity {
 				}
 			}
 		}.start();
-
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		m_Component.delete();
+		m_Component = null;
 	}
 }
