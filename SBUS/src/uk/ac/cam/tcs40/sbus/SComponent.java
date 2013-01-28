@@ -165,6 +165,12 @@ public class SComponent {
 	 * Must be called when finished, deletes the native representation.
 	 */
 	public void delete() {
+		this.m_ComponentPointer = 0;
+		for (SEndpoint endpoint : this.m_Endpoints) {
+			endpoint.unmap();
+			endpoint = null;
+		}
+		this.m_Endpoints = null;
 		delete(m_ComponentPointer);
 	}
 
