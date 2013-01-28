@@ -14,6 +14,8 @@ import android.widget.Button;
 
 public class PhoneRDCActivity extends Activity
 {
+	private PhoneRDC m_PhoneRDC;
+	
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			PhoneRDC.remap();
@@ -51,7 +53,8 @@ public class PhoneRDCActivity extends Activity
 				new FileBootloader(getApplicationContext()).store(PhoneRDC.CPT_FILE);
 
 				// Create and start the PhoneRDC.
-				new PhoneRDC(getApplicationContext());
+				m_PhoneRDC = new PhoneRDC(getApplicationContext());
+				m_PhoneRDC.startRDC();
 
 				// Register a broadcast receiver.
 				// Detects when we connect/disconnect to a Wifi network.
@@ -59,16 +62,13 @@ public class PhoneRDCActivity extends Activity
 				intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 				intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
 				registerReceiver(new WifiReceiver(), intentFilter);
-
-				while(true) {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
 			}
 		}.start();
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		m_PhoneRDC.stopRDC();
 	}
 }

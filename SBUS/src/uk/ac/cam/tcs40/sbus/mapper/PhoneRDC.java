@@ -31,20 +31,6 @@ public class PhoneRDC {
 
 	public PhoneRDC(Context context) {
 		PhoneRDC.s_Context = context;
-
-		startRDC();
-
-		new Thread() {
-			public void run() {
-				receive();
-			}
-		}.start();
-
-		new Thread() {
-			public void run() {
-				checkAlive();
-			}
-		}.start();
 	}
 
 	public static void remap() {
@@ -80,7 +66,7 @@ public class PhoneRDC {
 		}
 	}
 
-	private void startRDC() {
+	public void startRDC() {
 		// Our mapping/rdc component.
 		PhoneRDC.s_RDCComponent = new SComponent("rdc", "rdc");
 
@@ -104,6 +90,23 @@ public class PhoneRDC {
 
 		// Allow all components to connect to endpoints (for register).
 		PhoneRDC.s_RDCComponent.setPermission("", "", true);
+		
+		new Thread() {
+			public void run() {
+				receive();
+			}
+		}.start();
+
+		new Thread() {
+			public void run() {
+				checkAlive();
+			}
+		}.start();
+	}
+	
+	public void stopRDC() {
+		PhoneRDC.s_RDCComponent.delete();
+		PhoneRDC.s_RDCComponent = null;
 	}
 
 	private void receive() {
@@ -114,7 +117,7 @@ public class PhoneRDC {
 		SEndpoint endpoint;
 		String name;
 
-		while (true) {
+		while (PhoneRDC.s_RDCComponent != null) {
 			try {
 				endpoint = multi.waitForMessage();
 			} catch (Exception e) {
@@ -205,7 +208,7 @@ public class PhoneRDC {
 	}
 
 	private void checkAlive() {
-		while (true) {
+		while (PhoneRDC.s_RDCComponent != null) {
 			Registration registration = RegistrationRepository.getOldest();
 			if (registration != null) {
 				String port = registration.getPort();
