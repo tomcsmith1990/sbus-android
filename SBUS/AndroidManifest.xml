@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application android:label="@string/app_name" >
+        <service android:name="uk.ac.cam.tcs40.sbus.mapper.PhoneRDC" />
         <activity
             android:name="uk.ac.cam.tcs40.sbus.mapper.PhoneRDCActivity"
             android:label="@string/app_name" >

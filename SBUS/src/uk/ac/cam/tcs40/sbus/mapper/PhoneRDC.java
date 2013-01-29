@@ -1,6 +1,9 @@
 package uk.ac.cam.tcs40.sbus.mapper;
 
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
+import android.os.IBinder;
 import android.util.Log;
 
 import uk.ac.cam.tcs40.sbus.Multiplex;
@@ -10,7 +13,9 @@ import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.SMessage;
 import uk.ac.cam.tcs40.sbus.SNode;
 
-public class PhoneRDC {
+public class PhoneRDC extends Service {
+	
+	private static PhoneRDC s_PhoneRDC;
 
 	private final int DEFAULT_RDC_PORT = 50123;
 
@@ -29,8 +34,23 @@ public class PhoneRDC {
 	private static String s_IP = "127.0.0.1";	// localhost to begin with.
 	private static Context s_Context;
 
+	public PhoneRDC() {
+		PhoneRDC.s_PhoneRDC = this;
+	}
+	
 	public PhoneRDC(Context context) {
 		PhoneRDC.s_Context = context;
+	}
+	
+	@Override
+	public void onCreate() {
+		PhoneRDC.s_Context = getApplicationContext();
+		PhoneRDC.s_PhoneRDC.startRDC();
+	}
+	
+	@Override
+	public void onDestroy() {
+		PhoneRDC.s_PhoneRDC.stopRDC();
 	}
 
 	public static void remap() {
@@ -241,5 +261,11 @@ public class PhoneRDC {
 
 	public static void setIP(String ip) {
 		PhoneRDC.s_IP = ip;
+	}
+
+	@Override
+	public IBinder onBind(Intent arg0) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
