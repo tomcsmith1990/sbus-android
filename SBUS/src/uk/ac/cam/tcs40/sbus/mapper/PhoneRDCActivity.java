@@ -3,6 +3,7 @@ package uk.ac.cam.tcs40.sbus.mapper;
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.sbus.R;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
@@ -13,9 +14,7 @@ import android.widget.Button;
 
 
 public class PhoneRDCActivity extends Activity
-{
-	private PhoneRDC m_PhoneRDC;
-	
+{	
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			PhoneRDC.remap();
@@ -42,7 +41,7 @@ public class PhoneRDCActivity extends Activity
 		// Add event listener to the rdc button.
 		Button rdcButton = (Button)findViewById(R.id.rdc_button);
 		rdcButton.setOnClickListener(m_RdcButtonListener);
-				
+
 		new Thread() {
 			public void run() {
 				
@@ -53,8 +52,7 @@ public class PhoneRDCActivity extends Activity
 				new FileBootloader(getApplicationContext()).store(PhoneRDC.CPT_FILE);
 
 				// Create and start the PhoneRDC.
-				m_PhoneRDC = new PhoneRDC(getApplicationContext());
-				m_PhoneRDC.startRDC();
+				startService(new Intent(PhoneRDCActivity.this, PhoneRDC.class));
 
 				// Register a broadcast receiver.
 				// Detects when we connect/disconnect to a Wifi network.
@@ -69,6 +67,6 @@ public class PhoneRDCActivity extends Activity
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		m_PhoneRDC.stopRDC();
+		stopService(new Intent(PhoneRDCActivity.this, PhoneRDC.class));
 	}
 }
