@@ -21,9 +21,9 @@ public class PhoneRDC extends Service {
 
 	public static final String CPT_FILE = "phonerdc.cpt";
 
-	public static final String COMPONENT_ADDR = ":44444";
+	public static final String COMPONENT_ADDR = "192.168.0.3:44444";
 	public static final String COMPONENT_EPT = "SomeEpt";
-	public static final String TARGET_ADDR = "192.168.0.3:44444";
+	public static final String TARGET_ADDR = "192.168.0.6:44444";
 	public static final String TARGET_EPT = "SomeEpt";
 	public static final String RDC_ADDRESS = "192.168.0.3:50123";
 	public static final String TAG = "PhoneRDC";
@@ -72,6 +72,12 @@ public class PhoneRDC extends Service {
 
 	public static void registerRDC(boolean arrived) {
 		if (PhoneRDC.s_RegisterRdc == null) return;
+		
+		if (arrived) {
+			PhoneRDC.s_RDCComponent.addRDC(PhoneRDC.RDC_ADDRESS);
+		} else {
+			PhoneRDC.s_RDCComponent.removeRDC(PhoneRDC.RDC_ADDRESS);
+		}
 
 		for (Registration registration : RegistrationRepository.list()) {
 			// Send a message to each registered component with the new RDC address.
@@ -88,7 +94,7 @@ public class PhoneRDC extends Service {
 
 	public void startRDC() {
 		// Our mapping/rdc component.
-		PhoneRDC.s_RDCComponent = new SComponent("rdc", "rdc");
+		PhoneRDC.s_RDCComponent = new SComponent("rdc", "phone");
 
 		// For components registering to the rdc.
 		PhoneRDC.s_Register = PhoneRDC.s_RDCComponent.addEndpoint("register", EndpointType.EndpointSink, "B3572388E4A4");
@@ -251,7 +257,7 @@ public class PhoneRDC extends Service {
 			}
 
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
