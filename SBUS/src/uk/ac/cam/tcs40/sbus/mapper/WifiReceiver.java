@@ -34,7 +34,7 @@ public class WifiReceiver extends BroadcastReceiver {
 				PhoneRDC.setIP(formatIP(ip));
 				
 				// Emit the map message to map once we connect to WiFi.
-				PhoneRDC.remap();
+				//PhoneRDC.remap();
 
 				// Connect to the new RDC.
 				PhoneRDC.registerRDC(true);
@@ -46,8 +46,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
 			if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI && ! networkInfo.isConnected()) {
 				// WiFi is disconnected.
-				PhoneRDC.registerRDC(false);
 				PhoneRDC.setIP("127.0.0.1");
+				PhoneRDC.registerRDC(false);
 			}
 		}
 	}
