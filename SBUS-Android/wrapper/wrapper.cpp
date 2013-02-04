@@ -884,7 +884,7 @@ void swrapper::register_cpt(int arrive, const char *address)
 	int ok;
 	registerparams *params;
 	
-	if(!strcmp(cpt_name, "rdc"))
+	if(!strcmp(cpt_name, "rdc") && !strcmp(instance_name, "rdc"))
 		return; // RDC's themselves don't get registered
 	
 	// Report back host address and port number:
