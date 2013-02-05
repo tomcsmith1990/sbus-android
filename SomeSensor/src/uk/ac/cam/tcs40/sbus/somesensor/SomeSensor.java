@@ -12,6 +12,7 @@ import android.os.Bundle;
 public class SomeSensor extends Activity
 {
 	private SComponent m_Component;
+	private SEndpoint m_Endpoint;
 	
 	/** Called when the activity is first created. */
 	@Override
@@ -31,7 +32,7 @@ public class SomeSensor extends Activity
 		new Thread() {
 			public void run() {
 				m_Component = new SComponent("SomeSensor", "instance");
-				SEndpoint sendpoint = m_Component.addEndpoint("SomeEpt", EndpointType.EndpointSource, "BE8A47EBEB58");
+				m_Endpoint = m_Component.addEndpoint("SomeEpt", EndpointType.EndpointSource, "BE8A47EBEB58");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				String cptFile = "SomeSensor.cpt";
@@ -43,12 +44,12 @@ public class SomeSensor extends Activity
 				SNode node;
 				while (m_Component != null) {
 
-					node = sendpoint.createMessage("reading");
+					node = m_Endpoint.createMessage("reading");
 					node.packString("SomeSensor: This is message #" + i++);
 					node.packInt((int) (Math.random() * 1000), "someval");
 					node.packInt(34, "somevar");
 					
-					final String s = sendpoint.emit(node);
+					final String s = m_Endpoint.emit(node);
 
 					runOnUiThread(new Runnable() {
 						public void run() {
@@ -67,6 +68,7 @@ public class SomeSensor extends Activity
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		m_Endpoint.unmap();
 		m_Component.delete();
 		m_Component = null;
 	}

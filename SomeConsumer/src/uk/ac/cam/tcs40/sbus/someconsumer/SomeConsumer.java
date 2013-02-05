@@ -17,6 +17,7 @@ import android.widget.TextView;
 public class SomeConsumer extends Activity {
 
 	private SComponent m_Component;
+	private SEndpoint m_Endpoint;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -36,7 +37,7 @@ public class SomeConsumer extends Activity {
 		new Thread() {
 			public void run() {
 				m_Component = new SComponent("SomeConsumer", "instance");
-				final SEndpoint sendpoint = m_Component.addEndpoint("SomeEpt", EndpointType.EndpointSink, "BE8A47EBEB58");
+				m_Endpoint = m_Component.addEndpoint("SomeEpt", EndpointType.EndpointSink, "BE8A47EBEB58");
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				final String cptFile = "SomeConsumer.cpt";
@@ -50,7 +51,7 @@ public class SomeConsumer extends Activity {
 				SEndpoint endpoint;
 
 				final Multiplex multi = m_Component.getMultiplex();
-				multi.add(sendpoint);
+				multi.add(m_Endpoint);
 				multi.add(rdcUpdate);
 
 				while (m_Component != null) {
@@ -102,7 +103,7 @@ public class SomeConsumer extends Activity {
 
 					} else if (endpoint.getEndpointName().equals("SomeEpt")) {
 
-						message = sendpoint.receive();
+						message = m_Endpoint.receive();
 						node = message.getTree();
 
 						final String somestring = node.extractString("somestring");
@@ -127,6 +128,7 @@ public class SomeConsumer extends Activity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		m_Endpoint.unmap();
 		m_Component.delete();
 		m_Component = null;
 	}
