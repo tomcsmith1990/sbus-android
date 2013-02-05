@@ -981,6 +981,24 @@ void swrapper::handle_new_rdc(int arrive, const char *address)
 		// this informs the rdc about privileges		
 		register_with_rdc = true;
 		register_cpt(1, address);
+		
+		// need to send all permissions we have.
+		smidpoint *mp;
+		spermission *perm;
+		privilegeparams *priv;
+		for (int i = 0; i < mps->count(); i++)
+		{
+			mp = mps->item(i);
+			for (int j = 0; j < mp->acl_ep->count(); j++)
+			{
+				perm = mp->acl_ep->item(j);
+				priv = new privilegeparams(mp->name, perm->principal_cpt, perm->principal_inst, true);
+				
+				update_privileges_on_rdc(priv);
+				
+				delete priv;
+			}
+		}
 	}
 	else
 	{
