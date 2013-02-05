@@ -976,29 +976,41 @@ void swrapper::handle_new_rdc(int arrive, const char *address)
 		// add the rdc if it is not already.
 		rdc->add_noduplicates(address);
 
-		// register the component with the rdc
-		// register_with_rdc is true so that setdefaultprivs() is called
-		// this informs the rdc about privileges		
-		register_with_rdc = true;
+		// register the component with the rdc		
 		register_cpt(1, address);
 		
 		// need to send all permissions we have.
 		smidpoint *mp;
-		spermission *perm;
-		privilegeparams *priv;
+		spermissionvector *permissionvector = new spermissionvector();
+		privilegeparamsvector *privilegevector = new privilegeparamsvector();
+		spermission *permission;
+		
+		// Create a list of all permissions to be sent.
 		for (int i = 0; i < mps->count(); i++)
 		{
 			mp = mps->item(i);
 			for (int j = 0; j < mp->acl_ep->count(); j++)
 			{
-				perm = mp->acl_ep->item(j);
-				priv = new privilegeparams(mp->name, perm->principal_cpt, perm->principal_inst, true);
-				
-				update_privileges_on_rdc(priv);
-				
-				delete priv;
+				permission = mp->acl_ep->item(j);
+				if (permissionvector->find(permission) == -1)
+				{
+					permissionvector->add(permission);
+					privilegevector->add(new privilegeparams(mp->name, permission->principal_cpt, permission->principal_inst, true));
+				}	
 			}
 		}
+		
+		// Send permissions to new RDC only, and clean up.
+		privilegeparams *privs;
+		while ((privs = privilegevector->pop()) != NULL)
+		{
+			update_privileges_on_rdc(privs, address);
+			delete privs;
+		}
+		
+		delete privilegevector;
+		delete permissionvector;
+		
 	}
 	else
 	{
@@ -3061,7 +3073,7 @@ void swrapper::change_privileges(privilegeparams *params)
 	delete params;
 }
 
-void swrapper::update_privileges_on_rdc(privilegeparams *params)
+void swrapper::update_privileges_on_rdc(privilegeparams *params, const char *address)
 {
 	const char *rdc_address;
 	snode *sn;
@@ -3081,19 +3093,32 @@ void swrapper::update_privileges_on_rdc(privilegeparams *params)
 			pack_bool(params->addpriv, "add_perm"),
 			"event");
 
-	//printf("Going to send %s to the rdc\n",sn->toxml(0));
-	for(int i = 0; i < rdc->count(); i++)
+	if (address == NULL)
 	{
-		rdc_address = rdc->item(i);
-		if(rdc_address[0] == '!')
-			continue;
+		//printf("Going to send %s to the rdc\n",sn->toxml(0));
+		for(int i = 0; i < rdc->count(); i++)
+		{
+			rdc_address = rdc->item(i);
+			if(rdc_address[0] == '!')
+				continue;
 
-		ok = begin_visit(VisitUpdatePrivilege, rdc_address, "rdc", "set_acl",
-				rdcacl_mp, sn, NULL, NULL, NULL);
-		if(ok < 0)
-			log("Note: could not send update privilege message to RDC at %s", rdc_address);
+			ok = begin_visit(VisitUpdatePrivilege, rdc_address, "rdc", "set_acl",
+					rdcacl_mp, sn, NULL, NULL, NULL);
+			if(ok < 0)
+				log("Note: could not send update privilege message to RDC at %s", rdc_address);
+		}
 	}
-
+	else
+	{
+		rdc_address = address;
+			if(rdc_address[0] == '!')
+				return;
+				
+		ok = begin_visit(VisitUpdatePrivilege, rdc_address, "rdc", "set_acl",
+					rdcacl_mp, sn, NULL, NULL, NULL);
+		if(ok < 0)
+				log("Note: could not send update privilege message to RDC at %s", rdc_address);
+	}
 }
 
 

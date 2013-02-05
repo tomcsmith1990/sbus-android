@@ -202,7 +202,7 @@ class swrapper
 	char *get_cmdline(int pid);
 	
 	void change_privileges(privilegeparams *params);
-	void update_privileges_on_rdc(privilegeparams *params);
+	void update_privileges_on_rdc(privilegeparams *params, const char *address = NULL);
 	void load_privileges_from_file(const char *filenm);
 
 	void add_builtin_endpoints();
