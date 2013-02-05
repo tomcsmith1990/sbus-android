@@ -970,7 +970,6 @@ void swrapper::register_cpt(int arrive, const char *address)
 
 void swrapper::handle_new_rdc(int arrive, const char *address)
 {
-	// Removing the address from rdc seems to break the wrapper - let's just not bother using it for now.
 	if (arrive)
 	{
 		// add the rdc if it is not already.
@@ -978,7 +977,7 @@ void swrapper::handle_new_rdc(int arrive, const char *address)
 
 		// register the component with the rdc		
 		register_cpt(1, address);
-		
+
 		// need to send all permissions we have.
 		smidpoint *mp;
 		spermissionvector *permissionvector = new spermissionvector();
@@ -1018,7 +1017,10 @@ void swrapper::handle_new_rdc(int arrive, const char *address)
 		// Note: we may still be registered (cannot send message because left the network).
 		// The rdc will detect this if we leave the network.
 		register_cpt(0, address);
-		//rdc->remove(address);
+
+		// don't remove localhost
+		if (strcmp(address, "localhost:50123"))
+			rdc->remove(address);
 	}
 }
 

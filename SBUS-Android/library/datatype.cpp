@@ -351,13 +351,14 @@ char *svector::remove(const char *s)
 	if (size == 0)
 		return NULL;
 	int item = find(s);
-	
+
 	if(item < 0 || item >= size)
 		return NULL;
-		
-	char *result;
-	strcpy(result, data[item]);
-	
+
+	char *result = new char[strlen(data[item])];
+	for (int i = 0; i < strlen(data[item]); i++)
+		result[i] = data[item][i];
+
 	for(int i = item; i < size - 1; i++)
 		data[i] = data[i + 1];
 		
