@@ -713,7 +713,7 @@ void *registerback(void *arg)
 	
 	// start the checkalive mutex on the image.
 	pthread_mutex_init(&(img->checkalive_mutex), NULL);
-	
+		
 	live->add(img);
 
 	image *tmp;
@@ -847,6 +847,7 @@ void *checkalive(void *arg)
 	{
 		/*
 		 * pthread_mutex_trylock will acquire the lock if it is free, and return 0.
+		 * It returns immediately.
 		 * The only reason it wouldn't be able to acquire the lock is if we're already checking liveness on this image.
 		 * If we're currently checking it, don't need to check again immediately, so we can release this thread and return.
 		 */
@@ -877,6 +878,7 @@ void *checkalive(void *arg)
 		pthread_mutex_lock(live_mutex_ptr);
 		live->remove(img);
 		pthread_mutex_unlock(live_mutex_ptr);
+		pthread_mutex_unlock(checkalive_mutex_ptr);
 		release_pool(pool_id, &(obj->pool_mutex), obj->pool_busy);
 		if(img->local && img->persistent)
 		{
@@ -899,6 +901,7 @@ void *checkalive(void *arg)
 		pthread_mutex_lock(live_mutex_ptr);
 		live->remove(img);
 		pthread_mutex_unlock(live_mutex_ptr);
+		pthread_mutex_unlock(checkalive_mutex_ptr);
 		release_pool(pool_id, &(obj->pool_mutex), obj->pool_busy);
 		if(img->local && img->persistent)
 		{
@@ -932,6 +935,7 @@ void *checkalive(void *arg)
 		pthread_mutex_lock(live_mutex_ptr);
 		live->remove(img);
 		pthread_mutex_unlock(live_mutex_ptr);
+		pthread_mutex_unlock(checkalive_mutex_ptr);
 		release_pool(pool_id, &(obj->pool_mutex), obj->pool_busy);
 		if(img->local && img->persistent)
 		{
@@ -954,6 +958,7 @@ void *checkalive(void *arg)
 		pthread_mutex_lock(live_mutex_ptr);
 		live->remove(img);
 		pthread_mutex_unlock(live_mutex_ptr);
+		pthread_mutex_unlock(checkalive_mutex_ptr);
 		release_pool(pool_id, &(obj->pool_mutex), obj->pool_busy);
 		if(img->local && img->persistent)
 		{
@@ -1306,6 +1311,8 @@ void image::init_hashes()
 
 image::~image()
 {
+	// destroy the checkalive mutex on the image.
+	//pthread_mutex_destroy(&checkalive_mutex);
 	if(address != NULL) delete[] address;
 	if(ins_name != NULL) delete[] ins_name;
 	if(cpt_name!= NULL) delete[] cpt_name;
