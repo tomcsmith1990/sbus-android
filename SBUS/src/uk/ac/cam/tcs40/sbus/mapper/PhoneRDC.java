@@ -53,7 +53,7 @@ public class PhoneRDC extends Service {
 		PhoneRDC.s_PhoneRDC.stopRDC();
 	}
 
-	public static String lookup(String component) {
+	private static String lookup(String component) {
 		String address = null;
 
 		if (PhoneRDC.s_List == null) return null;
@@ -79,37 +79,42 @@ public class PhoneRDC extends Service {
 		return address;
 	}
 
-	public static void remap() {
-		if (PhoneRDC.s_Map == null) return;
-
+	public static void applyMappingPolicies() {
 		String address = PhoneRDC.lookup("SomeConsumer");
 
-		if (address != null) {
+		PhoneRDC.map(address, PhoneRDC.COMPONENT_EPT, PhoneRDC.s_IP + ":" + PhoneRDC.TARGET_ADDR, PhoneRDC.TARGET_EPT);
+	}
 
-			// Send a message to map this component to another.
-			PhoneRDC.s_Map.map(address, null);
+	private static void map(String localAddress, String localEndpoint, String targetAddress, String targetEndpoint) {
+		if (PhoneRDC.s_Map == null) return;
 
-			SNode node = PhoneRDC.s_Map.createMessage("map");
-			node.packString(PhoneRDC.COMPONENT_EPT, "endpoint");
-			node.packString(PhoneRDC.s_IP + ":" + PhoneRDC.TARGET_ADDR, "peer_address");
-			node.packString(PhoneRDC.TARGET_EPT, "peer_endpoint");
-			node.packString("", "certificate");
+		if (localAddress == null || localEndpoint == null || targetAddress == null || targetEndpoint == null) return;
 
-			PhoneRDC.s_Map.emit(node);
+		// Send a message to map this component to another.
+		PhoneRDC.s_Map.map(localAddress, null);
 
-			PhoneRDC.s_Map.unmap();
-		}
+		SNode node = PhoneRDC.s_Map.createMessage("map");
+		node.packString(localEndpoint, "endpoint");
+		node.packString(targetAddress, "peer_address");
+		node.packString(targetEndpoint, "peer_endpoint");
+		node.packString("", "certificate");
+
+		PhoneRDC.s_Map.emit(node);
+
+		PhoneRDC.s_Map.unmap();
 	}
 
 	public static void registerRDC(boolean arrived) {
 		if (PhoneRDC.s_RegisterRdc == null) return;
 
-		if (arrived) {
+		// Register ourself with the new RDC.
+		/*if (arrived) {
 			PhoneRDC.s_RDCComponent.addRDC(PhoneRDC.RDC_ADDRESS);
 		} else {
 			PhoneRDC.s_RDCComponent.removeRDC(PhoneRDC.RDC_ADDRESS);
-		}
+		}*/
 
+		// Inform registered components about the new RDC.
 		for (Registration registration : RegistrationRepository.list()) {
 			// Send a message to each registered component with the new RDC address.
 			PhoneRDC.s_RegisterRdc.map(PhoneRDC.s_IP + ":" + registration.getPort(), "register_rdc");
@@ -121,6 +126,8 @@ public class PhoneRDC extends Service {
 			PhoneRDC.s_RegisterRdc.emit(node);
 			PhoneRDC.s_RegisterRdc.unmap();
 		}
+
+		// Apply mapping policies.
 	}
 
 	public void startRDC() {

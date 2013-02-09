@@ -17,7 +17,7 @@ public class PhoneRDCActivity extends Activity
 {	
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			PhoneRDC.remap();
+			PhoneRDC.applyMappingPolicies();
 		}
 	};
 
