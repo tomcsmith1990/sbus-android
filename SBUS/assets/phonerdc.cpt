@@ -57,6 +57,22 @@
 			<response>!</response>
 		</endpoint>
 		<endpoint>
+			<name>list</name>
+			<type>#client</type>
+			<message>"0"</message>
+			<response>
+				@cpt-list
+				(
+					component
+					{
+						txt address
+						txt cpt-name
+						[ txt instance ]
+					}
+				)
+			</response>
+		</endpoint>
+		<endpoint>
 			<name>register_rdc</name>
 			<type>#source</type>
 			<message>

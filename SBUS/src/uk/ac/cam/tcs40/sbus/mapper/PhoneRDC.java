@@ -14,22 +14,22 @@ import uk.ac.cam.tcs40.sbus.SMessage;
 import uk.ac.cam.tcs40.sbus.SNode;
 
 public class PhoneRDC extends Service {
-	
+
 	private static PhoneRDC s_PhoneRDC;
 
 	private final int DEFAULT_RDC_PORT = 50123;
 
 	public static final String CPT_FILE = "phonerdc.cpt";
 
-	public static final String COMPONENT_ADDR = "192.168.0.3:44444";
+	public static final String COMPONENT_ADDR = "+NSomeConsumer"; //"192.168.0.3:44444";
 	public static final String COMPONENT_EPT = "SomeEpt";
-	public static final String TARGET_ADDR = "192.168.0.6:44444";
+	public static String TARGET_ADDR = "192.168.0.6:44444";
 	public static final String TARGET_EPT = "SomeEpt";
 	public static final String RDC_ADDRESS = "192.168.0.3:50123";
 	public static final String TAG = "PhoneRDC";
 
 	private static SComponent s_RDCComponent;
-	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_RegisterRdc;
+	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_RegisterRdc;
 
 	private static String s_IP = "127.0.0.1";	// localhost to begin with.
 	private static Context s_Context;
@@ -37,42 +37,73 @@ public class PhoneRDC extends Service {
 	public PhoneRDC() {
 		PhoneRDC.s_PhoneRDC = this;
 	}
-	
+
 	public PhoneRDC(Context context) {
 		PhoneRDC.s_Context = context;
 	}
-	
+
 	@Override
 	public void onCreate() {
 		PhoneRDC.s_Context = getApplicationContext();
 		PhoneRDC.s_PhoneRDC.startRDC();
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		PhoneRDC.s_PhoneRDC.stopRDC();
 	}
 
+	public static String lookup(String component) {
+		String address = null;
+
+		if (PhoneRDC.s_List == null) return null;
+
+		PhoneRDC.s_List.map(PhoneRDC.RDC_ADDRESS, null);
+
+		SMessage reply = PhoneRDC.s_List.rpc(null);
+
+		SNode snode = reply.getTree();
+		SNode item;
+
+		for (int i = 0; i < snode.count(); i++) {
+			item = snode.extractItem(i);
+			if (item.extractString("cpt-name").equals(component)) {
+				address = item.extractString("address");
+				break;
+			}
+		}
+
+		reply.delete();
+		PhoneRDC.s_List.unmap();
+
+		return address;
+	}
+
 	public static void remap() {
 		if (PhoneRDC.s_Map == null) return;
 
-		// Send a message to map this component to another.
-		PhoneRDC.s_Map.map(PhoneRDC.COMPONENT_ADDR, null);
+		String address = PhoneRDC.lookup("SomeConsumer");
 
-		SNode node = PhoneRDC.s_Map.createMessage("map");
-		node.packString(PhoneRDC.COMPONENT_EPT, "endpoint");
-		node.packString(PhoneRDC.TARGET_ADDR, "peer_address");
-		node.packString(PhoneRDC.TARGET_EPT, "peer_endpoint");
-		node.packString("", "certificate");
+		if (address != null) {
 
-		PhoneRDC.s_Map.emit(node);
+			// Send a message to map this component to another.
+			PhoneRDC.s_Map.map(address, null);
 
-		PhoneRDC.s_Map.unmap();
+			SNode node = PhoneRDC.s_Map.createMessage("map");
+			node.packString(PhoneRDC.COMPONENT_EPT, "endpoint");
+			node.packString(PhoneRDC.s_IP + ":" + PhoneRDC.TARGET_ADDR, "peer_address");
+			node.packString(PhoneRDC.TARGET_EPT, "peer_endpoint");
+			node.packString("", "certificate");
+
+			PhoneRDC.s_Map.emit(node);
+
+			PhoneRDC.s_Map.unmap();
+		}
 	}
 
 	public static void registerRDC(boolean arrived) {
 		if (PhoneRDC.s_RegisterRdc == null) return;
-		
+
 		if (arrived) {
 			PhoneRDC.s_RDCComponent.addRDC(PhoneRDC.RDC_ADDRESS);
 		} else {
@@ -108,6 +139,9 @@ public class PhoneRDC extends Service {
 		// For mapping components to other components.
 		PhoneRDC.s_Map = PhoneRDC.s_RDCComponent.addEndpoint("map", EndpointType.EndpointSource, "F46B9113DB2D");
 
+		// For getting a list of components to map by name.
+		PhoneRDC.s_List = PhoneRDC.s_RDCComponent.addEndpoint("list", EndpointType.EndpointClient, "000000000000", "46920F3551F9");
+
 		// For telling components to connect to an rdc.
 		PhoneRDC.s_RegisterRdc = PhoneRDC.s_RDCComponent.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
 
@@ -116,7 +150,7 @@ public class PhoneRDC extends Service {
 
 		// Allow all components to connect to endpoints (for register).
 		PhoneRDC.s_RDCComponent.setPermission("", "", true);
-		
+
 		// Start receiving messages.
 		new Thread() {
 			public void run() {
@@ -131,15 +165,26 @@ public class PhoneRDC extends Service {
 			}
 		}.start();
 	}
-	
+
 	public void stopRDC() {
+		PhoneRDC.s_Map.unmap();
+		PhoneRDC.s_List.unmap();
+		PhoneRDC.s_Register.unmap();
+		PhoneRDC.s_RegisterRdc.unmap();
+		PhoneRDC.s_SetACL.unmap();
+		PhoneRDC.s_Status.unmap();
+
 		PhoneRDC.s_RDCComponent.delete();
-		PhoneRDC.s_RDCComponent = null;
+
 		PhoneRDC.s_Map = null;
+		PhoneRDC.s_List = null;
 		PhoneRDC.s_Register = null;
 		PhoneRDC.s_RegisterRdc = null;
 		PhoneRDC.s_SetACL = null;
 		PhoneRDC.s_Status = null;
+
+		PhoneRDC.s_RDCComponent = null;
+
 		PhoneRDC.s_IP = "127.0.0.1";
 	}
 
@@ -192,6 +237,8 @@ public class PhoneRDC extends Service {
 			return;
 
 		if (arrived) {
+			if (sourceComponent.equals("SomeSensor"))
+				PhoneRDC.TARGET_ADDR = port;
 			if (RegistrationRepository.add(port, sourceComponent, sourceInstance)) {
 				Log.i(PhoneRDC.TAG, "Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
 			} else {
