@@ -2,6 +2,14 @@
 
 extern "C" {
 
+jint
+Java_uk_ac_cam_tcs40_sbus_SNode_count( JNIEnv* env,
+		                                 jobject thiz,
+		                                 jlong node)
+{	
+	return ((snode *)node)->count();
+}
+
 void
 Java_uk_ac_cam_tcs40_sbus_SNode_packBoolean( JNIEnv* env,
                                              jobject thiz,
@@ -95,12 +103,15 @@ Java_uk_ac_cam_tcs40_sbus_SNode_packClock( JNIEnv* env,
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 }
 
-void
-Java_uk_ac_cam_tcs40_sbus_SNode_delete( JNIEnv* env,
-                                             jobject thiz,
-                                             jlong node )
-{
-	delete ((snode *)node);
+jlong
+Java_uk_ac_cam_tcs40_sbus_SNode_extractItem( JNIEnv* env,
+			                                     jobject thiz,
+			                                     jlong node,
+			                                     jint item)
+{	
+	snode *sn;
+	
+	return (long)((snode *)node)->extract_item(item);
 }
 
 jint
@@ -161,6 +172,14 @@ Java_uk_ac_cam_tcs40_sbus_SNode_extractString( JNIEnv* env,
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 	
 	return env->NewStringUTF(s);	
+}
+
+void
+Java_uk_ac_cam_tcs40_sbus_SNode_delete( JNIEnv* env,
+                                             jobject thiz,
+                                             jlong node )
+{
+	delete ((snode *)node);
 }
 
 }
