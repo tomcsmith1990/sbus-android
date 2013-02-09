@@ -24,6 +24,14 @@ public class SNode {
 	}
 	
 	/**
+	 * 
+	 * @return The number of items in this snode.
+	 */
+	public int count() {
+		return count(this.m_NodePtr);
+	}
+	
+	/**
 	 * Delete the native representation of this snode.
 	 */
 	public void delete() {
@@ -83,6 +91,11 @@ public class SNode {
 		return extractString(this.m_NodePtr, name);
 	}
 	
+	public SNode extractItem(int item) {
+		long ptr = extractItem(this.m_NodePtr, item);
+		return new SNode(ptr);
+	}
+	
 	private native void packBoolean(long nodePtr, boolean b, String name);
 	private native void packInt(long nodePtr, int n, String name);
 	private native void packDouble(long nodePtr, double d, String name);
@@ -94,5 +107,7 @@ public class SNode {
 	private native double extractDouble(long nodePtr, String name);
 	private native String extractString(long nodePtr, String name);
 	
+	private native long extractItem(long nodePtr, int item);
+	private native int count(long nodePtr);
 	private native void delete(long messagePtr);
 }
