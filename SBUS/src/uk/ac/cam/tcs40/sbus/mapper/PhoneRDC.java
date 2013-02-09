@@ -51,16 +51,32 @@ public class PhoneRDC extends Service {
 	}
 
 	private static String lookup(String component) {
-		String address = null;
-
+		/*
+		 *  applyMappingPolicies() gets the smessage once.
+		 *  It then searches the same message before deleting it.
+		 *  This could be useful for mapping components later.
+		 */
 		if (PhoneRDC.s_List == null) return null;
 
+		// Map the endpoint to the RDC.
 		PhoneRDC.s_List.map(PhoneRDC.RDC_ADDRESS, null);
-
+		// Perform an RPC to get the list.
 		SMessage reply = PhoneRDC.s_List.rpc(null);
 
+		String address = PhoneRDC.search(reply, component);
+
+		// Delete the native copy of the reply.
+		reply.delete();
+		// Unmap the endpoint.
+		PhoneRDC.s_List.unmap();
+
+		return address;
+	}
+	
+	private static String search(SMessage reply, String component) {
 		SNode snode = reply.getTree();
 		SNode item;
+		String address = null;
 
 		for (int i = 0; i < snode.count(); i++) {
 			item = snode.extractItem(i);
@@ -69,24 +85,39 @@ public class PhoneRDC extends Service {
 				break;
 			}
 		}
-
-		reply.delete();
-		PhoneRDC.s_List.unmap();
-
 		return address;
 	}
 
 	public static void applyMappingPolicies() {
-		String address;
+		if (PhoneRDC.s_List == null) return;
+
+		// Map the endpoint to the RDC.
+		PhoneRDC.s_List.map(PhoneRDC.RDC_ADDRESS, null);
+		/*
+		 * Perform an RPC to get the list.
+		 * Seeing as these are all being applied in quick succession,
+		 * don't really need to get the list of components each time.
+		 */
+		SMessage reply = PhoneRDC.s_List.rpc(null);
 		
+		String address;
+				
 		for (Registration registration : RegistrationRepository.list()) {
 			
 			for (MapPolicy policy : registration.getMapPolicies()) {
-				address = lookup(policy.getPeerComponent());
+				// Search in the reply for the component by name.
+				address = PhoneRDC.search(reply, policy.getPeerComponent());
 				
-				PhoneRDC.map(address, policy.getLocalEndpoint(), PhoneRDC.s_IP + ":" + registration.getPort(), policy.getPeerEndpoint());
+				// If a component has been found, apply the mapping policy.
+				if (address != null)
+					PhoneRDC.map(address, policy.getLocalEndpoint(), PhoneRDC.s_IP + ":" + registration.getPort(), policy.getPeerEndpoint());
 			}
 		}
+		
+		// Delete the native copy of the reply.
+		reply.delete();
+		// Unmap the endpoint.
+		PhoneRDC.s_List.unmap();
 	}
 
 	private static void map(String localAddress, String localEndpoint, String targetAddress, String targetEndpoint) {
