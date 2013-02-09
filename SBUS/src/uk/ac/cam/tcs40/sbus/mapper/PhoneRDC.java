@@ -17,18 +17,19 @@ public class PhoneRDC extends Service {
 
 	private static PhoneRDC s_PhoneRDC;
 
-	private final int DEFAULT_RDC_PORT = 50123;
+	private static final int DEFAULT_RDC_PORT = 50123;
 	
 	public static final String RDC_ADDRESS = "192.168.0.3:50123";
 
 	public static final String CPT_FILE = "phonerdc.cpt";
 
 	public static final String TAG = "PhoneRDC";
+	
+	private static String s_IP = "127.0.0.1";	// localhost to begin with.
 
 	private static SComponent s_RDCComponent;
 	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_RegisterRdc;
 
-	private static String s_IP = "127.0.0.1";	// localhost to begin with.
 	private static Context s_Context;
 
 	public PhoneRDC() {
@@ -178,10 +179,10 @@ public class PhoneRDC extends Service {
 		// For getting a list of components to map by name.
 		PhoneRDC.s_List = PhoneRDC.s_RDCComponent.addEndpoint("list", EndpointType.EndpointClient, "000000000000", "46920F3551F9");
 
-		// For telling components to connect to an rdc.
+		// For telling components to connect to an RDC.
 		PhoneRDC.s_RegisterRdc = PhoneRDC.s_RDCComponent.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
 
-		// Start the component on the default rdc port.
+		// Start the component on the default RDC port.
 		PhoneRDC.s_RDCComponent.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
 
 		// Allow all components to connect to endpoints (for register).
