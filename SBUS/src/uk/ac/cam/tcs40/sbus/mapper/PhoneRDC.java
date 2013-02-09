@@ -111,7 +111,7 @@ public class PhoneRDC extends Service {
 				
 				// If a component has been found, apply the mapping policy.
 				if (address != null)
-					PhoneRDC.map(address, policy.getLocalEndpoint(), PhoneRDC.s_IP + ":" + registration.getPort(), policy.getPeerEndpoint());
+					PhoneRDC.map(address, policy.getPeerEndpoint(), PhoneRDC.s_IP + ":" + registration.getPort(), policy.getLocalEndpoint());
 			}
 		}
 		
