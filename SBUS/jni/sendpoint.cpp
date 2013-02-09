@@ -23,8 +23,8 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_map( JNIEnv* env,
 
 void
 Java_uk_ac_cam_tcs40_sbus_SEndpoint_unmap( JNIEnv* env,
-				                                   jobject thiz,
-			                                       jlong endpoint )
+			                               jobject thiz,
+		                                   jlong endpoint )
 {
 	((sendpoint *)endpoint)->unmap();
 }
@@ -67,6 +67,24 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_receive( JNIEnv* env,
 	smessage *message;
 	// blocks until it receives a message.
 	message = ((sendpoint *)endpoint)->rcv();
+	return (long)message;
+}
+
+jlong
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_rpc( JNIEnv* env,
+                                         	 jobject thiz,
+                                         	 jlong endpoint,
+                                         	 jlong query)
+{
+	snode *sn;
+	if (query == 0)
+		sn = NULL;
+	else
+		sn = ((snode *)query);
+		
+	smessage *message;
+	// blocks until it receives a message.
+	message = ((sendpoint *)endpoint)->rpc(sn);
 	return (long)message;
 }
 

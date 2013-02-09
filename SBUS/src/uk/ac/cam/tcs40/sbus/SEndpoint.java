@@ -92,6 +92,21 @@ public class SEndpoint {
 		long ptr = receive(m_EndpointPointer);
 		return new SMessage(ptr);
 	}
+		
+	/**
+	 * Perform an rpc and get message back.
+	 * @param query A query to be - can be null.
+	 * @return SMessage containing return value of rpc.
+	 */
+	public SMessage rpc(SNode query) {
+		long ptr;
+		if (query == null)
+			ptr = rpc(m_EndpointPointer, 0);
+		else
+			ptr = rpc(m_EndpointPointer, query.getPointer());
+		
+		return new SMessage(ptr);
+	}
 
 	private native long createMessage(long endpointPtr, String messageType);
 	private native String emit(long endpointPtr, long messagePtr);
@@ -100,4 +115,5 @@ public class SEndpoint {
 	private native void unmap(long endpointPtr);
 	
 	private native long receive(long endpointPtr);
+	private native long rpc(long endpointPtr, long queryPointer);
 }
