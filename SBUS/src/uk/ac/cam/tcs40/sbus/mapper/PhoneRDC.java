@@ -18,14 +18,11 @@ public class PhoneRDC extends Service {
 	private static PhoneRDC s_PhoneRDC;
 
 	private final int DEFAULT_RDC_PORT = 50123;
+	
+	public static final String RDC_ADDRESS = "192.168.0.3:50123";
 
 	public static final String CPT_FILE = "phonerdc.cpt";
 
-	public static final String COMPONENT_ADDR = "+NSomeConsumer"; //"192.168.0.3:44444";
-	public static final String COMPONENT_EPT = "SomeEpt";
-	public static String TARGET_ADDR = "192.168.0.6:44444";
-	public static final String TARGET_EPT = "SomeEpt";
-	public static final String RDC_ADDRESS = "192.168.0.3:50123";
 	public static final String TAG = "PhoneRDC";
 
 	private static SComponent s_RDCComponent;
@@ -80,9 +77,16 @@ public class PhoneRDC extends Service {
 	}
 
 	public static void applyMappingPolicies() {
-		String address = PhoneRDC.lookup("SomeConsumer");
-
-		PhoneRDC.map(address, PhoneRDC.COMPONENT_EPT, PhoneRDC.s_IP + ":" + PhoneRDC.TARGET_ADDR, PhoneRDC.TARGET_EPT);
+		String address;
+		
+		for (Registration registration : RegistrationRepository.list()) {
+			
+			for (MapPolicy policy : registration.getMapPolicies()) {
+				address = lookup(policy.getPeerComponent());
+				
+				PhoneRDC.map(address, policy.getLocalEndpoint(), PhoneRDC.s_IP + ":" + registration.getPort(), policy.getPeerEndpoint());
+			}
+		}
 	}
 
 	private static void map(String localAddress, String localEndpoint, String targetAddress, String targetEndpoint) {
@@ -107,13 +111,6 @@ public class PhoneRDC extends Service {
 	public static void registerRDC(boolean arrived) {
 		if (PhoneRDC.s_RegisterRdc == null) return;
 
-		// Register ourself with the new RDC.
-		/*if (arrived) {
-			PhoneRDC.s_RDCComponent.addRDC(PhoneRDC.RDC_ADDRESS);
-		} else {
-			PhoneRDC.s_RDCComponent.removeRDC(PhoneRDC.RDC_ADDRESS);
-		}*/
-
 		// Inform registered components about the new RDC.
 		for (Registration registration : RegistrationRepository.list()) {
 			// Send a message to each registered component with the new RDC address.
@@ -128,6 +125,7 @@ public class PhoneRDC extends Service {
 		}
 
 		// Apply mapping policies.
+		PhoneRDC.applyMappingPolicies();
 	}
 
 	public void startRDC() {
@@ -244,13 +242,18 @@ public class PhoneRDC extends Service {
 			return;
 
 		if (arrived) {
-			if (sourceComponent.equals("SomeSensor"))
-				PhoneRDC.TARGET_ADDR = port;
-			if (RegistrationRepository.add(port, sourceComponent, sourceInstance)) {
+			
+			Registration registration = RegistrationRepository.add(port, sourceComponent, sourceInstance);
+			if (registration != null) {
 				Log.i(PhoneRDC.TAG, "Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
 			} else {
 				Log.i(PhoneRDC.TAG, "Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
 			}
+			
+			// TODO: make this automatic.
+			if (sourceComponent.equals("SomeSensor"))
+				registration.addMapPolicy("SomeEpt", "SomeConsumer", "SomeEpt");
+			
 		} else {
 			Registration removed = RegistrationRepository.remove(port);
 			Log.i(PhoneRDC.TAG, "Deregistered component " + removed.getComponentName() + ":" + removed.getInstanceName() + " at :" + port);

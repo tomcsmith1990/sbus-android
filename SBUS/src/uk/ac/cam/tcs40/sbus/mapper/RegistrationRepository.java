@@ -31,12 +31,13 @@ public class RegistrationRepository {
 		return registration;
 	}
 	
-	public static synchronized boolean add(String port, String component, String instance) {
+	public static synchronized Registration add(String port, String component, String instance) {
 		if (find(port) == false) {
-			s_Registrations.add(new Registration(port, component, instance));
-			return true;
+			Registration registration = new Registration(port, component, instance);
+			s_Registrations.add(registration);
+			return registration;
 		}
-		return false;
+		return null;
 	}
 	
 	public static synchronized Registration remove(String port) {
