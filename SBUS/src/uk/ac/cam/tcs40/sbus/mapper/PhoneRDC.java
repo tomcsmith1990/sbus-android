@@ -18,13 +18,13 @@ public class PhoneRDC extends Service {
 	private static PhoneRDC s_PhoneRDC;
 
 	private static final int DEFAULT_RDC_PORT = 50123;
-	
+
 	public static final String RDC_ADDRESS = "192.168.0.3:50123";
 
 	public static final String CPT_FILE = "phonerdc.cpt";
 
 	public static final String TAG = "PhoneRDC";
-	
+
 	private static String s_IP = "127.0.0.1";	// localhost to begin with.
 
 	private static SComponent s_RDCComponent;
@@ -64,16 +64,22 @@ public class PhoneRDC extends Service {
 		// Perform an RPC to get the list.
 		SMessage reply = PhoneRDC.s_List.rpc(null);
 
-		String address = PhoneRDC.search(reply, component);
+		String address = null;
 
-		// Delete the native copy of the reply.
-		reply.delete();
+		if (reply != null)
+		{
+			address = PhoneRDC.search(reply, component);
+
+			// Delete the native copy of the reply.
+			reply.delete();
+		}
+
 		// Unmap the endpoint.
 		PhoneRDC.s_List.unmap();
 
 		return address;
 	}
-	
+
 	private static String search(SMessage reply, String component) {
 		SNode snode = reply.getTree();
 		SNode item;
@@ -100,23 +106,26 @@ public class PhoneRDC extends Service {
 		 * don't really need to get the list of components each time.
 		 */
 		SMessage reply = PhoneRDC.s_List.rpc(null);
-		
-		String address;
-				
-		for (Registration registration : RegistrationRepository.list()) {
-			
-			for (MapPolicy policy : registration.getMapPolicies()) {
-				// Search in the reply for the component by name.
-				address = PhoneRDC.search(reply, policy.getPeerComponent());
-				
-				// If a component has been found, apply the mapping policy.
-				if (address != null)
-					PhoneRDC.map(address, policy.getPeerEndpoint(), PhoneRDC.s_IP + ":" + registration.getPort(), policy.getLocalEndpoint());
+
+		if (reply != null)
+		{
+			String address;
+
+			for (Registration registration : RegistrationRepository.list()) {
+
+				for (MapPolicy policy : registration.getMapPolicies()) {
+					// Search in the reply for the component by name.
+					address = PhoneRDC.search(reply, policy.getPeerComponent());
+
+					// If a component has been found, apply the mapping policy.
+					if (address != null)
+						PhoneRDC.map(address, policy.getPeerEndpoint(), PhoneRDC.s_IP + ":" + registration.getPort(), policy.getLocalEndpoint());
+				}
 			}
+
+			// Delete the native copy of the reply.
+			reply.delete();
 		}
-		
-		// Delete the native copy of the reply.
-		reply.delete();
 		// Unmap the endpoint.
 		PhoneRDC.s_List.unmap();
 	}
@@ -274,18 +283,18 @@ public class PhoneRDC extends Service {
 			return;
 
 		if (arrived) {
-			
+
 			Registration registration = RegistrationRepository.add(port, sourceComponent, sourceInstance);
 			if (registration != null) {
 				Log.i(PhoneRDC.TAG, "Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
 			} else {
 				Log.i(PhoneRDC.TAG, "Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
 			}
-			
+
 			// TODO: make this automatic.
 			if (sourceComponent.equals("SomeSensor"))
 				registration.addMapPolicy("SomeEpt", "SomeConsumer", "SomeEpt");
-			
+
 		} else {
 			Registration removed = RegistrationRepository.remove(port);
 			Log.i(PhoneRDC.TAG, "Deregistered component " + removed.getComponentName() + ":" + removed.getInstanceName() + " at :" + port);

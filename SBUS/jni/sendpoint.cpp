@@ -83,9 +83,12 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_rpc( JNIEnv* env,
 		sn = ((snode *)query);
 		
 	smessage *message;
-	// blocks until it receives a message.
 	message = ((sendpoint *)endpoint)->rpc(sn);
-	return (long)message;
+	
+	if (message == NULL)
+		return 0;
+	else
+		return (long)message;
 }
 
 }

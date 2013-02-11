@@ -105,7 +105,10 @@ public class SEndpoint {
 		else
 			ptr = rpc(m_EndpointPointer, query.getPointer());
 		
-		return new SMessage(ptr);
+		if (ptr == 0)
+			return null;
+		else
+			return new SMessage(ptr);
 	}
 
 	private native long createMessage(long endpointPtr, String messageType);
