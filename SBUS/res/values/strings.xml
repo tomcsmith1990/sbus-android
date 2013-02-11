@@ -4,5 +4,6 @@
     <string name="app_name">SBUS Mapper</string>
     <string name="map_button_text">Map</string>
     <string name="rdc_button_text">Register RDC</string>
+    <string name="rdc_address">192.168.0.3:50123</string>
 
 </resources>

@@ -11,10 +11,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 
 
 public class PhoneRDCActivity extends Activity
 {	
+	private static EditText s_RDCAddress;
+	
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			PhoneRDC.applyMappingPolicies();
@@ -26,6 +29,10 @@ public class PhoneRDCActivity extends Activity
 			PhoneRDC.registerRDC(true);
 		}
 	};
+	
+	public static String getRDCAddress() {
+		return s_RDCAddress.getText().toString();
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -34,6 +41,8 @@ public class PhoneRDCActivity extends Activity
 		// Display the layout.
 		setContentView(R.layout.activity_mapper);
 
+		findViewById(R.id.layout).requestFocus();
+		
 		// Add event listener to the map button.
 		Button mapButton = (Button)findViewById(R.id.map_button);
 		mapButton.setOnClickListener(m_MapButtonListener);
@@ -41,6 +50,8 @@ public class PhoneRDCActivity extends Activity
 		// Add event listener to the rdc button.
 		Button rdcButton = (Button)findViewById(R.id.rdc_button);
 		rdcButton.setOnClickListener(m_RdcButtonListener);
+		
+		s_RDCAddress = (EditText)findViewById(R.id.rdc_address);
 
 		new Thread() {
 			public void run() {
