@@ -60,7 +60,7 @@ public class PhoneRDC extends Service {
 		if (PhoneRDC.s_List == null) return null;
 
 		// Map the endpoint to the RDC.
-		PhoneRDC.s_List.map(PhoneRDC.RDC_ADDRESS, null);
+		PhoneRDC.s_List.map(PhoneRDCActivity.getRDCAddress(), null);
 		// Perform an RPC to get the list.
 		SMessage reply = PhoneRDC.s_List.rpc(null);
 
@@ -99,7 +99,7 @@ public class PhoneRDC extends Service {
 		if (PhoneRDC.s_List == null) return;
 
 		// Map the endpoint to the RDC.
-		PhoneRDC.s_List.map(PhoneRDC.RDC_ADDRESS, null);
+		PhoneRDC.s_List.map(PhoneRDCActivity.getRDCAddress(), null);
 		/*
 		 * Perform an RPC to get the list.
 		 * Seeing as these are all being applied in quick succession,
@@ -158,7 +158,7 @@ public class PhoneRDC extends Service {
 			PhoneRDC.s_RegisterRdc.map(PhoneRDC.s_IP + ":" + registration.getPort(), "register_rdc");
 
 			SNode node = PhoneRDC.s_RegisterRdc.createMessage("event");
-			node.packString(PhoneRDC.RDC_ADDRESS, "rdc_address");
+			node.packString(PhoneRDCActivity.getRDCAddress(), "rdc_address");
 			node.packBoolean(arrived,  "arrived");
 
 			PhoneRDC.s_RegisterRdc.emit(node);
