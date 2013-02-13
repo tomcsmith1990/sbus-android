@@ -71,6 +71,16 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_receive( JNIEnv* env,
 }
 
 jlong
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_reply( JNIEnv* env,
+                                         	 jobject thiz,
+                                         	 jlong endpoint,
+                                         	 jlong query,
+                                         	 jlong reply)
+{
+	((sendpoint *)endpoint)->reply((smessage *)query, (snode *)reply);
+}
+
+jlong
 Java_uk_ac_cam_tcs40_sbus_SEndpoint_rpc( JNIEnv* env,
                                          	 jobject thiz,
                                          	 jlong endpoint,
