@@ -84,5 +84,14 @@
 			</message>
 			<response>!</response>
 		</endpoint>
+		<endpoint>
+			<name>lookup_cpt</name>
+			<type>#server</type>
+			<message>
+				@^criteria -
+				@"/data/data/uk.ac.cam.tcs40.sbus.sbus/files/idl/map_constraints.idl"
+			</message>
+			<response>@results ( txt address )</response>
+		</endpoint>
 	</endpoints>
 </component-metadata>

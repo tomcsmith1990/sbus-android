@@ -28,7 +28,7 @@ public class PhoneRDC extends Service {
 	private static String s_IP = "127.0.0.1";	// localhost to begin with.
 
 	private static SComponent s_RDCComponent;
-	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_RegisterRdc;
+	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, s_RegisterRdc;
 
 	private static Context s_Context;
 
@@ -197,6 +197,9 @@ public class PhoneRDC extends Service {
 
 		// For telling components to connect to an RDC.
 		PhoneRDC.s_RegisterRdc = PhoneRDC.s_RDCComponent.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
+		
+		// For any map lookups the component makes.
+		PhoneRDC.s_Lookup = PhoneRDC.s_RDCComponent.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "AE7945554959", "6AA2406BF9EC");
 
 		// Start the component on the default RDC port.
 		PhoneRDC.s_RDCComponent.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
@@ -222,6 +225,7 @@ public class PhoneRDC extends Service {
 	public void stopRDC() {
 		PhoneRDC.s_Map.unmap();
 		PhoneRDC.s_List.unmap();
+		PhoneRDC.s_Lookup.unmap();
 		PhoneRDC.s_Register.unmap();
 		PhoneRDC.s_RegisterRdc.unmap();
 		PhoneRDC.s_SetACL.unmap();
@@ -231,6 +235,7 @@ public class PhoneRDC extends Service {
 
 		PhoneRDC.s_Map = null;
 		PhoneRDC.s_List = null;
+		PhoneRDC.s_Lookup = null;
 		PhoneRDC.s_Register = null;
 		PhoneRDC.s_RegisterRdc = null;
 		PhoneRDC.s_SetACL = null;
@@ -245,6 +250,7 @@ public class PhoneRDC extends Service {
 		Multiplex multi = PhoneRDC.s_RDCComponent.getMultiplex();
 		multi.add(PhoneRDC.s_Register);
 		multi.add(PhoneRDC.s_SetACL);
+		multi.add(PhoneRDC.s_Lookup);
 
 		SEndpoint endpoint;
 		String name;
@@ -263,6 +269,16 @@ public class PhoneRDC extends Service {
 				acceptRegistration();
 			} else if (name.equals("set_acl")) {
 				changePermissions();
+			} else if (name.equals("lookup_cpt")) {
+				SMessage query = PhoneRDC.s_Lookup.receive();
+				Registration r = RegistrationRepository.find(query.getSourceComponent(), query.getSourceInstance());
+				if (r != null) {
+					// TODO: correct mapping constraints.
+						r.addMapPolicy("SomeEpt", "SomeConsumer", "SomeEpt");
+				}
+				SNode result = PhoneRDC.s_Lookup.createMessage("results");
+				PhoneRDC.s_Lookup.reply(query, result);
+				query.delete();
 			}
 		}
 	}
@@ -286,7 +302,7 @@ public class PhoneRDC extends Service {
 		host = address.split(":")[0];
 		port = address.split(":")[1];
 
-		if (!host.equals(PhoneRDC.s_IP) && !host.equals("127.0.0.1") && !host.equals(""))
+		if (!host.equals(PhoneRDC.s_IP) && !host.equals("127.0.0.1") && !host.equals("") && !host.equals("10.0.2.15"))
 			return;
 
 		if (arrived) {
@@ -297,10 +313,6 @@ public class PhoneRDC extends Service {
 			} else {
 				Log.i(PhoneRDC.TAG, "Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
 			}
-
-			// TODO: make this automatic.
-			if (sourceComponent.equals("SomeSensor"))
-				registration.addMapPolicy("SomeEpt", "SomeConsumer", "SomeEpt");
 
 		} else {
 			Registration removed = RegistrationRepository.remove(port);
