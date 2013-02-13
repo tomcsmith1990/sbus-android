@@ -57,6 +57,17 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointClient( JNIEnv* env,
 	return addEndpoint(env, thiz, component, endName, EndpointClient, messageHash, responseHash);
 }
 
+jlong
+Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointServer( JNIEnv* env,
+                                                  jobject thiz, 
+                                                  jlong component,
+                                                  jstring endName, 
+                                                  jstring messageHash,
+                                                  jstring responseHash )
+{
+	return addEndpoint(env, thiz, component, endName, EndpointServer, messageHash, responseHash);
+}
+
 long addEndpoint( JNIEnv* env,
                   jobject thiz, 
                   jlong component,
