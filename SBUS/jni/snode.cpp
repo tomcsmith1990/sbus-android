@@ -10,6 +10,21 @@ Java_uk_ac_cam_tcs40_sbus_SNode_count( JNIEnv* env,
 	return ((snode *)node)->count();
 }
 
+jint
+Java_uk_ac_cam_tcs40_sbus_SNode_exists( JNIEnv* env,
+		                                 jobject thiz,
+		                                 jlong node,
+		                                 jstring n)
+{	
+	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
+	
+	int exists = ((snode *)node)->exists(name);
+	
+	if (n != NULL) env->ReleaseStringUTFChars(n, name);
+	
+	return exists;
+}
+
 void
 Java_uk_ac_cam_tcs40_sbus_SNode_packBoolean( JNIEnv* env,
                                              jobject thiz,
@@ -109,9 +124,24 @@ Java_uk_ac_cam_tcs40_sbus_SNode_extractItem( JNIEnv* env,
 			                                     jlong node,
 			                                     jint item)
 {	
+	return (long)((snode *)node)->extract_item(item);
+}
+
+jlong
+Java_uk_ac_cam_tcs40_sbus_SNode_extractItemByName( JNIEnv* env,
+			                                     jobject thiz,
+			                                     jlong node,
+			                                     jstring item)
+{	
 	snode *sn;
 	
-	return (long)((snode *)node)->extract_item(item);
+	const char *item_name = (item == NULL) ? NULL : env->GetStringUTFChars(item, NULL);
+	
+	sn =((snode *)node)->extract_item(item_name);
+	
+	if (item != NULL) env->ReleaseStringUTFChars(item, item_name);
+	
+	return (long)sn;
 }
 
 jint
