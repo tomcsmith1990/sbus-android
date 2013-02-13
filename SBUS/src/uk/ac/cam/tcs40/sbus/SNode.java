@@ -31,6 +31,10 @@ public class SNode {
 		return count(this.m_NodePtr);
 	}
 	
+	public boolean exists(String name) {
+		return (exists(this.m_NodePtr, name) == 1);
+	}
+	
 	/**
 	 * Delete the native representation of this snode.
 	 */
@@ -96,6 +100,11 @@ public class SNode {
 		return new SNode(ptr);
 	}
 	
+	public SNode extractItem(String item) {
+		long ptr = extractItemByName(this.m_NodePtr, item);
+		return new SNode(ptr);
+	}
+	
 	private native void packBoolean(long nodePtr, boolean b, String name);
 	private native void packInt(long nodePtr, int n, String name);
 	private native void packDouble(long nodePtr, double d, String name);
@@ -108,6 +117,9 @@ public class SNode {
 	private native String extractString(long nodePtr, String name);
 	
 	private native long extractItem(long nodePtr, int item);
+	private native long extractItemByName(long nodePtr, String item);
+	
+	private native int exists(long nodePtr, String name);
 	private native int count(long nodePtr);
-	private native void delete(long messagePtr);
+	private native void delete(long nodePtr);
 }
