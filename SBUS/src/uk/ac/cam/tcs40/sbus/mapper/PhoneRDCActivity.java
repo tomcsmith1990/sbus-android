@@ -63,7 +63,7 @@ public class PhoneRDCActivity extends Activity
 				new FileBootloader(getApplicationContext()).store(PhoneRDC.CPT_FILE);
 
 				// Create and start the PhoneRDC.
-				startService(new Intent(PhoneRDCActivity.this, PhoneRDC.class));
+				startService(new Intent(PhoneRDCActivity.this, PhoneRDCService.class));
 
 				// Register a broadcast receiver.
 				// Detects when we connect/disconnect to a Wifi network.
@@ -78,6 +78,6 @@ public class PhoneRDCActivity extends Activity
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		stopService(new Intent(PhoneRDCActivity.this, PhoneRDC.class));
+		stopService(new Intent(PhoneRDCActivity.this, PhoneRDCService.class));
 	}
 }
