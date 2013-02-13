@@ -12,24 +12,25 @@ import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
 public class PhoneRDC {
 
 	private static final int DEFAULT_RDC_PORT = 50123;
-
-	public static final String RDC_ADDRESS = "192.168.0.3:50123";
-
-	public static final String CPT_FILE = "phonerdc.cpt";
-
-	public static final String TAG = "PhoneRDC";
-
 	private static String s_IP = "127.0.0.1";	// localhost to begin with.
+	public static final String RDC_ADDRESS = "192.168.0.3:50123";
+	public static final String CPT_FILE = "phonerdc.cpt";
+	public static final String TAG = "PhoneRDC";
 
 	private static SComponent s_RDCComponent;
 	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, s_RegisterRdc;
-	
+
 	private static Context s_Context;
-	
+
 	public PhoneRDC(Context context) {
 		s_Context = context;
 	}
-	
+
+	private static String getRDCAddress() {
+		// return RDC_ADDRESS;
+		return PhoneRDCActivity.getRDCAddress();
+	}
+
 	private static String lookup(String component) {
 		/*
 		 *  applyMappingPolicies() gets the smessage once.
@@ -39,7 +40,7 @@ public class PhoneRDC {
 		if (s_List == null) return null;
 
 		// Map the endpoint to the RDC.
-		s_List.map(PhoneRDCActivity.getRDCAddress(), null);
+		s_List.map(getRDCAddress(), null);
 		// Perform an RPC to get the list.
 		SMessage reply = s_List.rpc(null);
 
@@ -78,7 +79,7 @@ public class PhoneRDC {
 		if (s_List == null) return false;
 
 		// Map the endpoint to the RDC.
-		s_List.map(PhoneRDCActivity.getRDCAddress(), null);
+		s_List.map(getRDCAddress(), null);
 		/*
 		 * Perform an RPC to get the list.
 		 * Seeing as these are all being applied in quick succession,
@@ -146,7 +147,7 @@ public class PhoneRDC {
 				s_RegisterRdc.map(s_IP + ":" + registration.getPort(), "register_rdc");
 
 				SNode node = s_RegisterRdc.createMessage("event");
-				node.packString(PhoneRDCActivity.getRDCAddress(), "rdc_address");
+				node.packString(getRDCAddress(), "rdc_address");
 				node.packBoolean(arrived,  "arrived");
 
 				s_RegisterRdc.emit(node);
@@ -176,7 +177,7 @@ public class PhoneRDC {
 
 		// For telling components to connect to an RDC.
 		s_RegisterRdc = s_RDCComponent.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
-		
+
 		// For any map lookups the component makes.
 		s_Lookup = s_RDCComponent.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "AE7945554959", "6AA2406BF9EC");
 
@@ -188,6 +189,7 @@ public class PhoneRDC {
 
 		// Start receiving messages.
 		new Thread() {
+			@Override
 			public void run() {
 				receive();
 			}
@@ -195,6 +197,7 @@ public class PhoneRDC {
 
 		// Check components are still alive.
 		new Thread() {
+			@Override
 			public void run() {
 				checkAlive();
 			}
@@ -249,15 +252,7 @@ public class PhoneRDC {
 			} else if (name.equals("set_acl")) {
 				changePermissions();
 			} else if (name.equals("lookup_cpt")) {
-				SMessage query = s_Lookup.receive();
-				Registration r = RegistrationRepository.find(query.getSourceComponent(), query.getSourceInstance());
-				if (r != null) {
-					// TODO: correct mapping constraints.
-						r.addMapPolicy("SomeEpt", "SomeConsumer", "SomeEpt");
-				}
-				SNode result = s_Lookup.createMessage("results");
-				s_Lookup.reply(query, result);
-				query.delete();
+				setMapPolicy();
 			}
 		}
 	}
@@ -337,6 +332,33 @@ public class PhoneRDC {
 			}
 		}
 	}
+	
+	private void setMapPolicy() {
+		SMessage query = s_Lookup.receive();
+		SNode constraints = query.getTree().extractItem("map-constraints");
+		SNode endpointInterface = query.getTree().extractItem("interface");
+
+		String remoteComponent = null;
+		String remoteInstance = null;
+		
+		if (constraints.exists("cpt-name"))
+			remoteComponent = constraints.extractString("cpt-name");
+		if (constraints.exists("instance-name"))
+			remoteInstance = constraints.extractString("instance-name");
+
+		Registration registration = RegistrationRepository.find(query.getSourceComponent(), query.getSourceInstance());
+		if (registration != null) {
+			String localEndpoint;
+			for (int i = 0; i < endpointInterface.count(); i++) {
+				localEndpoint = endpointInterface.extractItem(i).extractString("name");
+				registration.addMapPolicy(localEndpoint, remoteComponent, "SomeEpt");
+			}
+		}
+		
+		SNode result = s_Lookup.createMessage("results");
+		s_Lookup.reply(query, result);
+		query.delete();
+	}
 
 	private void checkAlive() {
 		while (s_RDCComponent != null) {
@@ -355,7 +377,6 @@ public class PhoneRDC {
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
