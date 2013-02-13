@@ -351,7 +351,7 @@ public class PhoneRDC {
 			String localEndpoint;
 			for (int i = 0; i < endpointInterface.count(); i++) {
 				localEndpoint = endpointInterface.extractItem(i).extractString("name");
-				registration.addMapPolicy(localEndpoint, remoteComponent, "SomeEpt");
+				registration.addMapPolicy(localEndpoint, remoteComponent, localEndpoint);
 			}
 		}
 		
