@@ -14,6 +14,10 @@ public class SMessage {
 		this.m_MessagePtr = ptr;
 	}
 	
+	long getPointer() {
+		return this.m_MessagePtr;
+	}
+	
 	/**
 	 * 
 	 * @return The message for extracting values.

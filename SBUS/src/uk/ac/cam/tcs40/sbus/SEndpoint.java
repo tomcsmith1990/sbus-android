@@ -92,6 +92,10 @@ public class SEndpoint {
 		long ptr = receive(m_EndpointPointer);
 		return new SMessage(ptr);
 	}
+	
+	public void reply(SMessage query, SNode reply) {
+		reply(m_EndpointPointer, query.getPointer(), reply.getPointer());
+	}
 		
 	/**
 	 * Perform an rpc and get message back.
@@ -119,4 +123,5 @@ public class SEndpoint {
 	
 	private native long receive(long endpointPtr);
 	private native long rpc(long endpointPtr, long queryPointer);
+	private native void reply(long endpointPtr, long queryPointer, long replyPointer);
 }
