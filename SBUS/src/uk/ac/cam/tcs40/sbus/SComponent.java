@@ -56,6 +56,10 @@ public class SComponent {
 			ptr = addEndpointClient(m_ComponentPointer, name, messageHash, responseHash);
 			break;
 			
+		case EndpointServer:
+			ptr = addEndpointServer(m_ComponentPointer, name, messageHash, responseHash);
+			break;
+			
 		default:
 			return null;
 		}
@@ -179,7 +183,8 @@ public class SComponent {
 	private native long addEndpointSource(long componentPtr, String endpointName, String messageHash, String responseHash);
 	private native long addEndpointSink(long componentPtr, String endpointName, String messageHash, String responseHash);
 	private native long addEndpointClient(long componentPtr, String endpointName, String messageHash, String responseHash);
-	
+	private native long addEndpointServer(long componentPtr, String endpointName, String messageHash, String responseHash);
+
 	private native void addRDC(long componentPtr, String rdcAddress);
 	private native void removeRDC(long componentPtr, String rdcAddress);
 	private native void setRDCUpdateAutoconnect(long componentPtr, boolean autoconnect);
