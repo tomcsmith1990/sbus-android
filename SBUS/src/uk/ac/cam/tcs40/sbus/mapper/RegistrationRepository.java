@@ -61,7 +61,7 @@ public class RegistrationRepository {
 		
 		Registration registration = s_Registrations.get(0);
 		for (Registration r : s_Registrations) {
-			if (r.getDate().before(registration.getDate())) {
+			if (r.getLastCheckedAlive().before(registration.getLastCheckedAlive())) {
 				registration = r;	
 			}
 		}
