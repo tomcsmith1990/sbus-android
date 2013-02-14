@@ -337,10 +337,13 @@ public class PhoneRDC {
 		
 		if (mapConstraints.exists("cpt-name"))
 			remoteComponent = mapConstraints.extractString("cpt-name");
+		
 		if (mapConstraints.exists("instance-name"))
 			remoteInstance = mapConstraints.extractString("instance-name");
+		
 		if (mapConstraints.exists("creator"))
 			remoteCreator = mapConstraints.extractString("creator");
+		
 		if (mapConstraints.exists("pub-key"))
 			remotePublicKey = mapConstraints.extractString("pub-key");
 

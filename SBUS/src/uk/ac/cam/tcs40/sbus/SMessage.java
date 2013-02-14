@@ -61,7 +61,7 @@ public class SMessage {
 	}
 	
 	/**
-	 * Delete the native representation of this message.
+	 * Delete the native representation of this message, and any containing SNodes.
 	 */
 	public void delete() {
 		delete(this.m_MessagePtr);

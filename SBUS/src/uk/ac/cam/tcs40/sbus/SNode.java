@@ -3,6 +3,7 @@ package uk.ac.cam.tcs40.sbus;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class SNode {
 
@@ -31,6 +32,11 @@ public class SNode {
 		return count(this.m_NodePtr);
 	}
 	
+	/**
+	 * Check whether a field exists in the SNode.
+	 * @param name The field to check.
+	 * @return Whether the field exists in the SNode.
+	 */
 	public boolean exists(String name) {
 		return (exists(this.m_NodePtr, name) == 1);
 	}
@@ -75,7 +81,7 @@ public class SNode {
 		packTime(d, null);
 	}
 	public void packTime(Date d, String name) {
-		DateFormat format = new SimpleDateFormat("dd/MM/yyyy,HH:mm:ss");
+		DateFormat format = new SimpleDateFormat("dd/MM/yyyy,HH:mm:ss", Locale.UK);
 		packClock(this.m_NodePtr, format.format(d), name);
 	}
 	
