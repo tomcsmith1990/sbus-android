@@ -87,12 +87,12 @@ Java_uk_ac_cam_tcs40_sbus_SNode_packString( JNIEnv* env,
 	snode *sn;
 	
 	const char *name = (n == NULL) ? NULL : env->GetStringUTFChars(n, NULL);
-	const char *string = env->GetStringUTFChars(s, NULL);
+	const char *string = (s == NULL) ? NULL : env->GetStringUTFChars(s, NULL);
 
 	sn = pack(string, name);
 	((snode *)node)->append(sn);
 	
-	env->ReleaseStringUTFChars(s, string);
+	if (s != NULL) env->ReleaseStringUTFChars(s, string);
 	if (n != NULL) env->ReleaseStringUTFChars(n, name);
 }
 
