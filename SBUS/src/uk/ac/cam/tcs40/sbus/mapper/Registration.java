@@ -8,7 +8,7 @@ import java.util.List;
 public class Registration {
 
 	private final String m_Port, m_Component, m_Instance;
-	private Date m_Date;
+	private Date m_LastCheckedAlive;
 	private final List<Permission> m_Permissions;
 	private final List<MapPolicy> m_MapPolicies;
 
@@ -21,11 +21,11 @@ public class Registration {
 		this.m_MapPolicies = new LinkedList<MapPolicy>();
 	}
 	
-	public void addPermission(String component, String instance, boolean allow) {
+	public void addPermission(String remoteComponent, String remoteInstance, boolean allow) {
 		boolean exists = false;
 		for (Permission p : this.m_Permissions) {
 			
-			if (p.exists(component, instance)) {
+			if (p.isPermissionFor(remoteComponent, remoteInstance)) {
 				exists = true;
 				if (p.getPermission() != allow) {
 					this.m_Permissions.remove(p);
@@ -35,11 +35,11 @@ public class Registration {
 		}
 		
 		if (!exists)
-			this.m_Permissions.add(new Permission(component, instance, allow));
+			this.m_Permissions.add(new Permission(remoteComponent, remoteInstance, allow));
 	}
 	
-	public void addMapPolicy(String localEndpoint, String peerComponent, String peerEndpoint) {
-		this.m_MapPolicies.add(new MapPolicy(localEndpoint, peerComponent, peerEndpoint));
+	public void addMapPolicy(String localEndpoint, String remoteComponent, String remoteEndpoint) {
+		this.m_MapPolicies.add(new MapPolicy(localEndpoint, remoteComponent, remoteEndpoint));
 	}
 	
 	public List<MapPolicy> getMapPolicies() {
@@ -58,11 +58,11 @@ public class Registration {
 		return this.m_Instance;
 	}
 	
-	public Date getDate() {
-		return this.m_Date;
+	public Date getLastCheckedAlive() {
+		return this.m_LastCheckedAlive;
 	}
 	
 	public void update() {
-		this.m_Date = Calendar.getInstance().getTime();
+		this.m_LastCheckedAlive = Calendar.getInstance().getTime();
 	}
 }
