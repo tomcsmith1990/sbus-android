@@ -39,7 +39,9 @@ public class SomeSensor extends Activity
 				m_Component.setRDCUpdateAutoconnect(true);
 				m_Component.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
 				m_Component.setPermission("SomeConsumer", "", true);
-			
+				
+				m_Endpoint.map("+NSomeConsumer", "SomeEpt");
+				
 				int i = 0;
 				SNode node;
 				while (m_Component != null) {
