@@ -93,14 +93,19 @@ public class SEndpoint {
 		return new SMessage(ptr);
 	}
 	
+	/**
+	 * Reply to an RPC.
+	 * @param query The original query.
+	 * @param reply The reply to send.
+	 */
 	public void reply(SMessage query, SNode reply) {
 		reply(m_EndpointPointer, query.getPointer(), reply.getPointer());
 	}
 		
 	/**
-	 * Perform an rpc and get message back.
-	 * @param query A query to be - can be null.
-	 * @return SMessage containing return value of rpc.
+	 * Perform an RPC and get message back.
+	 * @param query A query to send - can be null.
+	 * @return SMessage containing return value of RPC.
 	 */
 	public SMessage rpc(SNode query) {
 		long ptr;
