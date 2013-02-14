@@ -13,13 +13,13 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_scomponent( JNIEnv* env,
                                                   jstring instanName )
 {
 	const char *cpt_name = env->GetStringUTFChars(compName, NULL);
-	const char *instance_name = env->GetStringUTFChars(instanName, NULL);
+	const char *instance_name = (instanName == NULL) ? cpt_name : env->GetStringUTFChars(instanName, NULL);
 	
 	scomponent *component;
 	component = new scomponent(cpt_name, instance_name);
 
 	env->ReleaseStringUTFChars(compName, cpt_name);
-	env->ReleaseStringUTFChars(instanName, instance_name);
+	if (instanName != NULL) env->ReleaseStringUTFChars(instanName, instance_name);
 	
 	return (long)component;
 }
@@ -78,9 +78,7 @@ long addEndpoint( JNIEnv* env,
 {
 	const char *endpoint_name = env->GetStringUTFChars(endName, NULL);
 	const char *message_hash = env->GetStringUTFChars(messageHash, NULL);
-	const char *response_hash = NULL;
-	if (responseHash != NULL)
-		response_hash = env->GetStringUTFChars(responseHash, NULL);
+	const char *response_hash = (responseHash == NULL) ? NULL : env->GetStringUTFChars(responseHash, NULL) ;
 	
 	sendpoint *endpoint;
 	
@@ -88,8 +86,7 @@ long addEndpoint( JNIEnv* env,
 
 	env->ReleaseStringUTFChars(endName, endpoint_name);
 	env->ReleaseStringUTFChars(messageHash, message_hash);
-	if (responseHash != NULL)
-		env->ReleaseStringUTFChars(responseHash, response_hash);
+	if (responseHash != NULL) env->ReleaseStringUTFChars(responseHash, response_hash);
 	
 	return (long)endpoint;
 }
