@@ -40,7 +40,7 @@ public class SomeSensor extends Activity
 				m_Component.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
 				m_Component.setPermission("SomeConsumer", "", true);
 				
-				m_Endpoint.map("+NSomeConsumer", "SomeEpt");
+				m_Endpoint.setAutomapPolicy("+NSomeConsumer", "SomeEpt");
 				
 				int i = 0;
 				SNode node;

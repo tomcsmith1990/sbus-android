@@ -42,6 +42,16 @@ public class Registration {
 		this.m_MapPolicies.add(new MapPolicy(localEndpoint, remoteComponent, remoteEndpoint));
 	}
 	
+	public void removeMapPolicy(String localEndpoint, String remoteComponent, String remoteEndpoint) {
+		for (MapPolicy policy : this.m_MapPolicies) {
+			if (policy.getLocalEndpoint().equals(localEndpoint) && 
+					policy.getRemoteAddress().equals(remoteComponent) && 
+					policy.getRemoteEndpoint().equals(remoteEndpoint)) {
+				this.m_MapPolicies.remove(policy);
+			}
+		}
+	}
+	
 	public List<MapPolicy> getMapPolicies() {
 		return this.m_MapPolicies;
 	}

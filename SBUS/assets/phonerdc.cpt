@@ -93,5 +93,20 @@
 			</message>
 			<response>@results ( txt address )</response>
 		</endpoint>
+		<endpoint>
+			<name>map_policy</name>
+			<type>#sink</type>
+			<message>
+				@event
+				{
+					txt endpoint
+					txt peer_address
+					txt peer_endpoint
+					txt certificate
+					flg create
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
 	</endpoints>
 </component-metadata>
