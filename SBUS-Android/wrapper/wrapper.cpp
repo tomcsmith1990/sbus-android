@@ -47,6 +47,7 @@ const char *lookup_cpt_file = "map_constraints.idl";
 
 const char *map_schema_str =
 "@map { txt endpoint txt peer_address txt peer_endpoint txt certificate }";
+const char *map_policy_schema_str = "@event { txt endpoint txt peer_address txt peer_endpoint txt certificate flg create }";
 const char *unmap_schema_str = "@unmap { txt endpoint [txt peer_address] [txt peer_endpoint] txt certificate }";
 const char *divert_schema_str =
 "@divert { txt endpoint txt new_address txt new_endpoint [txt peer_address] [txt peer_endpoint] txt certificate }";
@@ -498,6 +499,11 @@ void swrapper::verify_builtin(smidpoint *mp)
 	else if(!strcmp(mp->name, "lost"))
 	{
 		mp->msg_schema = Schema::create(lost_schema_str, &err);
+		mp->reply_schema = Schema::create("!", &err);
+	}
+	else if (!strcmp(mp->name, "map_policy"))
+	{
+		mp->msg_schema = Schema::create(map_policy_schema_str, &err);
 		mp->reply_schema = Schema::create("!", &err);
 	}
 	else if(!strcmp(mp->name, "access_control"))
@@ -1851,7 +1857,7 @@ void swrapper::serve_peer(scomm *msg, speer *peer)
 	// Update counter:
 	mp->processed++;
 
-	/*** HACK: for unauthorised disposable conns, we need to unmrashall the stuff etc for a nice disconnect..
+	/*** HACK: for unauthorised disposable conns, we need to unmarshall the stuff etc for a nice disconnect..
 	 * TODO: fix this properly!
 	 */
 	if (msg->terminate_disposable)
@@ -2337,6 +2343,8 @@ void swrapper::add_builtin_endpoints()
 	add_builtin("terminate", EndpointSink, "000000000000");
 	
 	lost_mp = add_builtin("lost", EndpointSource, "B3572388E4A4");
+	
+	map_policy_mp = add_builtin("map_policy", EndpointSource, "857FC4B7506D");
 
 	//for AC
 	add_builtin("access_control", EndpointSink, "470551F178B5");
@@ -3648,6 +3656,31 @@ void swrapper::serve_endpoint(AbstractMessage *abst, smidpoint *mp)
 			case MessageLoadPrivileges:
 				//printf("Wrapper received an instruction to load privileges from the file %s\n",ctrl->filename);
 				load_privileges_from_file(ctrl->filename);
+				break;
+			case MessageMapPolicy:
+				snode *event, *endpoint, *peer_address, *peer_endpoint, *certificate, *create;
+				endpoint = pack(mp->name, "endpoint");
+				peer_address = pack(ctrl->address, "peer_address");
+				peer_endpoint = pack(ctrl->target_endpoint, "peer_endpoint");
+				certificate = pack("", "certificate");
+				create = pack_bool(1, "create");
+				event = pack(endpoint, peer_address, peer_endpoint, certificate, create, "event");
+				
+				// TODO: make a new Visit type - just hopping on this one the moment (but it works).
+				const char *rdc_address;
+				int ok;
+				for(int i = 0; i < rdc->count(); i++)
+				{
+					rdc_address = rdc->item(i);
+					if(rdc_address[0] == '!')
+						continue;
+
+					begin_visit(VisitUpdatePrivilege, "localhost:50123", "rdc", "map_policy",
+							map_policy_mp, event, NULL, NULL, NULL);
+					if(ok < 0)
+						log("Note: could not send map policy message to RDC at %s", rdc_address);
+				}
+						
 				break;
 			default:
 				error("Unknown control message");

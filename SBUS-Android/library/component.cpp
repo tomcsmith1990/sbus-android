@@ -769,6 +769,22 @@ char *sendpoint::map(const char *address, const char *endpoint, int sflags,
 	return s; // OK
 }
 
+void sendpoint::set_automap_policy(const char *address, const char *endpoint)
+{
+	scontrol *ctrl;
+	
+	ctrl = new scontrol();
+	ctrl->type = MessageMapPolicy;
+	if(endpoint == NULL)
+		ctrl->target_endpoint = sdup(name); // Assume same name as other end
+	else
+		ctrl->target_endpoint = sdup(endpoint);
+	ctrl->address = sdup(address);
+	if(ctrl->write(fd) < 0)
+		error("Control connection to wrapper disconnected in set_automap_policy");
+	delete ctrl;
+}
+
 /* MapConstraints */
 
 void MapConstraints::init()
