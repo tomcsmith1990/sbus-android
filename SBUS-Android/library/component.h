@@ -133,6 +133,8 @@ class sendpoint
 	void unmap(const char *address, const char *endpoint);
 	//wrapper to disconnect all connections on the endpoint (old functionality, calls unmap(NULL,NULL)
 	void unmap();
+	
+	void set_automap_policy(const char *address, const char *endpoint);
 
 	int ismapped();
 	

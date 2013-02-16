@@ -29,10 +29,10 @@ enum MessageType
 	MessageSubscribe,  // Local control message
 	MessageEmit, MessageRPC, MessageReply, // Library to wrapper
 	MessageRcv, MessageResponse, MessageUnavailable, // Wrapper to library
-	
+		
 	MessagePrivilege, //for access control privileges (add/rem)
 	MessageLoadPrivileges, //
-
+	MessageMapPolicy,
 	MessageUnknown // Internal use
 };
 

@@ -539,7 +539,7 @@ int sinternal::reveal(AbstractMessage *abst)
 	unsigned char *buf, *pos;
 	type = abst->get_type();
 	if(type != MessageReply && type != MessageEmit && type != MessageRPC
-			&& type != MessageMap && type != MessageUnmap && type != MessageIsmap
+			&& type != MessageMap && type != MessageUnmap && type != MessageIsmap && type != MessageMapPolicy
 			&& type != MessageSubscribe && type != MessagePrivilege && type !=  MessageLoadPrivileges)
 		return -1;
 
@@ -553,7 +553,7 @@ int sinternal::reveal(AbstractMessage *abst)
 		oob_ctrl->topic = decode_string(&pos);
 		oob_ctrl->peer = decode_string(&pos);
 	}
-	else if(type == MessageMap || type == MessageUnmap || type == MessageIsmap)
+	else if(type == MessageMap || type == MessageUnmap || type == MessageIsmap || type == MessageMapPolicy)
 	{
 		oob_ctrl = new scontrol();
 		oob_ctrl->address = decode_string(&pos);
@@ -1300,7 +1300,7 @@ int scontrol::reveal(AbstractMessage *abst)
 	unsigned char *pos;
 	
 	type = abst->get_type();
-	if(type != MessageMap && type != MessageUnmap && type != MessageIsmap
+	if(type != MessageMap && type != MessageUnmap && type != MessageIsmap && type != MessageMapPolicy
 			&& type != MessageSubscribe && type != MessagePrivilege && type != MessageLoadPrivileges)
 	{
 		return -1;
