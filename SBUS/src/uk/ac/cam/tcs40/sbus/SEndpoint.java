@@ -84,6 +84,10 @@ public class SEndpoint {
 		unmap(m_EndpointPointer);
 	}
 	
+	public void setAutomapPolicy(String address, String endpoint) {
+		setAutomapPolicy(m_EndpointPointer, address, endpoint);
+	}
+	
 	/**
 	 * Blocks until a message is received.
 	 * @return The message received.
@@ -125,6 +129,7 @@ public class SEndpoint {
 
 	private native String map(long endpointPtr, String address, String endpoint);
 	private native void unmap(long endpointPtr);
+	private native void setAutomapPolicy(long endpointPtr, String address, String endpoint);
 	
 	private native long receive(long endpointPtr);
 	private native long rpc(long endpointPtr, long queryPointer);

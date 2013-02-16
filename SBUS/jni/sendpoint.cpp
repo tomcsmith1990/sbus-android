@@ -29,6 +29,22 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_unmap( JNIEnv* env,
 	((sendpoint *)endpoint)->unmap();
 }
 
+void
+Java_uk_ac_cam_tcs40_sbus_SEndpoint_setAutomapPolicy( JNIEnv* env,
+									                   jobject thiz,
+								                       jlong endpoint,
+								                       jstring addr,
+								                       jstring ept )
+{
+	const char *address = env->GetStringUTFChars(addr, NULL);
+	const char *endpt = (ept == NULL) ? NULL : env->GetStringUTFChars(ept, NULL);
+	
+	((sendpoint *)endpoint)->set_automap_policy(address, endpt);
+	
+	env->ReleaseStringUTFChars(addr, address);
+	if (ept != NULL) env->ReleaseStringUTFChars(ept, endpt);
+}
+
 jlong
 Java_uk_ac_cam_tcs40_sbus_SEndpoint_createMessage( JNIEnv* env,
 	                                               jobject thiz,
