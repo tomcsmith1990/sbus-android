@@ -22,6 +22,10 @@ public class PhoneRDC {
 
 	private static Context s_Context;
 
+	/**
+	 * Apply any mapping policies which any of the registered components have sent us.
+	 * @return true if the current RDC exists.
+	 */
 	public static boolean applyMappingPolicies() {
 		if (s_List == null) return false;
 
@@ -45,12 +49,12 @@ public class PhoneRDC {
 		for (Registration registration : RegistrationRepository.list()) {
 
 			for (MapPolicy policy : registration.getMapPolicies()) {
-				// Search in the reply for the component by name.
-				//remoteAddress = search(reply, policy.getRemoteComponent());
+				// Search in the reply for a matching component.
+				remoteAddress = search(reply, new MapConstraint(policy.getRemoteAddress()));
 
 				// If a component has been found, apply the mapping policy.
-				//if (remoteAddress != null)
-					map(":" + registration.getPort(), policy.getLocalEndpoint(), policy.getRemoteAddress(), policy.getRemoteEndpoint());
+				if (remoteAddress != null)
+					map(":" + registration.getPort(), policy.getLocalEndpoint(), remoteAddress, policy.getRemoteEndpoint());
 			}
 		}
 
@@ -73,10 +77,10 @@ public class PhoneRDC {
 
 	/**
 	 * Get a list of components from the known RDC, and check if it contains a specified component.
-	 * @param componentName The component name to search for.
+	 * @param constraintString The component name to search for.
 	 * @return The address of the first instance of the component, or null if we cannot contact the RDC or it doesn't exist.
 	 */
-	private static String lookup(String componentName) {
+	private static String lookup(String constraintString) {
 		/*
 		 *  applyMappingPolicies() gets the smessage once.
 		 *  It then searches the same message before deleting it.
@@ -93,7 +97,7 @@ public class PhoneRDC {
 
 		if (reply != null)
 		{
-			address = search(reply, componentName);
+			address = search(reply, new MapConstraint(constraintString));
 
 			// Delete the native copy of the reply.
 			reply.delete();
@@ -138,7 +142,13 @@ public class PhoneRDC {
 	public static void registerRDC(boolean register) {
 		if (s_RegisterRdc == null) return;
 
+		boolean rdcExists = false;
+		// Apply mapping policies. Returns false if there is no RDC.
+		// Doing this first means we won't map components on the phone together due to race conditions in registering.		
+		if (register)
+			rdcExists = applyMappingPolicies();
 
+		if (rdcExists) {
 			// Inform registered components about the new RDC.
 			for (Registration registration : RegistrationRepository.list()) {
 				// Send a message to each registered component with the RDC address.
@@ -151,9 +161,7 @@ public class PhoneRDC {
 				s_RegisterRdc.emit(node);
 				s_RegisterRdc.unmap();
 			}
-		
-		if (register)
-		applyMappingPolicies();
+		}
 	}
 
 	/**
@@ -162,14 +170,14 @@ public class PhoneRDC {
 	 * @param componentName The component name to match.
 	 * @return The address of the first component matching, or null if there are none.
 	 */
-	private static String search(SMessage reply, String componentName) {
+	private static String search(SMessage reply, MapConstraint constraints) {
 		SNode snode = reply.getTree();
 		SNode item;
 		String address = null;
 
 		for (int i = 0; i < snode.count(); i++) {
 			item = snode.extractItem(i);
-			if (item.extractString("cpt-name").equals(componentName)) {
+			if (constraints.match(item)) {
 				address = item.extractString("address");
 				break;
 			}
