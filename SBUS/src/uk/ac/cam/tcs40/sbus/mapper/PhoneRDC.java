@@ -76,40 +76,6 @@ public class PhoneRDC {
 	}
 
 	/**
-	 * Get a list of components from the known RDC, and check if it contains a specified component.
-	 * @param constraintString The component name to search for.
-	 * @return The address of the first instance of the component, or null if we cannot contact the RDC or it doesn't exist.
-	 */
-	private static String lookup(String constraintString) {
-		/*
-		 *  applyMappingPolicies() gets the smessage once.
-		 *  It then searches the same message before deleting it.
-		 *  This could be useful for mapping components later.
-		 */
-		if (s_List == null) return null;
-
-		// Map the endpoint to the RDC.
-		s_List.map(getRDCAddress(), null);
-		// Perform an RPC to get the list.
-		SMessage reply = s_List.rpc(null);
-
-		String address = null;
-
-		if (reply != null)
-		{
-			address = search(reply, new MapConstraint(constraintString));
-
-			// Delete the native copy of the reply.
-			reply.delete();
-		}
-
-		// Unmap the endpoint.
-		s_List.unmap();
-
-		return address;
-	}
-
-	/**
 	 * Tell an endpoint to map to another endpoint.
 	 * @param localAddress The address of the component to perform the map.
 	 * @param localEndpoint The endpoint to perform the map.
@@ -302,7 +268,6 @@ public class PhoneRDC {
 		Multiplex multi = s_RDCComponent.getMultiplex();
 		multi.add(s_Register);
 		multi.add(s_SetACL);
-		multi.add(s_Lookup);
 		multi.add(s_MapPolicy);
 
 		SEndpoint endpoint;
@@ -322,8 +287,6 @@ public class PhoneRDC {
 				acceptRegistration();
 			} else if (name.equals("set_acl")) {
 				changePermissions();
-			} else if (name.equals("lookup_cpt")) {
-				setMapPolicyLookup();
 			} else if (name.equals("map_policy")) {
 				setMapPolicy();
 			}
@@ -348,45 +311,6 @@ public class PhoneRDC {
 				registration.removeMapPolicy(localEndpoint, remoteAddress, remoteEndpoint);
 		}
 		message.delete();
-	}
-
-	private void setMapPolicyLookup() {
-		SMessage query = s_Lookup.receive();
-		SNode mapConstraints = query.getTree().extractItem("map-constraints");
-		SNode mapInterface = query.getTree().extractItem("interface");
-
-		String remoteComponent = null;
-		String remoteInstance = null;
-		String remoteCreator = null;
-		String remotePublicKey = null;
-
-		if (mapConstraints.exists("cpt-name"))
-			remoteComponent = mapConstraints.extractString("cpt-name");
-
-		if (mapConstraints.exists("instance-name"))
-			remoteInstance = mapConstraints.extractString("instance-name");
-
-		if (mapConstraints.exists("creator"))
-			remoteCreator = mapConstraints.extractString("creator");
-
-		if (mapConstraints.exists("pub-key"))
-			remotePublicKey = mapConstraints.extractString("pub-key");
-
-		Registration registration = RegistrationRepository.find(query.getSourceComponent(), query.getSourceInstance());
-		if (registration != null) {
-
-			String localEndpoint;
-			for (int i = 0; i < mapInterface.count(); i++) {
-				localEndpoint = mapInterface.extractItem(i).extractString("name");
-				// null means use the same remote endpoint name.
-				// Doesn't seem to be any way to get the remote endpoint name otherwise.
-				registration.addMapPolicy(localEndpoint, remoteComponent, null);
-			}
-		}
-
-		SNode result = s_Lookup.createMessage("results");
-		s_Lookup.reply(query, result);
-		query.delete();
 	}
 
 	public void startRDC() {
