@@ -23,6 +23,12 @@ public class PhoneRDCActivity extends Activity
 			PhoneRDC.applyMappingPolicies();
 		}
 	};
+	
+	private OnClickListener m_MapLocalButtonListener = new OnClickListener() {
+		public void onClick(View v) {
+			PhoneRDC.applyMappingPoliciesLocally();
+		}
+	};
 
 	private OnClickListener m_RdcButtonListener = new OnClickListener() {
 		public void onClick(View v) {
@@ -46,6 +52,10 @@ public class PhoneRDCActivity extends Activity
 		// Add event listener to the map button.
 		Button mapButton = (Button)findViewById(R.id.map_button);
 		mapButton.setOnClickListener(m_MapButtonListener);
+		
+		// Apply mapping policies but only locally.
+		Button mapLocalButton = (Button)findViewById(R.id.map_local_button);
+		mapLocalButton.setOnClickListener(m_MapLocalButtonListener);
 
 		// Add event listener to the rdc button.
 		Button rdcButton = (Button)findViewById(R.id.rdc_button);

@@ -1,5 +1,7 @@
 package uk.ac.cam.tcs40.sbus.mapper;
 
+import java.util.List;
+
 import uk.ac.cam.tcs40.sbus.Multiplex;
 import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
@@ -64,6 +66,23 @@ public class PhoneRDC {
 		s_List.unmap();
 
 		return true;
+	}
+
+	public static void applyMappingPoliciesLocally() {
+		List<Registration> localComponents = RegistrationRepository.list();
+		Registration mapFrom, mapTo;
+		for (int i = 0; i < localComponents.size(); i++) {
+			mapFrom = localComponents.get(i);
+			for (MapPolicy policy : mapFrom.getMapPolicies()) {
+				for (int j = 0; j < localComponents.size(); j++) {
+					mapTo = localComponents.get(j);
+					if (new MapConstraint(policy.getRemoteAddress()).match(mapTo)) {
+						map(":" + mapFrom.getPort(), policy.getLocalEndpoint(), ":" + mapTo.getPort(), policy.getRemoteEndpoint());
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	/**

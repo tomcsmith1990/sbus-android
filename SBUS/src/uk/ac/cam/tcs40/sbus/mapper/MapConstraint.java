@@ -90,4 +90,14 @@ public class MapConstraint {
 		}
 		return false;
 	}
+	
+	public boolean match(Registration registration) {
+		if (this.m_ComponentName != null & registration.getComponentName().equals(this.m_ComponentName) == false)
+			return false;
+		
+		if (this.m_InstanceName != null & registration.getInstanceName().equals(this.m_InstanceName) == false)
+			return false;
+		
+		return true;
+	}
 }
