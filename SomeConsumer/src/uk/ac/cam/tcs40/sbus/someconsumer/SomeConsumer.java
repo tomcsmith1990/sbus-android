@@ -30,6 +30,7 @@ public class SomeConsumer extends Activity {
 		final TextView someStringTV = (TextView) findViewById(R.id.somestring);
 		final TextView someValTV = (TextView) findViewById(R.id.someval);
 		final TextView someVarTV = (TextView) findViewById(R.id.somevar);
+		final TextView averageTV = (TextView) findViewById(R.id.average);
 		
 		final Activity activity = this;
 
@@ -53,7 +54,8 @@ public class SomeConsumer extends Activity {
 				final Multiplex multi = m_Component.getMultiplex();
 				multi.add(m_Endpoint);
 				multi.add(rdcUpdate);
-
+				
+				int average = 0;
 				while (m_Component != null) {
 
 					try {
@@ -109,7 +111,8 @@ public class SomeConsumer extends Activity {
 						final String somestring = node.extractString("somestring");
 						final int someval = node.extractInt("someval");
 						final int somevar = node.extractInt("somevar");
-
+						average = (average + someval) / 2;
+						final int ewma = average;
 						message.delete();
 
 						runOnUiThread(new Runnable() {
@@ -117,6 +120,7 @@ public class SomeConsumer extends Activity {
 								someStringTV.setText("somestring: " + somestring);
 								someValTV.setText("someval: " + someval);
 								someVarTV.setText("somevar: " + somevar);
+								averageTV.setText("moving average: " + ewma);
 							}
 						});	
 					}
