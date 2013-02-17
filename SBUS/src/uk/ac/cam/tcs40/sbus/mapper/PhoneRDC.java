@@ -114,7 +114,7 @@ public class PhoneRDC {
 		if (register)
 			rdcExists = applyMappingPolicies();
 
-		if (rdcExists) {
+		if (!register || rdcExists) {
 			// Inform registered components about the new RDC.
 			for (Registration registration : RegistrationRepository.list()) {
 				// Send a message to each registered component with the RDC address.
@@ -145,6 +145,9 @@ public class PhoneRDC {
 			item = snode.extractItem(i);
 			if (constraints.match(item)) {
 				address = item.extractString("address");
+				// If address is local, let's just take the port so it preserves between WiFi on/off.
+				if (address.split(":")[0].equals(s_PhoneIP))
+					address = ":" + address.split(":")[1];
 				break;
 			}
 		}
