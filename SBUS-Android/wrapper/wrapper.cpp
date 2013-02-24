@@ -2330,7 +2330,7 @@ void swrapper::add_builtin_endpoints()
 	add_builtin("register_rdc", EndpointSink, "13ACF49714C5");
 
 	register_mp = add_builtin("register", EndpointSource, "B3572388E4A4");
-	lookup_cpt_mp = add_builtin("lookup_cpt", EndpointClient, "AE7945554959",
+	lookup_cpt_mp = add_builtin("lookup_cpt", EndpointClient, "6952E5F15DE6",
 			"6AA2406BF9EC");
 		
 	add_builtin("lookup_schema", EndpointServer, "897D496ADE90",
