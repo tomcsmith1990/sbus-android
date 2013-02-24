@@ -1,0 +1,74 @@
+<component-metadata>
+	<name>demo</name>
+	<description>Demo component</description>
+	<keywords></keywords>
+	<designer>David Ingram</designer>
+	<endpoints>
+		<endpoint>
+			<name>log</name>
+			<type>#sink</type>
+			<message>@txt message</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>usage</name>
+			<type>#server</type>
+			<message>"0"</message>
+			<response>
+				@report
+				{
+					int logged
+					int streamed
+				}
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>submit</name>
+			<type>#sink</type>
+			<message>@txt string</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>news</name>
+			<type>#source</type>
+			<message>@txt string</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>delay</name>
+			<type>#server</type>
+			<message>
+				@elapsed
+				{
+					int seconds
+					[ int micros ]
+				}
+			</message>
+			<response>"0"</response>
+		</endpoint>
+		<endpoint>
+			<name>counter</name>
+			<type>#source</type>
+			<message>
+				@counter
+				{
+					txt word
+					int n
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>viewer</name>
+			<type>#sink</type>
+			<message>
+				@counter
+				{
+					txt word
+					int n
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+	</endpoints>
+</component-metadata>
