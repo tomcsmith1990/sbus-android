@@ -1,0 +1,21 @@
+<component-metadata>
+	<name>carpark</name>
+	<description>Receives, stores and retrieves car park space</description>
+	<keywords></keywords>
+	<designer>David Ingram</designer>
+	<endpoints>
+		<endpoint>
+			<name>observation</name>
+			<type>#sink</type>
+			<message>
+				@carpark
+				{
+					txt timestamp
+					txt place
+					int spaces
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+	</endpoints>
+</component-metadata>
