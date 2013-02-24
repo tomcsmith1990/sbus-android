@@ -1,3 +1,0 @@
-install:
-	@ ../scripts/checkenv
-	@ ../scripts/doinst share/litmus *.cpt *.idl *.priv
