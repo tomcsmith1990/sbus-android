@@ -137,7 +137,7 @@ rdc::rdc()
 	register_ep = com->add_endpoint("register", EndpointSink, "B3572388E4A4");
 	lost_ep = com->add_endpoint("lost", EndpointSink, "B3572388E4A4");
 	com->add_endpoint("hup", EndpointSink, "000000000000");
-	com->add_endpoint("lookup_cpt", EndpointServer, "AE7945554959",
+	com->add_endpoint("lookup_cpt", EndpointServer, "6952E5F15DE6",
 			"6AA2406BF9EC");
 	com->add_endpoint("list", EndpointServer, "000000000000", "46920F3551F9");
 	com->add_endpoint("cached_metadata", EndpointServer, "872A0BD357A6",
@@ -1422,6 +1422,13 @@ int image::match(snode *interface, snode *constraints, scomponent *com, const ch
 						ep_actual->extract_value("type"));
 				*/
 				continue;
+			}
+			if(constraints->exists("hash"))
+			{
+				printf("want %s, have %s\n", constraints->extract_txt("hash"), msg_hsh->item(j));
+				value = constraints->extract_txt("hash");
+				if(strcmp(value, msg_hsh->item(j)))
+					continue;
 			}
 			// OK so far. Now for the LITMUS tests:
 			if(!hashmatch(ep_reqd->extract_txt("msg-hash"), msg_hsh->item(j)))

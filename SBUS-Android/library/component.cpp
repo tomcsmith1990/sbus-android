@@ -852,6 +852,10 @@ MapConstraints::MapConstraints(const char *string)
 				if(pub_key != NULL) delete[] pub_key;
 				pub_key = read_word(&string);
 				break;
+			case 'H':
+				if(hash != NULL) delete[] hash;
+				hash = read_word(&string);
+				break;
 			case 'K':
 				keywords->add(read_word(&string));
 				break;
@@ -908,11 +912,12 @@ snode *MapConstraints::pack()
 	snode *sn, *subn;
 
 	sn = mklist("map-constraints");
-	// The next four lines also work correctly if any string is NULL
+	// The next five lines also work correctly if any string is NULL
 	sn->append(::pack(cpt_name, "cpt-name"));
 	sn->append(::pack(instance_name, "instance-name"));
 	sn->append(::pack(creator, "creator"));
 	sn->append(::pack(pub_key, "pub-key"));
+	sn->append(::pack(hash, "hash"));
 	subn = mklist("keywords");
 	for(int i = 0; i < keywords->count(); i++)
 		subn->append(::pack(keywords->item(i), "keyword"));

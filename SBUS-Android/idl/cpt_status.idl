@@ -1,0 +1,38 @@
+@component-state
+{
+	txt address
+	txt instance
+	txt creator
+	txt cmdline
+	load { int cpu + buffers }
+	^endpoints -
+	[ ^freshness - ]
+}
+
+@endpoints
+(
+	endpoint
+	{
+		txt name
+		int processed + dropped * Message counts
+		[ txt subscription ] [ txt topic ]
+		peers ( ^peer - )
+	}
+)
+
+@peer
+{
+	txt cpt_name
+	txt instance
+	txt endpoint
+	txt address * Host and port
+	[ txt subscription ] [ txt topic ]
+	int lastseq
+	int latency
+}
+
+@freshness
+{
+	int last_ping_secs
+	int latency
+}
