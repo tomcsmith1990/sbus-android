@@ -1264,7 +1264,9 @@ image::image()
 	address = cpt_name = ins_name = NULL;
 	metadata = state = NULL;
 	msg_hsh = new svector();
+	msg_type_hsh = new svector();
 	reply_hsh = new svector();
+	reply_type_hsh = new svector();
 	lost = 0;
 	acpolicies = new rdcpermissionstore();
 	buffered_policies = new snodevector();
@@ -1285,27 +1287,42 @@ void image::init_hashes()
 		subn = sn->extract_item(i);
 		msg_schema = Schema::create(subn->extract_txt("message"), &err);
 		if(msg_schema == NULL)
+		{
 			msg_hsh->add("EEEEEEEEEEEE");
+			msg_type_hsh->add("EEEEEEEEEEEE");
+		}
 		else
 		{
 			s = msg_schema->hc->tostring();
 			msg_hsh->add(s);
 			delete[] s;
+			HashCode *type_hc = new HashCode();
+			type_hc->fromschema(msg_schema->canonical_string(1));
+			msg_type_hsh->add(type_hc->tostring());
+			delete type_hc;
 		}
 		reply_schema = Schema::create(subn->extract_txt("response"), &err);
 		if(reply_schema == NULL)
+		{
 			reply_hsh->add("EEEEEEEEEEEE");
+			reply_type_hsh->add("EEEEEEEEEEEE");
+		}
 		else
 		{
 			s = reply_schema->hc->tostring();
 			reply_hsh->add(s);
 			delete[] s;
+			HashCode *type_hc = new HashCode();
+			type_hc->fromschema(reply_schema->canonical_string(1));
+			reply_type_hsh->add(type_hc->tostring());
+			delete type_hc;
 		}
 		if(msg_schema != NULL) delete msg_schema;
 		if(reply_schema != NULL) delete reply_schema;
 	}
 	// Sanity check:
-	if(msg_hsh->count() != endpoints || reply_hsh->count() != endpoints)
+	if(msg_hsh->count() != endpoints || reply_hsh->count() != endpoints || 
+		msg_type_hsh->count() != endpoints || reply_type_hsh->count() != endpoints)
 		error("Number of endpoints assertion failed in RDC");
 }
 
@@ -1319,7 +1336,9 @@ image::~image()
 	if(metadata != NULL) delete metadata;
 	if(state != NULL) delete state;
 	delete msg_hsh;
+	delete msg_type_hsh;
 	delete reply_hsh;
+	delete reply_type_hsh;
 	delete acpolicies;
 	delete buffered_policies;
 }
