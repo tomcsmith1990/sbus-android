@@ -4026,12 +4026,6 @@ char *smidpoint::verify_metadata(snode *sn)
 				"definition", name);
 	}
 	
-	// TODO: remove this.
-	HashCode *hc = new HashCode();
-	hc->fromschema(msg_schema->canonical_string(1));
-	printf("msg schema = %s\n", hc->tostring());
-	delete hc;
-	
 	// Read reply schema:
 	idl = sn->extract_txt("response");
 	reply_schema = Schema::create(idl, &err);
