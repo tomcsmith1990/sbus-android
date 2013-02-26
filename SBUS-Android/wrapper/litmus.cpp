@@ -69,7 +69,7 @@ void Schema::dump_tree(int initial_indent, int log)
 	delete sb;
 }
 
-char *Schema::canonical_string()
+char *Schema::canonical_string(int type_schema)
 {
 	StringBuf *sb;
 	char *s;
@@ -78,7 +78,7 @@ char *Schema::canonical_string()
 	switch(meta)
 	{
 		case SCHEMA_NORM:
-			dump_litmus(sb, tree, 0, 1);
+			dump_litmus(sb, tree, 0, 1, type_schema);
 			break;
 		case SCHEMA_EMPTY:
 			sb->cat("0");
@@ -104,7 +104,7 @@ char *Schema::orig_string()
 	return source->extract();
 }
 
-void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn)
+void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int type_schema)
 {
 	const char *name;
 	
@@ -115,7 +115,6 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn)
 	{
 		sb->cat_spaces(offset * 3);
 		if(defn) sb->cat('@');
-		name = symbol_table->item(l->namesym);
 		switch(l->type)
 		{
    		case LITMUS_INT: sb->cat("int"); break;
@@ -128,21 +127,26 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn)
 			default:
 				error("Impossible switch error in dump_litmus");
 		}
-		sb->cat(' ');
-		sb->cat(name);
+		if (!type_schema)
+		{
+			name = symbol_table->item(l->namesym);
+			sb->cat(' ');
+			sb->cat(name);
+		}
 		sb->cat('\n');
 	}
 	else if(l->type == LITMUS_STRUCT)
 	{
 		sb->cat_spaces(offset * 3);
 		if(defn) sb->cat('@');
-		sb->cat(symbol_table->item(l->namesym));
+		if (!type_schema)
+			sb->cat(symbol_table->item(l->namesym));
 		sb->cat('\n');
 		sb->cat_spaces(offset * 3);
 		sb->cat("{\n");
 		for(int i = 0; i < l->children->count(); i++)
 		{
-			dump_litmus(sb, l->children->item(i), offset + 1, 0);
+			dump_litmus(sb, l->children->item(i), offset + 1, 0, type_schema);
 		}
 		sb->cat_spaces(offset * 3);
 		sb->cat("}\n");
@@ -152,7 +156,8 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn)
 	{
 		sb->cat_spaces(offset * 3);
 		if(defn) sb->cat('@');
-		sb->cat(symbol_table->item(l->namesym));
+		if (!type_schema)
+			sb->cat(symbol_table->item(l->namesym));
 		sb->cat('\n');
 		sb->cat_spaces(offset * 3);
 		if(l->type == LITMUS_SEQ)
@@ -161,7 +166,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn)
 			sb->cat("(\n");
 		else
 			sb->catf("(%d\n", l->arraylen);
-		dump_litmus(sb, l->content, offset + 1, 0);
+		dump_litmus(sb, l->content, offset + 1, 0, type_schema);
 		sb->cat_spaces(offset * 3);
 		sb->cat(")\n");
 	}
@@ -170,7 +175,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn)
 		sb->cat_spaces(offset * 3);
 		if(defn) sb->cat('@');
 		sb->cat("[\n");
-		dump_litmus(sb, l->content, offset + 1, 0);
+		dump_litmus(sb, l->content, offset + 1, 0, type_schema);
 		sb->cat_spaces(offset * 3);
 		sb->cat("]\n");
 	}
@@ -190,7 +195,8 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn)
 	{
 		sb->cat_spaces(offset * 3);
 		if(defn) sb->cat('@');
-		sb->cat(symbol_table->item(l->namesym));
+		if (!type_schema)
+			sb->cat(symbol_table->item(l->namesym));
 		sb->cat(" < ");
 		for(int i = 0; i < l->values->count(); i++)
 		{
@@ -338,11 +344,13 @@ int Schema::read(const char *s, const char **err)
 	source = new StringBuf();
 	source->cat(s);
 	hc = new HashCode();	
+	type_hc = new HashCode();
 
 	meta = get_metatype(s);	
 	if(meta != SCHEMA_NORM)
 	{
 		hc->frommeta(meta);
+		type_hc->frommeta(meta);
 		return 0; // OK, it's special, so we're done
 	}
 	
@@ -368,12 +376,19 @@ int Schema::read(const char *s, const char **err)
 	hc->fromschema(canon);
 	delete[] canon;
 	
+	// Compute typed hash code:
+	char *type_canon;
+	type_canon = canonical_string(1);
+	type_hc->fromschema(type_canon);
+	delete[] type_canon;
+	
 	return 0;
 }
 
 Schema::Schema()
 {
 	hc = NULL;
+	type_hc = NULL;
 	symbol_table = new svector();
 	tokens = NULL;
 	tree = NULL;
@@ -384,6 +399,7 @@ Schema::Schema()
 Schema::Schema(Schema *sch) // Makes a copy (costly)
 {
 	hc = new HashCode(sch->hc);
+	type_hc = new HashCode(sch->type_hc);
 	meta = sch->meta;
 	
 	symbol_table = new svector();
@@ -427,6 +443,7 @@ Schema::~Schema()
 	}
 	if(tree != NULL) delete tree;
 	if(hc != NULL) delete hc;
+	if(type_hc != NULL) delete type_hc;
 	if(source != NULL) delete source;
 }
 
