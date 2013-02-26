@@ -66,6 +66,10 @@ class image
     
     // a mutex so that we only check the component is still alive in one thread at a time.
    	pthread_mutex_t checkalive_mutex;
+   	
+   	private:
+   	
+	int match_cpt_metadata(snode *constraints);
 };
 
 

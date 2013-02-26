@@ -1360,20 +1360,12 @@ int image::hashmatch(const char *hsh1, const char *hsh2)
 	return 0;
 }
 
-int image::match(snode *interface, snode *constraints, scomponent *com, const char *principal_cpt, const char *principal_inst)
+int image::match_cpt_metadata(snode *constraints)
 {
-	int match_endpoint_names;
-	snode *sn, *search, *subsearch;
-	snode *ep_reqd, *ep_actual, *ep_live;
-	sbuiltin *bi;
+	snode *sn, *search;
 	const char *value;
-	int match;
-	const char *s;
-
-	// Check simple constraints:
-
+	
 	/* printf("Checking constraints:\n"); constraints->dump(); */
-	match_endpoint_names = constraints->extract_flg("match-endpoint-names");
 	if(constraints->exists("cpt-name"))
 	{
 		value = constraints->extract_txt("cpt-name");
@@ -1411,7 +1403,24 @@ int image::match(snode *interface, snode *constraints, scomponent *com, const ch
 			return 0;
 	}
 	
+	return 1;
+}
 
+int image::match(snode *interface, snode *constraints, scomponent *com, const char *principal_cpt, const char *principal_inst)
+{
+	int match_endpoint_names;
+	snode *sn, *search, *subsearch;
+	snode *ep_reqd, *ep_actual, *ep_live;
+	sbuiltin *bi;
+	const char *value;
+	int match;
+	const char *s;
+	
+	if (match_cpt_metadata(constraints) == 0)
+		return 0;
+		
+	match_endpoint_names = constraints->extract_flg("match-endpoint-names");
+		
 	// Check interface type compatibility:
 
 	search = metadata->extract_item("endpoints");
@@ -1448,13 +1457,24 @@ int image::match(snode *interface, snode *constraints, scomponent *com, const ch
 				if(strcmp(value, msg_hsh->item(j)))
 					continue;
 			}
-			// OK so far. Now for the LITMUS tests:
-			if(!hashmatch(ep_reqd->extract_txt("msg-hash"), msg_hsh->item(j)))
-				continue;
-			if(!hashmatch(ep_reqd->extract_txt("reply-hash"), reply_hsh->item(j)))
-				continue;
-			if(!acpolicies->authorised(ep_actual->extract_txt("name"), principal_cpt, principal_inst))
-				continue;
+			
+			// Let's assume if we're doing a typed hash match (for similar schemas) we don't want the LITMUS tests.
+			if(constraints->exists("type-hash"))
+			{
+				value = constraints->extract_txt("type-hash");
+				if(strcmp(value, msg_type_hsh->item(j)))
+					continue;
+			}
+			else
+			{
+				// OK so far. Now for the LITMUS tests:
+				if(!hashmatch(ep_reqd->extract_txt("msg-hash"), msg_hsh->item(j)))
+					continue;
+				if(!hashmatch(ep_reqd->extract_txt("reply-hash"), reply_hsh->item(j)))
+					continue;
+				if(!acpolicies->authorised(ep_actual->extract_txt("name"), principal_cpt, principal_inst))
+					continue;
+			}
 			match = 1;
 			break; // This endpoint matches
 		}
