@@ -137,7 +137,7 @@ rdc::rdc()
 	register_ep = com->add_endpoint("register", EndpointSink, "B3572388E4A4");
 	lost_ep = com->add_endpoint("lost", EndpointSink, "B3572388E4A4");
 	com->add_endpoint("hup", EndpointSink, "000000000000");
-	com->add_endpoint("lookup_cpt", EndpointServer, "6952E5F15DE6",
+	com->add_endpoint("lookup_cpt", EndpointServer, "262EC4975BE5",
 			"6AA2406BF9EC");
 	com->add_endpoint("list", EndpointServer, "000000000000", "46920F3551F9");
 	com->add_endpoint("cached_metadata", EndpointServer, "872A0BD357A6",
@@ -1436,19 +1436,12 @@ int image::match(snode *interface, snode *constraints, scomponent *com, const ch
 		{
 			ep_actual = search->extract_item(j);
 			// Check names, if applicable:
-			if(match_endpoint_names && ep_reqd->exists("name") &&
-				strcmp(ep_reqd->extract_txt("name"), ep_actual->
-				extract_txt("name")))
+			if(match_endpoint_names && ep_reqd->exists("name") && strcmp(ep_reqd->extract_txt("name"), ep_actual->extract_txt("name")))
 					continue;
 			// Check types:
-			if(strcmp(ep_actual->extract_value("type"),
-					ep_reqd->extract_value("type")) != 0)
+			if(strcmp(ep_actual->extract_value("type"), ep_reqd->extract_value("type")) != 0)
 			{
-				/*
-				printf("Endpoint no match on type (needed %s, found %s)\n",
-						ep_reqd->extract_value("type"),
-						ep_actual->extract_value("type"));
-				*/
+				//printf("Endpoint no match on type (needed %s, found %s)\n", ep_reqd->extract_value("type"), ep_actual->extract_value("type"));
 				continue;
 			}
 			if(constraints->exists("hash"))

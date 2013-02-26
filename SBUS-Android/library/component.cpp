@@ -151,6 +151,7 @@ sendpoint *scomponent::add_endpoint(const char *name, EndpointType type,
 	HashCode *msg_hc_copy, *reply_hc_copy;
 	
 	msg_hc_copy = new HashCode(msg_hc);
+
 	if(reply_hc == NULL)
 	{
 		reply_hc_copy = new HashCode();
@@ -789,7 +790,7 @@ void sendpoint::set_automap_policy(const char *address, const char *endpoint)
 
 void MapConstraints::init()
 {
-	cpt_name = instance_name = creator = pub_key = NULL;
+	cpt_name = instance_name = creator = pub_key = hash = type_hash = NULL;
 	keywords = new svector();
 	peers = new svector();
 	ancestors = new svector();
@@ -856,6 +857,10 @@ MapConstraints::MapConstraints(const char *string)
 				if(hash != NULL) delete[] hash;
 				hash = read_word(&string);
 				break;
+			case 'T':
+				if(type_hash != NULL) delete[] type_hash;
+				type_hash = read_word(&string);
+				break;
 			case 'K':
 				keywords->add(read_word(&string));
 				break;
@@ -878,6 +883,8 @@ MapConstraints::~MapConstraints()
 	if(instance_name != NULL) delete[] instance_name;
 	if(creator != NULL) delete[] creator;
 	if(pub_key != NULL) delete[] pub_key;
+	if(hash != NULL) delete[] hash;
+	if(type_hash != NULL) delete[] type_hash;
 	delete keywords;
 	delete peers;
 	delete ancestors;
@@ -912,12 +919,14 @@ snode *MapConstraints::pack()
 	snode *sn, *subn;
 
 	sn = mklist("map-constraints");
-	// The next five lines also work correctly if any string is NULL
+	// These lines also work correctly if any string is NULL
 	sn->append(::pack(cpt_name, "cpt-name"));
 	sn->append(::pack(instance_name, "instance-name"));
 	sn->append(::pack(creator, "creator"));
 	sn->append(::pack(pub_key, "pub-key"));
 	sn->append(::pack(hash, "hash"));
+	if (type_hash != NULL) sn->append(::pack(type_hash, "type-hash"));
+	
 	subn = mklist("keywords");
 	for(int i = 0; i < keywords->count(); i++)
 		subn->append(::pack(keywords->item(i), "keyword"));

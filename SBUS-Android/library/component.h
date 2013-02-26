@@ -226,7 +226,8 @@ class MapConstraints
 	const char *instance_name;
 	const char *creator;
 	const char *pub_key;
-	const char *hash;	
+	const char *hash;
+	const char *type_hash;	
 };
 
 // Values for sflags:
