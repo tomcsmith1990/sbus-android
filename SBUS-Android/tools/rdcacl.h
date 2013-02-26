@@ -49,7 +49,7 @@ class image
 	char *cpt_name;
 	char *ins_name;
 	snode *metadata, *state;
-	svector *msg_hsh, *reply_hsh;
+	svector *msg_hsh, *msg_type_hsh, *reply_hsh, *reply_type_hsh;
 	
 	int local, persistent;
 	int lost;
