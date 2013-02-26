@@ -1444,7 +1444,6 @@ int image::match(snode *interface, snode *constraints, scomponent *com, const ch
 			}
 			if(constraints->exists("hash"))
 			{
-				printf("want %s, have %s\n", constraints->extract_txt("hash"), msg_hsh->item(j));
 				value = constraints->extract_txt("hash");
 				if(strcmp(value, msg_hsh->item(j)))
 					continue;
@@ -1483,6 +1482,12 @@ int image::match(snode *interface, snode *constraints, scomponent *com, const ch
 						endpoint_type[bi->type]);*/
 
 				continue;
+			}
+			if(constraints->exists("hash"))
+			{
+				value = constraints->extract_txt("hash");
+				if(strcmp(value, bi->msg_hc->tostring()))
+					continue;
 			}
 			// OK so far. Now for the LITMUS tests:
 			s = bi->msg_hc->tostring();
