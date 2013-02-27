@@ -540,7 +540,7 @@ void swrapper::verify_builtin(smidpoint *mp)
 }
 
 int smidpoint::compatible(const char *required_endpoint, int required_ep_id,
-		EndpointType type, HashCode *msg_hc, HashCode *reply_hc)
+		EndpointType type, HashCode *msg_hc, HashCode *reply_hc, int partial_matching)
 {
 	if(this->type != type)
 	{
@@ -557,15 +557,15 @@ int smidpoint::compatible(const char *required_endpoint, int required_ep_id,
 		// printf("Incompatible endpoint ID number\n");
 		return 0;
 	}
-	// TODO - add support for partial matching
-	if(!msg_hc->ispolymorphic() && !this->msg_hc->ispolymorphic() &&
-			!msg_hc->equals(this->msg_hc))
+
+	// Check hashes match, or that we're going to do partial matching.
+	// If partial matching, we'll connect as normal - the side wanting to do it will have to sort everything out.
+	if(!partial_matching && !msg_hc->ispolymorphic() && !this->msg_hc->ispolymorphic() && !msg_hc->equals(this->msg_hc))
 	{
 		// printf("Incompatible message hash code\n");
 		return 0;
 	}
-	if(!reply_hc->ispolymorphic() && !this->reply_hc->ispolymorphic() &&
-			!reply_hc->equals(this->reply_hc))
+	if(!partial_matching && !reply_hc->ispolymorphic() && !this->reply_hc->ispolymorphic() && !reply_hc->equals(this->reply_hc))
 	{
 		// printf("Incompatible reply hash code\n");
 		return 0;
@@ -604,8 +604,7 @@ void swrapper::serve_visitor(int fd, shello *hello)
 		mp = mps->item(index);
 		//check if authorised
 
-		if(mp->compatible(visitor->required_endpoint, 0, visitor->ep_type,
-				visitor->msg_hc, visitor->reply_hc))
+		if(mp->compatible(visitor->required_endpoint, 0, visitor->ep_type, visitor->msg_hc, visitor->reply_hc))
 			{
 				//compatible, but do they have access?
 				log("Serving visitor %s:%s requesting endpoint %s:'%s' -- ",visitor->src_cpt,visitor->src_instance,cpt_name,visitor->required_endpoint);
@@ -725,12 +724,12 @@ void swrapper::do_accept(int dyn_sock, AbstractMessage *abst)
 		mp = mps->item(index);
 		//check if authorised
 
-		if(mp->compatible(hello->required_endpoint, hello->required_ep_id,
-				hello->target_type, hello->msg_hc, hello->reply_hc))
+		if(mp->compatible(hello->required_endpoint, hello->required_ep_id, hello->target_type, 
+											hello->msg_hc, hello->reply_hc, hello->partial_matching))
 			{
 				//compatible, but do they have access?
-				log("Serving hello %s:%s requesting endpoint '%s' ",hello->source,hello->from_instance,hello->required_endpoint);
-				if (!mp->acl_ep->check_authorised(hello->source,hello->from_instance))
+				log("Serving hello %s:%s requesting endpoint '%s' ", hello->source, hello->from_instance, hello->required_endpoint);
+				if (!mp->acl_ep->check_authorised(hello->source, hello->from_instance))
 					code = AcceptNoAccess;
 				//TODO: Exiting now assumes only ONE compatible endpoint.
 				// what if a component has multiple...
@@ -744,8 +743,7 @@ void swrapper::do_accept(int dyn_sock, AbstractMessage *abst)
 	for(int i = 0; i < mp->peers->count(); i++)
 	{
 		peer = mp->peers->item(i);
-		if(!strcmp(peer->address, hello->from_address) &&
-				!strcmp(peer->endpoint, hello->from_endpoint))
+		if(!strcmp(peer->address, hello->from_address) && !strcmp(peer->endpoint, hello->from_endpoint))
 		{
 			code = AcceptAlreadyMapped;
 			break;
@@ -1830,8 +1828,14 @@ void swrapper::serve_peer(scomm *msg, speer *peer)
 	if(msg->type == MessageClient) // This is a reply
 		expected_hc = mp->reply_hc;
 	else
-		expected_hc = mp->msg_hc;	
-	if(!expected_hc->ispolymorphic() && !msg->hc->equals(expected_hc))
+		expected_hc = mp->msg_hc;
+	
+	// If we're doing partial matching, don't check types.
+	if (mp->partial_matching)
+	{
+		log("Received a partially matching message");
+	}	
+	else if(!expected_hc->ispolymorphic() && !msg->hc->equals(expected_hc))
 	{
 		if((msg->type == MessageClient && peer->reply_poly) ||
 			(msg->type != MessageClient && peer->msg_poly))
@@ -1843,7 +1847,7 @@ void swrapper::serve_peer(scomm *msg, speer *peer)
 			return;
 		}
 		else
-			error("Unexpected message hash code in server_peer()");
+			error("Unexpected message hash code in serve_peer()");
 	}
 	// schema already set, so don't need mp->msg_schema or mp->reply_schema
 
@@ -2884,9 +2888,8 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 		
 		// Add results to the list:
 		for(int i = 0; i < sn_results->count(); i++)
-		{
-			map_params->possibilities->add_noduplicates(sn_results->
-					extract_item(i)->extract_txt("address"));
+		{	
+			map_params->possibilities->add_noduplicates(sn_results->extract_item(i)->extract_txt("address"));
 		}
 		map_params->remaining_rdcs--;
 		continue_resolve(map_params);
@@ -3244,6 +3247,7 @@ void swrapper::do_map(mapparams *params)
 	hello->from_endpoint = sdup(mp->name);
 	hello->from_ep_id = mp->ep_id;
 	hello->target = NULL; // We don't specify
+	hello->partial_matching = mp->partial_matching;
 	hello->required_endpoint = endpoint; // Will delete for us
 	hello->required_ep_id = 0; // No means of specifying this in mapparams yet
 	switch(mp->type)
@@ -3970,6 +3974,7 @@ smidpoint::smidpoint()
 	next_seq = 0;
 	processed = dropped = 0;
 	ep_id = 0; // Must be filled in
+	partial_matching = 1;
 	acl_ep = new spermissionvector();
 }
 
