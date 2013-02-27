@@ -1,0 +1,195 @@
+<component-metadata>
+	<name>rdc</name>
+	<description>Resource discovery component</description>
+	<keywords></keywords>
+	<designer>David Ingram</designer>
+	<endpoints>
+		<endpoint>
+			<name>register</name>
+			<type>#sink</type>
+			<message>
+				@event
+				{
+					txt address
+					flg arrived
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>lost</name>
+			<type>#sink</type>
+			<message>
+				@event
+				{
+					txt address
+					flg arrived
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>hup</name>
+			<type>#sink</type>
+			<message>"0"</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>lookup_cpt</name>
+			<type>#server</type>
+			<message>
+				@^criteria -
+				@"map_constraints.idl"
+			</message>
+			<response>
+				@results
+				(
+					component
+					{
+						txt address
+						endpoints
+						(
+							endpoint
+							{
+								txt name
+								@"cpt_metadata.idl"					
+								^endpoint-type type
+								^idl message + response
+							}
+						)
+					}
+				)
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>list</name>
+			<type>#server</type>
+			<message>"0"</message>
+			<response>
+				@cpt-list
+				(
+					component
+					{
+						txt address
+						txt cpt-name
+						[ txt instance ]
+					}
+				)
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>cached_metadata</name>
+			<type>#server</type>
+			<message>@txt address</message>
+			<response>
+				@"cpt_metadata.idl"
+				@^component-metadata -
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>cached_status</name>
+			<type>#server</type>
+			<message>@txt address</message>
+			<response>
+				@"cpt_status.idl"
+				@^component-state -
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>dump</name>
+			<type>#server</type>
+			<message>"0"</message>
+			<response>
+				@rdc-dump
+				(
+					component
+					{
+						txt address
+						^component-metadata metadata
+						^component-state state
+					}
+				)
+
+				@"cpt_metadata.idl"
+				@"cpt_status.idl"
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>events</name>
+			<type>#source</type>
+			<message>
+				@event
+				{
+					txt address
+					flg arrived
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>get_metadata</name>
+			<type>#client</type>
+			<message>"0"</message>
+			<response>
+				@"cpt_metadata.idl"					
+				@^component-metadata -
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>get_status</name>
+			<type>#client</type>
+			<message>"0"</message>
+			<response>
+				@"cpt_status.idl"					
+				@^component-state -
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>dump_client</name>
+			<type>#client</type>
+			<message>"0"</message>
+			<response>
+				@rdc-dump
+				(
+					component
+					{
+						txt address
+						^component-metadata metadata
+						^component-state state
+					}
+				)
+
+				@"cpt_metadata.idl"
+				@"cpt_status.idl"
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>terminate</name>
+			<type>#source</type>
+			<message>"0"</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>remote_start</name>
+			<type>#sink</type>
+			<message>@txt cmdline</message>
+			<response>!</response>
+		</endpoint>
+		<endpoint>
+			<name>set_acl</name>
+			<type>#sink</type>
+			<message>
+				@event{
+					txt target_cpt
+					txt target_inst
+					txt target_address
+					txt target_endpt
+					txt principal_cpt
+					txt principal_inst
+					flg add_perm
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
+	</endpoints>
+</component-metadata>
