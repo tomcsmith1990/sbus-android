@@ -1117,7 +1117,7 @@ void rdc::lookup(sendpoint *ep)
 	snode *result, *sn_constraints, *sn_interface, *matches, *cpt;
 	image *img;
 	int count = 0;
-	int epct = 0;
+	int endpoint_count = 0;
 	query = ep->rcv(); // @criteria { ^map-constraints - ^interface - }
 	//printf("performing a lookup for %s %s\n",query->source_cpt, query->source_inst);
 	sn_constraints = query->tree->extract_item("map-constraints");
@@ -1135,13 +1135,13 @@ void rdc::lookup(sendpoint *ep)
 			cpt->append(pack(img->address, "address"));
 			cpt->append(matches);
 			result->append(cpt);
+			endpoint_count += matches->count();
 			count++;
 		}
 
 	}
 	pthread_mutex_unlock(&live_mutex);
-	printf("lookup component returning %d matches\n", count, epct);
-	printf("%s\n", result->toxml(1));
+	printf("Lookup component returning %d matching endpoint(s) on %d component(s)\n", endpoint_count, count);
 	ep->reply(query, result);
 	delete query;
 }
@@ -1157,7 +1157,7 @@ void rdc::list(sendpoint *ep)
 	query = ep->rcv();
 	query->source_cpt;
 	query->source_inst;
-	printf("Doing a list - there are %d components in total\n",live->count());
+	printf("Doing a list - there are %d components in total\n", live->count());
 
 	result = mklist("cpt-list");
 	pthread_mutex_lock(&live_mutex);
@@ -1471,7 +1471,8 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 	{
 		ep_reqd = interface->extract_item(i);
 		match = 0;
-		printf(">> Lookup requested for %s:%s:%s by %s %s (nb endpoint names need not match, it's a schema match)\n",metadata->extract_txt("name"), state->extract_txt("instance"),ep_reqd->extract_txt("name"),principal_cpt, principal_inst);
+		printf(">> Lookup requested for %s:%s:%s by %s %s (endpoint names need not match, it's a schema match)\n", 
+			metadata->extract_txt("name"), state->extract_txt("instance"), ep_reqd->extract_txt("name"), principal_cpt, principal_inst);
 
 		// Loop through all this component image's endpoints, to see if satisfy:
 		for(int j = 0; j < search->count(); j++)
@@ -1486,6 +1487,7 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 				//printf("Endpoint no match on type (needed %s, found %s)\n", ep_reqd->extract_value("type"), ep_actual->extract_value("type"));
 				continue;
 			}
+			// Check hash sent as part of constraints:
 			if(constraints->exists("hash"))
 			{
 				value = constraints->extract_txt("hash");
@@ -1510,35 +1512,32 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 				if(!acpolicies->authorised(ep_actual->extract_txt("name"), principal_cpt, principal_inst))
 					continue;
 			}
-			match = 1;
+			// This endpoint matches, add it to the list.
 			matches->append(ep_actual);
-			//break; // This endpoint matches
 		}
-		if(match) continue;
+		
+		// If there are no matches yet, check builtins.
+		if(matches->count() > 0) continue;
+		
 		//printf("testing compatible builtins\n");
-		// Maybe it's a built-in...?
 		for(int j = 0; j < com->count_builtins(); j++)
 		{
 			bi = com->get_builtin(j);
 
 			// Check names, if applicable:
-			if(match_endpoint_names && ep_reqd->exists("name") &&
-				strcmp(ep_reqd->extract_txt("name"), bi->name))
+			if(match_endpoint_names && ep_reqd->exists("name") && strcmp(ep_reqd->extract_txt("name"), bi->name))
 			{
 				// printf("Builtin %s didn't match on name\n", bi->name);
 				continue;
 			}
 			// Check types:
-			if(strcmp(endpoint_type[bi->type], ep_reqd->extract_value("type"))
-					!= 0)
+			if(strcmp(endpoint_type[bi->type], ep_reqd->extract_value("type")) != 0)
 			{
 
-				/*		printf("Builtin %s no match on type (needed %s, found %s)\n",
-						bi->name, ep_reqd->extract_value("type"),
-						endpoint_type[bi->type]);*/
-
+				//printf("Builtin %s no match on type (needed %s, found %s)\n", bi->name, ep_reqd->extract_value("type"), endpoint_type[bi->type]);
 				continue;
 			}
+			// Check hash sent as part of constraints:
 			if(constraints->exists("hash"))
 			{
 				value = constraints->extract_txt("hash");
@@ -1557,9 +1556,11 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 			//printf("we might have a match with %s for %s -- hash=%s\n",bi->name,ep_reqd->extract_txt("name"),bi->msg_hc->tostring());
 			if(!acpolicies->authorised(ep_actual->extract_txt("name"), principal_cpt, principal_inst))
 				continue;
+				
 			match = 1;
 			break; // This endpoint matches
 		}
+		
 		if(match) continue;
 		return 0; // Couldn't find a match for this interface endpoint
 	}
