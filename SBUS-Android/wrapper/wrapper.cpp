@@ -2391,6 +2391,7 @@ smidpoint *swrapper::add_endpoint(saddendpoint *add)
 	mp->type = add->type;
 	mp->msg_hc = new HashCode(add->msg_hc);
 	mp->reply_hc = new HashCode(add->reply_hc);
+	mp->partial_matching = add->partial_matching;
 	mp->acl_ep = new spermissionvector();
 	
 	//TODO:Load ACL defaults...
@@ -3974,7 +3975,7 @@ smidpoint::smidpoint()
 	next_seq = 0;
 	processed = dropped = 0;
 	ep_id = 0; // Must be filled in
-	partial_matching = 1;
+	partial_matching = 0;
 	acl_ep = new spermissionvector();
 }
 
