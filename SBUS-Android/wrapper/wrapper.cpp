@@ -4090,7 +4090,61 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	msg->seq = 0;
 	msg->hc = new HashCode(hc);
 	// We use actual msg hash, not owner->msg_hc, as this might be polymorphic
-	msg->tree = sn; // Consumes sn
+	
+	if (owner->partial_matching)
+	{
+		/*** START SCHEMA MATCH ***/
+		// should have same type hashes here. TODO: check?
+		const char *local_name;
+		
+		// Get main structure name.
+		snode *sn_match = mklist(owner->msg_schema->symbol_table->item(1));
+
+		for (int i = 0; i < sn->count(); i++) {	
+			local_name = owner->msg_schema->symbol_table->item(owner->msg_schema->tree->children->item(i)->namesym);
+			
+			switch(sn->extract_item(i)->get_type())
+			{
+				case SInt: 
+					sn_match->append(pack(sn->extract_int(i), local_name));
+					break;
+				case SDouble:
+					sn_match->append(pack(sn->extract_dbl(i), local_name));
+					break;
+				case SText:
+					sn_match->append(pack(sn->extract_txt(i), local_name));
+					break;
+				case SBinary:
+					sn_match->append(pack(sn->extract_bin(i), sn->num_bytes(i), local_name));
+					break;
+				case SBool: 
+					sn_match->append(pack_bool(sn->extract_flg(i), local_name));
+					break;
+				case SDateTime:
+					sn_match->append(pack(sn->extract_clk(i), local_name));
+					break;
+				case SLocation:
+					sn_match->append(pack(sn->extract_loc(i), local_name));
+					break;
+				// need to implement this method recursively for these.
+				case SStruct: ; break;
+				case SList: ; break;
+				case SValue:
+					sn_match->append(pack(sn->extract_value(i), local_name));
+					break;
+				case SEmpty: ; break;
+				default:
+					error("Unknown node type ");
+					break;
+			}
+		}
+		delete sn;
+		msg->tree = sn_match;
+		/*** END SCHEMA MATCH ***/
+	}
+	else
+		msg->tree = sn; // Consumes sn
+		
 	owner->deliver_local(msg);
 	delete msg;
 }
