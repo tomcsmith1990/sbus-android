@@ -55,7 +55,7 @@ const char *subscribe_schema_str =
 		"@subscribe { txt endpoint txt peer txt subscription txt topic }";
 const char *register_rdc_schema_str = "@event { txt rdc_address flg arrived }";
 const char *register_schema_str = "@event { txt address flg arrived }";
-const char *lookup_cpt_rep = "@results ( txt address )";
+const char *lookup_cpt_rep = "@results ( component { txt address endpoints ( endpoint {	txt name @\"cpt_metadata.idl\" ^endpoint-type type ^idl message + response } ) })";
 const char *lookup_schema_msg = "@txt hashcode";
 const char *lookup_schema_rep = "@txt schema";
 const char *set_log_level_msg = "@level { int log int echo }";
@@ -2331,7 +2331,7 @@ void swrapper::add_builtin_endpoints()
 
 	register_mp = add_builtin("register", EndpointSource, "B3572388E4A4");
 	lookup_cpt_mp = add_builtin("lookup_cpt", EndpointClient, "262EC4975BE5",
-			"6AA2406BF9EC");
+			"F96D2B7A73C1");
 		
 	add_builtin("lookup_schema", EndpointServer, "897D496ADE90",
 			"D39E44946A6C");
@@ -2886,7 +2886,7 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 		for(int i = 0; i < sn_results->count(); i++)
 		{
 			map_params->possibilities->add_noduplicates(sn_results->
-					extract_txt(i));
+					extract_item(i)->extract_txt("address"));
 		}
 		map_params->remaining_rdcs--;
 		continue_resolve(map_params);
@@ -3308,8 +3308,12 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 			map_report(report_fd, 1, welcome->address);
 			discon = 1;
 		}
-		if(code != AcceptOK)
+		else if(code != AcceptOK)
 		{
+			if(code == AcceptNoEndpoint)
+			{
+				// TODO: no matching endpoints - could try to partially match.
+			}
 			// TODO: make this return the acceptance code instead of a boolean
 			map_report(report_fd, 0);
 			discon = 1;
