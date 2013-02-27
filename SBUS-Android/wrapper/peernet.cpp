@@ -374,7 +374,7 @@ shello::shello()
 	msg_hc = reply_hc = NULL;
 	subs = topic = NULL;
 	oob_visitor = NULL;
-	from_ep_id = required_ep_id = 0;
+	from_ep_id = required_ep_id = partial_matching = 0;
 }
 
 shello::~shello()
@@ -436,6 +436,7 @@ int shello::reveal(AbstractMessage *abst)
 		required_endpoint = decode_string(&pos);
 		required_ep_id    = decode_count(&pos);
 		target_type = (EndpointType)decode_byte(&pos);
+		partial_matching = decode_byte(&pos);
 		subs     = decode_string(&pos);
 		topic    = decode_string(&pos);
 		msg_hc   = decode_hashcode(&pos);
@@ -459,6 +460,7 @@ AbstractMessage *shello::wrap(int fd)
 	sb->cat_string(required_endpoint);
 	sb->cat(required_ep_id);
 	sb->cat_byte(target_type);	
+	sb->cat_byte(partial_matching);
 	sb->cat_string(subs);
 	sb->cat_string(topic);
 	sb->cat(msg_hc);
