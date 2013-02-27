@@ -138,7 +138,7 @@ rdc::rdc()
 	lost_ep = com->add_endpoint("lost", EndpointSink, "B3572388E4A4");
 	com->add_endpoint("hup", EndpointSink, "000000000000");
 	com->add_endpoint("lookup_cpt", EndpointServer, "262EC4975BE5",
-			"6AA2406BF9EC");
+			"F96D2B7A73C1");
 	com->add_endpoint("list", EndpointServer, "000000000000", "46920F3551F9");
 	com->add_endpoint("cached_metadata", EndpointServer, "872A0BD357A6",
 			"6306677BFE43");
@@ -1114,7 +1114,7 @@ void rdc::process_permission_change(snode *permissionnode)
 void rdc::lookup(sendpoint *ep)
 {
 	smessage *query;
-	snode *result, *sn_constraints, *sn_interface;
+	snode *result, *sn_constraints, *sn_interface, *matches, *cpt;
 	image *img;
 	int count = 0;
 	int epct = 0;
@@ -1128,15 +1128,20 @@ void rdc::lookup(sendpoint *ep)
 	{
 
 		img = live->item(i);
-		if(img->match(sn_interface, sn_constraints, com, query->source_cpt,query->source_inst)	)
+		matches = mklist("endpoints");
+		if(img->match(sn_interface, sn_constraints, matches, com, query->source_cpt,query->source_inst)	)
 		{
-			result->append(pack(img->address, "address"));
+			cpt = mklist("component");
+			cpt->append(pack(img->address, "address"));
+			cpt->append(matches);
+			result->append(cpt);
 			count++;
 		}
 
 	}
 	pthread_mutex_unlock(&live_mutex);
 	printf("lookup component returning %d matches\n", count, epct);
+	printf("%s\n", result->toxml(1));
 	ep->reply(query, result);
 	delete query;
 }
@@ -1406,7 +1411,7 @@ int image::match_cpt_metadata(snode *constraints)
 	return 1;
 }
 
-int image::match(snode *interface, snode *constraints, scomponent *com, const char *principal_cpt, const char *principal_inst)
+int image::match(snode *interface, snode *constraints, snode *matches, scomponent *com, const char *principal_cpt, const char *principal_inst)
 {
 	int match_endpoint_names;
 	snode *sn, *search, *subsearch;
@@ -1419,9 +1424,46 @@ int image::match(snode *interface, snode *constraints, scomponent *com, const ch
 	if (match_cpt_metadata(constraints) == 0)
 		return 0;
 		
-	match_endpoint_names = constraints->extract_flg("match-endpoint-names");
-		
+	// Check connected peer component constraints:
+	
+	sn = constraints->extract_item("parents");
+	search = state->extract_item("endpoints");
+	for(int i = 0; i < sn->count(); i++)
+	{
+		// For each required peer constraint...
+		value = sn->extract_txt("cpt");
+		match = 0;
+		for(int j = 0; j < search->count(); j++)
+		{
+			ep_live = search->extract_item(j);
+			subsearch = ep_live->extract_item("peers");
+			for(int k = 0; k < subsearch->count(); k++)
+			{
+				if(!strcmp(value,
+						subsearch->extract_item(k)->extract_txt("cpt_name")) ||
+					!strcmp(value,
+						subsearch->extract_item(k)->extract_txt("instance")))
+				{
+					match = 1;
+					break;
+				}
+			}
+			if(match == 1)
+				break;
+		}
+		if(match == 0)
+			return 0;
+	}
+	sn = constraints->extract_item("ancestors");
+	for(int i = 0; i < sn->count(); i++)
+	{
+		value = sn->extract_txt("cpt");
+		; // Unimplemented
+	}
+	
 	// Check interface type compatibility:
+
+	match_endpoint_names = constraints->extract_flg("match-endpoint-names");
 
 	search = metadata->extract_item("endpoints");
 	// Loop through all the endpoints specified by the requested interface:
@@ -1469,7 +1511,8 @@ int image::match(snode *interface, snode *constraints, scomponent *com, const ch
 					continue;
 			}
 			match = 1;
-			break; // This endpoint matches
+			matches->append(ep_actual);
+			//break; // This endpoint matches
 		}
 		if(match) continue;
 		//printf("testing compatible builtins\n");
@@ -1519,43 +1562,6 @@ int image::match(snode *interface, snode *constraints, scomponent *com, const ch
 		}
 		if(match) continue;
 		return 0; // Couldn't find a match for this interface endpoint
-	}
-		
-	// Check connected peer component constraints:
-	
-	sn = constraints->extract_item("parents");
-	search = state->extract_item("endpoints");
-	for(int i = 0; i < sn->count(); i++)
-	{
-		// For each required peer constraint...
-		value = sn->extract_txt("cpt");
-		match = 0;
-		for(int j = 0; j < search->count(); j++)
-		{
-			ep_live = search->extract_item(j);
-			subsearch = ep_live->extract_item("peers");
-			for(int k = 0; k < subsearch->count(); k++)
-			{
-				if(!strcmp(value,
-						subsearch->extract_item(k)->extract_txt("cpt_name")) ||
-					!strcmp(value,
-						subsearch->extract_item(k)->extract_txt("instance")))
-				{
-					match = 1;
-					break;
-				}
-			}
-			if(match == 1)
-				break;
-		}
-		if(match == 0)
-			return 0;
-	}
-	sn = constraints->extract_item("ancestors");
-	for(int i = 0; i < sn->count(); i++)
-	{
-		value = sn->extract_txt("cpt");
-		; // Unimplemented
 	}
 
 	return 1;

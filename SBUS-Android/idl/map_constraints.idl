@@ -11,6 +11,7 @@
 	[ txt creator ]
 	[ txt pub-key ]
 	[ txt hash ]
+	[ txt type-hash ]
 	keywords ( txt keyword )
 	parents ( txt cpt )
 	ancestors ( txt cpt )
