@@ -286,6 +286,7 @@ class saddendpoint // MessageAddEndpoint
 	EndpointType type;
 	HashCode *msg_hc;
 	HashCode *reply_hc;
+	int partial_matching;
 };
 
 class sstartwrapper

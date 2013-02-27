@@ -28,9 +28,9 @@ class scomponent
 	~scomponent();
 		
 	sendpoint *add_endpoint(const char *name, EndpointType type,
-			const char *msg_hash, const char *reply_hash = NULL);
+			const char *msg_hash, const char *reply_hash = NULL, int partial_matching = 0);
 	sendpoint *add_endpoint(const char *name, EndpointType type,
-			HashCode *msg_hc, HashCode *reply_hc = NULL);
+			HashCode *msg_hc, HashCode *reply_hc = NULL, int partial_matching = 0);
 	void add_rdc(const char *address);
 	void remove_rdc(const char *address);
 	void start(const char *metadata_filename, int port = -1, int register_with_rdc = true);
@@ -89,7 +89,7 @@ class scomponent
 
 	HashCode *do_declare_schema(const char *schema, int file_lookup);
 	sendpoint *do_add_endpoint(const char *name, EndpointType type,
-			HashCode *msg_hc, HashCode *reply_hc);
+			HashCode *msg_hc, HashCode *reply_hc, int partial_matching);
 	
 
 	sbuiltinvector *biv;
@@ -114,7 +114,7 @@ class sendpoint
 	public:
 	
 	sendpoint(const char *name, EndpointType type,
-		HashCode *msg_hc, HashCode *reply_hc);
+		HashCode *msg_hc, HashCode *reply_hc, int partial_matching = 0);
 	~sendpoint();
 
 	/* map() returns a string containing the address of the
@@ -166,8 +166,8 @@ class sendpoint
 	
 	int fd; // Used by the library to talk to the wrapper
 
-	HashCode *msg_hc, *reply_hc; // Specified when defined; type checks
-	
+	HashCode *msg_hc, *reply_hc; // Specified when defined; type checks	
+	int partial_matching;
 
 	private:
 			

@@ -146,7 +146,7 @@ sendpoint *scomponent::fd_to_endpoint(int fd)
 }
 
 sendpoint *scomponent::add_endpoint(const char *name, EndpointType type,
-		HashCode *msg_hc, HashCode *reply_hc)
+		HashCode *msg_hc, HashCode *reply_hc, int partial_matching)
 {
 	HashCode *msg_hc_copy, *reply_hc_copy;
 	
@@ -160,11 +160,11 @@ sendpoint *scomponent::add_endpoint(const char *name, EndpointType type,
 	else
 		reply_hc_copy = new HashCode(reply_hc);
 	
-	return do_add_endpoint(name, type, msg_hc_copy, reply_hc_copy);
+	return do_add_endpoint(name, type, msg_hc_copy, reply_hc_copy, partial_matching);
 }
 		
 sendpoint *scomponent::add_endpoint(const char *name, EndpointType type,
-		const char *msg_hash, const char *reply_hash)
+		const char *msg_hash, const char *reply_hash, int partial_matching)
 {
 	HashCode *msg_hc, *reply_hc;
 
@@ -177,11 +177,11 @@ sendpoint *scomponent::add_endpoint(const char *name, EndpointType type,
 	else
 		reply_hc->fromstring(reply_hash);
 	
-	return do_add_endpoint(name, type, msg_hc, reply_hc);
+	return do_add_endpoint(name, type, msg_hc, reply_hc, partial_matching);
 }
 
 sendpoint *scomponent::do_add_endpoint(const char *name, EndpointType type,
-		HashCode *msg_hc, HashCode *reply_hc)
+		HashCode *msg_hc, HashCode *reply_hc, int partial_matching)
 {
 	// Note: this function consumes its msg_hc and reply_hc arguments
 	sendpoint *ep;
@@ -198,7 +198,7 @@ sendpoint *scomponent::do_add_endpoint(const char *name, EndpointType type,
 			(type == EndpointSource || type == EndpointSink))
 		error("Endpoint has no response, but a reply hash code was given");
 
-	ep = new sendpoint(name, type, msg_hc, reply_hc);
+	ep = new sendpoint(name, type, msg_hc, reply_hc, partial_matching);
 	
 	// Send MessageAddEndpoint:
 	add = new saddendpoint();
@@ -206,6 +206,7 @@ sendpoint *scomponent::do_add_endpoint(const char *name, EndpointType type,
 	add->type = type;
 	add->msg_hc = msg_hc;
 	add->reply_hc = reply_hc;
+	add->partial_matching = partial_matching;
 	if(add->write(bootstrap_fd) < 0)
 		error("Bootstrap connection to wrapper disconnected in add_endpoint");
 	delete add;
@@ -657,12 +658,13 @@ void scomponent::set_permission(const char *target_ep, const char *pr_cpt, const
 /* sendpoint: */
 
 sendpoint::sendpoint(const char *name, EndpointType type,
-		HashCode *msg_hc, HashCode *reply_hc)
+		HashCode *msg_hc, HashCode *reply_hc, int partial_matching)
 {
 	this->name = sdup(name);
 	this->type = type;
 	this->msg_hc = new HashCode(msg_hc);
 	this->reply_hc = new HashCode(reply_hc);
+	this->partial_matching = partial_matching;
 	postponed = new smessagequeue();
 }
 
@@ -717,7 +719,6 @@ void sendpoint::subscribe(const char *topic, const char *subs, const char *peer)
 		error("Control connection to wrapper disconnected in subscribe");
 	delete ctrl;
 }
-
 
 /* sendpoint mapping */
 
