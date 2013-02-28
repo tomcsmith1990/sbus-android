@@ -4093,15 +4093,22 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	
 	if (owner->partial_matching)
 	{
-		snode *sn_match;
-		// Get main structure name.
-		sn_match = mklist(owner->msg_schema->symbol_table->item(1));
+		Schema *theirs = wrap->cache->lookup(msg->hc);
+		Schema *mine = owner->msg_schema;
 		
-		change_schema(sn, sn_match, owner->msg_schema);
-		delete sn;
-		msg->tree = sn_match;
-
-		/*** END SCHEMA MATCH ***/
+		// Check type hashes
+		if (theirs->type_hc->equals(mine->type_hc))
+		{
+			snode *sn_match;
+			// Get main structure name.
+			sn_match = mklist(owner->msg_schema->symbol_table->item(1));
+		
+			change_schema(sn, sn_match, owner->msg_schema, owner->msg_schema->tree);
+			delete sn;
+			msg->tree = sn_match;
+		}
+		else
+			msg->tree = sn;
 	}
 	else
 		msg->tree = sn; // Consumes sn
@@ -4110,50 +4117,65 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	delete msg;
 }
 
-void speer::change_schema(snode *sn, snode *sn_match, Schema *sch)
+void speer::change_schema(snode *sn, snode *parent, Schema *sch, litmus *tree)
 {
-	// should have same type hashes here. TODO: check?
-	const char *local_name;
-
-	if (sn->get_type() == SStruct && sch->tree->type == LITMUS_STRUCT)
+	if (sn->get_type() == SStruct && tree->type == LITMUS_STRUCT)
 	{
-		for (int i = 0; i < sn->count(); i++) {	
-			local_name = sch->symbol_table->item(sch->tree->children->item(i)->namesym);
-		
-			switch(sn->extract_item(i)->get_type())
-			{
-				case SInt: 
-					sn_match->append(pack(sn->extract_int(i), local_name));
-					break;
-				case SDouble:
-					sn_match->append(pack(sn->extract_dbl(i), local_name));
-					break;
-				case SText:
-					sn_match->append(pack(sn->extract_txt(i), local_name));
-					break;
-				case SBinary:
-					sn_match->append(pack(sn->extract_bin(i), sn->num_bytes(i), local_name));
-					break;
-				case SBool: 
-					sn_match->append(pack_bool(sn->extract_flg(i), local_name));
-					break;
-				case SDateTime:
-					sn_match->append(pack(sn->extract_clk(i), local_name));
-					break;
-				case SLocation:
-					sn_match->append(pack(sn->extract_loc(i), local_name));
-					break;
-				// need to implement this method recursively for these.
-				case SStruct: ; break;
-				case SList: ; break;
-				case SValue:
-					sn_match->append(pack(sn->extract_value(i), local_name));
-					break;
-				case SEmpty: ; break;
-				default:
-					error("Unknown node type ");
-					break;
-			}
+		repack(sn, parent, sch, tree);
+	}
+}
+
+void speer::repack(snode *sn, snode *parent, Schema *sch, litmus *tree)
+{
+	const char *local_name;
+	snode *scomposite;
+	for (int i = 0; i < sn->count(); i++) {	
+
+		if (sn->get_type() != SList)
+			local_name = sch->symbol_table->item(tree->children->item(i)->namesym);
+		else
+			local_name = sch->symbol_table->item(tree->namesym);
+
+		switch(sn->extract_item(i)->get_type())
+		{
+			case SInt: 
+				parent->append(pack(sn->extract_int(i), local_name));
+				break;
+			case SDouble:
+				parent->append(pack(sn->extract_dbl(i), local_name));
+				break;
+			case SText:
+				parent->append(pack(sn->extract_txt(i), local_name));
+				break;
+			case SBinary:
+				parent->append(pack(sn->extract_bin(i), sn->num_bytes(i), local_name));
+				break;
+			case SBool: 
+				parent->append(pack_bool(sn->extract_flg(i), local_name));
+				break;
+			case SDateTime:
+				parent->append(pack(sn->extract_clk(i), local_name));
+				break;
+			case SLocation:
+				parent->append(pack(sn->extract_loc(i), local_name));
+				break;
+			case SStruct:
+				scomposite = mklist(local_name);
+				repack(sn->extract_item(i), scomposite, sch, tree->children->item(i));
+				parent->append(scomposite); 
+				break;
+			case SList:
+				scomposite = mklist(local_name);
+				repack(sn->extract_item(i), scomposite, sch, tree->children->item(i)->content);
+				parent->append(scomposite); 
+				break;
+			case SValue:
+				parent->append(pack(sn->extract_value(i), local_name));
+				break;
+			case SEmpty: ; break;
+			default:
+				error("Unknown node type ");
+				break;
 		}
 	}
 }
