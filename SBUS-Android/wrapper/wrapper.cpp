@@ -4093,16 +4093,33 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	
 	if (owner->partial_matching)
 	{
-		/*** START SCHEMA MATCH ***/
-		// should have same type hashes here. TODO: check?
-		const char *local_name;
-		
+		snode *sn_match;
 		// Get main structure name.
-		snode *sn_match = mklist(owner->msg_schema->symbol_table->item(1));
+		sn_match = mklist(owner->msg_schema->symbol_table->item(1));
+		
+		change_schema(sn, sn_match, owner->msg_schema);
+		delete sn;
+		msg->tree = sn_match;
 
+		/*** END SCHEMA MATCH ***/
+	}
+	else
+		msg->tree = sn; // Consumes sn
+		
+	owner->deliver_local(msg);
+	delete msg;
+}
+
+void speer::change_schema(snode *sn, snode *sn_match, Schema *sch)
+{
+	// should have same type hashes here. TODO: check?
+	const char *local_name;
+
+	if (sn->get_type() == SStruct && sch->tree->type == LITMUS_STRUCT)
+	{
 		for (int i = 0; i < sn->count(); i++) {	
-			local_name = owner->msg_schema->symbol_table->item(owner->msg_schema->tree->children->item(i)->namesym);
-			
+			local_name = sch->symbol_table->item(sch->tree->children->item(i)->namesym);
+		
 			switch(sn->extract_item(i)->get_type())
 			{
 				case SInt: 
@@ -4138,15 +4155,7 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 					break;
 			}
 		}
-		delete sn;
-		msg->tree = sn_match;
-		/*** END SCHEMA MATCH ***/
 	}
-	else
-		msg->tree = sn; // Consumes sn
-		
-	owner->deliver_local(msg);
-	delete msg;
 }
 
 void speer::serve(snode *sn, int seq, HashCode *hc)

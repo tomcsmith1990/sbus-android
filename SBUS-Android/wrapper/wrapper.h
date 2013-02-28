@@ -78,6 +78,8 @@ class speer
 		E.g. metadata */
 	
 	void deliver_remote(scomm *msg, int disrupt = 0);
+	
+	void change_schema(snode *sn, snode *sn_match, Schema *sch);
 };
 
 class smidpoint
