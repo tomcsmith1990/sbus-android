@@ -4106,9 +4106,12 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 				// Get main structure name.
 				parent = mklist(owner->msg_schema->symbol_table->item(1));
 				
+				int first_message = false;
+				
 				// If lookup table is not created, create it, and add the main structure entry.
 				if (this->lookup == NULL)
 				{
+					first_message = true;
 					this->lookup = mklist("lookup");
 					
 					if (this->lookup->exists(sn->get_name()) == 0)
@@ -4119,18 +4122,18 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 				repack(sn, parent, owner->msg_schema, owner->msg_schema->tree);
 				
 				// If we have a subscription criteria.
-				if (owner->subs != NULL)
+				if (owner->subs != NULL && first_message)
 				{
 					subscription *s = new subscription(owner->subs);
 
 					// Convert subscription based on peer's schema, and send the subscription to them.
 					char *plaintext = s->dump_plaintext(this->lookup);
 					resubscribe(plaintext, owner->topic);
+					delete plaintext;
 					
 					// If the message didn't match our subscription anyway, delete everything and return.
 					if (s->match(parent) == 0)
 					{
-						delete plaintext;
 						delete s;
 						delete sn;
 						delete parent;
@@ -4138,7 +4141,7 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 						return;
 					}
 					
-					delete plaintext;
+
 					delete s;
 				}
 				
