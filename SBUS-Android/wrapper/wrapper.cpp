@@ -4090,7 +4090,8 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	msg->hc = new HashCode(hc);
 	// We use actual msg hash, not owner->msg_hc, as this might be polymorphic
 	
-	if (owner->partial_matching)
+	// If we support partial matching, and the schemas are actually different.
+	if (owner->partial_matching && owner->msg_hc->equals(msg->hc) == 0)
 	{
 		Schema *theirs = wrap->cache->lookup(msg->hc);
 		Schema *mine = owner->msg_schema;
@@ -4121,31 +4122,27 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 				// Repack the message to fit our schema, and build up the lookup table.
 				repack(sn, parent, owner->msg_schema, owner->msg_schema->tree);
 				
+				delete sn;
+				
 				// If we have a subscription criteria.
 				if (owner->subs != NULL && first_message)
 				{
-					subscription *s = new subscription(owner->subs);
-
-					// Convert subscription based on peer's schema, and send the subscription to them.
-					char *plaintext = s->dump_plaintext(this->lookup);
-					resubscribe(plaintext, owner->topic);
-					delete plaintext;
+					// Resubscribe, this will convert the subscription string to peer's schema.
+					resubscribe(owner->subs, owner->topic);
 					
-					// If the message didn't match our subscription anyway, delete everything and return.
+					// Check this message actually matches (because the subscription wasn't applied to start with).
+					subscription *s = new subscription(owner->subs);					
 					if (s->match(parent) == 0)
 					{
 						delete s;
-						delete sn;
 						delete parent;
 						delete msg;
 						return;
 					}
 					
-
 					delete s;
 				}
 				
-				delete sn;
 				msg->tree = parent;
 			}
 		}
@@ -4342,7 +4339,18 @@ void speer::resubscribe(const char *subs, const char *topic)
 	resub->tgt_ep = sdup(endpoint);
 
 	//test...
-	resub->subscription = sdup(subs);
+	if (owner->partial_matching && this->lookup != NULL)
+	{
+		// If we support partial matching, and there's a lookup table for this (hence they're different schemas)
+		// Convert the subscription string to peer's schema before sending.
+		subscription *s = new subscription(subs);
+		resub->subscription = sdup(s->dump_plaintext(this->lookup));
+	}
+	else
+	{	
+		resub->subscription = sdup(subs);
+	}
+	
 	resub->topic = sdup(topic);
 
 	// Preselect to send resub message:
