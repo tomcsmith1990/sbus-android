@@ -2919,19 +2919,22 @@ void swrapper::map_report(int report_fd, int code, const char *address)
 	}
 }
 
-void swrapper::resolve_address(const char *addrstring, mapparams *params)
+void swrapper::resolve_address(const char *addrstring, mapparams *params, int pack_constraints)
 {
 	snode *sn;
 	MapConstraints *mapcon;
 	const char *rdc_address;
 	int ok;
 	
-	mapcon = new MapConstraints(addrstring);	
-	sn = mklist("criteria");
-	sn->append(mapcon->pack());
-	sn->append(params->mp->pack_interface(1));
-	delete mapcon;
-	params->query_sn = sn;
+	if (pack_constraints)
+	{
+		mapcon = new MapConstraints(addrstring);	
+		sn = mklist("criteria");
+		sn->append(mapcon->pack());
+		sn->append(params->mp->pack_interface(1));
+		delete mapcon;
+		params->query_sn = sn;
+	}
 	params->remaining_rdcs = rdc->count();
 
 	for(int i = 0; i < rdc->count(); i++)
@@ -3198,6 +3201,26 @@ void swrapper::do_map(mapparams *params)
 	svector *possibilities = params->possibilities;
 	char *endpoint = sdup(params->endpoint);
 	int report_fd = params->report_fd;
+
+	// If we've got no possibilities, and want to do partial matching, and we've definitely tried to resolve_address
+	if (possibilities->count() == 0 && mp->partial_matching && params->query_sn != NULL)
+	{
+		// Get the type-hash snode from the map-constraints
+		snode *type_hash = params->query_sn->extract_item("map-constraints")->extract_item("type-hash");
+		
+		// If it's empty, i.e. we weren't using it before
+		if (type_hash->get_type() == SEmpty)
+		{
+			// Create a new snode with our type-hash.
+			snode *lookup = pack(cache->lookup(mp->msg_hc)->type_hc->tostring(), "type-hash");
+			// Store this wherever type_hash was before.
+			*type_hash = *lookup;
+			// Attempt to map using this new address - 0 indicates we don't need to pack MapConstraints, already done.
+			resolve_address(NULL, params, 0);
+			// TODO: probably need to delete lookup or something..
+			return;
+		}
+	}
 	
 	remote_fd = -1;
 	for(int i = 0; i < possibilities->count(); i++)
