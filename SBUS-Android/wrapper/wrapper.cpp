@@ -636,7 +636,7 @@ void swrapper::serve_visitor(int fd, shello *hello)
 		peer->msg_poly = visitor->msg_hc->ispolymorphic();
 		peer->reply_poly = visitor->reply_hc->ispolymorphic();
 		mp->peers->add(peer);
-		
+
 		log("Accepted disposable connection from peer component %s instance %s",
 				peer->cpt_name, peer->instance);
 
@@ -761,7 +761,7 @@ void swrapper::do_accept(int dyn_sock, AbstractMessage *abst)
 		peer->endpoint = sdup(hello->from_endpoint);
 		peer->ep_id = hello->from_ep_id;
 		peer->address = sdup(hello->from_address);
-		if(hello->subs == NULL)
+		if(hello->subs == NULL || mp->msg_hc->equals(hello->msg_hc) == 0)
 			peer->subs = NULL;
 		else
 		{
@@ -1693,7 +1693,6 @@ void swrapper::serve_resub(speer *peer, sresub *oob_resub)
 		error("Local endpoint name mismatch in serve_resub()");
 
 
-	
 	// Change subscription/topic:
 	if(peer->subs != NULL)
 		//TODO: This used to be delete[], but was crashing. Not sure if the intention was a single subscription per peer--- it crashes if not, so lets assume yes....
@@ -4099,30 +4098,37 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		// Check type hashes
 		if (theirs->type_hc->equals(mine->type_hc))
 		{
-			snode *sn_match;
-			// Get main structure name.
-			sn_match = mklist(owner->msg_schema->symbol_table->item(1));
-		
-			change_schema(sn, sn_match, owner->msg_schema, owner->msg_schema->tree);
-			delete sn;
-			msg->tree = sn_match;
+			// Should always be true?
+			if (sn->get_type() == SStruct)
+			{
+				snode *parent;
+				// Get main structure name.
+				parent = mklist(owner->msg_schema->symbol_table->item(1));
+				if (this->lookup == NULL)
+				{
+					this->lookup = mklist("lookup");
+				}
+				repack(sn, parent, owner->msg_schema, owner->msg_schema->tree);
+				if (owner->subs != NULL)
+				{
+					subscription *s = new subscription(owner->subs);
+					char *plaintext = s->dump_plaintext(this->lookup);
+					resubscribe(plaintext, owner->topic);
+					delete plaintext;
+					delete s;
+				}
+				
+				delete sn;
+				msg->tree = parent;
+			}
 		}
-		else
-			msg->tree = sn;
 	}
-	else
+	
+	if (msg->tree == NULL)
 		msg->tree = sn; // Consumes sn
 		
 	owner->deliver_local(msg);
 	delete msg;
-}
-
-void speer::change_schema(snode *sn, snode *parent, Schema *sch, litmus *tree)
-{
-	if (sn->get_type() == SStruct && tree->type == LITMUS_STRUCT)
-	{
-		repack(sn, parent, sch, tree);
-	}
 }
 
 void speer::repack(snode *sn, snode *parent, Schema *sch, litmus *tree)
@@ -4135,6 +4141,11 @@ void speer::repack(snode *sn, snode *parent, Schema *sch, litmus *tree)
 			local_name = sch->symbol_table->item(tree->children->item(i)->namesym);
 		else
 			local_name = sch->symbol_table->item(tree->namesym);
+			
+		if (this->lookup->exists(local_name) == 0)
+		{
+			this->lookup->append(pack(sn->extract_item(i)->get_name(), local_name));
+		}
 
 		switch(sn->extract_item(i)->get_type())
 		{
@@ -4243,6 +4254,7 @@ speer::speer()
 	disposable = 0;
 	msg_poly = reply_poly = 0;
 	ep_id = 0; // Needs to be filled in
+	lookup = NULL;
 }
 
 speer::~speer()
@@ -4253,6 +4265,7 @@ speer::~speer()
 	if(address != NULL) delete[] address;
 	if(subs != NULL) delete subs;
 	if(topic != NULL) delete[] topic;
+	if(lookup != NULL) delete lookup;
 }
 
 void speer::divert(const char *new_address, const char *new_endpoint)
@@ -4300,7 +4313,7 @@ void speer::resubscribe(const char *subs, const char *topic)
 	resub->src_ep = sdup(owner->name);
 	resub->tgt_cpt = sdup(cpt_name);
 	resub->tgt_ep = sdup(endpoint);
-	
+
 	//test...
 	resub->subscription = sdup(subs);
 	resub->topic = sdup(topic);
