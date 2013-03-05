@@ -138,18 +138,37 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int typ
 	else if(l->type == LITMUS_STRUCT)
 	{
 		sb->cat_spaces(offset * 3);
-		if(defn) sb->cat('@');
+		// Create a separate StringBuf and append, so we can get hashes for substructures.
+		StringBuf *sub = new StringBuf();
+		
+		if(defn) sub->cat('@');
 		if (!type_schema)
-			sb->cat(symbol_table->item(l->namesym));
-		sb->cat('\n');
-		sb->cat_spaces(offset * 3);
-		sb->cat("{\n");
+			sub->cat(symbol_table->item(l->namesym));
+		sub->cat('\n');
+		sub->cat_spaces(offset * 3);
+		sub->cat("{\n");
 		for(int i = 0; i < l->children->count(); i++)
 		{
-			dump_litmus(sb, l->children->item(i), offset + 1, 0, type_schema);
+			dump_litmus(sub, l->children->item(i), offset + 1, 0, type_schema);
 		}
-		sb->cat_spaces(offset * 3);
-		sb->cat("}\n");
+		sub->cat_spaces(offset * 3);
+		sub->cat("}\n");
+		
+		const char *subschema = sub->extract();
+		HashCode *hash = new HashCode();
+		hash->fromschema(subschema);
+		
+		// Add the hashes of the subschemas.
+		// Note because of the recursion, we get most nested ones first, i.e. full schema is last in list.
+		if (type_schema)
+			type_hashes->add(hash->tostring());
+		else
+			hashes->add(hash->tostring());
+			
+		delete hash;
+		delete subschema;
+		
+		sb->append(sub);
 	}
 	else if(l->type == LITMUS_LIST || l->type == LITMUS_SEQ ||
 		l->type == LITMUS_ARRAY)
@@ -390,6 +409,8 @@ Schema::Schema()
 	hc = NULL;
 	type_hc = NULL;
 	symbol_table = new svector();
+	hashes = new svector();
+	type_hashes = new svector();
 	tokens = NULL;
 	tree = NULL;
 	source = NULL;
