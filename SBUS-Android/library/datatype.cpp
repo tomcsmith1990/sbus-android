@@ -483,6 +483,11 @@ char StringBuf::getcharacter(int n)
 	return ((char)(buf[n]));
 }
 
+void StringBuf::append(StringBuf *sb)
+{
+	cat(sb->extract());
+}
+
 void StringBuf::cat(const char *s)
 {
 	int len = strlen(s);

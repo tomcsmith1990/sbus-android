@@ -926,7 +926,7 @@ snode *MapConstraints::pack()
 	sn->append(::pack(creator, "creator"));
 	sn->append(::pack(pub_key, "pub-key"));
 	sn->append(::pack(hash, "hash"));
-	if (type_hash != NULL) sn->append(::pack(type_hash, "type-hash"));
+	sn->append(::pack(type_hash, "type-hash"));
 	
 	subn = mklist("keywords");
 	for(int i = 0; i < keywords->count(); i++)

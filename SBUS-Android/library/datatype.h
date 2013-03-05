@@ -379,6 +379,7 @@ class StringBuf
 		void dump();
 		void log();
 		char getcharacter(int n);
+		void append(StringBuf *sb);
 					
 		void cat(const char *s); // NULL-terminated
 		void cat(const void *data, int bytes); // Ignore NULLs

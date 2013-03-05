@@ -48,6 +48,7 @@ class Schema
 	void dump_tree(int initial_indent = 0, int log = 0);
 
 	HashCode *hc, *type_hc;
+	svector *hashes, *type_hashes;
 	MetaType meta;
 	
 	private:
