@@ -791,10 +791,12 @@ void sendpoint::set_automap_policy(const char *address, const char *endpoint)
 
 void MapConstraints::init()
 {
-	cpt_name = instance_name = creator = pub_key = hash = type_hash = NULL;
+	cpt_name = instance_name = creator = pub_key = NULL;
 	keywords = new svector();
 	peers = new svector();
 	ancestors = new svector();
+	hashes = new svector();
+	type_hashes = new svector();
 	
 	match_endpoint_names = 0;
 	match_mode = MatchExact;
@@ -854,13 +856,11 @@ MapConstraints::MapConstraints(const char *string)
 				if(pub_key != NULL) delete[] pub_key;
 				pub_key = read_word(&string);
 				break;
-			case 'H':
-				if(hash != NULL) delete[] hash;
-				hash = read_word(&string);
+			case 'H':	// has
+				hashes->add(read_word(&string));
 				break;
-			case 'T':
-				if(type_hash != NULL) delete[] type_hash;
-				type_hash = read_word(&string);
+			case 'S':	// similar
+				type_hashes->add(read_word(&string));
 				break;
 			case 'K':
 				keywords->add(read_word(&string));
@@ -884,8 +884,8 @@ MapConstraints::~MapConstraints()
 	if(instance_name != NULL) delete[] instance_name;
 	if(creator != NULL) delete[] creator;
 	if(pub_key != NULL) delete[] pub_key;
-	if(hash != NULL) delete[] hash;
-	if(type_hash != NULL) delete[] type_hash;
+	delete hashes;
+	delete type_hashes;
 	delete keywords;
 	delete peers;
 	delete ancestors;
@@ -925,8 +925,16 @@ snode *MapConstraints::pack()
 	sn->append(::pack(instance_name, "instance-name"));
 	sn->append(::pack(creator, "creator"));
 	sn->append(::pack(pub_key, "pub-key"));
-	sn->append(::pack(hash, "hash"));
-	sn->append(::pack(type_hash, "type-hash"));
+	
+	subn = mklist("hashes");
+	for(int i = 0; i < hashes->count(); i++)
+		subn->append(::pack(hashes->item(i), "hash"));
+	sn->append(subn);
+	
+	subn = mklist("type-hashes");
+	for(int i = 0; i < type_hashes->count(); i++)
+		subn->append(::pack(type_hashes->item(i), "hash"));
+	sn->append(subn);
 	
 	subn = mklist("keywords");
 	for(int i = 0; i < keywords->count(); i++)

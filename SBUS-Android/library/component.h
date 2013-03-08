@@ -220,14 +220,13 @@ class MapConstraints
 			
 	svector *keywords;
 	svector *peers, *ancestors;
+	svector *hashes, *type_hashes;
 	
 	// Any of these may be NULL to indicate irrelevant:
 	const char *cpt_name;
 	const char *instance_name;
 	const char *creator;
 	const char *pub_key;
-	const char *hash;
-	const char *type_hash;	
 };
 
 // Values for sflags:

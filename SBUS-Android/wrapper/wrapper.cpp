@@ -2333,7 +2333,7 @@ void swrapper::add_builtin_endpoints()
 	add_builtin("register_rdc", EndpointSink, "13ACF49714C5");
 
 	register_mp = add_builtin("register", EndpointSource, "B3572388E4A4");
-	lookup_cpt_mp = add_builtin("lookup_cpt", EndpointClient, "262EC4975BE5",
+	lookup_cpt_mp = add_builtin("lookup_cpt", EndpointClient, "85C4C72B7F2A",
 			"F96D2B7A73C1");
 		
 	add_builtin("lookup_schema", EndpointServer, "897D496ADE90",
@@ -3206,15 +3206,15 @@ void swrapper::do_map(mapparams *params)
 	if (possibilities->count() == 0 && mp->partial_matching && params->query_sn != NULL)
 	{
 		// Get the type-hash snode from the map-constraints
-		snode *type_hash = params->query_sn->extract_item("map-constraints")->extract_item("type-hash");
+		snode *type_hash = params->query_sn->extract_item("map-constraints")->extract_item("type-hashes");
 		
 		// If it's empty, i.e. we weren't using it before
-		if (type_hash->get_type() == SEmpty)
+		if (type_hash->count() == 0)
 		{
 			// Create a new snode with our type-hash.
-			snode *lookup = pack(cache->lookup(mp->msg_hc)->type_hc->tostring(), "type-hash");
+			snode *lookup = pack(cache->lookup(mp->msg_hc)->type_hc->tostring(), "hash");
 			// Store this wherever type_hash was before.
-			*type_hash = *lookup;
+			type_hash->append(lookup);
 			// Attempt to map using this new address - 0 indicates we don't need to pack MapConstraints, already done.
 			resolve_address(NULL, params, 0);
 			// TODO: probably need to delete lookup or something..
