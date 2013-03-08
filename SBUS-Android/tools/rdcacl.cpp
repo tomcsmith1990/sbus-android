@@ -1269,9 +1269,9 @@ image::image()
 	address = cpt_name = ins_name = NULL;
 	metadata = state = NULL;
 	msg_hsh = new svector();
-	msg_type_hsh = new svector();
 	reply_hsh = new svector();
-	reply_type_hsh = new svector();
+	msg_hsh_list = new pvector();
+	msg_type_hsh_list = new pvector();
 	lost = 0;
 	acpolicies = new rdcpermissionstore();
 	buffered_policies = new snodevector();
@@ -1294,40 +1294,45 @@ void image::init_hashes()
 		if(msg_schema == NULL)
 		{
 			msg_hsh->add("EEEEEEEEEEEE");
-			msg_type_hsh->add("EEEEEEEEEEEE");
+			
+			svector *ep = new svector();
+			ep->add("EEEEEEEEEEEE");
+			msg_hsh_list->add((void *)ep);
+			msg_type_hsh_list->add((void *)ep);
 		}
 		else
 		{
 			s = msg_schema->hc->tostring();
 			msg_hsh->add(s);
 			delete[] s;
-			HashCode *type_hc = new HashCode();
-			type_hc->fromschema(msg_schema->canonical_string(1));
-			msg_type_hsh->add(type_hc->tostring());
-			delete type_hc;
+			
+			svector *ep = new svector();
+			for (int j = 0; j < msg_schema->hashes->count(); j++)
+				ep->add(msg_schema->hashes->extract_txt(j));
+			msg_hsh_list->add((void *)ep);
+			
+			ep = new svector();
+			for (int j = 0; j < msg_schema->type_hashes->count(); j++)
+				ep->add(msg_schema->type_hashes->extract_txt(j));
+			msg_type_hsh_list->add((void *)ep);
 		}
 		reply_schema = Schema::create(subn->extract_txt("response"), &err);
 		if(reply_schema == NULL)
 		{
 			reply_hsh->add("EEEEEEEEEEEE");
-			reply_type_hsh->add("EEEEEEEEEEEE");
 		}
 		else
 		{
 			s = reply_schema->hc->tostring();
 			reply_hsh->add(s);
 			delete[] s;
-			HashCode *type_hc = new HashCode();
-			type_hc->fromschema(reply_schema->canonical_string(1));
-			reply_type_hsh->add(type_hc->tostring());
-			delete type_hc;
 		}
 		if(msg_schema != NULL) delete msg_schema;
 		if(reply_schema != NULL) delete reply_schema;
 	}
 	// Sanity check:
 	if(msg_hsh->count() != endpoints || reply_hsh->count() != endpoints || 
-		msg_type_hsh->count() != endpoints || reply_type_hsh->count() != endpoints)
+		msg_hsh_list->count() != endpoints || msg_type_hsh_list->count() != endpoints)
 		error("Number of endpoints assertion failed in RDC");
 }
 
@@ -1341,9 +1346,9 @@ image::~image()
 	if(metadata != NULL) delete metadata;
 	if(state != NULL) delete state;
 	delete msg_hsh;
-	delete msg_type_hsh;
 	delete reply_hsh;
-	delete reply_type_hsh;
+	delete msg_hsh_list;
+	delete msg_type_hsh_list;
 	delete acpolicies;
 	delete buffered_policies;
 }
@@ -1492,13 +1497,12 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 			
 			// Check hash sent as part of constraints:
 			sn = constraints->extract_item("hashes");
+			// This is a list of hashes of all structures in this endpoint's schema.
+			svector *ep = (svector *)msg_hsh_list->item(j);
 			for (int k = 0; k < sn->count(); k++)
 			{
 				value = sn->extract_txt(k);
-				// msg_hsh->item(j) is the hash of this endpoint's schema.
-				// Should be a list of hashes of all fields in this schema.
-				// For each hash in constraints->extract_item("hashes"), there must be an entry in the list.
-				if(strcmp(value, msg_hsh->item(j)))
+				if(ep->find(value) == -1)
 				{
 					// no match
 					field_match = false;
@@ -1506,17 +1510,19 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 				}
 			}
 			
+			// If any of the constraint hashes were not matched, this endpoint is not a match.
 			if (field_match == false)
 				continue;
 				
 			field_match = true;
 			
 			sn = constraints->extract_item("type-hashes");
+			ep = (svector *)msg_type_hsh_list->item(j);
 			for (int k = 0; k < sn->count(); k++)
 			{
 				value = sn->extract_txt(k);
 				// Must match all type hashes we send.
-				if(strcmp(value, msg_type_hsh->item(j)))
+				if(ep->find(value) == -1)
 				{
 					// no match
 					field_match = false;
@@ -1562,13 +1568,6 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 
 				//printf("Builtin %s no match on type (needed %s, found %s)\n", bi->name, ep_reqd->extract_value("type"), endpoint_type[bi->type]);
 				continue;
-			}
-			// Check hash sent as part of constraints:
-			if(constraints->exists("hash"))
-			{
-				value = constraints->extract_txt("hash");
-				if(strcmp(value, bi->msg_hc->tostring()))
-					continue;
 			}
 			// OK so far. Now for the LITMUS tests:
 			s = bi->msg_hc->tostring();
