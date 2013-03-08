@@ -166,7 +166,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int typ
 			type_hashes->append(pack(hash->tostring(), symbol_table->item(l->namesym)));
 		else
 			hashes->append(pack(hash->tostring(), symbol_table->item(l->namesym)));
-			
+
 		delete hash;
 		delete subschema;
 		sb->append(sub);
