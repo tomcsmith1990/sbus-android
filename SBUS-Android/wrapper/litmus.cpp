@@ -143,7 +143,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int typ
 		// Create a separate StringBuf and append, so we can get hashes for substructures.
 		StringBuf *sub = new StringBuf();
 		
-		if(defn) sub->cat('@');
+		if(defn) sb->cat('@');
 		if (!type_schema)
 			sub->cat(symbol_table->item(l->namesym));
 		sub->cat('\n');
