@@ -1521,7 +1521,6 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 			for (int k = 0; k < sn->count(); k++)
 			{
 				value = sn->extract_txt(k);
-				// Must match all type hashes we send.
 				if(ep->find(value) == -1)
 				{
 					// no match
