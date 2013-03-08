@@ -1487,26 +1487,48 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 				//printf("Endpoint no match on type (needed %s, found %s)\n", ep_reqd->extract_value("type"), ep_actual->extract_value("type"));
 				continue;
 			}
+			
+			int field_match = true;
+			
 			// Check hash sent as part of constraints:
 			sn = constraints->extract_item("hashes");
 			for (int k = 0; k < sn->count(); k++)
 			{
 				value = sn->extract_txt(k);
-				// Must match all hashes we send.
+				// msg_hsh->item(j) is the hash of this endpoint's schema.
+				// Should be a list of hashes of all fields in this schema.
+				// For each hash in constraints->extract_item("hashes"), there must be an entry in the list.
 				if(strcmp(value, msg_hsh->item(j)))
-					continue;
+				{
+					// no match
+					field_match = false;
+					break;
+				}
 			}
 			
-			// Let's assume if we're doing a typed hash match (for similar schemas) we don't want the LITMUS tests.
+			if (field_match == false)
+				continue;
+				
+			field_match = true;
+			
 			sn = constraints->extract_item("type-hashes");
 			for (int k = 0; k < sn->count(); k++)
 			{
 				value = sn->extract_txt(k);
 				// Must match all type hashes we send.
 				if(strcmp(value, msg_type_hsh->item(j)))
-					continue;
+				{
+					// no match
+					field_match = false;
+					break;
+				}
 			}
-			if (sn->count() == 0)
+			
+			if (field_match == false)
+				continue;
+			
+			// Let's assume if we're doing a typed hash match (for similar schemas) we don't want the LITMUS tests.
+			if (constraints->extract_item("type-hashes")->count() == 0)
 			{
 				// OK so far. Now for the LITMUS tests:
 				if(!hashmatch(ep_reqd->extract_txt("msg-hash"), msg_hsh->item(j)))
