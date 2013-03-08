@@ -1529,12 +1529,12 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 					break;
 				}
 			}
-			
+
 			if (field_match == false)
 				continue;
-			
-			// Let's assume if we're doing a typed hash match (for similar schemas) we don't want the LITMUS tests.
-			if (constraints->extract_item("type-hashes")->count() == 0)
+
+			// Let's assume if we're doing a flexible matching (for similar schemas) we don't want the LITMUS tests.
+			if (constraints->extract_item("hashes")->count() == 0 && constraints->extract_item("type-hashes")->count() == 0)
 			{
 				// OK so far. Now for the LITMUS tests:
 				if(!hashmatch(ep_reqd->extract_txt("msg-hash"), msg_hsh->item(j)))
