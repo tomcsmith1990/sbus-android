@@ -137,7 +137,7 @@ rdc::rdc()
 	register_ep = com->add_endpoint("register", EndpointSink, "B3572388E4A4");
 	lost_ep = com->add_endpoint("lost", EndpointSink, "B3572388E4A4");
 	com->add_endpoint("hup", EndpointSink, "000000000000");
-	com->add_endpoint("lookup_cpt", EndpointServer, "262EC4975BE5",
+	com->add_endpoint("lookup_cpt", EndpointServer, "85C4C72B7F2A",
 			"F96D2B7A73C1");
 	com->add_endpoint("list", EndpointServer, "000000000000", "46920F3551F9");
 	com->add_endpoint("cached_metadata", EndpointServer, "872A0BD357A6",
@@ -1488,21 +1488,25 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 				continue;
 			}
 			// Check hash sent as part of constraints:
-			if(constraints->exists("hash"))
+			sn = constraints->extract_item("hashes");
+			for (int k = 0; k < sn->count(); k++)
 			{
-				value = constraints->extract_txt("hash");
+				value = sn->extract_txt(k);
+				// Must match all hashes we send.
 				if(strcmp(value, msg_hsh->item(j)))
 					continue;
 			}
 			
 			// Let's assume if we're doing a typed hash match (for similar schemas) we don't want the LITMUS tests.
-			if(constraints->exists("type-hash"))
+			sn = constraints->extract_item("type-hashes");
+			for (int k = 0; k < sn->count(); k++)
 			{
-				value = constraints->extract_txt("type-hash");
+				value = sn->extract_txt(k);
+				// Must match all type hashes we send.
 				if(strcmp(value, msg_type_hsh->item(j)))
 					continue;
 			}
-			else
+			if (sn->count() == 0)
 			{
 				// OK so far. Now for the LITMUS tests:
 				if(!hashmatch(ep_reqd->extract_txt("msg-hash"), msg_hsh->item(j)))

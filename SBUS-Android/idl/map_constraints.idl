@@ -10,8 +10,8 @@
 	[ txt instance-name ]
 	[ txt creator ]
 	[ txt pub-key ]
-	[ txt hash ]
-	[ txt type-hash ]
+	hashes ( txt hash )
+	type-hashes ( txt hash )
 	keywords ( txt keyword )
 	parents ( txt cpt )
 	ancestors ( txt cpt )
