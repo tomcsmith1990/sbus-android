@@ -2453,7 +2453,7 @@ void swrapper::subscribe(smidpoint *mp, const char *subs,
 			mapcon = new MapConstraints(peer_address);
 
 			//TODO: Add in other constraints (certificates, pub keys, etc).
-			constraints = mapcon->pack();
+			constraints = mapcon->pack(mp->msg_schema->hashes, mp->msg_schema->type_hashes);
 			//printf("the constraints for this filter operation are %s\n",constraints->toxml(1));
 			if(constraints->exists("cpt-name"))
 				cpt = constraints->extract_txt("cpt-name");
