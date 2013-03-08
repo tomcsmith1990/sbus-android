@@ -8,6 +8,8 @@
 
 #include "../library/error.h"
 #include "../library/datatype.h"
+#include "../library/dimension.h"
+#include "../library/builder.h"
 #include "../library/hash.h"
 #include "litmus.h"
 
@@ -161,13 +163,12 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int typ
 		// Add the hashes of the subschemas.
 		// Note because of the recursion, we get most nested ones first, i.e. full schema is last in list.
 		if (type_schema)
-			type_hashes->add(hash->tostring());
+			type_hashes->append(pack(hash->tostring(), symbol_table->item(l->namesym)));
 		else
-			hashes->add(hash->tostring());
+			hashes->append(pack(hash->tostring(), symbol_table->item(l->namesym)));
 			
 		delete hash;
 		delete subschema;
-		
 		sb->append(sub);
 	}
 	else if(l->type == LITMUS_LIST || l->type == LITMUS_SEQ ||
@@ -409,8 +410,8 @@ Schema::Schema()
 	hc = NULL;
 	type_hc = NULL;
 	symbol_table = new svector();
-	hashes = new svector();
-	type_hashes = new svector();
+	hashes = mklist("hashes");
+	type_hashes = mklist("hashes");
 	tokens = NULL;
 	tree = NULL;
 	source = NULL;
@@ -427,13 +428,9 @@ Schema::Schema(Schema *sch) // Makes a copy (costly)
 	for(int i = 0; i < sch->symbol_table->count(); i++)
 		symbol_table->add(sch->symbol_table->item(i));
 		
-	hashes = new svector();
-	for(int i = 0; i < sch->hashes->count(); i++)
-		hashes->add(sch->hashes->item(i));
+	hashes = new snode(sch->hashes);
 		
-	type_hashes = new svector();
-	for(int i = 0; i < sch->type_hashes->count(); i++)
-		type_hashes->add(sch->type_hashes->item(i));
+	type_hashes = new snode(sch->type_hashes);
 	
 	if(sch->tree == NULL)
 		tree = NULL;

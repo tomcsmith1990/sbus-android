@@ -795,8 +795,8 @@ void MapConstraints::init()
 	keywords = new svector();
 	peers = new svector();
 	ancestors = new svector();
-	hashes = new svector();
-	type_hashes = new svector();
+	has_fields = new svector();
+	similar_fields = new svector();
 	
 	match_endpoint_names = 0;
 	match_mode = MatchExact;
@@ -857,10 +857,10 @@ MapConstraints::MapConstraints(const char *string)
 				pub_key = read_word(&string);
 				break;
 			case 'H':	// has
-				hashes->add(read_word(&string));
+				has_fields->add(read_word(&string));
 				break;
 			case 'S':	// similar
-				type_hashes->add(read_word(&string));
+				similar_fields->add(read_word(&string));
 				break;
 			case 'K':
 				keywords->add(read_word(&string));
@@ -884,8 +884,8 @@ MapConstraints::~MapConstraints()
 	if(instance_name != NULL) delete[] instance_name;
 	if(creator != NULL) delete[] creator;
 	if(pub_key != NULL) delete[] pub_key;
-	delete hashes;
-	delete type_hashes;
+	delete has_fields;
+	delete similar_fields;
 	delete keywords;
 	delete peers;
 	delete ancestors;
@@ -927,13 +927,58 @@ snode *MapConstraints::pack()
 	sn->append(::pack(pub_key, "pub-key"));
 	
 	subn = mklist("hashes");
-	for(int i = 0; i < hashes->count(); i++)
-		subn->append(::pack(hashes->item(i), "hash"));
+	for(int i = 0; i < has_fields->count(); i++)
+		subn->append(::pack(has_fields->item(i), "hash"));
 	sn->append(subn);
 	
 	subn = mklist("type-hashes");
-	for(int i = 0; i < type_hashes->count(); i++)
-		subn->append(::pack(type_hashes->item(i), "hash"));
+	for(int i = 0; i < similar_fields->count(); i++)
+		subn->append(::pack(similar_fields->item(i), "hash"));
+	sn->append(subn);
+	
+	subn = mklist("keywords");
+	for(int i = 0; i < keywords->count(); i++)
+		subn->append(::pack(keywords->item(i), "keyword"));
+	sn->append(subn);
+	subn = mklist("parents");
+	for(int i = 0; i < peers->count(); i++)
+		subn->append(::pack(peers->item(i), "cpt"));
+	sn->append(subn);
+	subn = mklist("ancestors");
+	for(int i = 0; i < ancestors->count(); i++)
+		subn->append(::pack(ancestors->item(i), "cpt"));
+	sn->append(subn);
+	sn->append(::pack_bool(match_endpoint_names, "match-endpoint-names"));
+	return sn;
+}
+
+snode *MapConstraints::pack(snode *hash_lookup, snode *type_hash_lookup)
+{
+	snode *sn, *subn;
+
+	sn = mklist("map-constraints");
+	// These lines also work correctly if any string is NULL
+	sn->append(::pack(cpt_name, "cpt-name"));
+	sn->append(::pack(instance_name, "instance-name"));
+	sn->append(::pack(creator, "creator"));
+	sn->append(::pack(pub_key, "pub-key"));
+	
+	subn = mklist("hashes");
+	for(int i = 0; i < has_fields->count(); i++)
+	{	
+		// If there is a structure in our schema with this name, add its hash.
+		if (hash_lookup->exists(has_fields->item(i)))
+			subn->append(::pack(hash_lookup->extract_txt(has_fields->item(i)), "hash"));
+	}
+	sn->append(subn);
+	
+	subn = mklist("type-hashes");
+	for(int i = 0; i < similar_fields->count(); i++)
+	{	
+		// If there is a structure in our schema with this name, add its type hash.
+		if (type_hash_lookup->exists(similar_fields->item(i)))
+			subn->append(::pack(type_hash_lookup->extract_txt(similar_fields->item(i)), "hash"));
+	}
 	sn->append(subn);
 	
 	subn = mklist("keywords");

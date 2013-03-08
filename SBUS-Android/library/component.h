@@ -195,6 +195,7 @@ class MapConstraints
 	static int is_constraint(const char *string);
 	
 	snode *pack();
+	snode *pack(snode *hash_lookup, snode *type_hash_lookup);
 
 	void set_name(const char *s);	
 	void set_instance(const char *s);	
@@ -220,7 +221,7 @@ class MapConstraints
 			
 	svector *keywords;
 	svector *peers, *ancestors;
-	svector *hashes, *type_hashes;
+	svector *has_fields, *similar_fields;
 	
 	// Any of these may be NULL to indicate irrelevant:
 	const char *cpt_name;

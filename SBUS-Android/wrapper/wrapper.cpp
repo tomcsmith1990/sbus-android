@@ -2930,7 +2930,7 @@ void swrapper::resolve_address(const char *addrstring, mapparams *params, int pa
 	{
 		mapcon = new MapConstraints(addrstring);	
 		sn = mklist("criteria");
-		sn->append(mapcon->pack());
+		sn->append(mapcon->pack(params->mp->msg_schema->hashes, params->mp->msg_schema->type_hashes));
 		sn->append(params->mp->pack_interface(1));
 		delete mapcon;
 		params->query_sn = sn;
@@ -3201,7 +3201,7 @@ void swrapper::do_map(mapparams *params)
 	svector *possibilities = params->possibilities;
 	char *endpoint = sdup(params->endpoint);
 	int report_fd = params->report_fd;
-
+/*
 	// If we've got no possibilities, and want to do partial matching, and we've definitely tried to resolve_address
 	if (possibilities->count() == 0 && mp->partial_matching && params->query_sn != NULL)
 	{
@@ -3221,7 +3221,7 @@ void swrapper::do_map(mapparams *params)
 			return;
 		}
 	}
-	
+*/	
 	remote_fd = -1;
 	for(int i = 0; i < possibilities->count(); i++)
 	{
