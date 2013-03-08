@@ -426,6 +426,14 @@ Schema::Schema(Schema *sch) // Makes a copy (costly)
 	symbol_table = new svector();
 	for(int i = 0; i < sch->symbol_table->count(); i++)
 		symbol_table->add(sch->symbol_table->item(i));
+		
+	hashes = new svector();
+	for(int i = 0; i < sch->hashes->count(); i++)
+		hashes->add(sch->hashes->item(i));
+		
+	type_hashes = new svector();
+	for(int i = 0; i < sch->type_hashes->count(); i++)
+		type_hashes->add(sch->type_hashes->item(i));
 	
 	if(sch->tree == NULL)
 		tree = NULL;
@@ -444,6 +452,8 @@ Schema::~Schema()
 	tokensection *tsect;
 	
 	if(symbol_table != NULL) delete symbol_table;
+	if(hashes != NULL) delete hashes;
+	if(type_hashes != NULL) delete type_hashes;
 	if(tokens != NULL)
 	{
 		for(int i = 0; i < tokens->count(); i++)
