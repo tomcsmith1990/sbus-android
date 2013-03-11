@@ -807,10 +807,16 @@ void swrapper::do_accept(int dyn_sock, AbstractMessage *abst)
 		welcome->subs = ((mp->subs == NULL) ? NULL : sdup(mp->subs));
 		welcome->topic = ((mp->topic == NULL) ? NULL : sdup(mp->topic));
 		welcome->msg_poly = mp->msg_hc->ispolymorphic();
-		welcome->reply_poly = mp->msg_hc->ispolymorphic();
+		welcome->reply_poly = mp->reply_hc->ispolymorphic();
+		welcome->msg_hc = (mp->msg_hc == NULL) ? new HashCode() : new HashCode(mp->msg_hc);
+		welcome->reply_hc = (mp->reply_hc == NULL) ? new HashCode() : new HashCode(mp->reply_hc);
 	}
 	else
+	{
 		welcome->endpoint = welcome->subs = welcome->topic = NULL;
+		welcome->msg_hc = new HashCode();
+		welcome->reply_hc = new HashCode();
+	}
 	
 	abst = welcome->wrap(dyn_sock);
 	delete welcome;
@@ -1406,7 +1412,7 @@ void swrapper::continue_read(int fd, smidpoint *mp, speer *peer)
 {
 	AbstractMessage *abst;
 	int complete;
-	
+
 		// fd has become readable...
 	abst = progress_in[fd]; // Continue any partial read
 	if(abst == NULL)		
@@ -1752,7 +1758,7 @@ void swrapper::serve_peer(scomm *msg, speer *peer)
 	HashCode *expected_hc;
 
 	mp = peer->owner;
-	
+
 	// Check for OOB:
 	if(msg->type == MessageGoodbye)
 	{
@@ -1786,12 +1792,11 @@ void swrapper::serve_peer(scomm *msg, speer *peer)
 	{
 		// Ready to pause this action, saved state = (scomm, peer):
 		msg->peer_uid = peer->uid;
-		
+
 		// Initiate schema lookup:
 		snode *sn;
 		int ok;
 		const char *s;
-		
 		s = msg->hc->tostring();
 		sn = pack(s, "hashcode");
 		delete[] s;
@@ -2277,7 +2282,6 @@ void swrapper::serve_rpc_builtin(speer *peer, snode *sn, int seq)
 		Schema *sch;
 		HashCode *hc;
 		char *s;
-		
 		hc = new HashCode();
 		hsh = sn->extract_txt();
 		hc->fromstring(hsh);
@@ -2307,14 +2311,14 @@ void swrapper::serve_rpc_builtin(speer *peer, snode *sn, int seq)
 	msg->type = MessageClient;
 	msg->seq = seq;
 	msg->hc = new HashCode(mp->reply_hc);
-	
+
 	buf = marshall(snrep, mp->reply_schema, &length, &err);
 	if(buf == NULL)
 		error("Built-in reply message does not conform with schema:\n%s", err);
 	msg->data = buf;
 	msg->length = length;
 	delete snrep;
-	
+
 	peer->deliver_remote(msg);
 	delete msg; // msg will delete buf for us
 }
@@ -2838,36 +2842,39 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 	{
 		// This means unrecognised != NULL
 		scomm *unrecognised = abst->unrecognised;
-		
+
 		const char *err;
 		Schema *sch;
 		speer *peer;
 		smidpoint *mp;
 		int found = 0;
-		
-		for(int i = 0; i < mps->count(); i++)
+
+		if (unrecognised->target != NULL)
 		{
-			mp = mps->item(i);
-			for(int j = 0; j < mp->peers->count(); j++)
+			for(int i = 0; i < mps->count(); i++)
 			{
-				peer = mp->peers->item(j);
-				if(peer->uid == unrecognised->peer_uid)
+				mp = mps->item(i);
+				for(int j = 0; j < mp->peers->count(); j++)
 				{
-					found = 1;
-					break;
+					peer = mp->peers->item(j);
+					if(peer->uid == unrecognised->peer_uid)
+					{
+						found = 1;
+						break;
+					}
 				}
+				if(found) break;
 			}
-			if(found) break;
+			if(found == 0)
+			{
+				/* The peer which sent the unrecognised message seems to have
+					departed, so no need to continue processing it */
+				delete sn_results;
+				delete abst;
+				return;
+			}
 		}
-		if(found == 0)
-		{
-			/* The peer which sent the unrecognised message seems to have
-				departed, so no need to continue processing it */
-			delete sn_results;
-			delete abst;
-			return;
-		}
-		
+
 		// Add to schema cache:
 		sch = Schema::create(sn_results->extract_txt(), &err);
 		if(sch == NULL)
@@ -2877,9 +2884,12 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 		log("Learned new schema (added to cache):");
 		sch->dump_tree(0, 1);
 		delete sch;
-		
-		// Restart processing of message paused due to unrecognised hash code:
-		serve_peer(unrecognised, peer);
+
+		// Restart processing of message paused due to unrecognised hash code (if we looked up on receipt of message):
+		if (unrecognised->target != NULL)
+			serve_peer(unrecognised, peer);
+		else
+			;// TODO: just got the schema, now need to make a lookup table. How do we get the peer?
 	}
 	else if(abst->purpose == VisitResolveConstraints)
 	{
@@ -3286,8 +3296,8 @@ void swrapper::do_map(mapparams *params)
 		hello->subs = sdup(mp->subs);
 	if(mp->topic != NULL)
 		hello->topic = sdup(mp->topic);
-	hello->msg_hc = new HashCode(mp->msg_hc);
-	hello->reply_hc = new HashCode(mp->reply_hc);
+	hello->msg_hc = (mp->msg_hc == NULL) ? new HashCode() : new HashCode(mp->msg_hc);
+	hello->reply_hc = (mp->reply_hc == NULL) ? new HashCode() : new HashCode(mp->reply_hc);
 
 	// Create a skeletal speer structure:
 	peer = new speer();
@@ -3377,13 +3387,50 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 	}
 	peer->msg_poly = welcome->msg_poly;
 	peer->reply_poly = welcome->reply_poly;
+	
+	if (peer->owner->partial_matching && welcome->msg_hc->equals(peer->owner->msg_hc) == 0)
+	{
+		Schema *sch = cache->lookup(welcome->msg_hc);
+		if (sch == NULL)
+		{
+			// Don't know schema, let's go and get it.
+			
+			// Initiate schema lookup:
+			snode *sn;
+			int ok;
+			const char *s;
+
+			s = welcome->msg_hc->tostring();
+			sn = pack(s, "hashcode");
+			delete[] s;
+			scomm *msg = new scomm();
+			
+			ok = begin_visit(VisitLookupSchema, peer->address, peer->cpt_name,
+					"lookup_schema", lookup_schema_mp, sn, NULL, NULL, msg);
+			if(ok < 0)
+			{
+				/* Couldn't make contact back to component, hence lookup
+					isn't going ahead. Without the schema, we can't process
+					the original message. */
+				warning("Warning: schema lookup on component '%s' failed",
+						peer->address);
+				warning("Cannot process incoming message without relevant schema");
+			}
+			delete msg;
+		}
+		else
+		{
+			// TODO: We know the schema, make lookup table for this peer.
+		}
+	}
+	
 	delete welcome;
 	
 	peer->owner->peers->add(peer);
 	multi->add(peer->sock, MULTI_READ, "swrapper::finalise_map");
 	fdstate[peer->sock] = FDPeer;
 	// delete abst;
-	
+
 	// Report mapping successful:
 	map_report(report_fd, 1, peer->address);
 }
