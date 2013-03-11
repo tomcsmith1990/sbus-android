@@ -476,6 +476,7 @@ swelcome::swelcome()
 {
 	cpt_name = endpoint = subs = topic = instance = address = NULL;
 	msg_poly = reply_poly = 0;
+	msg_hc = reply_hc = NULL;
 }
 
 swelcome::~swelcome()
@@ -486,6 +487,8 @@ swelcome::~swelcome()
 	if(subs != NULL) delete[] subs;
 	if(topic != NULL) delete[] topic;
 	if(address != NULL) delete[] address;
+	if(msg_hc != NULL) delete msg_hc;
+	if(reply_hc != NULL) delete reply_hc;
 }
 
 int swelcome::reveal(AbstractMessage *abst)
@@ -508,6 +511,8 @@ int swelcome::reveal(AbstractMessage *abst)
 	topic = decode_string(&pos);
 	msg_poly = decode_byte(&pos);
 	reply_poly = decode_byte(&pos);
+	msg_hc   = decode_hashcode(&pos);
+	reply_hc = decode_hashcode(&pos);
 			
 	return 0;
 }
@@ -527,6 +532,8 @@ AbstractMessage *swelcome::wrap(int fd)
 	sb->cat_string(topic); // May be NULL
 	sb->cat_byte(msg_poly);
 	sb->cat_byte(reply_poly);
+	sb->cat(msg_hc);
+	sb->cat(reply_hc);
 	abst = new AbstractMessage(fd, sb);
 	delete sb;
 	return abst;

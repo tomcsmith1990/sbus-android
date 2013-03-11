@@ -170,4 +170,7 @@ class swelcome
 	char *subs;
 	char *topic;
 	int msg_poly, reply_poly;
+	
+	HashCode *msg_hc;
+	HashCode *reply_hc;
 };
