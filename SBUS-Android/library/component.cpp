@@ -961,7 +961,7 @@ snode *MapConstraints::pack()
 	return sn;
 }
 
-snode *MapConstraints::pack(snode *hash_lookup, snode *type_hash_lookup)
+snode *MapConstraints::pack(snode *hash_lookup)
 {
 	snode *sn, *subn, *hash;
 
@@ -979,7 +979,7 @@ snode *MapConstraints::pack(snode *hash_lookup, snode *type_hash_lookup)
 		hash = hash_lookup->find(has_fields->extract_txt(i));
 		if (hash != NULL)
 		{
-			subn->append(::pack(hash->extract_txt("hash"), "hash"));
+			subn->append(::pack(hash->extract_txt("has"), "hash"));
 		}
 	}
 	sn->append(subn);
@@ -989,10 +989,10 @@ snode *MapConstraints::pack(snode *hash_lookup, snode *type_hash_lookup)
 	for(int i = 0; i < similar_fields->count(); i++)
 	{	
 		// If there is a field in our schema with this name, add its type hash.
-		hash = type_hash_lookup->find(similar_fields->extract_txt(i));
+		hash = hash_lookup->find(similar_fields->extract_txt(i));
 		if (hash != NULL)
 		{
-			subn->append(::pack(hash->extract_txt("hash"), "hash"));
+			subn->append(::pack(hash->extract_txt("similar"), "hash"));
 		}
 	}
 	sn->append(subn);

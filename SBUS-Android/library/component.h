@@ -195,7 +195,7 @@ class MapConstraints
 	static int is_constraint(const char *string);
 	
 	snode *pack();
-	snode *pack(snode *hash_lookup, snode *type_hash_lookup);
+	snode *pack(snode *hash_lookup);
 
 	void set_name(const char *s);	
 	void set_instance(const char *s);	

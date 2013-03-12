@@ -50,7 +50,7 @@ class Schema
 	int construct_lookup(Schema *sch, snode *lookup_forward, snode *lookup_backward);
 
 	HashCode *hc, *type_hc;
-	snode *hashes, *type_hashes;
+	snode *hashes;
 	MetaType meta;
 	
 	private:
@@ -65,7 +65,7 @@ class Schema
 	litmus *parse_type();
 	intvector *parse_names();
 	int multiple_names();
-	void dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int type_schema = 0, snode *sn = NULL);
+	void dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int type_schema = 0, snode *sn = NULL, StringBuf *tsb = NULL);
 	
 	void build_sections();
 	void scan_sections();

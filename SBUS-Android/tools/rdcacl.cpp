@@ -1271,7 +1271,7 @@ image::image()
 	msg_hsh = new svector();
 	reply_hsh = new svector();
 	msg_hsh_list = mklist("endpoints");
-	msg_type_hsh_list = mklist("endpoints");
+	//msg_type_hsh_list = mklist("endpoints");
 	lost = 0;
 	acpolicies = new rdcpermissionstore();
 	buffered_policies = new snodevector();
@@ -1297,11 +1297,8 @@ void image::init_hashes()
 			
 			svector *ep = new svector();
 			ep->add("EEEEEEEEEEEE");
-			//msg_hsh_list->add((void *)ep);
-			//msg_type_hsh_list->add((void *)ep);
 			snode *sn = pack("EEEEEEEEEEEE", "hash");
 			msg_hsh_list->append(sn);
-			msg_type_hsh_list->append(sn);
 		}
 		else
 		{
@@ -1309,12 +1306,9 @@ void image::init_hashes()
 			msg_hsh->add(s);
 			delete[] s;
 			
-			// Clone the snodes (for after we delete schema) and add to list.
+			// Clone the snode (for after we delete schema) and add to list.
 			snode *ep = new snode(msg_schema->hashes);
 			msg_hsh_list->append(ep);
-			
-			ep = new snode(msg_schema->type_hashes);
-			msg_type_hsh_list->append(ep);
 		}
 		reply_schema = Schema::create(subn->extract_txt("response"), &err);
 		if(reply_schema == NULL)
@@ -1332,7 +1326,7 @@ void image::init_hashes()
 	}
 	// Sanity check:
 	if(msg_hsh->count() != endpoints || reply_hsh->count() != endpoints || 
-		msg_hsh_list->count() != endpoints || msg_type_hsh_list->count() != endpoints)
+		msg_hsh_list->count() != endpoints)
 		error("Number of endpoints assertion failed in RDC");
 }
 
@@ -1348,7 +1342,6 @@ image::~image()
 	delete msg_hsh;
 	delete reply_hsh;
 	delete msg_hsh_list;
-	delete msg_type_hsh_list;
 	delete acpolicies;
 	delete buffered_policies;
 }
@@ -1416,7 +1409,7 @@ int image::match_cpt_metadata(snode *constraints)
 	return 1;
 }
 
-int image::schemamatch(snode *want, snode *have)
+int image::schemamatch(snode *want, snode *have, int similar)
 {
 	// Check if the hashes we want occur ANYWHERE in the hashes we have.
 	if (want->count() == 0) return 1;
@@ -1429,10 +1422,10 @@ int image::schemamatch(snode *want, snode *have)
 		match = 0;
 		wanted_hash = want->extract_txt(i);
 		
-		if (have->exists("hash"))
+		if (have->exists((similar) ? "similar" : "has"))
 		{
 			// If 'have' has a hash.
-			if (!strcmp(wanted_hash, have->extract_txt("hash")))
+			if (!strcmp(wanted_hash, have->extract_txt((similar) ? "similar" : "has")))
 			{
 				// If it's the hash we want, check next wanted hash.
 				match = 1;
@@ -1445,7 +1438,7 @@ int image::schemamatch(snode *want, snode *have)
 		{
 			snode *sn = mklist("hashes");
 			sn->append(pack(wanted_hash));
-			if (schemamatch(sn, have->extract_item(j)))
+			if (schemamatch(sn, have->extract_item(j), similar))
 			{
 				match = 1;
 				break;
@@ -1539,12 +1532,11 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 			sn = constraints->extract_item("hashes");
 			// This is a list of hashes of all structures in this endpoint's schema.
 			snode *ept_hashes = msg_hsh_list->extract_item(j);
-			if (!schemamatch(sn, ept_hashes))
+			if (!schemamatch(sn, ept_hashes, 0))
 				continue;
 				
 			sn = constraints->extract_item("type-hashes");
-			ept_hashes = msg_type_hsh_list->extract_item(j);
-			if (!schemamatch(sn, ept_hashes))
+			if (!schemamatch(sn, ept_hashes, 1))
 				continue;
 
 			// Let's assume if we're doing a flexible matching (for similar schemas) we don't want the LITMUS tests.
