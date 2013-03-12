@@ -1270,8 +1270,8 @@ image::image()
 	metadata = state = NULL;
 	msg_hsh = new svector();
 	reply_hsh = new svector();
-	msg_hsh_list = new pvector();
-	msg_type_hsh_list = new pvector();
+	msg_hsh_list = mklist("endpoints");
+	msg_type_hsh_list = mklist("endpoints");
 	lost = 0;
 	acpolicies = new rdcpermissionstore();
 	buffered_policies = new snodevector();
@@ -1297,8 +1297,11 @@ void image::init_hashes()
 			
 			svector *ep = new svector();
 			ep->add("EEEEEEEEEEEE");
-			msg_hsh_list->add((void *)ep);
-			msg_type_hsh_list->add((void *)ep);
+			//msg_hsh_list->add((void *)ep);
+			//msg_type_hsh_list->add((void *)ep);
+			snode *sn = pack("EEEEEEEEEEEE", "hash");
+			msg_hsh_list->append(sn);
+			msg_type_hsh_list->append(sn);
 		}
 		else
 		{
@@ -1306,15 +1309,12 @@ void image::init_hashes()
 			msg_hsh->add(s);
 			delete[] s;
 			
-			svector *ep = new svector();
-			for (int j = 0; j < msg_schema->hashes->count(); j++)
-				ep->add(msg_schema->hashes->extract_txt(j));
-			msg_hsh_list->add((void *)ep);
+			// Clone the snodes (for after we delete schema) and add to list.
+			snode *ep = new snode(msg_schema->hashes);
+			msg_hsh_list->append(ep);
 			
-			ep = new svector();
-			for (int j = 0; j < msg_schema->type_hashes->count(); j++)
-				ep->add(msg_schema->type_hashes->extract_txt(j));
-			msg_type_hsh_list->add((void *)ep);
+			ep = new snode(msg_schema->type_hashes);
+			msg_type_hsh_list->append(ep);
 		}
 		reply_schema = Schema::create(subn->extract_txt("response"), &err);
 		if(reply_schema == NULL)
@@ -1416,6 +1416,48 @@ int image::match_cpt_metadata(snode *constraints)
 	return 1;
 }
 
+int image::schemamatch(snode *want, snode *have)
+{
+	// Check if the hashes we want occur ANYWHERE in the hashes we have.
+	if (want->count() == 0) return 1;
+	
+	int match = 0;
+	const char *wanted_hash;
+
+	for (int i = 0; i < want->count(); i++)
+	{
+		match = 0;
+		wanted_hash = want->extract_txt(i);
+		
+		if (have->exists("hash"))
+		{
+			// If 'have' has a hash.
+			if (!strcmp(wanted_hash, have->extract_txt("hash")))
+			{
+				// If it's the hash we want, check next wanted hash.
+				match = 1;
+				continue;
+			}
+		}
+
+		// Check children.
+		for (int j = 0; j < have->count(); j++)
+		{
+			snode *sn = mklist("hashes");
+			sn->append(pack(wanted_hash));
+			if (schemamatch(sn, have->extract_item(j)))
+			{
+				match = 1;
+				break;
+			}
+		}
+		
+		if (!match) break;
+	}
+	
+	return match;
+}
+
 int image::match(snode *interface, snode *constraints, snode *matches, scomponent *com, const char *principal_cpt, const char *principal_inst)
 {
 	int match_endpoint_names;
@@ -1493,43 +1535,16 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 				continue;
 			}
 			
-			int field_match = true;
-			
 			// Check hash sent as part of constraints:
 			sn = constraints->extract_item("hashes");
 			// This is a list of hashes of all structures in this endpoint's schema.
-			svector *ep = (svector *)msg_hsh_list->item(j);
-			for (int k = 0; k < sn->count(); k++)
-			{
-				value = sn->extract_txt(k);
-				if(ep->find(value) == -1)
-				{
-					// no match
-					field_match = false;
-					break;
-				}
-			}
-			
-			// If any of the constraint hashes were not matched, this endpoint is not a match.
-			if (field_match == false)
+			snode *ept_hashes = msg_hsh_list->extract_item(j);
+			if (!schemamatch(sn, ept_hashes))
 				continue;
 				
-			field_match = true;
-			
 			sn = constraints->extract_item("type-hashes");
-			ep = (svector *)msg_type_hsh_list->item(j);
-			for (int k = 0; k < sn->count(); k++)
-			{
-				value = sn->extract_txt(k);
-				if(ep->find(value) == -1)
-				{
-					// no match
-					field_match = false;
-					break;
-				}
-			}
-
-			if (field_match == false)
+			ept_hashes = (snode *)msg_type_hsh_list->extract_item(j);
+			if (!schemamatch(sn, ept_hashes))
 				continue;
 
 			// Let's assume if we're doing a flexible matching (for similar schemas) we don't want the LITMUS tests.
