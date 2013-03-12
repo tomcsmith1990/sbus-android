@@ -816,7 +816,7 @@ char *MapConstraints::read_word(constcharptr *string)
 	
 	start = *string;
 	end = start;
-	while(*end != ' ' && *end != '\t' && *end != '\0' && *end != '+')
+	while(*end != ' ' && *end != '\t' && *end != '\0' && *end != '+' && *end != '[' && *end != ']')
 		end++;
 	s = new char[end - start + 1];
 	strncpy(s, start, end - start);
@@ -828,10 +828,22 @@ char *MapConstraints::read_word(constcharptr *string)
 MapConstraints::MapConstraints(const char *string)
 {
 	char code;
-	
+	int brackets = 0;
 	init();
 	while(*string != '\0')
 	{
+		while(*string == '[' || *string == ']')
+		{
+			if (*string == '[')
+				brackets++;
+			else
+				brackets--;
+				
+			if (brackets < 0) { failed_parse = 1; return; }
+							
+			string++;
+		}
+		
 		if(*string != '+') { failed_parse = 1; return; }
 		string++;
 		code = *string;
@@ -876,6 +888,7 @@ MapConstraints::MapConstraints(const char *string)
 		while(*string == ' ' || *string == '\t')
 			string++;
 	}
+	if (brackets) { failed_parse = 1; return; }
 }
 
 MapConstraints::~MapConstraints()
@@ -927,13 +940,9 @@ snode *MapConstraints::pack()
 	sn->append(::pack(pub_key, "pub-key"));
 	
 	subn = mklist("hashes");
-	for(int i = 0; i < has_fields->count(); i++)
-		subn->append(::pack(has_fields->item(i), "hash"));
 	sn->append(subn);
 	
 	subn = mklist("type-hashes");
-	for(int i = 0; i < similar_fields->count(); i++)
-		subn->append(::pack(similar_fields->item(i), "hash"));
 	sn->append(subn);
 	
 	subn = mklist("keywords");
