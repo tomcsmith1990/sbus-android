@@ -1271,7 +1271,6 @@ image::image()
 	msg_hsh = new svector();
 	reply_hsh = new svector();
 	msg_hsh_list = mklist("endpoints");
-	//msg_type_hsh_list = mklist("endpoints");
 	lost = 0;
 	acpolicies = new rdcpermissionstore();
 	buffered_policies = new snodevector();
@@ -1325,8 +1324,7 @@ void image::init_hashes()
 		if(reply_schema != NULL) delete reply_schema;
 	}
 	// Sanity check:
-	if(msg_hsh->count() != endpoints || reply_hsh->count() != endpoints || 
-		msg_hsh_list->count() != endpoints)
+	if(msg_hsh->count() != endpoints || reply_hsh->count() != endpoints || msg_hsh_list->count() != endpoints)
 		error("Number of endpoints assertion failed in RDC");
 }
 
@@ -1528,10 +1526,11 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 				continue;
 			}
 			
+			// This is an snode containing the endpoints fields and their 'has' and 'similar' hashes.
+			snode *ept_hashes = msg_hsh_list->extract_item(j);
+			
 			// Check hash sent as part of constraints:
 			sn = constraints->extract_item("hashes");
-			// This is a list of hashes of all structures in this endpoint's schema.
-			snode *ept_hashes = msg_hsh_list->extract_item(j);
 			if (!schemamatch(sn, ept_hashes, 0))
 				continue;
 				

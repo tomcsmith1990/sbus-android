@@ -85,7 +85,7 @@ int Schema::construct_lookup(Schema *sch, snode *lookup_forward, snode *lookup_b
 	return 0;
 }
 
-char *Schema::canonical_string(int type_schema)
+char *Schema::canonical_string()
 {
 	StringBuf *sb;
 	char *s;
@@ -94,7 +94,7 @@ char *Schema::canonical_string(int type_schema)
 	switch(meta)
 	{
 		case SCHEMA_NORM:
-			dump_litmus(sb, tree, 0, 1, type_schema, hashes, new StringBuf());
+			dump_litmus(sb, tree, 0, 1, hashes, new StringBuf());
 			break;
 		case SCHEMA_EMPTY:
 			sb->cat("0");
@@ -120,7 +120,7 @@ char *Schema::orig_string()
 	return source->extract();
 }
 
-void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int type_schema, snode *sn, StringBuf *tsb)
+void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *sn, StringBuf *tsb)
 {
 	// If sn is not NULL, we build up an snode matching this schema, where each field contains its hash.
 	const char *name;
@@ -208,7 +208,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int typ
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
 		for(int i = 0; i < l->children->count(); i++)
 		{
-			dump_litmus(sub, l->children->item(i), offset + 1, 0, type_schema, list, tsb);
+			dump_litmus(sub, l->children->item(i), offset + 1, 0, list, tsb);
 		}
 		sub->cat_spaces(offset * 3);
 		sub->cat("}\n");
@@ -273,7 +273,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int typ
 		}
 
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
-		dump_litmus(sub, l->content, offset + 1, 0, type_schema, list, tsb);
+		dump_litmus(sub, l->content, offset + 1, 0, list, tsb);
 		sub->cat_spaces(offset * 3);
 		sub->cat(")\n");
 		if (tsb != NULL)
@@ -316,7 +316,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int typ
 		sub->cat("[\n");
 		if (tsb != NULL) tsb->cat("[\n");
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
-		dump_litmus(sub, l->content, offset + 1, 0, type_schema, list, tsb);
+		dump_litmus(sub, l->content, offset + 1, 0, list, tsb);
 		sub->cat_spaces(offset * 3);
 		sub->cat("]\n");
 		if (tsb != NULL)
@@ -360,7 +360,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int typ
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
 		for(int i = 0; i < l->children->count(); i++)
 		{
-			dump_litmus(sub, l->children->item(i), offset + 1, 0, type_schema, list, tsb);
+			dump_litmus(sub, l->children->item(i), offset + 1, 0, list, tsb);
 		}
 		sub->cat_spaces(offset * 3);
 		sub->cat(">\n");
