@@ -4196,23 +4196,22 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		Schema *theirs = wrap->cache->lookup(msg->hc);
 		Schema *mine = owner->msg_schema;
 		
-		// TODO: better repacking.
-		// Check type hashes
-		if (theirs->type_hc->equals(mine->type_hc))
+		// TODO: need to compute a lookup table where some fields may not exist.
+		if(!strcmp(theirs->hashes->extract_item(0)->extract_txt("similar"), mine->hashes->extract_item(0)->extract_txt("similar")))
 		{
 			// Should always be true?
 			if (sn->get_type() == SStruct)
 			{
 				snode *parent;
-				
+			
 				// Get main structure name.
-				parent = mklist(owner->msg_schema->symbol_table->item(1));
-				
+				parent = mklist(mine->hashes->extract_item(0)->get_name());
+			
 				// Repack the message to fit our schema, and build up the lookup table.
 				repack(sn, parent);
-				
+			
 				delete sn;
-				
+			
 				msg->tree = parent;
 			}
 		}
