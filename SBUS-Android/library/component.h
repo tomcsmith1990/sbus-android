@@ -221,7 +221,7 @@ class MapConstraints
 			
 	svector *keywords;
 	svector *peers, *ancestors;
-	svector *has_fields, *similar_fields;
+	snode *has_fields, *similar_fields;
 	
 	// Any of these may be NULL to indicate irrelevant:
 	const char *cpt_name;
