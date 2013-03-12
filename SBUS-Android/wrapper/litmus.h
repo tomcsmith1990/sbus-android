@@ -42,7 +42,7 @@ class Schema
 	~Schema();
 
 	char *orig_string();
-	char *canonical_string(int type_schema = 0);
+	char *canonical_string();
 	
 	void dump_tokens();
 	void dump_tree(int initial_indent = 0, int log = 0);
@@ -65,7 +65,7 @@ class Schema
 	litmus *parse_type();
 	intvector *parse_names();
 	int multiple_names();
-	void dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int type_schema = 0, snode *sn = NULL, StringBuf *tsb = NULL);
+	void dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *sn = NULL, StringBuf *tsb = NULL);
 	
 	void build_sections();
 	void scan_sections();
