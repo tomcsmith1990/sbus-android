@@ -71,6 +71,19 @@ void Schema::dump_tree(int initial_indent, int log)
 	delete sb;
 }
 
+int Schema::construct_lookup(Schema *sch, snode *lookup)
+{
+	if (lookup == NULL)
+		return -1;
+	
+	for (int i = 0; i < symbol_table->count(); i++)
+	{
+		lookup->append(pack(sch->symbol_table->item(i), symbol_table->item(i)));
+	}
+	
+	return 0;
+}
+
 char *Schema::canonical_string(int type_schema)
 {
 	StringBuf *sb;

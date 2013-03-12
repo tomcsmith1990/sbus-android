@@ -2881,17 +2881,26 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 		cache->add(sch);
 		log("Learned new schema (added to cache):");
 		sch->dump_tree(0, 1);
-		delete sch;
 
 		// Restart processing of message paused due to unrecognised hash code (if we looked up on receipt of message):
 		if (mp->waiting > 0)
 		{
+			delete sch;
 			mp->waiting--;
 			serve_peer(unrecognised, peer);
 		}
 		else
 		{
-			// TODO: just got the schema, now need to make a lookup table. How do we get the peer?
+			// Construct our flat lookup table, when schemas have same fields, different names.
+			// TODO: non flat lookup.
+			peer->lookup = mklist("lookup");
+			mp->msg_schema->construct_lookup(sch, peer->lookup);				
+			delete sch;
+			
+			// If we have a subscription criteria.
+			if (mp->subs != NULL)
+				// Resubscribe, this will convert the subscription string to peer's schema.
+				peer->resubscribe(mp->subs, mp->topic);
 		}
 	}
 	else if(abst->purpose == VisitResolveConstraints)
@@ -3428,7 +3437,18 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 		}
 		else
 		{
-			// TODO: We know the schema, make lookup table for this peer.
+			// We already know schema, construct lookup table.
+			
+			// Construct our flat lookup table, when schemas have same fields, different names.
+			// TODO: non flat lookup.
+			peer->lookup = mklist("lookup");
+			smidpoint *owner = peer->owner;
+			owner->msg_schema->construct_lookup(sch, peer->lookup);
+			
+			// If we have a subscription criteria.
+			if (owner->subs != NULL)
+				// Resubscribe, this will convert the subscription string to peer's schema.
+				peer->resubscribe(owner->subs, owner->topic);
 		}
 	}
 	
@@ -4185,41 +4205,10 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 				// Get main structure name.
 				parent = mklist(owner->msg_schema->symbol_table->item(1));
 				
-				int first_message = false;
-				
-				// If lookup table is not created, create it, and add the main structure entry.
-				if (this->lookup == NULL)
-				{
-					first_message = true;
-					this->lookup = mklist("lookup");
-					
-					if (this->lookup->exists(sn->get_name()) == 0)
-						this->lookup->append(pack(sn->get_name(), owner->msg_schema->symbol_table->item(1)));
-				}
-				
 				// Repack the message to fit our schema, and build up the lookup table.
 				repack(sn, parent, owner->msg_schema, owner->msg_schema->tree);
 				
 				delete sn;
-				
-				// If we have a subscription criteria.
-				if (owner->subs != NULL && first_message)
-				{
-					// Resubscribe, this will convert the subscription string to peer's schema.
-					resubscribe(owner->subs, owner->topic);
-					
-					// Check this message actually matches (because the subscription wasn't applied to start with).
-					subscription *s = new subscription(owner->subs);					
-					if (s->match(parent) == 0)
-					{
-						delete s;
-						delete parent;
-						delete msg;
-						return;
-					}
-					
-					delete s;
-				}
 				
 				msg->tree = parent;
 			}
@@ -4243,12 +4232,12 @@ void speer::repack(snode *sn, snode *parent, Schema *sch, litmus *tree)
 			local_name = sch->symbol_table->item(tree->children->item(i)->namesym);
 		else
 			local_name = sch->symbol_table->item(tree->namesym);
-			
+		/*	
 		if (this->lookup->exists(local_name) == 0)
 		{
 			this->lookup->append(pack(sn->extract_item(i)->get_name(), local_name));
 		}
-
+*/
 		switch(sn->extract_item(i)->get_type())
 		{
 			case SInt: 
