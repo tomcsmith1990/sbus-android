@@ -795,8 +795,8 @@ void MapConstraints::init()
 	keywords = new svector();
 	peers = new svector();
 	ancestors = new svector();
-	has_fields = new svector();
-	similar_fields = new svector();
+	has_fields = mklist("has");
+	similar_fields = mklist("similar");
 	
 	match_endpoint_names = 0;
 	match_mode = MatchExact;
@@ -869,10 +869,10 @@ MapConstraints::MapConstraints(const char *string)
 				pub_key = read_word(&string);
 				break;
 			case 'H':	// has
-				has_fields->add(read_word(&string));
+				has_fields->append(::pack(read_word(&string), "has"));
 				break;
 			case 'S':	// similar
-				similar_fields->add(read_word(&string));
+				similar_fields->append(::pack(read_word(&string), "similar"));
 				break;
 			case 'K':
 				keywords->add(read_word(&string));
@@ -976,7 +976,7 @@ snode *MapConstraints::pack(snode *hash_lookup, snode *type_hash_lookup)
 	for(int i = 0; i < has_fields->count(); i++)
 	{	
 		// If there is a field in our schema with this name, add its hash.
-		hash = hash_lookup->find(has_fields->item(i));
+		hash = hash_lookup->find(has_fields->extract_txt(i));
 		if (hash != NULL)
 		{
 			subn->append(::pack(hash->extract_txt("hash"), "hash"));
@@ -989,7 +989,7 @@ snode *MapConstraints::pack(snode *hash_lookup, snode *type_hash_lookup)
 	for(int i = 0; i < similar_fields->count(); i++)
 	{	
 		// If there is a field in our schema with this name, add its type hash.
-		hash = type_hash_lookup->find(similar_fields->item(i));
+		hash = type_hash_lookup->find(similar_fields->extract_txt(i));
 		if (hash != NULL)
 		{
 			subn->append(::pack(hash->extract_txt("hash"), "hash"));
