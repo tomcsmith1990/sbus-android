@@ -71,14 +71,15 @@ void Schema::dump_tree(int initial_indent, int log)
 	delete sb;
 }
 
-int Schema::construct_lookup(Schema *sch, snode *lookup)
+int Schema::construct_lookup(Schema *sch, snode *lookup_forward, snode *lookup_backward)
 {
-	if (lookup == NULL)
+	if (lookup_forward == NULL || lookup_backward == NULL)
 		return -1;
 	
 	for (int i = 0; i < symbol_table->count(); i++)
 	{
-		lookup->append(pack(sch->symbol_table->item(i), symbol_table->item(i)));
+		lookup_forward->append(pack(sch->symbol_table->item(i), symbol_table->item(i))); // <my-name>their-name</my-name>
+		lookup_backward->append(pack(symbol_table->item(i), sch->symbol_table->item(i))); // <their-name>my-name</their-name>
 	}
 	
 	return 0;
