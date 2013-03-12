@@ -2893,8 +2893,9 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 		{
 			// Construct our flat lookup table, when schemas have same fields, different names.
 			// TODO: non flat lookup.
-			peer->lookup = mklist("lookup");
-			mp->msg_schema->construct_lookup(sch, peer->lookup);				
+			peer->lookup_forward = mklist("lookup");
+			peer->lookup_backward = mklist("lookup");
+			mp->msg_schema->construct_lookup(sch, peer->lookup_forward, peer->lookup_backward);		
 			delete sch;
 			
 			// If we have a subscription criteria.
@@ -3441,9 +3442,10 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 			
 			// Construct our flat lookup table, when schemas have same fields, different names.
 			// TODO: non flat lookup.
-			peer->lookup = mklist("lookup");
+			peer->lookup_forward = mklist("lookup");
+			peer->lookup_backward = mklist("lookup");
 			smidpoint *owner = peer->owner;
-			owner->msg_schema->construct_lookup(sch, peer->lookup);
+			owner->msg_schema->construct_lookup(sch, peer->lookup_forward, peer->lookup_backward);
 			
 			// If we have a subscription criteria.
 			if (owner->subs != NULL)
@@ -4206,7 +4208,7 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 				parent = mklist(owner->msg_schema->symbol_table->item(1));
 				
 				// Repack the message to fit our schema, and build up the lookup table.
-				repack(sn, parent, owner->msg_schema, owner->msg_schema->tree);
+				repack(sn, parent);
 				
 				delete sn;
 				
@@ -4222,22 +4224,14 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	delete msg;
 }
 
-void speer::repack(snode *sn, snode *parent, Schema *sch, litmus *tree)
+void speer::repack(snode *sn, snode *parent)
 {
 	const char *local_name;
 	snode *scomposite;
 	for (int i = 0; i < sn->count(); i++) {	
 
-		if (sn->get_type() != SList)
-			local_name = sch->symbol_table->item(tree->children->item(i)->namesym);
-		else
-			local_name = sch->symbol_table->item(tree->namesym);
-		/*	
-		if (this->lookup->exists(local_name) == 0)
-		{
-			this->lookup->append(pack(sn->extract_item(i)->get_name(), local_name));
-		}
-*/
+		local_name = this->lookup_backward->extract_txt(sn->extract_item(i)->get_name());
+
 		switch(sn->extract_item(i)->get_type())
 		{
 			case SInt: 
@@ -4263,12 +4257,12 @@ void speer::repack(snode *sn, snode *parent, Schema *sch, litmus *tree)
 				break;
 			case SStruct:
 				scomposite = mklist(local_name);
-				repack(sn->extract_item(i), scomposite, sch, tree->children->item(i));
+				repack(sn->extract_item(i), scomposite);
 				parent->append(scomposite); 
 				break;
 			case SList:
 				scomposite = mklist(local_name);
-				repack(sn->extract_item(i), scomposite, sch, tree->children->item(i)->content);
+				repack(sn->extract_item(i), scomposite);
 				parent->append(scomposite); 
 				break;
 			case SValue:
@@ -4345,7 +4339,7 @@ speer::speer()
 	disposable = 0;
 	msg_poly = reply_poly = 0;
 	ep_id = 0; // Needs to be filled in
-	lookup = NULL;
+	lookup_forward = lookup_backward = NULL;
 }
 
 speer::~speer()
@@ -4356,7 +4350,8 @@ speer::~speer()
 	if(address != NULL) delete[] address;
 	if(subs != NULL) delete subs;
 	if(topic != NULL) delete[] topic;
-	if(lookup != NULL) delete lookup;
+	if(lookup_forward != NULL) delete lookup_forward;
+	if(lookup_backward != NULL) delete lookup_backward;
 }
 
 void speer::divert(const char *new_address, const char *new_endpoint)
@@ -4406,12 +4401,12 @@ void speer::resubscribe(const char *subs, const char *topic)
 	resub->tgt_ep = sdup(endpoint);
 
 	//test...
-	if (owner->partial_matching && this->lookup != NULL)
+	if (owner->partial_matching && this->lookup_forward != NULL)
 	{
 		// If we support partial matching, and there's a lookup table for this (hence they're different schemas)
 		// Convert the subscription string to peer's schema before sending.
 		subscription *s = new subscription(subs);
-		resub->subscription = sdup(s->dump_plaintext(this->lookup));
+		resub->subscription = sdup(s->dump_plaintext(this->lookup_forward));
 	}
 	else
 	{	

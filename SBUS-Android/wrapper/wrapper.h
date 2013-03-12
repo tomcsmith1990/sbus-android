@@ -79,9 +79,10 @@ class speer
 	
 	void deliver_remote(scomm *msg, int disrupt = 0);
 	
-	void repack(snode *sn, snode *parent, Schema *sch, litmus *tree);
+	void repack(snode *sn, snode *parent);
 	
-	snode *lookup;
+	snode *lookup_forward; // mine to theirs
+	snode *lookup_backward; // theirs to mine
 };
 
 class smidpoint
