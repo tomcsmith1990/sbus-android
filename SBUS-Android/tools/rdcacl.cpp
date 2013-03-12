@@ -1543,7 +1543,7 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 				continue;
 				
 			sn = constraints->extract_item("type-hashes");
-			ept_hashes = (snode *)msg_type_hsh_list->extract_item(j);
+			ept_hashes = msg_type_hsh_list->extract_item(j);
 			if (!schemamatch(sn, ept_hashes))
 				continue;
 
