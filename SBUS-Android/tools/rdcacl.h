@@ -44,13 +44,14 @@ class image
 	int match(snode *interface, snode *constraints, snode *matches, scomponent *com, const char *principal_cpt, const char *principal_inst);
 	int hashmatch(const char *hsh1, const char *hsh2);
 	int similar(const char *name, const char *instance_name, const char *addr);
+	int schemamatch(snode *want, snode *have);
 	
 	char *address;
 	char *cpt_name;
 	char *ins_name;
 	snode *metadata, *state;
 	svector *msg_hsh, *reply_hsh;
-	pvector *msg_hsh_list, *msg_type_hsh_list;
+	snode *msg_hsh_list, *msg_type_hsh_list;
 	
 	int local, persistent;
 	int lost;

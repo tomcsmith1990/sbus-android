@@ -65,7 +65,7 @@ class Schema
 	litmus *parse_type();
 	intvector *parse_names();
 	int multiple_names();
-	void dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int type_schema = 0);
+	void dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, int type_schema = 0, snode *sn = NULL);
 	
 	void build_sections();
 	void scan_sections();
