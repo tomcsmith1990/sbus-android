@@ -1792,6 +1792,7 @@ void swrapper::serve_peer(scomm *msg, speer *peer)
 	{
 		// Ready to pause this action, saved state = (scomm, peer):
 		msg->peer_uid = peer->uid;
+		mp->waiting++;
 
 		// Initiate schema lookup:
 		snode *sn;
@@ -2849,30 +2850,27 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 		smidpoint *mp;
 		int found = 0;
 
-		if (unrecognised->target != NULL)
+		for(int i = 0; i < mps->count(); i++)
 		{
-			for(int i = 0; i < mps->count(); i++)
+			mp = mps->item(i);
+			for(int j = 0; j < mp->peers->count(); j++)
 			{
-				mp = mps->item(i);
-				for(int j = 0; j < mp->peers->count(); j++)
+				peer = mp->peers->item(j);
+				if(peer->uid == unrecognised->peer_uid)
 				{
-					peer = mp->peers->item(j);
-					if(peer->uid == unrecognised->peer_uid)
-					{
-						found = 1;
-						break;
-					}
+					found = 1;
+					break;
 				}
-				if(found) break;
 			}
-			if(found == 0)
-			{
-				/* The peer which sent the unrecognised message seems to have
-					departed, so no need to continue processing it */
-				delete sn_results;
-				delete abst;
-				return;
-			}
+			if(found) break;
+		}
+		if(found == 0)
+		{
+			/* The peer which sent the unrecognised message seems to have
+				departed, so no need to continue processing it */
+			delete sn_results;
+			delete abst;
+			return;
 		}
 
 		// Add to schema cache:
@@ -2886,10 +2884,15 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 		delete sch;
 
 		// Restart processing of message paused due to unrecognised hash code (if we looked up on receipt of message):
-		if (unrecognised->target != NULL)
+		if (mp->waiting > 0)
+		{
+			mp->waiting--;
 			serve_peer(unrecognised, peer);
+		}
 		else
-			;// TODO: just got the schema, now need to make a lookup table. How do we get the peer?
+		{
+			// TODO: just got the schema, now need to make a lookup table. How do we get the peer?
+		}
 	}
 	else if(abst->purpose == VisitResolveConstraints)
 	{
@@ -3403,7 +3406,13 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 			s = welcome->msg_hc->tostring();
 			sn = pack(s, "hashcode");
 			delete[] s;
+			
+			// Put a message with the peer uid into the AbstractMessage.
+			// Then when we get results of lookup_schema, we can find the peer again,
+			// so we can go and make a lookup table.
 			scomm *msg = new scomm();
+			msg->peer_uid = peer->uid;
+			abst->unrecognised = msg;
 			
 			ok = begin_visit(VisitLookupSchema, peer->address, peer->cpt_name,
 					"lookup_schema", lookup_schema_mp, sn, NULL, NULL, msg);
@@ -3416,7 +3425,6 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 						peer->address);
 				warning("Cannot process incoming message without relevant schema");
 			}
-			delete msg;
 		}
 		else
 		{
@@ -4042,7 +4050,7 @@ smidpoint::smidpoint()
 	issued_rpcs = new smessagequeue();
 	pending_replies = new scommqueue();
 	next_seq = 0;
-	processed = dropped = 0;
+	processed = waiting = dropped = 0;
 	ep_id = 0; // Must be filled in
 	partial_matching = 0;
 	acl_ep = new spermissionvector();
@@ -4312,7 +4320,7 @@ void speer::serve(snode *sn, int seq, HashCode *hc)
 	later->seq = seq;
 	later->hc = new HashCode(owner->reply_hc); // May be overriden later if poly
 	later->peer_uid = uid;
-	
+
 	/* We only need to fill in int later->length and uchar *later->data
 		with the answer from the library, then it can be sent back to the
 		client */
