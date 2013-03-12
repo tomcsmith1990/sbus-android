@@ -110,6 +110,7 @@ class smidpoint
 
 	// Performance monitoring:
 	int processed;
+	int waiting;
 	int dropped;
 		
 	smessagequeue *issued_rpcs; // EndpointClient only
