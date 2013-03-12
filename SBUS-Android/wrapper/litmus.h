@@ -46,6 +46,8 @@ class Schema
 	
 	void dump_tokens();
 	void dump_tree(int initial_indent = 0, int log = 0);
+	
+	int construct_lookup(Schema *sch, snode *lookup);
 
 	HashCode *hc, *type_hc;
 	snode *hashes, *type_hashes;

@@ -81,8 +81,6 @@ class speer
 	
 	void repack(snode *sn, snode *parent, Schema *sch, litmus *tree);
 	
-	private:
-	
 	snode *lookup;
 };
 
