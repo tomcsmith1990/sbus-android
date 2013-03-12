@@ -2458,7 +2458,7 @@ void swrapper::subscribe(smidpoint *mp, const char *subs,
 			mapcon = new MapConstraints(peer_address);
 
 			//TODO: Add in other constraints (certificates, pub keys, etc).
-			constraints = mapcon->pack(mp->msg_schema->hashes, mp->msg_schema->type_hashes);
+			constraints = mapcon->pack(mp->msg_schema->hashes);
 			//printf("the constraints for this filter operation are %s\n",constraints->toxml(1));
 			if(constraints->exists("cpt-name"))
 				cpt = constraints->extract_txt("cpt-name");
@@ -2953,7 +2953,7 @@ void swrapper::resolve_address(const char *addrstring, mapparams *params, int pa
 	{
 		mapcon = new MapConstraints(addrstring);	
 		sn = mklist("criteria");
-		sn->append(mapcon->pack(params->mp->msg_schema->hashes, params->mp->msg_schema->type_hashes));
+		sn->append(mapcon->pack(params->mp->msg_schema->hashes));
 		sn->append(params->mp->pack_interface(1));
 		delete mapcon;
 		params->query_sn = sn;
@@ -4196,6 +4196,7 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		Schema *theirs = wrap->cache->lookup(msg->hc);
 		Schema *mine = owner->msg_schema;
 		
+		// TODO: better repacking.
 		// Check type hashes
 		if (theirs->type_hc->equals(mine->type_hc))
 		{
