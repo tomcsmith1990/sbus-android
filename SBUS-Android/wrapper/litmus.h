@@ -29,8 +29,8 @@ class Schema
 {
 	public:
 	
-   svector *symbol_table; // Element names and literal values   
-   litmus *tree;
+	svector *symbol_table; // Element names and literal values   
+	litmus *tree;
 	
 	// These three functions return NULL in case of error:
 	static Schema *load(const char *pathname, const char **err);
