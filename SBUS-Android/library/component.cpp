@@ -795,8 +795,6 @@ void MapConstraints::init()
 	keywords = new svector();
 	peers = new svector();
 	ancestors = new svector();
-	has_fields = mklist("has");
-	similar_fields = mklist("similar");
 	schema_constraints = mklist("schema");
 	
 	match_endpoint_names = 0;
@@ -934,8 +932,6 @@ MapConstraints::~MapConstraints()
 	if(instance_name != NULL) delete[] instance_name;
 	if(creator != NULL) delete[] creator;
 	if(pub_key != NULL) delete[] pub_key;
-	delete has_fields;
-	delete similar_fields;
 	delete schema_constraints;
 	delete keywords;
 	delete peers;
