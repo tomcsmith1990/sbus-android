@@ -137,7 +137,7 @@ rdc::rdc()
 	register_ep = com->add_endpoint("register", EndpointSink, "B3572388E4A4");
 	lost_ep = com->add_endpoint("lost", EndpointSink, "B3572388E4A4");
 	com->add_endpoint("hup", EndpointSink, "000000000000");
-	com->add_endpoint("lookup_cpt", EndpointServer, "85C4C72B7F2A",
+	com->add_endpoint("lookup_cpt", EndpointServer, "CB9E36596A42",
 			"F96D2B7A73C1");
 	com->add_endpoint("list", EndpointServer, "000000000000", "46920F3551F9");
 	com->add_endpoint("cached_metadata", EndpointServer, "872A0BD357A6",
@@ -1407,42 +1407,53 @@ int image::match_cpt_metadata(snode *constraints)
 	return 1;
 }
 
-int image::schemamatch(snode *want, snode *have, int similar)
+int image::schemamatch(snode *want, snode *have)
 {
 	// Check if the hashes we want occur ANYWHERE in the hashes we have.
-	if (want->count() == 0) return 1;
 	
-	int match = 0;
-	const char *wanted_hash;
+	// If there are no constraints, we match.
+	if (want->count() == 0) return 1;
 
+	int match = 0;
+	
+	snode *constraint;
+	int exact;
+	const char *hash;
+
+	// Loop through all of the hash constraints.
 	for (int i = 0; i < want->count(); i++)
 	{
 		match = 0;
-		wanted_hash = want->extract_txt(i);
 		
-		if (have->exists((similar) ? "similar" : "has"))
+		constraint = want->extract_item(i);
+		exact = constraint->extract_flg("exact");
+		hash = constraint->extract_txt("hash");
+
+		if (have->exists((exact) ? "has" : "similar"))
 		{
 			// If 'have' has a hash.
-			if (!strcmp(wanted_hash, have->extract_txt((similar) ? "similar" : "has")))
+			if (!strcmp(hash, have->extract_txt((exact) ? "has" : "similar")))
 			{
-				// If it's the hash we want, check next wanted hash.
+				// If it's the hash we want, match this constraint so check next.
 				match = 1;
 				continue;
 			}
 		}
 
-		// Check children.
+		// Depth first check the children of 'have'.
 		for (int j = 0; j < have->count(); j++)
 		{
-			snode *sn = mklist("hashes");
-			sn->append(pack(wanted_hash));
-			if (schemamatch(sn, have->extract_item(j), similar))
+			snode *sn = mklist("schema");
+			sn->append(constraint);
+			// If constraint is matched somewhere in a child, check next constraint.
+			if (schemamatch(sn, have->extract_item(j)))
 			{
 				match = 1;
 				break;
 			}
 		}
 		
+		// If we still haven't matched this constraint, we fail.
 		if (!match) break;
 	}
 	
@@ -1529,17 +1540,13 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 			// This is an snode containing the endpoints fields and their 'has' and 'similar' hashes.
 			snode *ept_hashes = msg_hsh_list->extract_item(j);
 			
-			// Check hash sent as part of constraints:
-			sn = constraints->extract_item("hashes");
-			if (!schemamatch(sn, ept_hashes, 0))
+			// Check schema constraints.
+			sn = constraints->extract_item("schema");
+			if (!schemamatch(sn, ept_hashes))
 				continue;
-				
-			sn = constraints->extract_item("type-hashes");
-			if (!schemamatch(sn, ept_hashes, 1))
-				continue;
-
+			
 			// Let's assume if we're doing a flexible matching (for similar schemas) we don't want the LITMUS tests.
-			if (constraints->extract_item("hashes")->count() == 0 && constraints->extract_item("type-hashes")->count() == 0)
+			if (constraints->extract_item("schema")->count() == 0)
 			{
 				// OK so far. Now for the LITMUS tests:
 				if(!hashmatch(ep_reqd->extract_txt("msg-hash"), msg_hsh->item(j)))
