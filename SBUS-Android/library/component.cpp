@@ -797,6 +797,7 @@ void MapConstraints::init()
 	ancestors = new svector();
 	has_fields = mklist("has");
 	similar_fields = mklist("similar");
+	schema_constraints = mklist("schema");
 	
 	match_endpoint_names = 0;
 	match_mode = MatchExact;
@@ -830,20 +831,54 @@ MapConstraints::MapConstraints(const char *string)
 	char code;
 	int brackets = 0;
 	init();
+	
+	// sn is the snode we are adding constraints to -> the top level constraint list, or as children of a constraint.
+	snode *sn = schema_constraints;
+	// last is a constraint, whose children we are currently adding constraints to.
+	snode *last = NULL;
+	// stacks to keep both.
+	pvector *stack = new pvector();
+	pvector *last_stack = new pvector();
+	
 	while(*string != '\0')
 	{
 		while(*string == '[' || *string == ']')
 		{
 			if (*string == '[')
+			{
 				brackets++;
+				// Add currents to stack.
+				stack->add((void *)sn);
+				last_stack->add((void *)last);
+				// If we've already got a list of children for this, use that one, else create new list.
+				if (last != NULL)
+				{
+					if (last->exists("children"))
+						sn = last->extract_item("children");
+					else
+						sn = mklist("children");
+				}
+			}
 			else
+			{
+				// Get whoever we are adding these constraints to.
+				last = (snode *)last_stack->pop();
+				// If we have a list of constraints under the name "children", and there's more than one in the list
+				// And we haven't already added the list of children, add the constraints.
+				if (!strcmp(sn->get_name(), "children") && sn->count() > 0 && !last->exists("children"))
+					last->append(sn);
+					
+				// Restore sn from stack.
+				sn = (snode *)stack->pop();
 				brackets--;
+			}
 				
-			if (brackets < 0) { failed_parse = 1; return; }
+			if (brackets < 0) { failed_parse = 2; return; }
 							
 			string++;
 		}
 		
+		if(*string == '\0') return;
 		if(*string != '+') { failed_parse = 1; return; }
 		string++;
 		code = *string;
@@ -869,10 +904,12 @@ MapConstraints::MapConstraints(const char *string)
 				pub_key = read_word(&string);
 				break;
 			case 'H':	// has
-				has_fields->append(::pack(read_word(&string), "has"));
+				last = ::pack(::pack(read_word(&string), "hash"), ::pack_bool(1, "exact"), "constraint");
+				sn->append(last);
 				break;
 			case 'S':	// similar
-				similar_fields->append(::pack(read_word(&string), "similar"));
+				last = ::pack(::pack(read_word(&string), "hash"), ::pack_bool(0, "exact"), "constraint");
+				sn->append(last);
 				break;
 			case 'K':
 				keywords->add(read_word(&string));
@@ -888,7 +925,7 @@ MapConstraints::MapConstraints(const char *string)
 		while(*string == ' ' || *string == '\t')
 			string++;
 	}
-	if (brackets) { failed_parse = 1; return; }
+	if (brackets) { failed_parse = 2; return; }
 }
 
 MapConstraints::~MapConstraints()
@@ -899,6 +936,7 @@ MapConstraints::~MapConstraints()
 	if(pub_key != NULL) delete[] pub_key;
 	delete has_fields;
 	delete similar_fields;
+	delete schema_constraints;
 	delete keywords;
 	delete peers;
 	delete ancestors;
@@ -939,9 +977,6 @@ snode *MapConstraints::pack()
 	sn->append(::pack(creator, "creator"));
 	sn->append(::pack(pub_key, "pub-key"));
 	
-	subn = mklist("schema");
-	sn->append(subn);
-	
 	subn = mklist("keywords");
 	for(int i = 0; i < keywords->count(); i++)
 		subn->append(::pack(keywords->item(i), "keyword"));
@@ -960,7 +995,7 @@ snode *MapConstraints::pack()
 
 snode *MapConstraints::pack(snode *hash_lookup)
 {
-	snode *sn, *subn, *schema_contraint, *hash;
+	snode *sn, *subn;
 
 	sn = mklist("map-constraints");
 	// These lines also work correctly if any string is NULL
@@ -969,33 +1004,13 @@ snode *MapConstraints::pack(snode *hash_lookup)
 	sn->append(::pack(creator, "creator"));
 	sn->append(::pack(pub_key, "pub-key"));
 
-	subn = mklist("schema");
-	for(int i = 0; i < has_fields->count(); i++)
-	{	
-		// If there is a field in our schema with this name, add its hash.
-		hash = hash_lookup->find(has_fields->extract_txt(i));
-		if (hash != NULL)
-		{
-			schema_contraint = ::pack(::pack(hash->extract_txt("has"), "hash"), ::pack_bool(1, "exact"), "constraint");
-			subn->append(schema_contraint);
-		}
-	}
-	//sn->append(subn);
+	if (failed_parse == 2)
+		warning("There was some error parsing the map string - results may not be as expected");
 	
-	//subn = mklist("type-hashes");
-
-	for(int i = 0; i < similar_fields->count(); i++)
-	{	
-		// If there is a field in our schema with this name, add its type hash.
-		hash = hash_lookup->find(similar_fields->extract_txt(i));
-		if (hash != NULL)
-		{
-			//subn->append(::pack(hash->extract_txt("similar"), "hash"));
-			schema_contraint = ::pack(::pack(hash->extract_txt("similar"), "hash"), ::pack_bool(0, "exact"), "constraint");
-			subn->append(schema_contraint);
-		}
-	}
-	sn->append(subn);
+	// Schema constraints.
+	subn = mklist("schema");
+	pack_hashes(hash_lookup, schema_constraints, subn);
+	sn->append(::pack(subn->toxml(0), "schema"));
 	
 	subn = mklist("keywords");
 	for(int i = 0; i < keywords->count(); i++)
@@ -1011,6 +1026,36 @@ snode *MapConstraints::pack(snode *hash_lookup)
 	sn->append(subn);
 	sn->append(::pack_bool(match_endpoint_names, "match-endpoint-names"));
 	return sn;
+}
+
+void MapConstraints::pack_hashes(snode *hash_lookup, snode *convert, snode* constraint_list)
+{
+	snode *hash_constraint, *name_constraint, *hash, *children;
+	int exact;
+	
+	for (int i = 0; i < convert->count(); i++)
+	{
+		name_constraint = convert->extract_item(i);
+		exact = name_constraint->extract_flg("exact");
+		
+		// If there is a field in our schema with this name, get its hash.
+		hash = hash_lookup->find(name_constraint->extract_txt("hash"));
+		if (hash != NULL)
+		{
+			// Pack the hash constraint.
+			hash_constraint = ::pack(::pack(hash->extract_txt((exact ? "has" : "similar")), "hash"), ::pack_bool(exact, "exact"), "constraint");
+		}
+		
+		// If there are any child constraints, pack their hash constraints.
+		if (name_constraint->exists("children"))
+		{
+			children = mklist("children");
+			pack_hashes(hash_lookup, name_constraint->extract_item("children"), children);
+			hash_constraint->append(children);
+		}
+		
+		constraint_list->append(hash_constraint);
+	}
 }
 
 void MapConstraints::set_name(const char *s)

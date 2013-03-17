@@ -193,30 +193,28 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		sb->cat_spaces(offset * 3);
 		// Create a separate StringBuf and append, so we can get hashes for substructures.
 		StringBuf *sub = new StringBuf();
+		StringBuf *tbuf = new StringBuf();
 		
 		if(defn) sb->cat('@');
 		sub->cat(symbol_table->item(l->namesym));
 		sub->cat('\n');
 		sub->cat_spaces(offset * 3);
 		sub->cat("{\n");
-		if (tsb != NULL)
-		{
-			tsb->cat('\n');
-			tsb->cat_spaces(offset * 3);
-			tsb->cat("{\n");
-		}
+
+		tbuf->cat('\n');
+		tbuf->cat_spaces(offset * 3);
+		tbuf->cat("{\n");
+		
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
 		for(int i = 0; i < l->children->count(); i++)
 		{
-			dump_litmus(sub, l->children->item(i), offset + 1, 0, list, tsb);
+			dump_litmus(sub, l->children->item(i), offset + 1, 0, list, tbuf);
 		}
 		sub->cat_spaces(offset * 3);
 		sub->cat("}\n");
-		if (tsb != NULL)
-		{
-			tsb->cat_spaces(offset * 3);
-			tsb->cat("}\n");
-		}
+
+		tbuf->cat_spaces(offset * 3);
+		tbuf->cat("}\n");
 		
 		// Add the hashes of this field.
 		if (sn != NULL)
@@ -224,9 +222,13 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			const char *subschema;
 			HashCode *hash = new HashCode();
 			
-			subschema = tsb->extract();
+			subschema = tbuf->extract();
 			hash->fromschema(subschema);
 			list->append(pack(hash->tostring(), "similar"));
+			if (tsb != NULL)
+			{
+				tsb->append(tbuf);
+			}
 		
 			subschema = sub->extract();
 			hash->fromschema(subschema);
@@ -237,7 +239,8 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			delete hash;
 			delete subschema;
 		}
-
+		delete tbuf;
+		
 		sb->append(sub);
 		delete sub;
 	}
@@ -247,6 +250,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		sb->cat_spaces(offset * 3);
 		// Create a separate StringBuf and append, so we can get hashes for substructures.
 		StringBuf *sub = new StringBuf();
+		StringBuf *tbuf = new StringBuf();
 		
 		if(defn) sb->cat('@');
 		sub->cat(symbol_table->item(l->namesym));
@@ -259,28 +263,23 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		else
 			sub->catf("(%d\n", l->arraylen);
 			
-		if (tsb != NULL)
-		{
-			tsb->cat('\n');
-			tsb->cat_spaces(offset * 3);
-			
-			if(l->type == LITMUS_SEQ)
-				tsb->cat("(+\n");
-			else if(l->type == LITMUS_LIST)
-				tsb->cat("(\n");
-			else
-				tsb->catf("(%d\n", l->arraylen);
-		}
+		tbuf->cat('\n');
+		tbuf->cat_spaces(offset * 3);
+		
+		if(l->type == LITMUS_SEQ)
+			tbuf->cat("(+\n");
+		else if(l->type == LITMUS_LIST)
+			tbuf->cat("(\n");
+		else
+			tbuf->catf("(%d\n", l->arraylen);
 
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
-		dump_litmus(sub, l->content, offset + 1, 0, list, tsb);
+		dump_litmus(sub, l->content, offset + 1, 0, list, tbuf);
 		sub->cat_spaces(offset * 3);
 		sub->cat(")\n");
-		if (tsb != NULL)
-		{
-			tsb->cat_spaces(offset * 3);
-			tsb->cat(")\n");
-		}
+	
+		tbuf->cat_spaces(offset * 3);
+		tbuf->cat(")\n");
 
 		// Add the hashes of this field.
 		if (sn != NULL)
@@ -288,9 +287,13 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			const char *subschema;
 			HashCode *hash = new HashCode();
 			
-			subschema = tsb->extract();
+			subschema = tbuf->extract();
 			hash->fromschema(subschema);
 			list->append(pack(hash->tostring(), "similar"));
+			if (tsb != NULL)
+			{
+				tsb->append(tbuf);
+			}
 		
 			subschema = sub->extract();
 			hash->fromschema(subschema);
@@ -301,7 +304,8 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			delete hash;
 			delete subschema;
 		}
-
+		delete tbuf;
+		
 		sb->append(sub);
 		delete sub;
 	}
@@ -311,19 +315,17 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 	
 		// Create a separate StringBuf and append, so we can get hashes for substructures.
 		StringBuf *sub = new StringBuf();
-		
+		StringBuf *tbuf = new StringBuf();
+	
 		if(defn) sb->cat('@');
 		sub->cat("[\n");
-		if (tsb != NULL) tsb->cat("[\n");
+		tbuf->cat("[\n");
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
-		dump_litmus(sub, l->content, offset + 1, 0, list, tsb);
+		dump_litmus(sub, l->content, offset + 1, 0, list, tbuf);
 		sub->cat_spaces(offset * 3);
 		sub->cat("]\n");
-		if (tsb != NULL)
-		{
-			tsb->cat_spaces(offset * 3);
-			tsb->cat("]\n");
-		}
+		tbuf->cat_spaces(offset * 3);
+		tbuf->cat("]\n");
 		
 		// Add the hashes of this field.
 		if (sn != NULL)
@@ -334,6 +336,10 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			subschema = tsb->extract();
 			hash->fromschema(subschema);
 			list->append(pack(hash->tostring(), "similar"));
+			if (tsb != NULL)
+			{
+				tsb->append(tbuf);
+			}
 		
 			subschema = sub->extract();
 			hash->fromschema(subschema);
@@ -344,6 +350,8 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			delete hash;
 			delete subschema;
 		}
+		delete tbuf;
+		
 		sb->append(sub);
 		delete sub;
 	}
@@ -353,22 +361,21 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		
 		// Create a separate StringBuf and append, so we can get hashes for substructures.
 		StringBuf *sub = new StringBuf();
+		StringBuf *tbuf = new StringBuf();
 		
 		if(defn) sb->cat('@');
 		sub->cat("<\n");
-		if (tsb != NULL) tsb->cat("<\n");
+		tbuf->cat("<\n");
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
 		for(int i = 0; i < l->children->count(); i++)
 		{
-			dump_litmus(sub, l->children->item(i), offset + 1, 0, list, tsb);
+			dump_litmus(sub, l->children->item(i), offset + 1, 0, list, tbuf);
 		}
 		sub->cat_spaces(offset * 3);
 		sub->cat(">\n");
-		if (tsb != NULL)
-		{
-			tsb->cat_spaces(offset * 3);
-			tsb->cat(">\n");
-		}
+		
+		tbuf->cat_spaces(offset * 3);
+		tbuf->cat(">\n");
 		
 		const char *subschema = sub->extract();
 		HashCode *hash = new HashCode();
@@ -383,6 +390,10 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			subschema = tsb->extract();
 			hash->fromschema(subschema);
 			list->append(pack(hash->tostring(), "similar"));
+			if (tsb != NULL)
+			{
+				tsb->append(tbuf);
+			}
 		
 			subschema = sub->extract();
 			hash->fromschema(subschema);
@@ -393,6 +404,8 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			delete hash;
 			delete subschema;
 		}
+		delete tbuf;
+		
 		sb->append(sub);
 		delete sub;
 	}
@@ -427,6 +440,10 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			subschema = tbuf->extract();
 			hash->fromschema(subschema);
 			list->append(pack(hash->tostring(), "similar"));
+			if (tsb != NULL)
+			{
+				tsb->append(tbuf);
+			}
 		
 			subschema = sub->extract();
 			hash->fromschema(subschema);

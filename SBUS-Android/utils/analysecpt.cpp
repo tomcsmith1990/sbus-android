@@ -28,8 +28,8 @@ void analyse_component(const char *cpt_filename)
 	int num_aps;
 	const char *err;
 	int chars;
-	HashCode *msg_hc, *msg_type_hc, *reply_hc, *reply_type_hc;
-	char *hsh, *type_hsh;
+	HashCode *msg_hc, *reply_hc;
+	char *hsh;
 
 	master_schema = Schema::load(metadata_schema, &err);
 	if(master_schema == NULL)
@@ -64,35 +64,29 @@ void analyse_component(const char *cpt_filename)
 		if(msg_schema == NULL)
 			error("Can't create schema: %s", err);
 		msg_hc = msg_schema->hc;
-		msg_type_hc = msg_schema->type_hc;
 		reply_schema = Schema::create(reply_idl, &err);
 		if(reply_schema == NULL)
 			error("Can't create schema: %s", err);
 		reply_hc = reply_schema->hc;
-		reply_type_hc = reply_schema->type_hc;
 		
 		hsh = msg_hc->tostring();
-		type_hsh = msg_type_hc->tostring();
 		chars = printf("%s: %s%s", name, type,
 				(reply_hc->isapplicable() ? " (message)" : ""));
 		spaces(35 - chars);
-		printf(" code: %s type-code: %s\n", hsh, type_hsh);
+		printf(" code: %s\n", hsh);
 		if(!quiet)
 			msg_schema->dump_tree(1);
 		delete[] hsh;
-		delete[] type_hsh;
 		
 		if(reply_hc->isapplicable())
 		{
 			hsh = reply_hc->tostring();
-			type_hsh = reply_type_hc->tostring();
 			chars = printf("%s: %s (response)", name, type);
 			spaces(35 - chars);
-			printf(" code: %s type-code: %s\n", hsh, type_hsh);
+			printf(" code: %s\n", hsh);
 			if(!quiet)
 				reply_schema->dump_tree(1);
 			delete[] hsh;
-			delete[] type_hsh;
 		}
 		
 		delete msg_schema;

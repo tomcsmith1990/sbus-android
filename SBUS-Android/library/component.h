@@ -196,6 +196,8 @@ class MapConstraints
 	
 	snode *pack();
 	snode *pack(snode *hash_lookup);
+	
+	void pack_hashes(snode *hash_lookup, snode *convert, snode* constraint_list);
 
 	void set_name(const char *s);	
 	void set_instance(const char *s);	
@@ -221,7 +223,7 @@ class MapConstraints
 			
 	svector *keywords;
 	svector *peers, *ancestors;
-	snode *has_fields, *similar_fields;
+	snode *has_fields, *similar_fields, *schema_constraints;
 	
 	// Any of these may be NULL to indicate irrelevant:
 	const char *cpt_name;

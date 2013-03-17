@@ -137,7 +137,7 @@ rdc::rdc()
 	register_ep = com->add_endpoint("register", EndpointSink, "B3572388E4A4");
 	lost_ep = com->add_endpoint("lost", EndpointSink, "B3572388E4A4");
 	com->add_endpoint("hup", EndpointSink, "000000000000");
-	com->add_endpoint("lookup_cpt", EndpointServer, "CB9E36596A42",
+	com->add_endpoint("lookup_cpt", EndpointServer, "18D70E4219C8",
 			"F96D2B7A73C1");
 	com->add_endpoint("list", EndpointServer, "000000000000", "46920F3551F9");
 	com->add_endpoint("cached_metadata", EndpointServer, "872A0BD357A6",
@@ -1429,14 +1429,25 @@ int image::schemamatch(snode *want, snode *have)
 		exact = constraint->extract_flg("exact");
 		hash = constraint->extract_txt("hash");
 
+		// If 'have' has a hash.
 		if (have->exists((exact) ? "has" : "similar"))
 		{
-			// If 'have' has a hash.
+			// If it's the hash we want.
 			if (!strcmp(hash, have->extract_txt((exact) ? "has" : "similar")))
 			{
-				// If it's the hash we want, match this constraint so check next.
-				match = 1;
-				continue;
+				// If there a constraints within this one.
+				if (constraint->exists("children"))
+				{
+					// See if we can match within what we have.
+					match = schemamatch(constraint->extract_item("children"), have);
+				}
+				else
+					// If there are no constraints within this, we have a match on this.
+					match = 1;
+				
+				// If this matches, move on to the next one.
+				if (match)
+					continue;
 			}
 		}
 
@@ -1541,12 +1552,14 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 			snode *ept_hashes = msg_hsh_list->extract_item(j);
 			
 			// Check schema constraints.
-			sn = constraints->extract_item("schema");
-			if (!schemamatch(sn, ept_hashes))
-				continue;
-			
+			if (constraints->exists("schema"))
+			{
+				sn = snode::import(constraints->extract_txt("schema"), NULL);
+				if (!schemamatch(sn, ept_hashes))
+					continue;
+			}
 			// Let's assume if we're doing a flexible matching (for similar schemas) we don't want the LITMUS tests.
-			if (constraints->extract_item("schema")->count() == 0)
+			else
 			{
 				// OK so far. Now for the LITMUS tests:
 				if(!hashmatch(ep_reqd->extract_txt("msg-hash"), msg_hsh->item(j)))
