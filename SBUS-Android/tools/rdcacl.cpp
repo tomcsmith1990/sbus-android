@@ -1438,8 +1438,18 @@ int image::schemamatch(snode *want, snode *have)
 				// If there a constraints within this one.
 				if (constraint->exists("children"))
 				{
-					// See if we can match within what we have.
-					match = schemamatch(constraint->extract_item("children"), have);
+					if (have->count() == 0)
+						match = 0;
+					else
+					{
+						// See if we can match within what we have.
+						for (int j = 0; j < have->count(); j++)
+						{
+							match = schemamatch(constraint->extract_item("children"), have->extract_item(j));
+							if (match)
+								break;
+						}
+					}	
 				}
 				else
 					// If there are no constraints within this, we have a match on this.
