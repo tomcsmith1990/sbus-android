@@ -939,10 +939,7 @@ snode *MapConstraints::pack()
 	sn->append(::pack(creator, "creator"));
 	sn->append(::pack(pub_key, "pub-key"));
 	
-	subn = mklist("hashes");
-	sn->append(subn);
-	
-	subn = mklist("type-hashes");
+	subn = mklist("schema");
 	sn->append(subn);
 	
 	subn = mklist("keywords");
@@ -963,7 +960,7 @@ snode *MapConstraints::pack()
 
 snode *MapConstraints::pack(snode *hash_lookup)
 {
-	snode *sn, *subn, *hash;
+	snode *sn, *subn, *schema_contraint, *hash;
 
 	sn = mklist("map-constraints");
 	// These lines also work correctly if any string is NULL
@@ -972,19 +969,20 @@ snode *MapConstraints::pack(snode *hash_lookup)
 	sn->append(::pack(creator, "creator"));
 	sn->append(::pack(pub_key, "pub-key"));
 
-	subn = mklist("hashes");
+	subn = mklist("schema");
 	for(int i = 0; i < has_fields->count(); i++)
 	{	
 		// If there is a field in our schema with this name, add its hash.
 		hash = hash_lookup->find(has_fields->extract_txt(i));
 		if (hash != NULL)
 		{
-			subn->append(::pack(hash->extract_txt("has"), "hash"));
+			schema_contraint = ::pack(::pack(hash->extract_txt("has"), "hash"), ::pack_bool(1, "exact"), "constraint");
+			subn->append(schema_contraint);
 		}
 	}
-	sn->append(subn);
+	//sn->append(subn);
 	
-	subn = mklist("type-hashes");
+	//subn = mklist("type-hashes");
 
 	for(int i = 0; i < similar_fields->count(); i++)
 	{	
@@ -992,7 +990,9 @@ snode *MapConstraints::pack(snode *hash_lookup)
 		hash = hash_lookup->find(similar_fields->extract_txt(i));
 		if (hash != NULL)
 		{
-			subn->append(::pack(hash->extract_txt("similar"), "hash"));
+			//subn->append(::pack(hash->extract_txt("similar"), "hash"));
+			schema_contraint = ::pack(::pack(hash->extract_txt("similar"), "hash"), ::pack_bool(0, "exact"), "constraint");
+			subn->append(schema_contraint);
 		}
 	}
 	sn->append(subn);

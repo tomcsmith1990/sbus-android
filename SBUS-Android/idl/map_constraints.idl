@@ -10,8 +10,7 @@
 	[ txt instance-name ]
 	[ txt creator ]
 	[ txt pub-key ]
-	hashes ( txt hash )
-	type-hashes ( txt hash )
+	schema ( ^schema-constraints constraint )
 	keywords ( txt keyword )
 	parents ( txt cpt )
 	ancestors ( txt cpt )
@@ -29,3 +28,9 @@
 )
 
 @endpoint-type < #server #client #source #sink >
+
+@schema-constraints
+{
+	txt hash
+	flg exact
+}
