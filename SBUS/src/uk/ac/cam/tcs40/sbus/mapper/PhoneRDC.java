@@ -39,7 +39,7 @@ public class PhoneRDC {
 			}
 		}
 	}
-/*
+
 	public static void applyMappingPoliciesLocally() {
 		List<Registration> localComponents = RegistrationRepository.list();
 		Registration mapFrom, mapTo;
@@ -55,7 +55,7 @@ public class PhoneRDC {
 				}
 			}
 		}
-	}*/
+	}
 
 	/**
 	 * 
@@ -110,7 +110,7 @@ public class PhoneRDC {
 		// Inform registered components about the new RDC.
 		for (Registration registration : RegistrationRepository.list()) {
 			// Send a message to each registered component with the RDC address.
-			s_RegisterRdc.map(s_PhoneIP + ":" + registration.getPort(), "register_rdc");
+			s_RegisterRdc.map(":" + registration.getPort(), "register_rdc");
 
 			SNode node = s_RegisterRdc.createMessage("event");
 			node.packString(getRDCAddress(), "rdc_address");
