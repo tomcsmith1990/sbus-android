@@ -86,12 +86,30 @@
 		</endpoint>
 		<endpoint>
 			<name>lookup_cpt</name>
-			<type>#server</type>
+			<type>#client</type>
 			<message>
 				@^criteria -
 				@"/data/data/uk.ac.cam.tcs40.sbus.sbus/files/idl/map_constraints.idl"
 			</message>
-			<response>@results ( txt address )</response>
+			<response>
+				@results
+				(
+					component
+					{
+						txt address
+						endpoints
+						(
+							endpoint
+							{
+								txt name
+								@"cpt_metadata.idl"					
+								^endpoint-type type
+								^idl message + response
+							}
+						)
+					}
+				)
+			</response>
 		</endpoint>
 		<endpoint>
 			<name>map_policy</name>
