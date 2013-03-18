@@ -40,24 +40,37 @@ public class SComponent {
 	 * @return An SEndpoint representing this endpoint.
 	 */
 	public SEndpoint addEndpoint(String name, EndpointType type, String messageHash, String responseHash) {
+		return addEndpoint(name, type, messageHash, responseHash, false);
+	}
+	
+	/**
+	 * Add an endpoint to this component.
+	 * @param name The name of the endpoint.
+	 * @param type The type of endpoint.
+	 * @param messageHash The hash of the endpoint message schema.
+	 * @param responseHash The hash of the the endpoint response schema.
+	 * @param flexibleMatching If the endpoint supports flexible matching.
+	 * @return An SEndpoint representing this endpoint.
+	 */
+	public SEndpoint addEndpoint(String name, EndpointType type, String messageHash, String responseHash, boolean flexibleMatching) {
 		long ptr;
 		SEndpoint endpoint;
 		
 		switch (type) {
 		case EndpointSink:
-			ptr = addEndpointSink(m_ComponentPointer, name, messageHash, responseHash);
+			ptr = addEndpointSink(m_ComponentPointer, name, messageHash, responseHash, flexibleMatching);
 			break;
 			
 		case EndpointSource:
-			ptr = addEndpointSource(m_ComponentPointer, name, messageHash, responseHash);
+			ptr = addEndpointSource(m_ComponentPointer, name, messageHash, responseHash, flexibleMatching);
 			break;
 			
 		case EndpointClient:
-			ptr = addEndpointClient(m_ComponentPointer, name, messageHash, responseHash);
+			ptr = addEndpointClient(m_ComponentPointer, name, messageHash, responseHash, flexibleMatching);
 			break;
 			
 		case EndpointServer:
-			ptr = addEndpointServer(m_ComponentPointer, name, messageHash, responseHash);
+			ptr = addEndpointServer(m_ComponentPointer, name, messageHash, responseHash, flexibleMatching);
 			break;
 			
 		default:
@@ -180,10 +193,10 @@ public class SComponent {
 
 	private native long scomponent(String componentName, String instanceName);
 	
-	private native long addEndpointSource(long componentPtr, String endpointName, String messageHash, String responseHash);
-	private native long addEndpointSink(long componentPtr, String endpointName, String messageHash, String responseHash);
-	private native long addEndpointClient(long componentPtr, String endpointName, String messageHash, String responseHash);
-	private native long addEndpointServer(long componentPtr, String endpointName, String messageHash, String responseHash);
+	private native long addEndpointSource(long componentPtr, String endpointName, String messageHash, String responseHash, boolean flexibleMatching);
+	private native long addEndpointSink(long componentPtr, String endpointName, String messageHash, String responseHash, boolean flexibleMatching);
+	private native long addEndpointClient(long componentPtr, String endpointName, String messageHash, String responseHash, boolean flexibleMatching);
+	private native long addEndpointServer(long componentPtr, String endpointName, String messageHash, String responseHash, boolean flexibleMatching);
 
 	private native void addRDC(long componentPtr, String rdcAddress);
 	private native void removeRDC(long componentPtr, String rdcAddress);

@@ -3,7 +3,10 @@
 extern "C" {
 
 // Declaration
-long addEndpoint(JNIEnv* env, jobject thiz, jlong component, jstring endName, EndpointType type, jstring messageHash, jstring responseHash);
+long addEndpoint(JNIEnv* env, 
+					jobject thiz, 
+					jlong component, 
+					jstring endName, EndpointType type, jstring messageHash, jstring responseHash, jboolean flexible_matching);
 
 
 jlong
@@ -30,9 +33,10 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointSource( JNIEnv* env,
                                                   jlong component,
                                                   jstring endName, 
                                                   jstring messageHash,
-                                                  jstring responseHash )
+                                                  jstring responseHash,
+                                                  jboolean flexibleMatching )
 {
-	return addEndpoint(env, thiz, component, endName, EndpointSource, messageHash, responseHash);
+	return addEndpoint(env, thiz, component, endName, EndpointSource, messageHash, responseHash, flexibleMatching);
 }
 
 jlong
@@ -41,9 +45,10 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointSink( JNIEnv* env,
                                                   jlong component,
                                                   jstring endName, 
                                                   jstring messageHash,
-                                                  jstring responseHash )
+                                                  jstring responseHash,
+                                                  jboolean flexibleMatching )
 {
-	return addEndpoint(env, thiz, component, endName, EndpointSink, messageHash, responseHash);
+	return addEndpoint(env, thiz, component, endName, EndpointSink, messageHash, responseHash, flexibleMatching);
 }
 
 jlong
@@ -52,9 +57,10 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointClient( JNIEnv* env,
                                                   jlong component,
                                                   jstring endName, 
                                                   jstring messageHash,
-                                                  jstring responseHash )
+                                                  jstring responseHash,
+                                                  jboolean flexibleMatching )
 {
-	return addEndpoint(env, thiz, component, endName, EndpointClient, messageHash, responseHash);
+	return addEndpoint(env, thiz, component, endName, EndpointClient, messageHash, responseHash, flexibleMatching);
 }
 
 jlong
@@ -63,9 +69,10 @@ Java_uk_ac_cam_tcs40_sbus_SComponent_addEndpointServer( JNIEnv* env,
                                                   jlong component,
                                                   jstring endName, 
                                                   jstring messageHash,
-                                                  jstring responseHash )
+                                                  jstring responseHash,
+                                                  jboolean flexibleMatching )
 {
-	return addEndpoint(env, thiz, component, endName, EndpointServer, messageHash, responseHash);
+	return addEndpoint(env, thiz, component, endName, EndpointServer, messageHash, responseHash, flexibleMatching);
 }
 
 long addEndpoint( JNIEnv* env,
@@ -74,7 +81,8 @@ long addEndpoint( JNIEnv* env,
                   jstring endName,
                   EndpointType type,
                   jstring messageHash,
-                  jstring responseHash )
+                  jstring responseHash,
+                  jboolean flexible_matching )
 {
 	const char *endpoint_name = env->GetStringUTFChars(endName, NULL);
 	const char *message_hash = env->GetStringUTFChars(messageHash, NULL);
@@ -82,7 +90,7 @@ long addEndpoint( JNIEnv* env,
 	
 	sendpoint *endpoint;
 	
-	endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, type, message_hash, response_hash);
+	endpoint = ((scomponent *)component)->add_endpoint(endpoint_name, type, message_hash, response_hash, flexible_matching ? JNI_TRUE : JNI_FALSE);
 
 	env->ReleaseStringUTFChars(endName, endpoint_name);
 	env->ReleaseStringUTFChars(messageHash, message_hash);
