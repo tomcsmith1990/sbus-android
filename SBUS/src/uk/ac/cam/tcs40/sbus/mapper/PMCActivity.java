@@ -15,35 +15,35 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 
-public class PhoneRDCActivity extends Activity
+public class PMCActivity extends Activity
 {	
-	private static PhoneRDCActivity s_Instance;
+	private static PMCActivity s_Instance;
 	private static EditText s_RDCAddress;
 	private static TextView s_StatusBox;
 	
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			PhoneRDC.applyMappingPolicies();
+			PhoneManagementComponent.applyMappingPolicies();
 		}
 	};
 	
 	private OnClickListener m_MapLocalButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			PhoneRDC.applyMappingPoliciesLocally();
+			PhoneManagementComponent.applyMappingPoliciesLocally();
 		}
 	};
 
 	private OnClickListener m_RdcButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			PhoneRDC.registerRDC(true);
+			PhoneManagementComponent.informComponentsAboutRDC(true);
 		}
 	};
 	
-	public static String getRDCAddress() {
+	public static String getRemoteRDCAddress() {
 		return s_RDCAddress.getText().toString();
 	}
 	
-	public static void updateStatus(final String status) {
+	public static void addStatus(final String status) {
 		s_Instance.runOnUiThread(new Runnable() {
 			public void run() {
 				String currentStatus = (String) s_StatusBox.getText();
@@ -60,7 +60,7 @@ public class PhoneRDCActivity extends Activity
 		s_Instance = this;
 		
 		// Display the layout.
-		setContentView(R.layout.activity_mapper);
+		setContentView(R.layout.activity_pmc);
 
 		findViewById(R.id.layout).requestFocus();
 		
@@ -86,10 +86,10 @@ public class PhoneRDCActivity extends Activity
 				new SBUSBootloader(getApplicationContext());
 
 				// Copy the .cpt file to the application directory.
-				new FileBootloader(getApplicationContext()).store(PhoneRDC.CPT_FILE);
+				new FileBootloader(getApplicationContext()).store(PhoneManagementComponent.CPT_FILE);
 
 				// Create and start the PhoneRDC.
-				startService(new Intent(PhoneRDCActivity.this, PhoneRDCService.class));
+				startService(new Intent(PMCActivity.this, PMCService.class));
 
 				// Register a broadcast receiver.
 				// Detects when we connect/disconnect to a Wifi network.
@@ -104,6 +104,6 @@ public class PhoneRDCActivity extends Activity
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		stopService(new Intent(PhoneRDCActivity.this, PhoneRDCService.class));
+		stopService(new Intent(PMCActivity.this, PMCService.class));
 	}
 }

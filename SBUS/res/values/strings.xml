@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">SBUS Mapper</string>
+    <string name="app_name">Phone Management Component</string>
     <string name="map_button_text">Map</string>
     <string name="map_local_button_text">Local Map</string>
     <string name="rdc_button_text">Register RDC</string>

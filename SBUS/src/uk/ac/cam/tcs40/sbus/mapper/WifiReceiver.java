@@ -31,13 +31,13 @@ public class WifiReceiver extends BroadcastReceiver {
 				int ip = wifiInfo.getIpAddress();
 
 				// Set the current IP in phone RDC so we only register components on the phone.
-				PhoneRDC.setIP(formatIP(ip));
+				PhoneManagementComponent.setPhoneIP(formatIP(ip));
 				
 				// Emit the map message to map once we connect to WiFi.
 				//PhoneRDC.remap();
 
 				// Connect to the new RDC.
-				PhoneRDC.registerRDC(true);
+				PhoneManagementComponent.informComponentsAboutRDC(true);
 			}
 
 		} else if(intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
@@ -46,8 +46,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
 			if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI && ! networkInfo.isConnected()) {
 				// WiFi is disconnected.
-				PhoneRDC.setIP("127.0.0.1");
-				PhoneRDC.registerRDC(false);
+				PhoneManagementComponent.setPhoneIP("127.0.0.1");
+				PhoneManagementComponent.informComponentsAboutRDC(false);
 			}
 		}
 	}

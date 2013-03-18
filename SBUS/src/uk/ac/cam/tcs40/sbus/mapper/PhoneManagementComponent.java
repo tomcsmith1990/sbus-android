@@ -10,13 +10,13 @@ import uk.ac.cam.tcs40.sbus.SMessage;
 import uk.ac.cam.tcs40.sbus.SNode;
 import android.content.Context;
 
-public class PhoneRDC {
+public class PhoneManagementComponent {
 
 	private static final int DEFAULT_RDC_PORT = 50123;
-	public static final String CPT_FILE = "phonerdc.cpt";
+	public static final String CPT_FILE = "pmc.cpt";
 
 	private static String s_PhoneIP = "127.0.0.1";	// localhost to begin with.
-	private static SComponent s_RDCComponent;
+	private static SComponent s_PMC;
 	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, s_RegisterRdc, s_MapPolicy;
 
 	private static Context s_Context;
@@ -58,8 +58,8 @@ public class PhoneRDC {
 	 * 
 	 * @return The current RDC address which we know about.
 	 */
-	private static String getRDCAddress() {
-		return PhoneRDCActivity.getRDCAddress();
+	private static String getRemoteRDCAddress() {
+		return PMCActivity.getRemoteRDCAddress();
 	}
 
 	/**
@@ -92,10 +92,10 @@ public class PhoneRDC {
 	 * Inform any registered components that we've found/lost an RDC. If found, apply any mapping policies we know about.
 	 * @param register Components can register with this RDC.
 	 */
-	public static void registerRDC(boolean register) {
+	public static void informComponentsAboutRDC(boolean register) {
 		if (s_RegisterRdc == null) return;
 
-		String mapString = s_List.map(getRDCAddress(), null);
+		String mapString = s_List.map(getRemoteRDCAddress(), null);
 
 		// RDC doesn't exist.
 		if (mapString == null)
@@ -109,7 +109,7 @@ public class PhoneRDC {
 			s_RegisterRdc.map(":" + registration.getPort(), "register_rdc");
 
 			SNode node = s_RegisterRdc.createMessage("event");
-			node.packString(getRDCAddress(), "rdc_address");
+			node.packString(getRemoteRDCAddress(), "rdc_address");
 			node.packBoolean(register,  "arrived");
 
 			s_RegisterRdc.emit(node);
@@ -148,11 +148,11 @@ public class PhoneRDC {
 	 * Update the phone's IP.
 	 * @param ip The phone's IP.
 	 */
-	public static void setIP(String ip) {
+	public static void setPhoneIP(String ip) {
 		s_PhoneIP = ip;
 	}
 
-	public PhoneRDC(Context context) {
+	public PhoneManagementComponent(Context context) {
 		s_Context = context;
 	}
 
@@ -183,14 +183,14 @@ public class PhoneRDC {
 
 			Registration registration = RegistrationRepository.add(port, sourceComponent, sourceInstance);
 			if (registration != null) {
-				PhoneRDCActivity.updateStatus("Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
+				PMCActivity.addStatus("Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
 			} else {
-				PhoneRDCActivity.updateStatus("Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
+				PMCActivity.addStatus("Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
 			}
 
 		} else {
 			Registration deregistration = RegistrationRepository.remove(port);
-			PhoneRDCActivity.updateStatus("Deregistered component " + deregistration.getComponentName() + ":" + deregistration.getInstanceName() + " at :" + port);
+			PMCActivity.addStatus("Deregistered component " + deregistration.getComponentName() + ":" + deregistration.getInstanceName() + " at :" + port);
 		}
 	}
 
@@ -225,7 +225,7 @@ public class PhoneRDC {
 
 		if (targetComponent.equals("rdc")) {
 			// local rule, handled by wrapper.
-			s_RDCComponent.setPermission(remoteComponent, remoteInstance, allow);
+			s_PMC.setPermission(remoteComponent, remoteInstance, allow);
 		} else {
 			Registration registration = RegistrationRepository.find(targetComponent, targetInstance);
 			if (registration != null) {
@@ -235,7 +235,7 @@ public class PhoneRDC {
 	}
 
 	private void checkAlive() {
-		while (s_RDCComponent != null) {
+		while (s_PMC != null) {
 			Registration registration = RegistrationRepository.getOldest();
 			if (registration != null) {
 				String port = registration.getPort();
@@ -243,7 +243,7 @@ public class PhoneRDC {
 				if (status == null) {
 					// Have lost contact with this component.
 					RegistrationRepository.remove(port);
-					PhoneRDCActivity.updateStatus("Ping indicates component " + registration.getComponentName() + " at :" + port +  
+					PMCActivity.addStatus("Ping indicates component " + registration.getComponentName() + " at :" + port +  
 							" vanished without deregistering; removing it from list");
 				}
 				s_Status.unmap();
@@ -258,7 +258,7 @@ public class PhoneRDC {
 	}
 
 	private void receive() {
-		Multiplex multi = s_RDCComponent.getMultiplex();
+		Multiplex multi = s_PMC.getMultiplex();
 		multi.add(s_Register);
 		multi.add(s_SetACL);
 		multi.add(s_MapPolicy);
@@ -266,7 +266,7 @@ public class PhoneRDC {
 		SEndpoint endpoint;
 		String name;
 
-		while (s_RDCComponent != null) {
+		while (s_PMC != null) {
 			try {
 				endpoint = multi.waitForMessage();
 			} catch (Exception e) {
@@ -281,7 +281,7 @@ public class PhoneRDC {
 			} else if (name.equals("set_acl")) {
 				changePermissions();
 			} else if (name.equals("map_policy")) {
-				setMapPolicy();
+				changeMapPolicy();
 			} else if (name.equals("lookup_cpt")) {
 				// There's some problem with components reading these messages, they're currently not using it.
 				lookup();
@@ -298,7 +298,7 @@ public class PhoneRDC {
 		query.delete();
 	}
 
-	private void setMapPolicy() {
+	private void changeMapPolicy() {
 		SMessage message = s_MapPolicy.receive();
 		SNode snode = message.getTree();
 
@@ -312,48 +312,48 @@ public class PhoneRDC {
 
 			if (create) {
 				registration.addMapPolicy(localEndpoint, remoteAddress, remoteEndpoint);
-				PhoneRDCActivity.updateStatus("Adding map policy: " + remoteAddress + " for component " + registration.getComponentName());
+				PMCActivity.addStatus("Adding map policy: " + remoteAddress + " for component " + registration.getComponentName());
 			}
 			else {
 				registration.removeMapPolicy(localEndpoint, remoteAddress, remoteEndpoint);
-				PhoneRDCActivity.updateStatus("Removing map policy: " + remoteAddress + " for component " + registration.getComponentName());
+				PMCActivity.addStatus("Removing map policy: " + remoteAddress + " for component " + registration.getComponentName());
 			}
 		}
 		message.delete();
 	}
 
-	public void startRDC() {
+	public void start() {
 		// Our mapping/rdc component.
-		s_RDCComponent = new SComponent("rdc", "phone");
+		s_PMC = new SComponent("rdc", "phone");
 
 		// For components registering to the rdc.
-		s_Register = s_RDCComponent.addEndpoint("register", EndpointType.EndpointSink, "B3572388E4A4");
+		s_Register = s_PMC.addEndpoint("register", EndpointType.EndpointSink, "B3572388E4A4");
 
 		// For components sending permissions after registering.
-		s_SetACL = s_RDCComponent.addEndpoint("set_acl", EndpointType.EndpointSink, "6AF2ED96750B");
+		s_SetACL = s_PMC.addEndpoint("set_acl", EndpointType.EndpointSink, "6AF2ED96750B");
 
 		// Fpr checking components are still alive.
-		s_Status = s_RDCComponent.addEndpoint("get_status", EndpointType.EndpointClient, "000000000000", "253BAC1C33C7");
+		s_Status = s_PMC.addEndpoint("get_status", EndpointType.EndpointClient, "000000000000", "253BAC1C33C7");
 
 		// For mapping components to other components.
-		s_Map = s_RDCComponent.addEndpoint("map", EndpointType.EndpointSource, "F46B9113DB2D");
+		s_Map = s_PMC.addEndpoint("map", EndpointType.EndpointSource, "F46B9113DB2D");
 
 		// For getting a list of components to map by name.
-		s_List = s_RDCComponent.addEndpoint("list", EndpointType.EndpointClient, "000000000000", "46920F3551F9");
+		s_List = s_PMC.addEndpoint("list", EndpointType.EndpointClient, "000000000000", "46920F3551F9");
 
 		// For telling components to connect to an RDC.
-		s_RegisterRdc = s_RDCComponent.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
+		s_RegisterRdc = s_PMC.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
 
 		// For any map lookups the component makes.
-		s_Lookup = s_RDCComponent.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
+		s_Lookup = s_PMC.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
 
-		s_MapPolicy = s_RDCComponent.addEndpoint("map_policy", EndpointType.EndpointSink, "857FC4B7506D");
+		s_MapPolicy = s_PMC.addEndpoint("map_policy", EndpointType.EndpointSink, "857FC4B7506D");
 
 		// Start the component on the default RDC port.
-		s_RDCComponent.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
+		s_PMC.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
 
 		// Allow all components to connect to endpoints (for register).
-		s_RDCComponent.setPermission("", "", true);
+		s_PMC.setPermission("", "", true);
 
 		// Start receiving messages.
 		new Thread() {
@@ -372,7 +372,7 @@ public class PhoneRDC {
 		}.start();
 	}
 
-	public void stopRDC() {
+	public void stop() {
 		s_Map.unmap();
 		s_List.unmap();
 		s_Lookup.unmap();
@@ -382,7 +382,7 @@ public class PhoneRDC {
 		s_Status.unmap();
 		s_MapPolicy.unmap();
 
-		s_RDCComponent.delete();
+		s_PMC.delete();
 
 		s_Map = null;
 		s_List = null;
@@ -393,7 +393,7 @@ public class PhoneRDC {
 		s_Status = null;
 		s_MapPolicy = null;
 
-		s_RDCComponent = null;
+		s_PMC = null;
 
 		s_PhoneIP = "127.0.0.1";
 	}

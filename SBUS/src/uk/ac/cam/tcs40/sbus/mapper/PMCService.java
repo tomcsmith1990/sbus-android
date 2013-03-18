@@ -4,19 +4,19 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-public class PhoneRDCService extends Service {
+public class PMCService extends Service {
 
-	private PhoneRDC m_PhoneRDC;
+	private PhoneManagementComponent m_PMC;
 	
 	@Override
 	public void onCreate() {
-		this.m_PhoneRDC = new PhoneRDC(getApplicationContext());
-		this.m_PhoneRDC.startRDC();
+		this.m_PMC = new PhoneManagementComponent(getApplicationContext());
+		this.m_PMC.start();
 	}
 
 	@Override
 	public void onDestroy() {
-		this.m_PhoneRDC.stopRDC();
+		this.m_PMC.stop();
 	}
 
 	@Override
