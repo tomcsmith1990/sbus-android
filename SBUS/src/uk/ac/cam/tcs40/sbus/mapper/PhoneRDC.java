@@ -9,14 +9,11 @@ import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.SMessage;
 import uk.ac.cam.tcs40.sbus.SNode;
 import android.content.Context;
-import android.util.Log;
 
 public class PhoneRDC {
 
 	private static final int DEFAULT_RDC_PORT = 50123;
-	public static final String RDC_ADDRESS = "192.168.0.3:50123";
 	public static final String CPT_FILE = "phonerdc.cpt";
-	public static final String TAG = "PhoneRDC";
 
 	private static String s_PhoneIP = "127.0.0.1";	// localhost to begin with.
 	private static SComponent s_RDCComponent;
@@ -62,7 +59,6 @@ public class PhoneRDC {
 	 * @return The current RDC address which we know about.
 	 */
 	private static String getRDCAddress() {
-		// return RDC_ADDRESS;
 		return PhoneRDCActivity.getRDCAddress();
 	}
 
@@ -187,14 +183,14 @@ public class PhoneRDC {
 
 			Registration registration = RegistrationRepository.add(port, sourceComponent, sourceInstance);
 			if (registration != null) {
-				Log.i(TAG, "Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
+				PhoneRDCActivity.updateStatus("Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
 			} else {
-				Log.i(TAG, "Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
+				PhoneRDCActivity.updateStatus("Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
 			}
 
 		} else {
 			Registration deregistration = RegistrationRepository.remove(port);
-			Log.i(TAG, "Deregistered component " + deregistration.getComponentName() + ":" + deregistration.getInstanceName() + " at :" + port);
+			PhoneRDCActivity.updateStatus("Deregistered component " + deregistration.getComponentName() + ":" + deregistration.getInstanceName() + " at :" + port);
 		}
 	}
 
@@ -247,7 +243,7 @@ public class PhoneRDC {
 				if (status == null) {
 					// Have lost contact with this component.
 					RegistrationRepository.remove(port);
-					Log.i(TAG, "Ping indicates component " + registration.getComponentName() + " at :" + port +  
+					PhoneRDCActivity.updateStatus("Ping indicates component " + registration.getComponentName() + " at :" + port +  
 							" vanished without deregistering; removing it from list");
 				}
 				s_Status.unmap();
@@ -288,11 +284,18 @@ public class PhoneRDC {
 				setMapPolicy();
 			} else if (name.equals("lookup_cpt")) {
 				// There's some problem with components reading these messages, they're currently not using it.
-				SMessage query = s_Lookup.receive();
-				SNode results = s_Lookup.createMessage("results");
-				s_Lookup.reply(query, results);
+				lookup();
 			}
 		}
+	}
+	
+	private void lookup() {
+		SMessage query = s_Lookup.receive();
+		//SNode constraints = query.getTree().extractItem("map-constraints");
+		//SNode interface = query.getTree().extractItem("interface");
+		SNode results = s_Lookup.createMessage("results");
+		s_Lookup.reply(query, results);
+		query.delete();
 	}
 
 	private void setMapPolicy() {
@@ -307,10 +310,14 @@ public class PhoneRDC {
 		Registration registration = RegistrationRepository.find(message.getSourceComponent(), message.getSourceInstance());
 		if (registration != null) {
 
-			if (create)
+			if (create) {
 				registration.addMapPolicy(localEndpoint, remoteAddress, remoteEndpoint);
-			else
+				PhoneRDCActivity.updateStatus("Adding map policy: " + remoteAddress + " for component " + registration.getComponentName());
+			}
+			else {
 				registration.removeMapPolicy(localEndpoint, remoteAddress, remoteEndpoint);
+				PhoneRDCActivity.updateStatus("Removing map policy: " + remoteAddress + " for component " + registration.getComponentName());
+			}
 		}
 		message.delete();
 	}

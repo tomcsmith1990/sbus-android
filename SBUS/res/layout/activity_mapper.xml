@@ -68,4 +68,9 @@
             android:text="@string/rdc_button_text" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
 </LinearLayout>
