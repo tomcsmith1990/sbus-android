@@ -12,11 +12,14 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 
 public class PhoneRDCActivity extends Activity
 {	
+	private static PhoneRDCActivity s_Instance;
 	private static EditText s_RDCAddress;
+	private static TextView s_StatusBox;
 	
 	private OnClickListener m_MapButtonListener = new OnClickListener() {
 		public void onClick(View v) {
@@ -39,11 +42,23 @@ public class PhoneRDCActivity extends Activity
 	public static String getRDCAddress() {
 		return s_RDCAddress.getText().toString();
 	}
+	
+	public static void updateStatus(final String status) {
+		s_Instance.runOnUiThread(new Runnable() {
+			public void run() {
+				String currentStatus = (String) s_StatusBox.getText();
+				s_StatusBox.setText(status + "\n" + currentStatus);
+			}
+		});
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		
+		s_Instance = this;
+		
 		// Display the layout.
 		setContentView(R.layout.activity_mapper);
 
@@ -62,6 +77,7 @@ public class PhoneRDCActivity extends Activity
 		rdcButton.setOnClickListener(m_RdcButtonListener);
 		
 		s_RDCAddress = (EditText)findViewById(R.id.rdc_address);
+		s_StatusBox = (TextView)findViewById(R.id.status);
 
 		new Thread() {
 			public void run() {
