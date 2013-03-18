@@ -23,51 +23,23 @@ public class PhoneRDC {
 	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, s_RegisterRdc, s_MapPolicy;
 
 	private static Context s_Context;
-	
+
 	/**
 	 * Apply any mapping policies which any of the registered components have sent us.
 	 * @return true if the current RDC exists.
 	 */
-	public static boolean applyMappingPolicies() {
-		if (s_List == null) return false;
-
-		// Map the endpoint to the RDC.
-		s_List.map(getRDCAddress(), null);
-		/*
-		 * Perform an RPC to get the list.
-		 * Seeing as these are all being applied in quick succession,
-		 * don't really need to get the list of components each time.
-		 */
-		SMessage reply = s_List.rpc(null);
-
-		if (reply == null) {
-			// Unmap the endpoint.
-			s_List.unmap();
-			return false;
-		}
-
-		String remoteAddress;
+	public static void applyMappingPolicies() {
+		if (s_List == null) return;
 
 		for (Registration registration : RegistrationRepository.list()) {
 
 			for (MapPolicy policy : registration.getMapPolicies()) {
-				// Search in the reply for a matching component.
-				remoteAddress = search(reply, new MapConstraint(policy.getRemoteAddress()));
-
-				// If a component has been found, apply the mapping policy.
-				if (remoteAddress != null)
-					map(":" + registration.getPort(), policy.getLocalEndpoint(), remoteAddress, policy.getRemoteEndpoint());
+				// Tell each component to map() as it has specified.
+				map(":" + registration.getPort(), policy.getLocalEndpoint(), policy.getRemoteAddress(), policy.getRemoteEndpoint());
 			}
 		}
-
-		// Delete the native copy of the reply.
-		reply.delete();
-		// Unmap the endpoint.
-		s_List.unmap();
-
-		return true;
 	}
-
+/*
 	public static void applyMappingPoliciesLocally() {
 		List<Registration> localComponents = RegistrationRepository.list();
 		Registration mapFrom, mapTo;
@@ -83,7 +55,7 @@ public class PhoneRDC {
 				}
 			}
 		}
-	}
+	}*/
 
 	/**
 	 * 
@@ -127,26 +99,29 @@ public class PhoneRDC {
 	public static void registerRDC(boolean register) {
 		if (s_RegisterRdc == null) return;
 
-		boolean rdcExists = false;
-		// Apply mapping policies. Returns false if there is no RDC.
-		// Doing this first means we won't map components on the phone together due to race conditions in registering.		
-		if (register)
-			rdcExists = applyMappingPolicies();
+		String mapString = s_List.map(getRDCAddress(), null);
 
-		if (!register || rdcExists) {
-			// Inform registered components about the new RDC.
-			for (Registration registration : RegistrationRepository.list()) {
-				// Send a message to each registered component with the RDC address.
-				s_RegisterRdc.map(s_PhoneIP + ":" + registration.getPort(), "register_rdc");
+		// RDC doesn't exist.
+		if (mapString == null)
+			return;
+		
+		s_List.unmap();
 
-				SNode node = s_RegisterRdc.createMessage("event");
-				node.packString(getRDCAddress(), "rdc_address");
-				node.packBoolean(register,  "arrived");
+		// Inform registered components about the new RDC.
+		for (Registration registration : RegistrationRepository.list()) {
+			// Send a message to each registered component with the RDC address.
+			s_RegisterRdc.map(s_PhoneIP + ":" + registration.getPort(), "register_rdc");
 
-				s_RegisterRdc.emit(node);
-				s_RegisterRdc.unmap();
-			}
+			SNode node = s_RegisterRdc.createMessage("event");
+			node.packString(getRDCAddress(), "rdc_address");
+			node.packBoolean(register,  "arrived");
+
+			s_RegisterRdc.emit(node);
+			s_RegisterRdc.unmap();
 		}
+
+		if (register)
+			applyMappingPolicies();
 	}
 
 	/**
@@ -155,7 +130,7 @@ public class PhoneRDC {
 	 * @param componentName The component name to match.
 	 * @return The address of the first component matching, or null if there are none.
 	 */
-	private static String search(SMessage reply, MapConstraint constraints) {
+	/*private static String search(SMessage reply, MapConstraint constraints) {
 		SNode snode = reply.getTree();
 		SNode item;
 		String address = null;
@@ -171,7 +146,7 @@ public class PhoneRDC {
 			}
 		}
 		return address;
-	}
+	}*/
 
 	/**
 	 * Update the phone's IP.
@@ -311,6 +286,11 @@ public class PhoneRDC {
 				changePermissions();
 			} else if (name.equals("map_policy")) {
 				setMapPolicy();
+			} else if (name.equals("lookup_cpt")) {
+				// There's some problem with components reading these messages, they're currently not using it.
+				SMessage query = s_Lookup.receive();
+				SNode results = s_Lookup.createMessage("results");
+				s_Lookup.reply(query, results);
 			}
 		}
 	}
@@ -358,7 +338,7 @@ public class PhoneRDC {
 		s_RegisterRdc = s_RDCComponent.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
 
 		// For any map lookups the component makes.
-		s_Lookup = s_RDCComponent.addEndpoint("lookup_cpt", EndpointType.EndpointClient, "18D70E4219C8", "F96D2B7A73C1");
+		s_Lookup = s_RDCComponent.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
 
 		s_MapPolicy = s_RDCComponent.addEndpoint("map_policy", EndpointType.EndpointSink, "857FC4B7506D");
 

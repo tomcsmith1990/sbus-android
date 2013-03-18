@@ -86,7 +86,7 @@
 		</endpoint>
 		<endpoint>
 			<name>lookup_cpt</name>
-			<type>#client</type>
+			<type>#server</type>
 			<message>
 				@^criteria -
 				@"/data/data/uk.ac.cam.tcs40.sbus.sbus/files/idl/map_constraints.idl"
