@@ -358,7 +358,7 @@ public class PhoneRDC {
 		s_RegisterRdc = s_RDCComponent.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
 
 		// For any map lookups the component makes.
-		s_Lookup = s_RDCComponent.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "AE7945554959", "6AA2406BF9EC");
+		s_Lookup = s_RDCComponent.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "6AA2406BF9EC");
 
 		s_MapPolicy = s_RDCComponent.addEndpoint("map_policy", EndpointType.EndpointSink, "857FC4B7506D");
 

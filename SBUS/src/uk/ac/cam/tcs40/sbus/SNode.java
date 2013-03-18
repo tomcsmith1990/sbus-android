@@ -15,6 +15,7 @@ public class SNode {
 		 *  Can only create SNode through:
 		 *  	- SEndpoint.createMessage()
 		 *  	- SEndpoint.receive().getTree()
+		 *  	- SNode.find()
 		 */
 		this.m_NodePtr = ptr;
 	}
@@ -39,6 +40,12 @@ public class SNode {
 	 */
 	public boolean exists(String name) {
 		return (exists(this.m_NodePtr, name) == 1);
+	}
+	
+	public SNode find(String name) {
+		long ptr = find(this.m_NodePtr, name);
+		if (ptr == 0) return null;
+		else return new SNode(ptr);
 	}
 	
 	/**
@@ -126,6 +133,7 @@ public class SNode {
 	private native long extractItemByName(long nodePtr, String item);
 	
 	private native int exists(long nodePtr, String name);
+	private native long find(long nodePtr, String name);
 	private native int count(long nodePtr);
 	private native void delete(long nodePtr);
 }

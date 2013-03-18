@@ -25,6 +25,24 @@ Java_uk_ac_cam_tcs40_sbus_SNode_exists( JNIEnv* env,
 	return exists;
 }
 
+jlong
+Java_uk_ac_cam_tcs40_sbus_SNode_find( JNIEnv* env,
+		                                 jobject thiz,
+		                                 jlong node,
+		                                 jstring n)
+{	
+	if (n == NULL) return 0;
+	
+	const char *name = env->GetStringUTFChars(n, NULL);
+	
+	snode *sn = ((snode *)node)->find(name);
+	
+	env->ReleaseStringUTFChars(n, name);
+	
+	if (sn == NULL) return 0;
+	else return (long)sn;
+}
+
 void
 Java_uk_ac_cam_tcs40_sbus_SNode_packBoolean( JNIEnv* env,
                                              jobject thiz,
