@@ -146,7 +146,7 @@ class shello
 	HashCode *msg_hc;
 	HashCode *reply_hc;
 	
-	int partial_matching;
+	int flexible_matching;
 
 	// If non-NULL, overrides rest of this class:	
 	svisitor *oob_visitor;

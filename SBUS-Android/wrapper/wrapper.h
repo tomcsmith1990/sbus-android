@@ -102,7 +102,7 @@ class smidpoint
 	int fd; // Used to talk to the library
 	int builtin; // Flag
 	
-	int partial_matching;
+	int flexible_matching;
 	
 	char *subs;
 	char *topic;
@@ -117,7 +117,7 @@ class smidpoint
 	
 	char *verify_metadata(snode *sn);
 	int compatible(const char *required_endpoint, int required_clone,
-			EndpointType type, HashCode *msg_hc, HashCode *reply_hc, int partial_matching = 0);
+			EndpointType type, HashCode *msg_hc, HashCode *reply_hc, int flexible_matching = 0);
 	snode *pack_interface(int invert);
 	
 	void emit(const char *topic, const char *xml, HashCode *hc);

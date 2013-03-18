@@ -540,7 +540,7 @@ void swrapper::verify_builtin(smidpoint *mp)
 }
 
 int smidpoint::compatible(const char *required_endpoint, int required_ep_id,
-		EndpointType type, HashCode *msg_hc, HashCode *reply_hc, int partial_matching)
+		EndpointType type, HashCode *msg_hc, HashCode *reply_hc, int flexible_matching)
 {
 	if(this->type != type)
 	{
@@ -560,12 +560,12 @@ int smidpoint::compatible(const char *required_endpoint, int required_ep_id,
 
 	// Check hashes match, or that we're going to do partial matching.
 	// If partial matching, we'll connect as normal - the side wanting to do it will have to sort everything out.
-	if(!partial_matching && !msg_hc->ispolymorphic() && !this->msg_hc->ispolymorphic() && !msg_hc->equals(this->msg_hc))
+	if(!flexible_matching && !msg_hc->ispolymorphic() && !this->msg_hc->ispolymorphic() && !msg_hc->equals(this->msg_hc))
 	{
 		// printf("Incompatible message hash code\n");
 		return 0;
 	}
-	if(!partial_matching && !reply_hc->ispolymorphic() && !this->reply_hc->ispolymorphic() && !reply_hc->equals(this->reply_hc))
+	if(!flexible_matching && !reply_hc->ispolymorphic() && !this->reply_hc->ispolymorphic() && !reply_hc->equals(this->reply_hc))
 	{
 		// printf("Incompatible reply hash code\n");
 		return 0;
@@ -725,7 +725,7 @@ void swrapper::do_accept(int dyn_sock, AbstractMessage *abst)
 		//check if authorised
 
 		if(mp->compatible(hello->required_endpoint, hello->required_ep_id, hello->target_type, 
-											hello->msg_hc, hello->reply_hc, hello->partial_matching))
+											hello->msg_hc, hello->reply_hc, hello->flexible_matching))
 			{
 				//compatible, but do they have access?
 				log("Serving hello %s:%s requesting endpoint '%s' ", hello->source, hello->from_instance, hello->required_endpoint);
@@ -1829,9 +1829,9 @@ void swrapper::serve_peer(scomm *msg, speer *peer)
 		expected_hc = mp->msg_hc;
 	
 	// If we're doing partial matching, don't check types.
-	if (mp->partial_matching)
+	if (mp->flexible_matching)
 	{
-		log("Received a partially matching message");
+		log("Received a flexible matching message");
 	}	
 	else if(!expected_hc->ispolymorphic() && !msg->hc->equals(expected_hc))
 	{
@@ -2388,7 +2388,7 @@ smidpoint *swrapper::add_endpoint(saddendpoint *add)
 	mp->type = add->type;
 	mp->msg_hc = new HashCode(add->msg_hc);
 	mp->reply_hc = new HashCode(add->reply_hc);
-	mp->partial_matching = add->partial_matching;
+	mp->flexible_matching = add->flexible_matching;
 	mp->acl_ep = new spermissionvector();
 	
 	//TODO:Load ACL defaults...
@@ -2451,7 +2451,7 @@ void swrapper::subscribe(smidpoint *mp, const char *subs,
 			mapcon = new MapConstraints(peer_address);
 
 			//TODO: Add in other constraints (certificates, pub keys, etc).
-			if (mp->partial_matching)
+			if (mp->flexible_matching)
 				constraints = mapcon->pack(mp->msg_schema->hashes);
 			else
 				constraints = mapcon->pack();
@@ -2949,7 +2949,7 @@ void swrapper::resolve_address(const char *addrstring, mapparams *params, int pa
 	{
 		mapcon = new MapConstraints(addrstring);	
 		sn = mklist("criteria");
-		if (params->mp->partial_matching)
+		if (params->mp->flexible_matching)
 			sn->append(mapcon->pack(params->mp->msg_schema->hashes));
 		else
 			sn->append(mapcon->pack());
@@ -3280,7 +3280,7 @@ void swrapper::do_map(mapparams *params)
 	hello->from_endpoint = sdup(mp->name);
 	hello->from_ep_id = mp->ep_id;
 	hello->target = NULL; // We don't specify
-	hello->partial_matching = mp->partial_matching;
+	hello->flexible_matching = mp->flexible_matching;
 	hello->required_endpoint = endpoint; // Will delete for us
 	hello->required_ep_id = 0; // No means of specifying this in mapparams yet
 	switch(mp->type)
@@ -3388,7 +3388,7 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 	peer->msg_poly = welcome->msg_poly;
 	peer->reply_poly = welcome->reply_poly;
 	
-	if (peer->owner->partial_matching && welcome->msg_hc->equals(peer->owner->msg_hc) == 0)
+	if (peer->owner->flexible_matching && welcome->msg_hc->equals(peer->owner->msg_hc) == 0)
 	{
 		Schema *sch = cache->lookup(welcome->msg_hc);
 		if (sch == NULL)
@@ -4061,7 +4061,7 @@ smidpoint::smidpoint()
 	next_seq = 0;
 	processed = waiting = dropped = 0;
 	ep_id = 0; // Must be filled in
-	partial_matching = 0;
+	flexible_matching = 0;
 	acl_ep = new spermissionvector();
 }
 
@@ -4178,7 +4178,7 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	// We use actual msg hash, not owner->msg_hc, as this might be polymorphic
 	
 	// If we support partial matching, and the schemas are actually different.
-	if (owner->partial_matching && owner->msg_hc->equals(msg->hc) == 0)
+	if (owner->flexible_matching && owner->msg_hc->equals(msg->hc) == 0)
 	{
 		Schema *theirs = wrap->cache->lookup(msg->hc);
 		Schema *mine = owner->msg_schema;
@@ -4388,9 +4388,9 @@ void speer::resubscribe(const char *subs, const char *topic)
 	resub->tgt_ep = sdup(endpoint);
 
 	//test...
-	if (owner->partial_matching && this->lookup_forward != NULL)
+	if (owner->flexible_matching && this->lookup_forward != NULL)
 	{
-		// If we support partial matching, and there's a lookup table for this (hence they're different schemas)
+		// If we support flexible matching, and there's a lookup table for this (hence they're different schemas)
 		// Convert the subscription string to peer's schema before sending.
 		subscription *s = new subscription(subs);
 		resub->subscription = sdup(s->dump_plaintext(this->lookup_forward));
