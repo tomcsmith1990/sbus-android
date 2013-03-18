@@ -990,7 +990,6 @@ void swrapper::handle_new_rdc(int arrive, const char *address)
 
 		// need to send all permissions we have.
 		smidpoint *mp;
-		spermissionvector *permissionvector = new spermissionvector();
 		privilegeparamsvector *privilegevector = new privilegeparamsvector();
 		spermission *permission;
 		
@@ -1002,11 +1001,6 @@ void swrapper::handle_new_rdc(int arrive, const char *address)
 			{
 				permission = mp->acl_ep->item(j);
 				privilegevector->add(new privilegeparams(mp->name, permission->principal_cpt, permission->principal_inst, true));
-				/*if (permissionvector->find(permission) == -1)
-				{
-					permissionvector->add(permission);
-					privilegevector->add(new privilegeparams(mp->name, permission->principal_cpt, permission->principal_inst, true));
-				}	*/
 			}
 		}
 		
@@ -1019,7 +1013,6 @@ void swrapper::handle_new_rdc(int arrive, const char *address)
 		}
 		
 		delete privilegevector;
-		delete permissionvector;
 		
 	}
 	else
@@ -2826,7 +2819,7 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 	scomm *reply;
 	const char *err;
 	Schema *reply_schema;
-	warning("finalise server visit for address %s\n", abst->address);
+
 	reply_schema = abst->reply_schema;
 	reply = new scomm();
 	ret = reply->reveal(abst);
@@ -2911,7 +2904,7 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 	{
 		// This means map_params != NULL
 		mapparams *map_params = abst->map_params;
-		warning("message from RDC\n");
+
 		// Add results to the list:
 		for(int i = 0; i < sn_results->count(); i++)
 		{	
