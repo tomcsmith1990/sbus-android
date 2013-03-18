@@ -1001,11 +1001,12 @@ void swrapper::handle_new_rdc(int arrive, const char *address)
 			for (int j = 0; j < mp->acl_ep->count(); j++)
 			{
 				permission = mp->acl_ep->item(j);
-				if (permissionvector->find(permission) == -1)
+				privilegevector->add(new privilegeparams(mp->name, permission->principal_cpt, permission->principal_inst, true));
+				/*if (permissionvector->find(permission) == -1)
 				{
 					permissionvector->add(permission);
 					privilegevector->add(new privilegeparams(mp->name, permission->principal_cpt, permission->principal_inst, true));
-				}	
+				}	*/
 			}
 		}
 		
@@ -1323,7 +1324,6 @@ void swrapper::continue_dispose(int fd)
 {
 	int complete;
 	AbstractMessage *abst;
-	
 	abst = progress_in[fd];
 	complete = abst->advance();
 	if(complete == 1)
@@ -2826,7 +2826,7 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 	scomm *reply;
 	const char *err;
 	Schema *reply_schema;
-	
+	warning("finalise server visit for address %s\n", abst->address);
 	reply_schema = abst->reply_schema;
 	reply = new scomm();
 	ret = reply->reveal(abst);
@@ -2911,7 +2911,7 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 	{
 		// This means map_params != NULL
 		mapparams *map_params = abst->map_params;
-		
+		warning("message from RDC\n");
 		// Add results to the list:
 		for(int i = 0; i < sn_results->count(); i++)
 		{	
@@ -2969,6 +2969,13 @@ void swrapper::resolve_address(const char *addrstring, mapparams *params, int pa
 	for(int i = 0; i < rdc->count(); i++)
 	{
 		rdc_address = rdc->item(i);
+		#ifdef __ANDROID__
+			if (!strcmp(rdc_address, "localhost:50123"))
+			{
+				params->remaining_rdcs--;
+				continue;
+			}
+		#endif
 		ok = begin_visit(VisitResolveConstraints, rdc_address, "rdc",
 				"lookup_cpt", lookup_cpt_mp, params->query_sn,
 				params, NULL, NULL);
@@ -2989,7 +2996,7 @@ void swrapper::continue_resolve(mapparams *params)
 {
 	sassert(params->remaining_rdcs >= 0,
 			"Negative number of remaining RDCs in resolve constraints");
-	
+
 	if(params->remaining_rdcs > 0) // Not ready yet
 		return;
 	if (params->operation == RSMap)
