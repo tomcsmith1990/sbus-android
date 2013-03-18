@@ -825,7 +825,7 @@ int read_bootupdate(AbstractMessage *abst, saddendpoint *add,
 		add->type = (EndpointType)decode_byte(&pos);
 		add->msg_hc = decode_hashcode(&pos);
 		add->reply_hc = decode_hashcode(&pos);
-		add->partial_matching = decode_byte(&pos);
+		add->flexible_matching = decode_byte(&pos);
 	}
 	else if(t == MessageStop)
 	{
@@ -906,7 +906,7 @@ int read_bootupdate(int sock, saddendpoint *add, sstopwrapper *stop,
 		add->type = (EndpointType)decode_byte(&pos);
 		add->msg_hc = decode_hashcode(&pos);
 		add->reply_hc = decode_hashcode(&pos);
-		add->partial_matching = decode_byte(&pos);
+		add->flexible_matching = decode_byte(&pos);
 	}
 	else if(t == MessageStop)
 	{
@@ -1033,7 +1033,7 @@ saddendpoint::saddendpoint()
 {
 	endpoint = NULL;
 	msg_hc = reply_hc = NULL;
-	partial_matching = 0;
+	flexible_matching = 0;
 }
 
 void saddendpoint::clear()
@@ -1080,7 +1080,7 @@ AbstractMessage *saddendpoint::wrap(int fd)
 	sb->cat_byte(type);
 	sb->cat(msg_hc);
 	sb->cat(reply_hc);
-	sb->cat_byte(partial_matching);
+	sb->cat_byte(flexible_matching);
 	abst = new AbstractMessage(fd, sb);
 	delete sb;
 	return abst;
@@ -1096,7 +1096,7 @@ int saddendpoint::write(int sock)
 	sb->cat_byte(type);
 	sb->cat(msg_hc);
 	sb->cat(reply_hc);
-	sb->cat_byte(partial_matching);
+	sb->cat_byte(flexible_matching);
 
 	// Patch in message length:
 	sb->overwrite_word(5, sb->length());
@@ -1184,7 +1184,7 @@ int read_startup(AbstractMessage *abst, saddendpoint *add, sstartwrapper *start)
 		add->type = (EndpointType)decode_byte(&pos);
 		add->msg_hc = decode_hashcode(&pos);
 		add->reply_hc = decode_hashcode(&pos);
-		add->partial_matching = decode_byte(&pos);
+		add->flexible_matching = decode_byte(&pos);
 		return 0;
 	}
 	else // MessageStart
@@ -1242,7 +1242,7 @@ int read_startup(int sock, saddendpoint *add, sstartwrapper *start)
 		add->type = (EndpointType)decode_byte(&pos);
 		add->msg_hc = decode_hashcode(&pos);
 		add->reply_hc = decode_hashcode(&pos);
-		add->partial_matching = decode_byte(&pos);
+		add->flexible_matching = decode_byte(&pos);
 
 		delete buf;
 		return 0;
