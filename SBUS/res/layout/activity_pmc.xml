@@ -27,8 +27,6 @@
             android:ems="10"
             android:inputType="text"
             android:text="@string/rdc_address" >
-
-            <requestFocus />
         </EditText>
     </LinearLayout>
 
