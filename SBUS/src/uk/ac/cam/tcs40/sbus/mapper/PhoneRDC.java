@@ -23,7 +23,7 @@ public class PhoneRDC {
 	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, s_RegisterRdc, s_MapPolicy;
 
 	private static Context s_Context;
-
+	
 	/**
 	 * Apply any mapping policies which any of the registered components have sent us.
 	 * @return true if the current RDC exists.
@@ -358,7 +358,7 @@ public class PhoneRDC {
 		s_RegisterRdc = s_RDCComponent.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
 
 		// For any map lookups the component makes.
-		s_Lookup = s_RDCComponent.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "6AA2406BF9EC");
+		s_Lookup = s_RDCComponent.addEndpoint("lookup_cpt", EndpointType.EndpointClient, "18D70E4219C8", "F96D2B7A73C1");
 
 		s_MapPolicy = s_RDCComponent.addEndpoint("map_policy", EndpointType.EndpointSink, "857FC4B7506D");
 
