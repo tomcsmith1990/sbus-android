@@ -2887,17 +2887,33 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 		}
 		else
 		{
-			// Construct our flat lookup table, when schemas have same fields, different names.
-			// TODO: non flat lookup.
-			peer->lookup_forward = mklist("lookup");
-			peer->lookup_backward = mklist("lookup");
-			mp->msg_schema->construct_lookup(sch, peer->lookup_forward, peer->lookup_backward);		
-			delete sch;
+			/**
+			  * Construct lookup table based on the map constraint string we used.
+			  * Everything covered by constraint string, i.e. any fields and their descendants will be added to the lookup.
+			  */
 			
-			// If we have a subscription criteria.
-			if (mp->subs != NULL)
-				// Resubscribe, this will convert the subscription string to peer's schema.
-				peer->resubscribe(mp->subs, mp->topic);
+			if (peer->map_constraint != NULL)
+			{
+				MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
+				const char *schema_constraint = mapcon->pack(mp->msg_schema->hashes)->extract_txt("schema");
+				snode *constraints = snode::import(schema_constraint, NULL);
+				delete mapcon;
+				delete schema_constraint;
+								
+				peer->lookup_forward = mklist("lookup");
+				peer->lookup_backward = mklist("lookup");
+			
+				int schema_match = sch->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward);
+				
+				delete constraints;
+					
+				delete sch;
+			
+				// If we have a subscription criteria.
+				if (mp->subs != NULL)
+					// Resubscribe, this will convert the subscription string to peer's schema.
+					peer->resubscribe(mp->subs, mp->topic);
+			}
 		}
 	}
 	else if(abst->purpose == VisitResolveConstraints)
@@ -2938,25 +2954,25 @@ void swrapper::map_report(int report_fd, int code, const char *address)
 	}
 }
 
-void swrapper::resolve_address(const char *addrstring, mapparams *params, int pack_constraints)
+void swrapper::resolve_address(const char *addrstring, mapparams *params)
 {
 	snode *sn;
 	MapConstraints *mapcon;
 	const char *rdc_address;
 	int ok;
 	
-	if (pack_constraints)
-	{
-		mapcon = new MapConstraints(addrstring);	
-		sn = mklist("criteria");
-		if (params->mp->flexible_matching)
-			sn->append(mapcon->pack(params->mp->msg_schema->hashes));
-		else
-			sn->append(mapcon->pack());
-		sn->append(params->mp->pack_interface(1));
-		delete mapcon;
-		params->query_sn = sn;
-	}
+	mapcon = new MapConstraints(addrstring);	
+	sn = mklist("criteria");
+	if (params->mp->flexible_matching)
+		sn->append(mapcon->pack(params->mp->msg_schema->hashes));
+	else
+		sn->append(mapcon->pack());
+	sn->append(params->mp->pack_interface(1));
+	delete mapcon;
+
+	params->map_constraint = sdup(addrstring);
+	params->query_sn = sn;
+		
 	params->remaining_rdcs = rdc->count();
 
 	for(int i = 0; i < rdc->count(); i++)
@@ -3174,6 +3190,7 @@ mapparams::mapparams()
 	local_possibilities = new svector();
 	query_sn = NULL;
 	endpoint = NULL;
+	map_constraint = NULL;
 }
 
 mapparams::~mapparams()
@@ -3182,6 +3199,7 @@ mapparams::~mapparams()
 	delete local_possibilities;
 	if(query_sn != NULL) delete query_sn;
 	if(endpoint != NULL) delete[] endpoint;
+	if(map_constraint != NULL) delete[] map_constraint;
 }
 
 void swrapper::map(smidpoint *mp, const char *addrstring, const char *endpoint,
@@ -3230,6 +3248,7 @@ void swrapper::do_map(mapparams *params)
 	smidpoint *mp = params->mp;
 	svector *possibilities = params->possibilities;
 	char *endpoint = sdup(params->endpoint);
+	char *map_constraint = sdup(params->map_constraint);
 	int report_fd = params->report_fd;
 
 	remote_fd = -1;
@@ -3302,6 +3321,7 @@ void swrapper::do_map(mapparams *params)
 	// Create a skeletal speer structure:
 	peer = new speer();
 	peer->owner = mp;
+	peer->map_constraint = map_constraint;
 	
 	// Preselect to send the hello message:
 	abst = hello->wrap(remote_fd);
@@ -4180,15 +4200,18 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		Schema *mine = owner->msg_schema;
 		
 		// TODO: need to compute a lookup table where some fields may not exist.
-		if(!strcmp(theirs->hashes->extract_item(0)->extract_txt("similar"), mine->hashes->extract_item(0)->extract_txt("similar")))
-		{
+		//if(!strcmp(theirs->hashes->extract_item(0)->extract_txt("similar"), mine->hashes->extract_item(0)->extract_txt("similar")))
+		//{
 			// Should always be true?
 			if (sn->get_type() == SStruct)
 			{
 				snode *parent;
 			
 				// Get main structure name.
-				parent = mklist(mine->hashes->extract_item(0)->get_name());
+				if (this->lookup_backward->exists(sn->get_name()))
+					parent = mklist(this->lookup_backward->extract_txt(sn->get_name()));
+				else
+					parent = mklist(sn->get_name());
 			
 				// Repack the message to fit our schema, and build up the lookup table.
 				repack(sn, parent);
@@ -4197,7 +4220,7 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 			
 				msg->tree = parent;
 			}
-		}
+		//}
 	}
 	
 	if (msg->tree == NULL)
@@ -4322,6 +4345,7 @@ speer::speer()
 	disposable = 0;
 	msg_poly = reply_poly = 0;
 	ep_id = 0; // Needs to be filled in
+	map_constraint = NULL;
 	lookup_forward = lookup_backward = NULL;
 }
 
@@ -4333,6 +4357,7 @@ speer::~speer()
 	if(address != NULL) delete[] address;
 	if(subs != NULL) delete subs;
 	if(topic != NULL) delete[] topic;
+	if(map_constraint != NULL) delete[] map_constraint;
 	if(lookup_forward != NULL) delete lookup_forward;
 	if(lookup_backward != NULL) delete lookup_backward;
 }
