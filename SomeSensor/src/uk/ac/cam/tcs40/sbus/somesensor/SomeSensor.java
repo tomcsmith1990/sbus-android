@@ -32,7 +32,7 @@ public class SomeSensor extends Activity
 		new Thread() {
 			public void run() {
 				m_Component = new SComponent("SomeSensor", "instance");
-				m_Endpoint = m_Component.addEndpoint("SomeEpt", EndpointType.EndpointSource, "BE8A47EBEB58");
+				m_Endpoint = m_Component.addEndpoint("SomeEpt", EndpointType.EndpointSource, "BE8A47EBEB58", null, true);
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				String cptFile = "SomeSensor.cpt";
@@ -40,7 +40,7 @@ public class SomeSensor extends Activity
 				m_Component.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
 				m_Component.setPermission("SomeConsumer", "", true);
 				
-				m_Endpoint.setAutomapPolicy("+NSomeConsumer", "SomeEpt");
+				m_Endpoint.setAutomapPolicy("+Ssomeval+Ssomestring", "SomeEpt");
 				
 				int i = 0;
 				SNode node;
