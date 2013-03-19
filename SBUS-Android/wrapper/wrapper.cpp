@@ -4193,8 +4193,8 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	msg->hc = new HashCode(hc);
 	// We use actual msg hash, not owner->msg_hc, as this might be polymorphic
 	
-	// If we support partial matching, and the schemas are actually different.
-	if (owner->flexible_matching && owner->msg_hc->equals(msg->hc) == 0)
+	// If we support partial matching, the schemas are actually different, and we have a lookup table.
+	if (owner->flexible_matching && owner->msg_hc->equals(msg->hc) == 0 && lookup_backward != NULL)
 	{
 		snode *repacked;
 
