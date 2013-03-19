@@ -3347,10 +3347,6 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 		}
 		else if(code != AcceptOK)
 		{
-			if(code == AcceptNoEndpoint)
-			{
-				// TODO: no matching endpoints - could try to partially match.
-			}
 			// TODO: make this return the acceptance code instead of a boolean
 			map_report(report_fd, 0);
 			discon = 1;
