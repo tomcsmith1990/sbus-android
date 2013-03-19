@@ -50,7 +50,7 @@ class Schema
 	int match_constraints(snode *constraints);
 	int construct_lookup(Schema *convert_to, snode *constraints, snode *lookup_forward, snode *lookup_backward);
 
-	HashCode *hc, *type_hc;
+	HashCode *hc;
 	snode *hashes;
 	MetaType meta;
 	

@@ -37,7 +37,6 @@ void Schema::synerror(const char *format, ...)
 void Schema::dump_tree(int initial_indent, int log)
 {
 	StringBuf *sb;
-	
 	sb = new StringBuf;
 	switch(meta)
 	{
@@ -730,13 +729,11 @@ int Schema::read(const char *s, const char **err)
 	source = new StringBuf();
 	source->cat(s);
 	hc = new HashCode();	
-	type_hc = new HashCode();
 
 	meta = get_metatype(s);	
 	if(meta != SCHEMA_NORM)
 	{
 		hc->frommeta(meta);
-		type_hc->frommeta(meta);
 		return 0; // OK, it's special, so we're done
 	}
 	
@@ -768,7 +765,6 @@ int Schema::read(const char *s, const char **err)
 Schema::Schema()
 {
 	hc = NULL;
-	type_hc = NULL;
 	symbol_table = new svector();
 	hashes = mklist("hashes");
 	tokens = NULL;
@@ -780,7 +776,6 @@ Schema::Schema()
 Schema::Schema(Schema *sch) // Makes a copy (costly)
 {
 	hc = new HashCode(sch->hc);
-	type_hc = new HashCode(sch->type_hc);
 	meta = sch->meta;
 	
 	symbol_table = new svector();
@@ -827,7 +822,6 @@ Schema::~Schema()
 	}
 	if(tree != NULL) delete tree;
 	if(hc != NULL) delete hc;
-	if(type_hc != NULL) delete type_hc;
 	if(source != NULL) delete source;
 }
 
