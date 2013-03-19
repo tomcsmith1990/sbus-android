@@ -85,6 +85,85 @@ int Schema::construct_lookup(Schema *sch, snode *lookup_forward, snode *lookup_b
 	return 0;
 }
 
+int Schema::match_constraints(snode *constraints)
+{
+	return match_constraints(constraints, hashes);
+}
+
+int Schema::match_constraints(snode *want, snode *have)
+{
+	// Check if the hashes we want occur ANYWHERE in the hashes we have.
+	
+	// If there are no constraints, we match.
+	if (want->count() == 0) return 1;
+
+	int match = 0;
+	
+	snode *constraint;
+	int exact;
+	const char *hash;
+
+	// Loop through all of the hash constraints.
+	for (int i = 0; i < want->count(); i++)
+	{
+		match = 0;
+		
+		constraint = want->extract_item(i);
+		exact = constraint->extract_flg("exact");
+		hash = constraint->extract_txt("hash");
+
+		// If 'have' has a hash.
+		if (have->exists((exact) ? "has" : "similar"))
+		{
+			// If it's the hash we want.
+			if (!strcmp(hash, have->extract_txt((exact) ? "has" : "similar")))
+			{
+				// If there a constraints within this one.
+				if (constraint->exists("children"))
+				{
+					if (have->count() == 0)
+						match = 0;
+					else
+					{
+						// See if we can match within what we have.
+						for (int j = 0; j < have->count(); j++)
+						{
+							match = match_constraints(constraint->extract_item("children"), have->extract_item(j));
+							if (match)
+								break;
+						}
+					}	
+				}
+				else
+					// If there are no constraints within this, we have a match on this.
+					match = 1;
+				
+				// If this matches, move on to the next one.
+				if (match)
+					continue;
+			}
+		}
+
+		// Depth first check the children of 'have'.
+		for (int j = 0; j < have->count(); j++)
+		{
+			snode *sn = mklist("schema");
+			sn->append(constraint);
+			// If constraint is matched somewhere in a child, check next constraint.
+			if (match_constraints(sn, have->extract_item(j)))
+			{
+				match = 1;
+				break;
+			}
+		}
+		
+		// If we still haven't matched this constraint, we fail.
+		if (!match) break;
+	}
+	
+	return match;
+}
+
 char *Schema::canonical_string()
 {
 	StringBuf *sb;

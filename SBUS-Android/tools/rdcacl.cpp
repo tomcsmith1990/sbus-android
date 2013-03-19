@@ -1270,7 +1270,7 @@ image::image()
 	metadata = state = NULL;
 	msg_hsh = new svector();
 	reply_hsh = new svector();
-	msg_hsh_list = mklist("endpoints");
+	msg_schema_list = new pvector();
 	lost = 0;
 	acpolicies = new rdcpermissionstore();
 	buffered_policies = new snodevector();
@@ -1290,24 +1290,16 @@ void image::init_hashes()
 	{
 		subn = sn->extract_item(i);
 		msg_schema = Schema::create(subn->extract_txt("message"), &err);
+		msg_schema_list->add((void *)msg_schema);
 		if(msg_schema == NULL)
 		{
 			msg_hsh->add("EEEEEEEEEEEE");
-			
-			svector *ep = new svector();
-			ep->add("EEEEEEEEEEEE");
-			snode *sn = pack("EEEEEEEEEEEE", "hash");
-			msg_hsh_list->append(sn);
 		}
 		else
 		{
 			s = msg_schema->hc->tostring();
 			msg_hsh->add(s);
 			delete[] s;
-			
-			// Clone the snode (for after we delete schema) and add to list.
-			snode *ep = new snode(msg_schema->hashes);
-			msg_hsh_list->append(ep);
 		}
 		reply_schema = Schema::create(subn->extract_txt("response"), &err);
 		if(reply_schema == NULL)
@@ -1320,11 +1312,11 @@ void image::init_hashes()
 			reply_hsh->add(s);
 			delete[] s;
 		}
-		if(msg_schema != NULL) delete msg_schema;
+		//if(msg_schema != NULL) delete msg_schema;
 		if(reply_schema != NULL) delete reply_schema;
 	}
 	// Sanity check:
-	if(msg_hsh->count() != endpoints || reply_hsh->count() != endpoints || msg_hsh_list->count() != endpoints)
+	if(msg_hsh->count() != endpoints || reply_hsh->count() != endpoints || msg_schema_list->count() != endpoints)
 		error("Number of endpoints assertion failed in RDC");
 }
 
@@ -1339,7 +1331,7 @@ image::~image()
 	if(state != NULL) delete state;
 	delete msg_hsh;
 	delete reply_hsh;
-	delete msg_hsh_list;
+	delete msg_schema_list;
 	delete acpolicies;
 	delete buffered_policies;
 }
@@ -1405,80 +1397,6 @@ int image::match_cpt_metadata(snode *constraints)
 	}
 	
 	return 1;
-}
-
-int image::schemamatch(snode *want, snode *have)
-{
-	// Check if the hashes we want occur ANYWHERE in the hashes we have.
-	
-	// If there are no constraints, we match.
-	if (want->count() == 0) return 1;
-
-	int match = 0;
-	
-	snode *constraint;
-	int exact;
-	const char *hash;
-
-	// Loop through all of the hash constraints.
-	for (int i = 0; i < want->count(); i++)
-	{
-		match = 0;
-		
-		constraint = want->extract_item(i);
-		exact = constraint->extract_flg("exact");
-		hash = constraint->extract_txt("hash");
-
-		// If 'have' has a hash.
-		if (have->exists((exact) ? "has" : "similar"))
-		{
-			// If it's the hash we want.
-			if (!strcmp(hash, have->extract_txt((exact) ? "has" : "similar")))
-			{
-				// If there a constraints within this one.
-				if (constraint->exists("children"))
-				{
-					if (have->count() == 0)
-						match = 0;
-					else
-					{
-						// See if we can match within what we have.
-						for (int j = 0; j < have->count(); j++)
-						{
-							match = schemamatch(constraint->extract_item("children"), have->extract_item(j));
-							if (match)
-								break;
-						}
-					}	
-				}
-				else
-					// If there are no constraints within this, we have a match on this.
-					match = 1;
-				
-				// If this matches, move on to the next one.
-				if (match)
-					continue;
-			}
-		}
-
-		// Depth first check the children of 'have'.
-		for (int j = 0; j < have->count(); j++)
-		{
-			snode *sn = mklist("schema");
-			sn->append(constraint);
-			// If constraint is matched somewhere in a child, check next constraint.
-			if (schemamatch(sn, have->extract_item(j)))
-			{
-				match = 1;
-				break;
-			}
-		}
-		
-		// If we still haven't matched this constraint, we fail.
-		if (!match) break;
-	}
-	
-	return match;
 }
 
 int image::match(snode *interface, snode *constraints, snode *matches, scomponent *com, const char *principal_cpt, const char *principal_inst)
@@ -1558,14 +1476,13 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 				continue;
 			}
 			
-			// This is an snode containing the endpoints fields and their 'has' and 'similar' hashes.
-			snode *ept_hashes = msg_hsh_list->extract_item(j);
-			
 			// Check schema constraints.
 			if (constraints->exists("schema"))
 			{
 				sn = snode::import(constraints->extract_txt("schema"), NULL);
-				if (!schemamatch(sn, ept_hashes))
+
+				Schema *msg_schema = (Schema *)msg_schema_list->item(j);
+				if (msg_schema == NULL || !msg_schema->match_constraints(sn))
 					continue;
 			}
 			// Let's assume if we're doing a flexible matching (for similar schemas) we don't want the LITMUS tests.
