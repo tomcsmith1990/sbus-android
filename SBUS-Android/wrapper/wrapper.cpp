@@ -2891,7 +2891,6 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 			  * Construct lookup table based on the map constraint string we used.
 			  * Everything covered by constraint string, i.e. any fields and their descendants will be added to the lookup.
 			  */
-			
 			if (peer->map_constraint != NULL)
 			{
 				MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
@@ -2906,7 +2905,6 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 				int schema_match = sch->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward);
 				
 				delete constraints;
-					
 				delete sch;
 			
 				// If we have a subscription criteria.
@@ -3443,17 +3441,33 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 		{
 			// We already know schema, construct lookup table.
 			
-			// Construct our flat lookup table, when schemas have same fields, different names.
-			// TODO: non flat lookup.
-			peer->lookup_forward = mklist("lookup");
-			peer->lookup_backward = mklist("lookup");
-			smidpoint *owner = peer->owner;
-			owner->msg_schema->construct_lookup(sch, peer->lookup_forward, peer->lookup_backward);
+			/**
+			  * Construct lookup table based on the map constraint string we used.
+			  * Everything covered by constraint string, i.e. any fields and their descendants will be added to the lookup.
+			  */
+			if (peer->map_constraint != NULL)
+			{
+				smidpoint *mp = peer->owner;
+				
+				MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
+				const char *schema_constraint = mapcon->pack(mp->msg_schema->hashes)->extract_txt("schema");
+				snode *constraints = snode::import(schema_constraint, NULL);
+				delete mapcon;
+				delete schema_constraint;
+								
+				peer->lookup_forward = mklist("lookup");
+				peer->lookup_backward = mklist("lookup");
 			
-			// If we have a subscription criteria.
-			if (owner->subs != NULL)
-				// Resubscribe, this will convert the subscription string to peer's schema.
-				peer->resubscribe(owner->subs, owner->topic);
+				int schema_match = sch->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward);
+				
+				delete constraints;
+				delete sch;
+			
+				// If we have a subscription criteria.
+				if (mp->subs != NULL)
+					// Resubscribe, this will convert the subscription string to peer's schema.
+					peer->resubscribe(mp->subs, mp->topic);
+			}
 		}
 	}
 	
@@ -4196,31 +4210,20 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	// If we support partial matching, and the schemas are actually different.
 	if (owner->flexible_matching && owner->msg_hc->equals(msg->hc) == 0)
 	{
-		Schema *theirs = wrap->cache->lookup(msg->hc);
-		Schema *mine = owner->msg_schema;
-		
-		// TODO: need to compute a lookup table where some fields may not exist.
-		//if(!strcmp(theirs->hashes->extract_item(0)->extract_txt("similar"), mine->hashes->extract_item(0)->extract_txt("similar")))
-		//{
-			// Should always be true?
-			if (sn->get_type() == SStruct)
-			{
-				snode *parent;
-			
-				// Get main structure name.
-				if (this->lookup_backward->exists(sn->get_name()))
-					parent = mklist(this->lookup_backward->extract_txt(sn->get_name()));
-				else
-					parent = mklist(sn->get_name());
-			
-				// Repack the message to fit our schema, and build up the lookup table.
-				repack(sn, parent);
-			
-				delete sn;
-			
-				msg->tree = parent;
-			}
-		//}
+		snode *repacked;
+
+		// Create main structure.
+		if (lookup_backward->exists(sn->get_name()))
+			repacked = mklist(lookup_backward->extract_txt(sn->get_name()));
+		else
+			repacked = mklist(sn->get_name());
+
+		// Repack the message to fit our schema as much as possible.
+		repack(sn, repacked);
+
+		delete sn;
+
+		msg->tree = repacked;
 	}
 	
 	if (msg->tree == NULL)
@@ -4236,7 +4239,10 @@ void speer::repack(snode *sn, snode *parent)
 	snode *scomposite;
 	for (int i = 0; i < sn->count(); i++) {	
 
-		local_name = this->lookup_backward->extract_txt(sn->extract_item(i)->get_name());
+		if (lookup_backward->exists(sn->extract_item(i)->get_name()))
+			local_name = lookup_backward->extract_txt(sn->extract_item(i)->get_name());
+		else
+			local_name = sn->extract_item(i)->get_name();
 
 		switch(sn->extract_item(i)->get_type())
 		{
