@@ -71,20 +71,6 @@ void Schema::dump_tree(int initial_indent, int log)
 	delete sb;
 }
 
-int Schema::construct_lookup(Schema *sch, snode *lookup_forward, snode *lookup_backward)
-{
-	if (lookup_forward == NULL || lookup_backward == NULL)
-		return -1;
-	
-	for (int i = 0; i < symbol_table->count(); i++)
-	{
-		lookup_forward->append(pack(sch->symbol_table->item(i), symbol_table->item(i))); // <my-name>their-name</my-name>
-		lookup_backward->append(pack(symbol_table->item(i), sch->symbol_table->item(i))); // <their-name>my-name</their-name>
-	}
-	
-	return 0;
-}
-
 int Schema::construct_lookup(Schema *convert_to, snode *constraints, snode *lookup_forward, snode *lookup_backward)
 {
 	if (convert_to == NULL || constraints == NULL || lookup_forward == NULL || lookup_backward == NULL)
@@ -116,6 +102,12 @@ void Schema::construct_lookup(snode *want, snode *have, snode *lookup_forward, s
 
 int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, snode *lookup_forward, snode *lookup_backward)
 {
+	/*
+	 *	Returns 1 if the schema (in hash format) matches the constraints we have, 0 if not.
+	 *	Will also fill lookup_forward and lookup_backward as lookup tables against target_hashes, if all are not NULL.
+	 *	This lookup table will contain all of the matched field names, as well as any children of that field.
+	 */
+	 
 	// If there are no constraints, we match.
 	if (want->count() == 0) return 1;
 
@@ -184,14 +176,17 @@ int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, sno
 				// If this matches, move on to the next constraint.
 				if (match)
 				{
-					snode *want;
-					if (!strcmp(target_hashes->get_name(), constraint->extract_txt("name")))
-						want = target_hashes;
-					else 
-						want = target_hashes->find(constraint->extract_txt("name"));
+					if (target_hashes != NULL && lookup_forward != NULL && lookup_backward != NULL)
+					{
+						snode *want;
+						if (!strcmp(target_hashes->get_name(), constraint->extract_txt("name")))
+							want = target_hashes;
+						else 
+							want = target_hashes->find(constraint->extract_txt("name"));
 						
-					construct_lookup(want, have, lookup_forward, lookup_backward);
-					continue;
+						construct_lookup(want, have, lookup_forward, lookup_backward);
+						continue;
+					}
 				}
 			}
 		}
@@ -218,100 +213,7 @@ int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, sno
 
 int Schema::match_constraints(snode *constraints)
 {
-	return match_constraints(constraints, hashes);
-}
-
-int Schema::match_constraints(snode *want, snode *have)
-{	
-	// If there are no constraints, we match.
-	if (want->count() == 0) return 1;
-
-	int match = 0;
-	snode *constraint;
-	int exact;
-	const char *hash;
-
-	// Loop through all of the hash constraints.
-	for (int i = 0; i < want->count(); i++)
-	{
-		match = 0;
-		
-		constraint = want->extract_item(i);
-		exact = constraint->extract_flg("exact");
-		hash = constraint->extract_txt("hash");
-
-		// If 'have' has a hash.
-		if (have->exists((exact) ? "has" : "similar"))
-		{	
-			// If it's the hash we want.
-			if (!strcmp(hash, have->extract_txt((exact) ? "has" : "similar")))
-			{
-				if (exact)
-				{
-					// If this is an exact match, no need to check the children.
-					match = 1;
-				}
-				
-				// If there are constraints within this one.
-				else if (constraint->exists("children"))
-				{
-					// If there are no fields within 'have', we definitely fail.
-					if (have->count() == 0)
-						match = 0;
-					else
-					{
-						// For each child constraint.
-						for (int j = 0; j < constraint->extract_item("children")->count(); j++)
-						{
-							snode *sn = mklist("schema");
-							sn->append(constraint->extract_item("children")->extract_item(j));
-							
-							// Try to match within any of the children of 'have'.
-							for (int k = 0; k < have->count(); k++)
-							{
-								match = match_constraints(sn, have->extract_item(k));
-								// If we've matched, don't bother checking other children of 'have'.
-								if (match)
-									break;
-							}
-							
-							// If we haven't matched, don't both checking other child constraints.
-							if (!match)
-								break;
-						}
-					}	
-				}
-				
-				else
-				{
-					// If there are no child constraints and it's similar, we have a match.
-					match = 1;
-				}
-				
-				// If this matches, move on to the next constraint.
-				if (match)
-					continue;
-			}
-		}
-
-		// Still no match - depth first check the children of 'have'.
-		for (int j = 0; j < have->count(); j++)
-		{
-			snode *sn = mklist("schema");
-			sn->append(constraint);
-			// If constraint is matched somewhere in a child, check next constraint.
-			if (match_constraints(sn, have->extract_item(j)))
-			{
-				match = 1;
-				break;
-			}
-		}
-		
-		// If we still haven't matched this constraint, we fail.
-		if (!match) break;
-	}
-	
-	return match;
+	return construct_lookup(constraints, hashes, NULL, NULL, NULL);
 }
 
 char *Schema::canonical_string()
