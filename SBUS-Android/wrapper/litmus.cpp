@@ -91,14 +91,11 @@ int Schema::match_constraints(snode *constraints)
 }
 
 int Schema::match_constraints(snode *want, snode *have)
-{
-	// Check if the hashes we want occur ANYWHERE in the hashes we have.
-	
+{	
 	// If there are no constraints, we match.
 	if (want->count() == 0) return 1;
 
 	int match = 0;
-	
 	snode *constraint;
 	int exact;
 	const char *hash;
@@ -114,37 +111,52 @@ int Schema::match_constraints(snode *want, snode *have)
 
 		// If 'have' has a hash.
 		if (have->exists((exact) ? "has" : "similar"))
-		{
+		{	
 			// If it's the hash we want.
 			if (!strcmp(hash, have->extract_txt((exact) ? "has" : "similar")))
 			{
-				// If there a constraints within this one.
+				// If there are constraints within this one.
 				if (constraint->exists("children"))
 				{
+					// If there are no fields within 'have', we definitely fail.
 					if (have->count() == 0)
 						match = 0;
 					else
 					{
-						// See if we can match within what we have.
-						for (int j = 0; j < have->count(); j++)
+						// For each child constraint.
+						for (int j = 0; j < constraint->extract_item("children")->count(); j++)
 						{
-							match = match_constraints(constraint->extract_item("children"), have->extract_item(j));
-							if (match)
+							snode *sn = mklist("schema");
+							sn->append(constraint->extract_item("children")->extract_item(j));
+							
+							// Try to match within any of the children of 'have'.
+							for (int k = 0; k < have->count(); k++)
+							{
+								match = match_constraints(sn, have->extract_item(k));
+								// If we've matched, don't bother checking other children of 'have'.
+								if (match)
+									break;
+							}
+							
+							// If we haven't matched, don't both checking other child constraints.
+							if (!match)
 								break;
 						}
 					}	
 				}
 				else
-					// If there are no constraints within this, we have a match on this.
+				{
+					// If there are no child constraints, we have a match.
 					match = 1;
+				}
 				
-				// If this matches, move on to the next one.
+				// If this matches, move on to the next constraint.
 				if (match)
 					continue;
 			}
 		}
 
-		// Depth first check the children of 'have'.
+		// Still no match - depth first check the children of 'have'.
 		for (int j = 0; j < have->count(); j++)
 		{
 			snode *sn = mklist("schema");

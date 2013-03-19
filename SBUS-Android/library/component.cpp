@@ -902,11 +902,11 @@ MapConstraints::MapConstraints(const char *string)
 				pub_key = read_word(&string);
 				break;
 			case 'H':	// has
-				last = ::pack(::pack(read_word(&string), "hash"), ::pack_bool(1, "exact"), "constraint");
+				last = ::pack(::pack(read_word(&string), "name"), ::pack_bool(1, "exact"), "constraint");
 				sn->append(last);
 				break;
 			case 'S':	// similar
-				last = ::pack(::pack(read_word(&string), "hash"), ::pack_bool(0, "exact"), "constraint");
+				last = ::pack(::pack(read_word(&string), "name"), ::pack_bool(0, "exact"), "constraint");
 				sn->append(last);
 				break;
 			case 'K':
@@ -1028,29 +1028,37 @@ void MapConstraints::pack_hashes(snode *hash_lookup, snode *convert, snode* cons
 {
 	snode *hash_constraint, *name_constraint, *hash, *children;
 	int exact;
+	const char *name;
 	
 	for (int i = 0; i < convert->count(); i++)
 	{
 		name_constraint = convert->extract_item(i);
 		exact = name_constraint->extract_flg("exact");
+		name = name_constraint->extract_txt("name");
 		
 		// If there is a field in our schema with this name, get its hash.
-		hash = hash_lookup->find(name_constraint->extract_txt("hash"));
+		hash = hash_lookup->find(name);
 		if (hash != NULL)
 		{
 			// Pack the hash constraint.
-			hash_constraint = ::pack(::pack(hash->extract_txt((exact ? "has" : "similar")), "hash"), ::pack_bool(exact, "exact"), "constraint");
-		}
+			hash_constraint = ::pack(
+									::pack(name, "name"),
+									::pack(hash->extract_txt(exact ? "has" : "similar"), "hash"), 
+									::pack_bool(exact, "exact"), 
+								"constraint");
+								
+			// If there are any child constraints, pack their hash constraints.
+			if (name_constraint->exists("children"))
+			{
+				children = mklist("children");
+				pack_hashes(hash_lookup, name_constraint->extract_item("children"), children);
+				hash_constraint->append(children);
+			}
 		
-		// If there are any child constraints, pack their hash constraints.
-		if (name_constraint->exists("children"))
-		{
-			children = mklist("children");
-			pack_hashes(hash_lookup, name_constraint->extract_item("children"), children);
-			hash_constraint->append(children);
+			constraint_list->append(hash_constraint);
 		}
-		
-		constraint_list->append(hash_constraint);
+		else
+			warning("Field '%s' does not exists in schema - map constraint may not be as expected\n", name);
 	}
 }
 
