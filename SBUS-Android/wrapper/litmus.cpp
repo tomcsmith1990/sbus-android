@@ -115,8 +115,14 @@ int Schema::match_constraints(snode *want, snode *have)
 			// If it's the hash we want.
 			if (!strcmp(hash, have->extract_txt((exact) ? "has" : "similar")))
 			{
+				if (exact)
+				{
+					// If this is an exact match, no need to check the children.
+					match = 1;
+				}
+				
 				// If there are constraints within this one.
-				if (constraint->exists("children"))
+				else if (constraint->exists("children"))
 				{
 					// If there are no fields within 'have', we definitely fail.
 					if (have->count() == 0)
@@ -144,9 +150,10 @@ int Schema::match_constraints(snode *want, snode *have)
 						}
 					}	
 				}
+				
 				else
 				{
-					// If there are no child constraints, we have a match.
+					// If there are no child constraints and it's similar, we have a match.
 					match = 1;
 				}
 				
