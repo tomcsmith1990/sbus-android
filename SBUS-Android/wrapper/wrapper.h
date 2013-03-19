@@ -253,6 +253,8 @@ class swrapper
 	void lost(speer *peer);
 	
 
+	void construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_schema);
+	
 	smidpoint *register_mp, *lookup_cpt_mp, *lookup_schema_mp, *lost_mp, *rdcacl_mp, *dump_privilege_mp, *rdc_update_mp, *map_policy_mp;
 	
 	int bootstrap_fd;

@@ -2887,31 +2887,9 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 		}
 		else
 		{
-			/**
-			  * Construct lookup table based on the map constraint string we used.
-			  * Everything covered by constraint string, i.e. any fields and their descendants will be added to the lookup.
-			  */
-			if (peer->map_constraint != NULL)
-			{
-				MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
-				const char *schema_constraint = mapcon->pack(mp->msg_schema->hashes)->extract_txt("schema");
-				snode *constraints = snode::import(schema_constraint, NULL);
-				delete mapcon;
-				delete schema_constraint;
-								
-				peer->lookup_forward = mklist("lookup");
-				peer->lookup_backward = mklist("lookup");
-			
-				int schema_match = sch->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward);
-				
-				delete constraints;
-				delete sch;
-			
-				// If we have a subscription criteria.
-				if (mp->subs != NULL)
-					// Resubscribe, this will convert the subscription string to peer's schema.
-					peer->resubscribe(mp->subs, mp->topic);
-			}
+			// Got schema, construct the lookup table.
+			construct_peer_lookup(mp, peer, sch);
+			delete sch;
 		}
 	}
 	else if(abst->purpose == VisitResolveConstraints)
@@ -2934,6 +2912,42 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 	}
 	delete abst;
 	delete sn_results;
+}
+
+void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_schema)
+{
+	/**
+	  * Construct lookup table based on the map constraint string we used.
+	  * Everything covered by constraint string, i.e. any fields and their descendants will be added to the lookup.
+	  */
+	if (peer->map_constraint != NULL)
+	{
+		MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
+		const char *schema_constraint = mapcon->pack(mp->msg_schema->hashes)->extract_txt("schema");
+		snode *constraints = snode::import(schema_constraint, NULL);
+		delete mapcon;
+		delete schema_constraint;
+						
+		peer->lookup_forward = mklist("lookup");
+		peer->lookup_backward = mklist("lookup");
+	
+		int schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward);
+		
+		delete constraints;
+
+		if (schema_match == 0)
+		{
+			warning("Peer's schema does not fit map constraint '%s' - unmapping\n", peer->map_constraint);
+			unmap(mp, peer->address, peer->endpoint, -1);
+		}
+		else
+		{
+			// If we have a subscription criteria.
+			if (mp->subs != NULL)
+				// Resubscribe, this will convert the subscription string to peer's schema.
+				peer->resubscribe(mp->subs, mp->topic);
+		}
+	}
 }
 
 void swrapper::map_report(int report_fd, int code, const char *address)
@@ -3432,42 +3446,14 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 				/* Couldn't make contact back to component, hence lookup
 					isn't going ahead. Without the schema, we can't process
 					the original message. */
-				warning("Warning: schema lookup on component '%s' failed",
-						peer->address);
-				warning("Cannot process incoming message without relevant schema");
+				warning("Warning: schema lookup on component '%s' failed", peer->address);
+				warning("Cannot construct lookup table without relevant schema");
 			}
 		}
 		else
 		{
 			// We already know schema, construct lookup table.
-			
-			/**
-			  * Construct lookup table based on the map constraint string we used.
-			  * Everything covered by constraint string, i.e. any fields and their descendants will be added to the lookup.
-			  */
-			if (peer->map_constraint != NULL)
-			{
-				smidpoint *mp = peer->owner;
-				
-				MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
-				const char *schema_constraint = mapcon->pack(mp->msg_schema->hashes)->extract_txt("schema");
-				snode *constraints = snode::import(schema_constraint, NULL);
-				delete mapcon;
-				delete schema_constraint;
-								
-				peer->lookup_forward = mklist("lookup");
-				peer->lookup_backward = mklist("lookup");
-			
-				int schema_match = sch->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward);
-				
-				delete constraints;
-				// Don't delete sch - it's the one in the cache, we need it to stay there.
-			
-				// If we have a subscription criteria.
-				if (mp->subs != NULL)
-					// Resubscribe, this will convert the subscription string to peer's schema.
-					peer->resubscribe(mp->subs, mp->topic);
-			}
+			construct_peer_lookup(peer->owner, peer, sch);
 		}
 	}
 	
