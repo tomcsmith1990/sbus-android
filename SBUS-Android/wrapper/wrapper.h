@@ -81,6 +81,7 @@ class speer
 	
 	void repack(snode *sn, snode *parent);
 	
+	char *map_constraint;
 	snode *lookup_forward; // mine to theirs
 	snode *lookup_backward; // theirs to mine
 };
@@ -160,6 +161,8 @@ class mapparams
 	snode *query_sn;
 	const char *endpoint;
 	int report_fd;
+	
+	const char *map_constraint;
 	
 	svector *possibilities; // Target component addresses suggested
 	svector *local_possibilities; // Target component addresses suggested (from a local search of peers)
@@ -285,7 +288,7 @@ class swrapper
 	void subscribe(smidpoint *mp, const char *subs, const char *topic,
 			const char *peer_address);
 	Schema *declare_schema(const char *schema, int file_lookup);
-	void resolve_address(const char *addrstring, mapparams *params, int pack_constraints = 1);
+	void resolve_address(const char *addrstring, mapparams *params);
 	void resolve_address_local(smidpoint *mp, const char *addrstring, mapparams *params);
 	void continue_resolve(mapparams *params);
 	void map_report(int report_fd, int code, const char *address = NULL);

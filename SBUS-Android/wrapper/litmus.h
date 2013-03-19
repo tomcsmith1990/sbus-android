@@ -48,7 +48,9 @@ class Schema
 	void dump_tree(int initial_indent = 0, int log = 0);
 	
 	int construct_lookup(Schema *sch, snode *lookup_forward, snode *lookup_backward);
+	
 	int match_constraints(snode *constraints);
+	int construct_lookup(Schema *convert_to, snode *constraints, snode *lookup_forward, snode *lookup_backward);
 
 	HashCode *hc, *type_hc;
 	snode *hashes;
@@ -68,7 +70,9 @@ class Schema
 	int multiple_names();
 	void dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *sn = NULL, StringBuf *tsb = NULL);
 	
-	int match_constraints(snode *have, snode *want);
+	int match_constraints(snode *want, snode *have);
+	int construct_lookup(snode *want, snode *have, snode *target_hashes, snode *lookup_forward, snode *lookup_backward);
+	void construct_lookup(snode *want, snode *have, snode *lookup_forward, snode *lookup_backward);
 	
 	void build_sections();
 	void scan_sections();
