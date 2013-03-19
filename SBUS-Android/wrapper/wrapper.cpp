@@ -1828,7 +1828,7 @@ void swrapper::serve_peer(scomm *msg, speer *peer)
 	else
 		expected_hc = mp->msg_hc;
 	
-	// If we're doing partial matching, don't check types.
+	// If we're doing flexible matching, don't check types.
 	if (mp->flexible_matching)
 	{
 		log("Received a flexible matching message");
@@ -3461,7 +3461,7 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 				int schema_match = sch->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward);
 				
 				delete constraints;
-				delete sch;
+				// Don't delete sch - it's the one in the cache, we need it to stay there.
 			
 				// If we have a subscription criteria.
 				if (mp->subs != NULL)
