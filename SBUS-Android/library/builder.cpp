@@ -964,7 +964,7 @@ snode *snode::find(const char *name, svector *path)
 			return node;
 		}
 	}
-	//StringBuf *sbuf = (buf == NULL) ? NULL : new StringBuf();
+
 	for (int i = 0; i < children->count(); i++)
 	{
 		node = children->item(i);
@@ -972,16 +972,10 @@ snode *snode::find(const char *name, svector *path)
 		if (found != NULL)
 		{
 			if (path != NULL)
-			{
 				path->add(node->name);
-				//buf->cat('/');
-				//buf->append(sbuf);
-				//delete sbuf;
-			}
 			return found;
 		}
 	}
-	//if (sbuf != NULL) delete sbuf;
 	return NULL;
 }
 
