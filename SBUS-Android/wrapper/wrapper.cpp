@@ -4220,17 +4220,17 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		repack(node, repacked);
 		
 		// In this case, our schema is bigger than the other schema.
-		// We pop the names of the missing outer layers off the list,
+		// We read the names of the missing outer layers off the list,
 		// and add them as dummy outer layers.	
 		if (!used_path)
 		{
 			const char *layer;
-			while ((layer = convert_path->pop()) != NULL)
+			for (int i = convert_path->count() - 1; i >= 0; i--)
 			{
+				layer = convert_path->item(i);
 				snode *parent = mklist(layer);
 				parent->append(repacked);
 				repacked = parent;
-				delete[] layer;
 			}
 			used_path = true;
 		}

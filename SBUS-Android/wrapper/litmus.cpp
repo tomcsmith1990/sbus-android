@@ -74,7 +74,7 @@ int Schema::construct_lookup(Schema *convert_to, snode *constraints, snode *look
 {
 	if (convert_to == NULL || constraints == NULL || lookup_forward == NULL || lookup_backward == NULL)
 		return -1;
-		
+
 	/*
 	 * Check the schema matches the constraints, and construct lookup table for:
 	 * 		- any fields mentioned in a constraint.
@@ -91,10 +91,10 @@ int Schema::construct_lookup(Schema *convert_to, snode *constraints, snode *look
 	
 	// Find the path from the top level to the first constraint in converting from schema.
 	svector *path_theirs = new svector();
-	hashes->find(constraints->extract_item(0)->extract_txt("name"), path_theirs);
+	hashes->find(lookup_forward->extract_txt(constraints->extract_item(0)->extract_txt("name")), path_theirs);
 
 	const char *my, *they;
-	
+
 	// Working backwards up the path (i.e. from constraint to the top), 
 	// add levels to the lookup tables until we reach the top of one of the schemas.
 	int count = (path_mine->count() <= path_theirs->count()) ? path_mine->count() : path_theirs->count();
@@ -112,7 +112,7 @@ int Schema::construct_lookup(Schema *convert_to, snode *constraints, snode *look
 	}
 	
 	// If the schema we're converting to has the longer path,
-	// save the rest of our path - this is popped off to construct dummy outer layers.
+	// save the rest of our path - this is read off to construct dummy outer layers.
 	if (i < path_mine->count())
 	{
 		for (int j = path_mine->count() - 1; j >= i; j--)
