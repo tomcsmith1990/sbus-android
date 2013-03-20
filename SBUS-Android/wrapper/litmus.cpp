@@ -144,17 +144,9 @@ void Schema::construct_lookup(snode *want, snode *have, snode *lookup_forward, s
 	if (!lookup_forward->exists(want->get_name()))
 		lookup_forward->append(pack(have->get_name(), want->get_name())); // <my-name>their-name</my-name>
 
-	// If it doesn't exist, or it's empty (meaning we need it for the structure).
-	if (!lookup_backward->exists(have->get_name())/* || !strcmp(lookup_backward->extract_txt(have->get_name()), "")*/)
+	if (!lookup_backward->exists(have->get_name()))
 	{
-		snode *sn = pack(want->get_name(), have->get_name()); // <their-name>my-name</their-name>
-		/*
-		// If exists, therefore empty.
-		if (lookup_backward->exists(have->get_name()))
-			// Replace the empty snode.
-			*lookup_backward->extract_item(have->get_name()) = *sn;
-		else*/
-			lookup_backward->append(sn);
+		lookup_backward->append(pack(want->get_name(), have->get_name())); // <their-name>my-name</their-name>
 	}
 
 	for (int i = 0; i < want->count(); i++)
@@ -264,10 +256,6 @@ int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, sno
 			// If constraint is matched somewhere in a child, check next constraint.
 			if (construct_lookup(sn, have->extract_item(j), target_hashes, lookup_forward, lookup_backward))
 			{
-				// We need this for the structure - if there's not already something there, add it in empty.
-				//if (!lookup_backward->exists(have->get_name()))
-					//lookup_backward->append(pack("", have->get_name()));
-
 				match = 1;
 				break;
 			}

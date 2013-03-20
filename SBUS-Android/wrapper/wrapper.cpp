@@ -4253,10 +4253,11 @@ void speer::repack(snode *sn, snode *parent)
 	snode *scomposite;
 	for (int i = 0; i < sn->count(); i++) {	
 
+		// If there's no entry for what we call this field, skip it.
 		if (lookup_backward->exists(sn->extract_item(i)->get_name()))
 			local_name = lookup_backward->extract_txt(sn->extract_item(i)->get_name());
 		else
-			continue;//local_name = sn->extract_item(i)->get_name();
+			continue;
 
 		switch(sn->extract_item(i)->get_type())
 		{
