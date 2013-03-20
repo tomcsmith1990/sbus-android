@@ -485,7 +485,9 @@ char StringBuf::getcharacter(int n)
 
 void StringBuf::append(StringBuf *sb)
 {
-	cat(sb->extract());
+	const char *add = sb->extract();
+	cat(add);
+	delete[] add;
 }
 
 void StringBuf::cat(const char *s)
