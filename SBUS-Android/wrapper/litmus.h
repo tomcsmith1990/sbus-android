@@ -48,7 +48,7 @@ class Schema
 	void dump_tree(int initial_indent = 0, int log = 0);
 		
 	int match_constraints(snode *constraints);
-	int construct_lookup(Schema *convert_to, snode *constraints, snode *lookup_forward, snode *lookup_backward);
+	int construct_lookup(Schema *convert_to, snode *constraints, snode *lookup_forward, snode *lookup_backward, svector *path);
 
 	HashCode *hc;
 	snode *hashes;

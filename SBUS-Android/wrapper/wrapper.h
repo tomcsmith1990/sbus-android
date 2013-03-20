@@ -82,6 +82,7 @@ class speer
 	void repack(snode *sn, snode *parent);
 	
 	char *map_constraint;
+	svector *convert_path;
 	snode *lookup_forward; // mine to theirs
 	snode *lookup_backward; // theirs to mine
 };
