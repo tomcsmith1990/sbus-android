@@ -936,10 +936,10 @@ int snode::exists(const char *name)
 	return 0;
 }
 
-snode *snode::find(const char *name)
+snode *snode::find(const char *name, svector *path)
 {
 	snode *node;
-	
+
 	if(type != SStruct || name == NULL)
 		return 0;
 	// Fast check:
@@ -947,21 +947,41 @@ snode *snode::find(const char *name)
 	{
 		node = children->item(i);
 		if(node->name == name && node->type != SEmpty)
+		{
+			if (path != NULL)
+				path->add(node->name);
 			return node;
+		}
 	}
 	// Slow check:
 	for(int i = 0; i < children->count(); i++)
 	{
 		node = children->item(i);
 		if(!strcmp(node->name, name) && node->type != SEmpty)
+		{
+			if (path != NULL)
+				path->add(node->name);
 			return node;
+		}
 	}
+	//StringBuf *sbuf = (buf == NULL) ? NULL : new StringBuf();
 	for (int i = 0; i < children->count(); i++)
 	{
 		node = children->item(i);
-		snode *found = node->find(name);
-		if (found != NULL) return found;
+		snode *found = node->find(name, path);
+		if (found != NULL)
+		{
+			if (path != NULL)
+			{
+				path->add(node->name);
+				//buf->cat('/');
+				//buf->append(sbuf);
+				//delete sbuf;
+			}
+			return found;
+		}
 	}
+	//if (sbuf != NULL) delete sbuf;
 	return NULL;
 }
 

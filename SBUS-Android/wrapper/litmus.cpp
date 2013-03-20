@@ -70,12 +70,67 @@ void Schema::dump_tree(int initial_indent, int log)
 	delete sb;
 }
 
-int Schema::construct_lookup(Schema *convert_to, snode *constraints, snode *lookup_forward, snode *lookup_backward)
+int Schema::construct_lookup(Schema *convert_to, snode *constraints, snode *lookup_forward, snode *lookup_backward, svector *path)
 {
 	if (convert_to == NULL || constraints == NULL || lookup_forward == NULL || lookup_backward == NULL)
 		return -1;
 		
-	return construct_lookup(constraints, hashes, convert_to->hashes, lookup_forward, lookup_backward);
+	/*
+	 * Check the schema matches the constraints, and construct lookup table for:
+	 * 		- any fields mentioned in a constraint.
+	 *		- any fields which are children of those constraints.
+	 */
+	int match = construct_lookup(constraints, hashes->extract_item(0), convert_to->hashes, lookup_forward, lookup_backward);
+
+	if (!match)
+		return match;
+	
+	// Find the path from the top level to the first constraint in converting to schema.
+	svector *path_mine = new svector();
+	convert_to->hashes->find(constraints->extract_item(0)->extract_txt("name"), path_mine);
+	
+	// Find the path from the top level to the first constraint in converting from schema.
+	svector *path_theirs = new svector();
+	hashes->find(constraints->extract_item(0)->extract_txt("name"), path_theirs);
+
+	const char *my, *they;
+	
+	// Working backwards up the path (i.e. from constraint to the top), 
+	// add levels to the lookup tables until we reach the top of one of the schemas.
+	int count = (path_mine->count() <= path_theirs->count()) ? path_mine->count() : path_theirs->count();
+	int i;
+	for (i = 0; i < count; i++)
+	{
+		my = path_mine->item(i);
+		they = path_theirs->item(i);
+		
+		if (!lookup_forward->exists(my))
+			lookup_forward->append(pack(they, my));
+			
+		if (!lookup_backward->exists(they))
+			lookup_backward->append(pack(my, they));
+	}
+	
+	// If the schema we're converting to has the longer path,
+	// save the rest of our path - this is popped off to construct dummy outer layers.
+	if (i < path_mine->count())
+	{
+		for (int j = path_mine->count() - 1; j >= i; j--)
+			path->add(path_mine->item(j));
+	}
+	// If the schema we're converting from has the longer path,
+	// save the rest of their path - this path is followed to find the top level node to repack.
+	else if (i < path_theirs->count())
+	{
+		for (int j = path_theirs->count() - 1; j > i; j--)
+			path->add(path_theirs->item(j));
+		path->add(path_theirs->item(i - 1));
+	}
+	
+	delete path_mine;
+	delete path_theirs;
+
+	return match;
 }
 
 void Schema::construct_lookup(snode *want, snode *have, snode *lookup_forward, snode *lookup_backward)
@@ -88,9 +143,19 @@ void Schema::construct_lookup(snode *want, snode *have, snode *lookup_forward, s
 
 	if (!lookup_forward->exists(want->get_name()))
 		lookup_forward->append(pack(have->get_name(), want->get_name())); // <my-name>their-name</my-name>
-		
-	if (!lookup_backward->exists(have->get_name()))
-		lookup_backward->append(pack(want->get_name(), have->get_name())); // <their-name>my-name</their-name>
+
+	// If it doesn't exist, or it's empty (meaning we need it for the structure).
+	if (!lookup_backward->exists(have->get_name())/* || !strcmp(lookup_backward->extract_txt(have->get_name()), "")*/)
+	{
+		snode *sn = pack(want->get_name(), have->get_name()); // <their-name>my-name</their-name>
+		/*
+		// If exists, therefore empty.
+		if (lookup_backward->exists(have->get_name()))
+			// Replace the empty snode.
+			*lookup_backward->extract_item(have->get_name()) = *sn;
+		else*/
+			lookup_backward->append(sn);
+	}
 
 	for (int i = 0; i < want->count(); i++)
 	{
@@ -184,6 +249,7 @@ int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, sno
 							want = target_hashes->find(constraint->extract_txt("name"));
 						
 						construct_lookup(want, have, lookup_forward, lookup_backward);
+
 						continue;
 					}
 				}
@@ -198,6 +264,10 @@ int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, sno
 			// If constraint is matched somewhere in a child, check next constraint.
 			if (construct_lookup(sn, have->extract_item(j), target_hashes, lookup_forward, lookup_backward))
 			{
+				// We need this for the structure - if there's not already something there, add it in empty.
+				//if (!lookup_backward->exists(have->get_name()))
+					//lookup_backward->append(pack("", have->get_name()));
+
 				match = 1;
 				break;
 			}

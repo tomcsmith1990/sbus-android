@@ -73,7 +73,7 @@ class snode
 
 	// Searching:
 	int exists(const char *name); // Returns 0 or 1
-	snode *find(const char *name);
+	snode *find(const char *name, svector *path = NULL);
 	snode *follow_path(svector *path); // Returns NULL if no such path
 	int equals(snode *sn); // -1 if incomparable due to types
 	int lessthan(snode *sn); // -1 if incomparable due to types

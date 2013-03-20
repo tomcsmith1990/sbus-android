@@ -2930,9 +2930,11 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 						
 		peer->lookup_forward = mklist("lookup");
 		peer->lookup_backward = mklist("lookup");
-	
-		int schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward);
-		
+
+		peer->convert_path = new svector();
+		int schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward, 
+															peer->convert_path);
+
 		delete constraints;
 
 		if (schema_match == 0)
@@ -4197,15 +4199,41 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	if (owner->flexible_matching && owner->msg_hc->equals(msg->hc) == 0 && lookup_backward != NULL)
 	{
 		snode *repacked;
+		snode *node;
+		
+		node = sn;
+		
+		int used_path = false;
+		
+		// In this case, the other schema is bigger.
+		// Follow the path to our top level node.
+		if (!lookup_backward->exists(node->get_name()))
+		{
+			node = sn->follow_path(convert_path);
+			used_path = true;
+		}
+		
+		// Create the new top level node with our name.
+		repacked = mklist(lookup_backward->extract_txt(node->get_name()));
 
-		// Create main structure.
-		if (lookup_backward->exists(sn->get_name()))
-			repacked = mklist(lookup_backward->extract_txt(sn->get_name()));
-		else
-			repacked = mklist(sn->get_name());
-
-		// Repack the message to fit our schema as much as possible.
-		repack(sn, repacked);
+		// Repack the message using our names - skip any fields which are not in the lookup table.
+		repack(node, repacked);
+		
+		// In this case, our schema is bigger than the other schema.
+		// We pop the names of the missing outer layers off the list,
+		// and add them as dummy outer layers.	
+		if (!used_path)
+		{
+			const char *layer;
+			while ((layer = convert_path->pop()) != NULL)
+			{
+				snode *parent = mklist(layer);
+				parent->append(repacked);
+				repacked = parent;
+				delete[] layer;
+			}
+			used_path = true;
+		}
 
 		delete sn;
 
@@ -4228,7 +4256,7 @@ void speer::repack(snode *sn, snode *parent)
 		if (lookup_backward->exists(sn->extract_item(i)->get_name()))
 			local_name = lookup_backward->extract_txt(sn->extract_item(i)->get_name());
 		else
-			local_name = sn->extract_item(i)->get_name();
+			continue;//local_name = sn->extract_item(i)->get_name();
 
 		switch(sn->extract_item(i)->get_type())
 		{
@@ -4338,6 +4366,7 @@ speer::speer()
 	msg_poly = reply_poly = 0;
 	ep_id = 0; // Needs to be filled in
 	map_constraint = NULL;
+	convert_path = NULL;
 	lookup_forward = lookup_backward = NULL;
 }
 
@@ -4350,6 +4379,7 @@ speer::~speer()
 	if(subs != NULL) delete subs;
 	if(topic != NULL) delete[] topic;
 	if(map_constraint != NULL) delete[] map_constraint;
+	if(convert_path != NULL) delete convert_path;
 	if(lookup_forward != NULL) delete lookup_forward;
 	if(lookup_backward != NULL) delete lookup_backward;
 }
