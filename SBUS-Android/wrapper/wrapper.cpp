@@ -4223,7 +4223,7 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		// Skip any fields which are not in the lookup table.
 		// Add any of our fields which the message does not have.
 		repacked = repack(node);
-					
+							
 		// In this case, our schema is bigger than the other schema.	
 		if (container != NULL)
 		{
@@ -4266,7 +4266,8 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 snode *speer::repack(snode *sn)
 {
 	const char *local_name;
-	snode *scomposite, *child;
+	snode *scomposite, *child, *top;
+	int children = 0;
 	
 	// If there's no entry for what we call this field, skip it.
 	if (lookup_backward->exists(sn->get_name()))
@@ -4284,29 +4285,36 @@ snode *speer::repack(snode *sn)
 			local_name = lookup_backward->extract_txt(sn->extract_item(i)->get_name());
 		else
 			continue;
-		snode *top;
+
 		switch(sn->extract_item(i)->get_type())
 		{
 			case SInt: 
 				scomposite->append(pack(sn->extract_int(i), local_name));
+				children++;
 				break;
 			case SDouble:
 				scomposite->append(pack(sn->extract_dbl(i), local_name));
+				children++;
 				break;
 			case SText:
 				scomposite->append(pack(sn->extract_txt(i), local_name));
+				children++;
 				break;
 			case SBinary:
 				scomposite->append(pack(sn->extract_bin(i), sn->num_bytes(i), local_name));
+				children++;
 				break;
 			case SBool: 
 				scomposite->append(pack_bool(sn->extract_flg(i), local_name));
+				children++;
 				break;
 			case SDateTime:
 				scomposite->append(pack(sn->extract_clk(i), local_name));
+				children++;
 				break;
 			case SLocation:
 				scomposite->append(pack(sn->extract_loc(i), local_name));
+				children++;
 				break;
 			case SStruct:
 				child = repack(sn->extract_item(i));
@@ -4316,23 +4324,31 @@ snode *speer::repack(snode *sn)
 					// Find this structure in the hash lookup.
 					top = owner->msg_schema->hashes->find(scomposite->get_name());
 					// Iterate through the children (-2 to skip "has" and "similar").
-					for (int j = 0; j < top->count() - 2; j++)
+					for (; children < top->count() - 2; children++)
 					{
 						// If the child has the same name as our node, pack it, otherwise pack an empty node.
-						if (!strcmp(top->extract_item(j)->get_name(), child->get_name()))
+						if (!strcmp(top->extract_item(children)->get_name(), child->get_name()))
+						{
 							scomposite->append(child);
+							break;
+						}
 						else
-							scomposite->append(pack((const char *)NULL, top->extract_item(j)->get_name()));
+							scomposite->append(pack((const char *)NULL, top->extract_item(children)->get_name()));
 					}
 				}	
 				
 				break;
 			case SList:
 				child = repack(sn->extract_item(i));
-				if (child != NULL) scomposite->append(child); 
+				if (child != NULL)
+				{
+					scomposite->append(child);
+					children++;
+				}
 				break;
 			case SValue:
 				scomposite->append(pack(sn->extract_value(i), local_name));
+				children++;
 				break;
 			case SEmpty: ; break;
 			default:
