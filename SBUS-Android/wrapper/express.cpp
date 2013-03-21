@@ -54,10 +54,10 @@ char *subscription::tostring()
 	return sdup(plaintext);
 }
 
-char *subscription::dump_plaintext(snode *lookup, svector *extra)
+char *subscription::dump_plaintext(snode *lookup, svector *more, pvector *less)
 {
 	StringBuf *buf = new StringBuf();
-	dump_plaintext(tree, 0, buf, lookup, extra);
+	dump_plaintext(tree, 0, buf, lookup, more, less);
 	char *plaintext = buf->extract();
 	delete buf;
 	return plaintext;
@@ -215,12 +215,12 @@ void subscription::dump_expr(sexpr *e, int depth)
 }
 
 
-void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lookup, svector *extra)
+void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lookup, svector *more, pvector *less)
 {
 	if(e->type == XEqual || e->type == XNotEqual || e->type == XLessThan ||
 			e->type == XGtThan)
 	{
-		dump_plaintext(e->left, -1, buf, lookup, extra);
+		dump_plaintext(e->left, -1, buf, lookup, more, less);
 		switch(e->type)
 		{
 			case XEqual: buf->cat(" = "); break;
@@ -230,11 +230,11 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 			default:
 				error("Impossible switch error in dump_plaintext");
 		}
-		dump_plaintext(e->right, -1, buf, lookup, extra);
+		dump_plaintext(e->right, -1, buf, lookup, more, less);
 	}
 	else if(e->type == XOr || e->type == XAnd)
 	{
-		dump_plaintext(e->left, depth + 1, buf, lookup, extra);
+		dump_plaintext(e->left, depth + 1, buf, lookup, more, less);
 		switch(e->type)
 		{
 			case XOr: buf->cat(" | "); break;
@@ -242,12 +242,12 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 			default:
 				error("Impossible switch error in dump_plaintext");
 		}
-		dump_plaintext(e->right, depth + 1, buf, lookup, extra);
+		dump_plaintext(e->right, depth + 1, buf, lookup, more, less);
 	}
 	else if(e->type == XNot)
 	{
 		buf->cat(" ! ");
-		dump_plaintext(e->left, depth + 1, buf, lookup, extra);
+		dump_plaintext(e->left, depth + 1, buf, lookup, more, less);
 	}
 	else if(e->type == XPath)
 	{
@@ -255,12 +255,17 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 
 		for(int i = 0; i < parts; i++)
 		{
-			if (i == 0 && extra != NULL)
+			// If our schema has a longer path, skip however many extra levels we have.
+			if (less != NULL)
+				if (i < less->count())
+					continue;
+				
+			// If their schema has a longer path, add the extra path before anything.
+			if (i == 0 && more != NULL)
 			{
-				// If it is deeper in their schema, add the extra part of the path first.
-				for (int j = 0; j < extra->count(); j++)
+				for (int j = 0; j < more->count(); j++)
 				{
-					buf->cat(extra->item(j));
+					buf->cat(more->item(j));
 					buf->cat("/");
 				}
 			}
@@ -271,10 +276,26 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 			if(i != parts - 1)
 				buf->cat("/");
 		}
-		if(e->s != NULL)
+		/**
+		  * If either our schema doesn't have a longer path
+		  * or we haven't skipped all the parts while skipping levels.
+		  */
+		if (less == NULL || parts > less->count())
 		{
-			buf->cat("#");
-			buf->cat(e->s);
+			if(e->s != NULL)
+			{
+				buf->cat("#");
+				buf->cat(e->s);
+			}
+		}
+		/**
+		  *	We've skipped all the parts, therefore this field does not exist in the other schema.
+		  * That means that it must evaluate to false.
+		  */
+		else
+		{
+			// Cannot evaluate the path 'NULL' thus won't match.
+			buf->cat("NULL");
 		}
 	}	
 	else if(e->type == XExists)
@@ -283,6 +304,20 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 
 		for(int i = 0; i < parts; i++)
 		{
+			// If our schema has a longer path, skip however many extra levels we have.
+			if (less != NULL)
+				if (i < less->count())
+					continue;
+				
+			// If their schema has a longer path, add the extra path before anything.
+			if (i == 0 && more != NULL)
+			{
+				for (int j = 0; j < more->count(); j++)
+				{
+					buf->cat(more->item(j));
+					buf->cat("/");
+				}
+			}
 			if (lookup->exists(e->path->item(i)))
 				buf->cat(lookup->extract_txt(e->path->item(i)));
 			else
@@ -290,13 +325,29 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 			if(i != parts - 1)
 				buf->cat("/");
 		}
-		if(e->s != NULL)
+		/**
+		  * If either our schema doesn't have a longer path
+		  * or we haven't skipped all the parts while skipping levels.
+		  */
+		if (less == NULL || parts > less->count())
 		{
-			buf->cat("#");
-			buf->cat(e->s);
-		}
+			if(e->s != NULL)
+			{
+				buf->cat("#");
+				buf->cat(e->s);
+			}
 		
-		buf->cat(" ? ");
+			buf->cat(" ? ");
+		}
+		/**
+		  *	We've skipped all the parts, therefore this field does not exist in the other schema.
+		  * That means that it must evaluate to false.
+		  */
+		else
+		{
+			// Cannot evaluate the path 'NULL' thus won't match.
+			buf->cat("NULL ? ");
+		}
 	}
 	else if(e->type == XInt)
 	{

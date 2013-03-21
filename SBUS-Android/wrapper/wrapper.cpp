@@ -4523,7 +4523,7 @@ void speer::resubscribe(const char *subs, const char *topic)
 		// If we support flexible matching, and there's a lookup table for this (hence they're different schemas)
 		// Convert the subscription string to peer's schema before sending.
 		subscription *s = new subscription(subs);
-		resub->subscription = sdup(s->dump_plaintext(lookup_forward, layer));
+		resub->subscription = sdup(s->dump_plaintext(lookup_forward, layer, container));
 	}
 	else
 	{	
