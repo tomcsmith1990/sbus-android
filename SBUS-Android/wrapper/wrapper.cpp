@@ -4218,13 +4218,12 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		// In this case, the other schema is bigger - follow the path to our top level node.
 		if (layer != NULL)
 			node = sn->follow_path(layer);
-		
-		// Create the new top level node with our name.
-		repacked = mklist(lookup_backward->extract_txt(node->get_name()));
 
-		// Repack the message using our names - skip any fields which are not in the lookup table.
-		repack(node, repacked);
-
+		// Repack the message using our names.
+		// Skip any fields which are not in the lookup table.
+		// Add any of our fields which the message does not have.
+		repacked = repack(node);
+					
 		// In this case, our schema is bigger than the other schema.	
 		if (container != NULL)
 		{
@@ -4264,10 +4263,20 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	delete msg;
 }
 
-void speer::repack(snode *sn, snode *parent)
+snode *speer::repack(snode *sn)
 {
 	const char *local_name;
-	snode *scomposite;
+	snode *scomposite, *child;
+	
+	// If there's no entry for what we call this field, skip it.
+	if (lookup_backward->exists(sn->get_name()))
+		local_name = lookup_backward->extract_txt(sn->get_name());
+	else
+		return NULL;
+	
+	if (sn->get_type() == SStruct || sn->get_type() == SList)
+		scomposite = mklist(local_name);
+	
 	for (int i = 0; i < sn->count(); i++) {	
 
 		// If there's no entry for what we call this field, skip it.
@@ -4275,42 +4284,55 @@ void speer::repack(snode *sn, snode *parent)
 			local_name = lookup_backward->extract_txt(sn->extract_item(i)->get_name());
 		else
 			continue;
-
+		snode *top;
 		switch(sn->extract_item(i)->get_type())
 		{
 			case SInt: 
-				parent->append(pack(sn->extract_int(i), local_name));
+				scomposite->append(pack(sn->extract_int(i), local_name));
 				break;
 			case SDouble:
-				parent->append(pack(sn->extract_dbl(i), local_name));
+				scomposite->append(pack(sn->extract_dbl(i), local_name));
 				break;
 			case SText:
-				parent->append(pack(sn->extract_txt(i), local_name));
+				scomposite->append(pack(sn->extract_txt(i), local_name));
 				break;
 			case SBinary:
-				parent->append(pack(sn->extract_bin(i), sn->num_bytes(i), local_name));
+				scomposite->append(pack(sn->extract_bin(i), sn->num_bytes(i), local_name));
 				break;
 			case SBool: 
-				parent->append(pack_bool(sn->extract_flg(i), local_name));
+				scomposite->append(pack_bool(sn->extract_flg(i), local_name));
 				break;
 			case SDateTime:
-				parent->append(pack(sn->extract_clk(i), local_name));
+				scomposite->append(pack(sn->extract_clk(i), local_name));
 				break;
 			case SLocation:
-				parent->append(pack(sn->extract_loc(i), local_name));
+				scomposite->append(pack(sn->extract_loc(i), local_name));
 				break;
 			case SStruct:
-				scomposite = mklist(local_name);
-				repack(sn->extract_item(i), scomposite);
-				parent->append(scomposite); 
+				child = repack(sn->extract_item(i));
+				
+				if (child != NULL)
+				{
+					// Find this structure in the hash lookup.
+					top = owner->msg_schema->hashes->find(scomposite->get_name());
+					// Iterate through the children (-2 to skip "has" and "similar").
+					for (int j = 0; j < top->count() - 2; j++)
+					{
+						// If the child has the same name as our node, pack it, otherwise pack an empty node.
+						if (!strcmp(top->extract_item(j)->get_name(), child->get_name()))
+							scomposite->append(child);
+						else
+							scomposite->append(pack((const char *)NULL, top->extract_item(j)->get_name()));
+					}
+				}	
+				
 				break;
 			case SList:
-				scomposite = mklist(local_name);
-				repack(sn->extract_item(i), scomposite);
-				parent->append(scomposite); 
+				child = repack(sn->extract_item(i));
+				if (child != NULL) scomposite->append(child); 
 				break;
 			case SValue:
-				parent->append(pack(sn->extract_value(i), local_name));
+				scomposite->append(pack(sn->extract_value(i), local_name));
 				break;
 			case SEmpty: ; break;
 			default:
@@ -4318,6 +4340,7 @@ void speer::repack(snode *sn, snode *parent)
 				break;
 		}
 	}
+	return scomposite;
 }
 
 void speer::serve(snode *sn, int seq, HashCode *hc)

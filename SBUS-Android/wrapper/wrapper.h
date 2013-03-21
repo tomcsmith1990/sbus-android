@@ -80,7 +80,7 @@ class speer
 	void deliver_remote(scomm *msg, int disrupt = 0);
 	
 	// For flexible matching.
-	void repack(snode *sn, snode *parent);
+	snode *repack(snode *sn);
 	
 	char *map_constraint;
 	pvector *container;
