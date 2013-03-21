@@ -79,10 +79,12 @@ class speer
 	
 	void deliver_remote(scomm *msg, int disrupt = 0);
 	
+	// For flexible matching.
 	void repack(snode *sn, snode *parent);
 	
 	char *map_constraint;
-	svector *convert_path;
+	pvector *container;
+	svector *layer;
 	snode *lookup_forward; // mine to theirs
 	snode *lookup_backward; // theirs to mine
 };

@@ -70,9 +70,9 @@ void Schema::dump_tree(int initial_indent, int log)
 	delete sb;
 }
 
-int Schema::construct_lookup(Schema *convert_to, snode *constraints, snode *lookup_forward, snode *lookup_backward, svector *path)
+int Schema::construct_lookup(Schema *target, snode *constraints, snode *lookup_forward, snode *lookup_backward, pvector *extra, svector *path)
 {
-	if (convert_to == NULL || constraints == NULL || lookup_forward == NULL || lookup_backward == NULL)
+	if (target == NULL || constraints == NULL || lookup_forward == NULL || lookup_backward == NULL)
 		return -1;
 
 	/*
@@ -80,55 +80,64 @@ int Schema::construct_lookup(Schema *convert_to, snode *constraints, snode *look
 	 * 		- any fields mentioned in a constraint.
 	 *		- any fields which are children of those constraints.
 	 */
-	int match = construct_lookup(constraints, hashes->extract_item(0), convert_to->hashes, lookup_forward, lookup_backward);
+	int match = construct_lookup(constraints, hashes->extract_item(0), target->hashes, lookup_forward, lookup_backward);
 
 	if (!match)
 		return match;
 	
 	// Find the path from the top level to the first constraint in converting to schema.
-	svector *path_mine = new svector();
-	convert_to->hashes->find(constraints->extract_item(0)->extract_txt("name"), path_mine);
+	svector *target_path = new svector();
+	target->hashes->find(constraints->extract_item(0)->extract_txt("name"), target_path);
 	
 	// Find the path from the top level to the first constraint in converting from schema.
-	svector *path_theirs = new svector();
-	hashes->find(lookup_forward->extract_txt(constraints->extract_item(0)->extract_txt("name")), path_theirs);
+	svector *current_path = new svector();
+	hashes->find(lookup_forward->extract_txt(constraints->extract_item(0)->extract_txt("name")), current_path);
 
-	const char *my, *they;
+	const char *target_name, *current_name;
 
 	// Working backwards up the path (i.e. from constraint to the top), 
 	// add levels to the lookup tables until we reach the top of one of the schemas.
-	int count = (path_mine->count() <= path_theirs->count()) ? path_mine->count() : path_theirs->count();
+	int count = (target_path->count() <= current_path->count()) ? target_path->count() : current_path->count();
 	int i;
 	for (i = 0; i < count; i++)
 	{
-		my = path_mine->item(i);
-		they = path_theirs->item(i);
+		target_name = target_path->item(i);
+		current_name = current_path->item(i);
 		
-		if (!lookup_forward->exists(my))
-			lookup_forward->append(pack(they, my));
+		if (!lookup_forward->exists(target_name))
+			lookup_forward->append(pack(current_name, target_name));
 			
-		if (!lookup_backward->exists(they))
-			lookup_backward->append(pack(my, they));
+		if (!lookup_backward->exists(current_name))
+			lookup_backward->append(pack(target_name, current_name));
 	}
 	
 	// If the schema we're converting to has the longer path,
 	// save the rest of our path - this is read off to construct dummy outer layers.
-	if (i < path_mine->count())
+	if (i < target_path->count())
 	{
-		for (int j = path_mine->count() - 1; j >= i; j--)
-			path->add(path_mine->item(j));
+		for (int j = target_path->count() - 1; j >= i; j--)
+		{
+			svector *foo = new svector();
+			//path->add(target_path->item(j));
+			foo->add(target_path->item(j));
+			snode *sn = target->hashes->find(target_path->item(j));
+			// -2 because of "has" and "similar".
+			for (int k = 0; k < sn->count() - 2; k++)
+				foo->add(sn->extract_item(k)->get_name());
+			extra->add((void *)foo);
+		}
 	}
 	// If the schema we're converting from has the longer path,
 	// save the rest of their path - this path is followed to find the top level node to repack.
-	else if (i < path_theirs->count())
+	else if (i < current_path->count())
 	{
-		for (int j = path_theirs->count() - 1; j > i; j--)
-			path->add(path_theirs->item(j));
-		path->add(path_theirs->item(i - 1));
+		for (int j = current_path->count() - 1; j > i; j--)
+			path->add(current_path->item(j));
+		path->add(current_path->item(i - 1));
 	}
 	
-	delete path_mine;
-	delete path_theirs;
+	delete target_path;
+	delete current_path;
 
 	return match;
 }
@@ -136,9 +145,6 @@ int Schema::construct_lookup(Schema *convert_to, snode *constraints, snode *look
 void Schema::construct_lookup(snode *want, snode *have, snode *lookup_forward, snode *lookup_backward)
 {
 	if (want == NULL || have == NULL || want->count() != have->count())
-		return;
-		
-	if (!strcmp(want->get_name(), "has") || !strcmp(want->get_name(), "similar"))
 		return;
 
 	if (!lookup_forward->exists(want->get_name()))
@@ -149,7 +155,8 @@ void Schema::construct_lookup(snode *want, snode *have, snode *lookup_forward, s
 		lookup_backward->append(pack(want->get_name(), have->get_name())); // <their-name>my-name</their-name>
 	}
 
-	for (int i = 0; i < want->count(); i++)
+	// -2 because we don't want to do a lookup for the "has" and "similar" hash fields.
+	for (int i = 0; i < want->count() - 2; i++)
 	{
 		construct_lookup(want->extract_item(i), have->extract_item(i), lookup_forward, lookup_backward);
 	}

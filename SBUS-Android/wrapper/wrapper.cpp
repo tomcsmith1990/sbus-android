@@ -2931,10 +2931,22 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 		peer->lookup_forward = mklist("lookup");
 		peer->lookup_backward = mklist("lookup");
 
-		peer->convert_path = new svector();
+		peer->layer = new svector();
+		peer->container = new pvector();
 		int schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward, 
-															peer->convert_path);
+															peer->container, peer->layer);
 
+		if (peer->layer->count() == 0)
+		{
+			delete peer->layer;
+			peer->layer = NULL;
+		}
+		if (peer->container->count() == 0)
+		{
+			delete peer->container;
+			peer->container = NULL;
+		}
+		
 		delete constraints;
 
 		if (schema_match == 0)
@@ -4202,37 +4214,41 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		snode *node;
 		
 		node = sn;
-		
-		int used_path = false;
-		
-		// In this case, the other schema is bigger.
-		// Follow the path to our top level node.
-		if (!lookup_backward->exists(node->get_name()))
-		{
-			node = sn->follow_path(convert_path);
-			used_path = true;
-		}
+				
+		// In this case, the other schema is bigger - follow the path to our top level node.
+		if (layer != NULL)
+			node = sn->follow_path(layer);
 		
 		// Create the new top level node with our name.
 		repacked = mklist(lookup_backward->extract_txt(node->get_name()));
 
 		// Repack the message using our names - skip any fields which are not in the lookup table.
 		repack(node, repacked);
-		
-		// In this case, our schema is bigger than the other schema.
-		// We read the names of the missing outer layers off the list,
-		// and add them as dummy outer layers.	
-		if (!used_path)
+
+		// In this case, our schema is bigger than the other schema.	
+		if (container != NULL)
 		{
-			const char *layer;
-			for (int i = convert_path->count() - 1; i >= 0; i--)
+			svector *level;
+			const char *level_name;
+			// Loop through the outer layers, from closest to us to the top level.
+			for (int i = container->count() - 1; i >= 0; i--)
 			{
-				layer = convert_path->item(i);
-				snode *parent = mklist(layer);
-				parent->append(repacked);
+				// Each item contains the name of the level, plus any additional fields we expect.
+				level = (svector *)container->item(i);
+				level_name = level->item(0);
+				snode *parent = mklist(level_name);
+				// Iterate through the additional expected fields.
+				for (int j = 1; j < level->count(); j++)
+				{
+					// If the child has the same name as our node, pack it, otherwise pack an empty node.
+					if (!strcmp(level->item(j), repacked->get_name()))
+						parent->append(repacked);
+					else
+						parent->append(pack((const char *)NULL, level->item(j)));
+				}
+				
 				repacked = parent;
 			}
-			used_path = true;
 		}
 
 		delete sn;
@@ -4367,7 +4383,8 @@ speer::speer()
 	msg_poly = reply_poly = 0;
 	ep_id = 0; // Needs to be filled in
 	map_constraint = NULL;
-	convert_path = NULL;
+	container = NULL;
+	layer = NULL;
 	lookup_forward = lookup_backward = NULL;
 }
 
@@ -4380,7 +4397,8 @@ speer::~speer()
 	if(subs != NULL) delete subs;
 	if(topic != NULL) delete[] topic;
 	if(map_constraint != NULL) delete[] map_constraint;
-	if(convert_path != NULL) delete convert_path;
+	if(container != NULL) delete container;
+	if(layer != NULL) delete layer;
 	if(lookup_forward != NULL) delete lookup_forward;
 	if(lookup_backward != NULL) delete lookup_backward;
 }
