@@ -54,10 +54,10 @@ char *subscription::tostring()
 	return sdup(plaintext);
 }
 
-char *subscription::dump_plaintext(snode *lookup)
+char *subscription::dump_plaintext(snode *lookup, svector *extra)
 {
 	StringBuf *buf = new StringBuf();
-	dump_plaintext(tree, 0, buf, lookup);
+	dump_plaintext(tree, 0, buf, lookup, extra);
 	char *plaintext = buf->extract();
 	delete buf;
 	return plaintext;
@@ -215,12 +215,12 @@ void subscription::dump_expr(sexpr *e, int depth)
 }
 
 
-void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lookup)
+void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lookup, svector *extra)
 {
 	if(e->type == XEqual || e->type == XNotEqual || e->type == XLessThan ||
 			e->type == XGtThan)
 	{
-		dump_plaintext(e->left, -1, buf, lookup);
+		dump_plaintext(e->left, -1, buf, lookup, extra);
 		switch(e->type)
 		{
 			case XEqual: buf->cat(" = "); break;
@@ -230,11 +230,11 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 			default:
 				error("Impossible switch error in dump_plaintext");
 		}
-		dump_plaintext(e->right, -1, buf, lookup);
+		dump_plaintext(e->right, -1, buf, lookup, extra);
 	}
 	else if(e->type == XOr || e->type == XAnd)
 	{
-		dump_plaintext(e->left, depth + 1, buf, lookup);
+		dump_plaintext(e->left, depth + 1, buf, lookup, extra);
 		switch(e->type)
 		{
 			case XOr: buf->cat(" | "); break;
@@ -242,12 +242,12 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 			default:
 				error("Impossible switch error in dump_plaintext");
 		}
-		dump_plaintext(e->right, depth + 1, buf, lookup);
+		dump_plaintext(e->right, depth + 1, buf, lookup, extra);
 	}
 	else if(e->type == XNot)
 	{
 		buf->cat(" ! ");
-		dump_plaintext(e->left, depth + 1, buf, lookup);
+		dump_plaintext(e->left, depth + 1, buf, lookup, extra);
 	}
 	else if(e->type == XPath)
 	{
@@ -255,6 +255,15 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 
 		for(int i = 0; i < parts; i++)
 		{
+			if (i == 0 && extra != NULL)
+			{
+				// If it is deeper in their schema, add the extra part of the path first.
+				for (int j = 0; j < extra->count(); j++)
+				{
+					buf->cat(extra->item(j));
+					buf->cat("/");
+				}
+			}
 			if (lookup->exists(e->path->item(i)))
 				buf->cat(lookup->extract_txt(e->path->item(i)));
 			else
