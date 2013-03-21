@@ -135,8 +135,8 @@ int Schema::construct_lookup(Schema *target, snode *constraints, snode *lookup_f
 	// save the rest of their path - this path is followed to find the top level node to repack.
 	else if (i < current_path->count())
 	{
-		// Add any extra layers from top level to inner so that find_path can follow it.
-		for (int j = current_path->count() - 1; j > i; j--)
+		// Add any extra layers from top level (not including name of top level) to inner so that find_path can follow it.
+		for (int j = current_path->count() - 2; j >= i; j--)
 			path->add(current_path->item(j));
 		// Add the level we want so that it becomes the top level node.
 		path->add(current_path->item(i - 1));
