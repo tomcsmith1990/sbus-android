@@ -1136,7 +1136,8 @@ void rdc::lookup(sendpoint *ep)
 			cpt->append(matches);
 			result->append(cpt);
 			endpoint_count += matches->count();
-			count++;
+			if (endpoint_count > 0)
+				count++;
 		}
 
 	}
