@@ -81,6 +81,7 @@ class speer
 	
 	// For flexible matching.
 	snode *repack(snode *sn);
+	snode *create_missing(snode *create);
 	
 	char *map_constraint;
 	pvector *container;

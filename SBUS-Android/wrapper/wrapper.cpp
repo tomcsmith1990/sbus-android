@@ -4240,11 +4240,11 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 				// Iterate through the additional expected fields.
 				for (int j = 1; j < level->count(); j++)
 				{
-					// If the child has the same name as our node, pack it, otherwise pack an empty node.
+					// If the child has the same name as our node, pack it, otherwise pack the empty structure.
 					if (!strcmp(level->item(j), repacked->get_name()))
 						parent->append(repacked);
 					else
-						parent->append(pack((const char *)NULL, level->item(j)));
+						parent->append(create_missing(owner->msg_schema->hashes->find(level->item(j))));
 				}
 				
 				repacked = parent;
@@ -4267,9 +4267,10 @@ snode *speer::repack(snode *sn)
 {
 	const char *local_name;
 	snode *scomposite, *child, *top;
+	// To count how many children we have packed into this structure.
 	int children = 0;
 	
-	// If there's no entry for what we call this field, skip it.
+	// If there's no entry for what we call this field, don't bother with it.
 	if (lookup_backward->exists(sn->get_name()))
 		local_name = lookup_backward->extract_txt(sn->get_name());
 	else
@@ -4330,10 +4331,11 @@ snode *speer::repack(snode *sn)
 						if (!strcmp(top->extract_item(children)->get_name(), child->get_name()))
 						{
 							scomposite->append(child);
-							break;
+							// If this isn't the last child of sn, break - we might add the extra children later.
+							if (i + 1 != sn->count()) break;
 						}
 						else
-							scomposite->append(pack((const char *)NULL, top->extract_item(children)->get_name()));
+							scomposite->append(create_missing(top->extract_item(children)));
 					}
 				}	
 				
@@ -4357,6 +4359,32 @@ snode *speer::repack(snode *sn)
 		}
 	}
 	return scomposite;
+}
+
+snode *speer::create_missing(snode *create)
+{
+	// "has" and "similar".
+	if (create->count() == 2)
+		return pack((const char *)NULL, create->get_name());
+	
+	if (create->count() > 2)
+	{
+		// It's a structure or list.
+		snode *scomposite = mklist(create->get_name());
+		
+		snode *child;
+		// -2 to ignore "has" and "similar".
+		for (int i = 0; i < create->count() - 2; i++)
+		{
+			child = create_missing(create->extract_item(i));
+			if (child != NULL)
+				scomposite->append(child);
+		}
+		
+		return scomposite;
+	}
+	
+	error ("Should have at least 2 children - has & similar\n");
 }
 
 void speer::serve(snode *sn, int seq, HashCode *hc)
