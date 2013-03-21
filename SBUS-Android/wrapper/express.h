@@ -22,7 +22,7 @@ class subscription
 	void dump_tokens();
 	void dump_tree();
 	char *tostring();
-	char *dump_plaintext(snode *lookup = NULL, svector *extra = NULL);
+	char *dump_plaintext(snode *lookup = NULL, svector *more = NULL, pvector *less = NULL);
 	
 	private:
 			
@@ -51,7 +51,7 @@ class subscription
 	
 	void synerror(const char *format, ...);
 	void dump_expr(sexpr *e, int depth);
-	void dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lookup, svector *extra);
+	void dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lookup, svector *more, pvector *less);
 	void dump_path(sexpr *e);
 	void spaces(int depth);
 };
