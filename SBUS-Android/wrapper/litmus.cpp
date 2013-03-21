@@ -115,15 +115,19 @@ int Schema::construct_lookup(Schema *target, snode *constraints, snode *lookup_f
 	// save the rest of our path - this is read off to construct dummy outer layers.
 	if (i < target_path->count())
 	{
-		for (int j = target_path->count() - 1; j >= i; j--)
+		// Iterate through the remainder of the path.
+		for (int j = i; j < target_path->count(); j++)
 		{
+			// Create a list of names.
 			svector *foo = new svector();
-			//path->add(target_path->item(j));
+			// Add the level name.
 			foo->add(target_path->item(j));
+			
 			snode *sn = target->hashes->find(target_path->item(j));
-			// -2 because of "has" and "similar".
+			// Add the child field names. -2 because of "has" and "similar".
 			for (int k = 0; k < sn->count() - 2; k++)
 				foo->add(sn->extract_item(k)->get_name());
+				
 			extra->add((void *)foo);
 		}
 	}
@@ -131,8 +135,10 @@ int Schema::construct_lookup(Schema *target, snode *constraints, snode *lookup_f
 	// save the rest of their path - this path is followed to find the top level node to repack.
 	else if (i < current_path->count())
 	{
+		// Add any extra layers from top level to inner so that find_path can follow it.
 		for (int j = current_path->count() - 1; j > i; j--)
 			path->add(current_path->item(j));
+		// Add the level we want so that it becomes the top level node.
 		path->add(current_path->item(i - 1));
 	}
 	

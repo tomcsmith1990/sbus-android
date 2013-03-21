@@ -2930,9 +2930,9 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 						
 		peer->lookup_forward = mklist("lookup");
 		peer->lookup_backward = mklist("lookup");
-
 		peer->layer = new svector();
 		peer->container = new pvector();
+		
 		int schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward, 
 															peer->container, peer->layer);
 
@@ -4231,12 +4231,13 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 			svector *level;
 			const char *level_name;
 			// Loop through the outer layers, from closest to us to the top level.
-			for (int i = container->count() - 1; i >= 0; i--)
+			for (int i = 0; i < container->count(); i++)
 			{
 				// Each item contains the name of the level, plus any additional fields we expect.
 				level = (svector *)container->item(i);
 				level_name = level->item(0);
 				snode *parent = mklist(level_name);
+				
 				// Iterate through the additional expected fields.
 				for (int j = 1; j < level->count(); j++)
 				{
