@@ -1004,9 +1004,12 @@ snode *MapConstraints::pack(snode *hash_lookup)
 		warning("There was some error parsing the map string - results may not be as expected");
 	
 	// Schema constraints.
-	subn = mklist("schema");
-	pack_hashes(hash_lookup, schema_constraints, subn);
-	sn->append(::pack(subn->toxml(0), "schema"));
+	if (schema_constraints->count() > 0)
+	{
+		subn = mklist("schema");
+		pack_hashes(hash_lookup, schema_constraints, subn);
+		sn->append(::pack(subn->toxml(0), "schema"));
+	}
 	
 	subn = mklist("keywords");
 	for(int i = 0; i < keywords->count(); i++)
