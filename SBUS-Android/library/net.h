@@ -152,6 +152,7 @@ class scontrol : public sproto
 	// For the three mapping calls:
 	char *address;
 	char *target_endpoint;
+	char *constraints;	// For flexible matching using an IP but specifying constraints.
 	
 	// For MessageSubscribe:
 	char *subs;

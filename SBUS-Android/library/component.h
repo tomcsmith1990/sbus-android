@@ -121,7 +121,7 @@ class sendpoint
 		other component if successful, otherwise NULL.
 		The caller must delete this string in the successful case.
 		If endpoint is NULL, assume same name as this end: */
-	char *map(const char *address, const char *endpoint, int sflags = 0,
+	char *map(const char *address, const char *endpoint, const char *constraints = NULL, int sflags = 0,
 			const char *pub_key = NULL);
 
 	/**Unmaps the endpoint. Params specify the specific component/endpoint. NULL parameters apply to all.
