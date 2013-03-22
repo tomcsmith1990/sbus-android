@@ -47,13 +47,16 @@ class Schema
 	void dump_tokens();
 	void dump_tree(int initial_indent = 0, int log = 0);
 		
+	// For flexible matching.
 	int match_constraints(snode *constraints);
 	int construct_lookup(Schema *target, snode *constraints, snode *lookup_forward, snode *lookup_backward, pvector *extra, svector *path);
+	void pack_field_info(snode *list, int type, StringBuf *sub, StringBuf *tbuf);
 
 	// Number of additional fields - "has", "similar", "type".
 	static const int FLEXIBLE_MATCHING_FIELDS = 3;
-	HashCode *hc;
 	snode *hashes;
+	
+	HashCode *hc;
 	MetaType meta;
 	
 	private:
@@ -70,6 +73,7 @@ class Schema
 	int multiple_names();
 	void dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *sn = NULL, StringBuf *tsb = NULL);
 	
+	// For flexible matching.
 	int construct_lookup(snode *want, snode *have, snode *target_hashes, snode *lookup_forward, snode *lookup_backward);
 	void construct_lookup(snode *want, snode *have, snode *lookup_forward, snode *lookup_backward);
 	
