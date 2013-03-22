@@ -50,6 +50,8 @@ class Schema
 	int match_constraints(snode *constraints);
 	int construct_lookup(Schema *target, snode *constraints, snode *lookup_forward, snode *lookup_backward, pvector *extra, svector *path);
 
+	// Number of additional fields - "has", "similar", "type".
+	static const int FLEXIBLE_MATCHING_FIELDS = 3;
 	HashCode *hc;
 	snode *hashes;
 	MetaType meta;

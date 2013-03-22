@@ -114,9 +114,9 @@ int Schema::construct_lookup(Schema *target, snode *constraints, snode *lookup_f
 		// If there are no entries for the structure's childrens' names
 		// then add them to the lookup table with the same name in each schema.
 		// This will mean that any fields not specified in the constraint but with the same name will be repacked.
-		// -2 = skip "has" and "similar".
+		// -FLEXIBLE_MATCHING_FIELDS because of "has", "similar", "type".
 		children = target->hashes->find(target_name);
-		for (int j = 0; j < children->count() - 2; j++)
+		for (int j = 0; j < children->count() - FLEXIBLE_MATCHING_FIELDS; j++)
 		{
 			if (!lookup_forward->exists(children->extract_item(j)->get_name()))
 			{
@@ -139,8 +139,8 @@ int Schema::construct_lookup(Schema *target, snode *constraints, snode *lookup_f
 			foo->add(target_path->item(j));
 			
 			snode *sn = target->hashes->find(target_path->item(j));
-			// Add the child field names. -2 because of "has" and "similar".
-			for (int k = 0; k < sn->count() - 2; k++)
+			// Add the child field names. -FLEXIBLE_MATCHING_FIELDS because of "has", "similar", "type".
+			for (int k = 0; k < sn->count() - FLEXIBLE_MATCHING_FIELDS; k++)
 				foo->add(sn->extract_item(k)->get_name());
 				
 			extra->add((void *)foo);
@@ -176,8 +176,8 @@ void Schema::construct_lookup(snode *want, snode *have, snode *lookup_forward, s
 		lookup_backward->append(pack(want->get_name(), have->get_name())); // <their-name>my-name</their-name>
 	}
 
-	// -2 because we don't want to do a lookup for the "has" and "similar" hash fields.
-	for (int i = 0; i < want->count() - 2; i++)
+	// -FLEXIBLE_MATCHING_FIELDS because we don't want to do a lookup for the "has", "similar", "type".
+	for (int i = 0; i < want->count() - FLEXIBLE_MATCHING_FIELDS; i++)
 	{
 		construct_lookup(want->extract_item(i), have->extract_item(i), lookup_forward, lookup_backward);
 	}
@@ -352,11 +352,11 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		StringBuf *tbuf = new StringBuf();
 		switch(l->type)
 		{
-   		case LITMUS_INT: tbuf->cat("int"); break;
+   			case LITMUS_INT: tbuf->cat("int"); break;
 			case LITMUS_DBL: tbuf->cat("dbl"); break;
 			case LITMUS_FLG: tbuf->cat("flg"); break;
 			case LITMUS_TXT: tbuf->cat("txt"); break;
-   		case LITMUS_BIN: tbuf->cat("bin"); break;
+   			case LITMUS_BIN: tbuf->cat("bin"); break;
 			case LITMUS_CLK: tbuf->cat("clk"); break;
 			case LITMUS_LOC: tbuf->cat("loc"); break;
 			default:
@@ -377,6 +377,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			HashCode *hash = new HashCode();
 			
 			snode *list = mklist(symbol_table->item(l->namesym));
+			list->append(pack(l->type, "type"));
 			
 			subschema = tbuf->extract();
 			hash->fromschema(subschema);
@@ -422,6 +423,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		tbuf->cat("{\n");
 		
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
+		
 		for(int i = 0; i < l->children->count(); i++)
 		{
 			dump_litmus(sub, l->children->item(i), offset + 1, 0, list, tbuf);
@@ -438,6 +440,8 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			const char *subschema;
 			HashCode *hash = new HashCode();
 			
+			list->append(pack(l->type, "type"));
+					
 			subschema = tbuf->extract();
 			hash->fromschema(subschema);
 			list->append(pack(hash->tostring(), "similar"));
@@ -490,6 +494,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			tbuf->catf("(%d\n", l->arraylen);
 
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
+		
 		dump_litmus(sub, l->content, offset + 1, 0, list, tbuf);
 		sub->cat_spaces(offset * 3);
 		sub->cat(")\n");
@@ -503,6 +508,8 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			const char *subschema;
 			HashCode *hash = new HashCode();
 			
+			list->append(pack(l->type, "type"));
+					
 			subschema = tbuf->extract();
 			hash->fromschema(subschema);
 			list->append(pack(hash->tostring(), "similar"));
@@ -537,6 +544,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		sub->cat("[\n");
 		tbuf->cat("[\n");
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
+		
 		dump_litmus(sub, l->content, offset + 1, 0, list, tbuf);
 		sub->cat_spaces(offset * 3);
 		sub->cat("]\n");
@@ -548,6 +556,8 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		{
 			const char *subschema;
 			HashCode *hash = new HashCode();
+			
+			list->append(pack(l->type, "type"));
 			
 			subschema = tsb->extract();
 			hash->fromschema(subschema);
@@ -583,6 +593,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		sub->cat("<\n");
 		tbuf->cat("<\n");
 		snode *list = (sn == NULL) ? NULL : mklist(symbol_table->item(l->namesym));
+		
 		for(int i = 0; i < l->children->count(); i++)
 		{
 			dump_litmus(sub, l->children->item(i), offset + 1, 0, list, tbuf);
@@ -602,6 +613,8 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		{
 			const char *subschema;
 			HashCode *hash = new HashCode();
+			
+			list->append(pack(l->type, "type"));
 			
 			subschema = tsb->extract();
 			hash->fromschema(subschema);
@@ -652,6 +665,7 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 			HashCode *hash = new HashCode();
 			
 			snode *list = mklist(symbol_table->item(l->namesym));
+			list->append(pack(l->type, "type"));
 			
 			subschema = tbuf->extract();
 			hash->fromschema(subschema);
