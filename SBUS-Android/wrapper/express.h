@@ -52,6 +52,7 @@ class subscription
 	void synerror(const char *format, ...);
 	void dump_expr(sexpr *e, int depth);
 	void dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lookup, svector *more, pvector *less);
+	void qualify_path(sexpr *e, StringBuf *buf, snode *lookup, svector *more, pvector *less);
 	void dump_path(sexpr *e);
 	void spaces(int depth);
 };
