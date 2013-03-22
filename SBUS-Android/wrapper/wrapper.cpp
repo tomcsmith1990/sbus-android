@@ -4365,63 +4365,55 @@ snode *speer::create_missing(snode *create)
 {
 	int type = create->extract_int("type");
 	const char *name = create->get_name();
+	snode *scomposite, *child;
 	
-	if(type == LITMUS_INT || type == LITMUS_DBL ||
-			type == LITMUS_FLG || type == LITMUS_TXT ||
-			type == LITMUS_BIN || type == LITMUS_CLK ||
-			type == LITMUS_LOC)
+	switch(type)
 	{
-		switch(type)
-		{
-   			case LITMUS_INT: return pack(0, name); break;
-			case LITMUS_DBL: return pack(0.0, name);; break;
-			case LITMUS_FLG: return pack_bool(false, name);; break;
-			case LITMUS_TXT: return pack("", name); break;
-   			case LITMUS_BIN: return pack("", 0, name); break;
-			case LITMUS_CLK: return pack(new sdatetime(), name); break;
-			case LITMUS_LOC: return pack(new slocation(), name); break;
-			default:
-				error("Impossible switch error in create_missing");
-		}
-	}
-	else if (type == LITMUS_STRUCT)
-	{
-		// Build up the empty structure.
-		snode *scomposite = mklist(name);
-	
-		snode *child;
-		// -FLEXIBLE_MATCHING_FIELDS to ignore "has", "similar", "type".
-		for (int i = 0; i < create->count() - Schema::FLEXIBLE_MATCHING_FIELDS; i++)
-		{
-			child = create_missing(create->extract_item(i));
-			if (child != NULL)
+		case LITMUS_INT:	return pack(0, name);				break;
+		case LITMUS_DBL:	return pack(0.0, name);				break;
+		case LITMUS_FLG:	return pack_bool(false, name);		break;
+		case LITMUS_TXT:	return pack("", name);				break;
+		case LITMUS_BIN:	return pack("", 0, name);			break;
+		case LITMUS_CLK:	return pack(new sdatetime(), name);	break;
+		case LITMUS_LOC:	return pack(new slocation(), name);	break;
+		
+		case LITMUS_OPT:	return NULL;						break;	// Optional - let's not add it.
+		case LITMUS_CHOICE:	return pack("", name);				break;
+		case LITMUS_ENUM:	return pack("", name);				break;
+		
+		case LITMUS_LIST:	return mklist(name);				break;	// Return an empty list.
+		case LITMUS_SEQ:												// Requires one or more elements - add one.
+			scomposite = mklist(name);
+			
+			child = create_missing(create->extract_item(0));
+			if (child != NULL);
 				scomposite->append(child);
-		}
-	
-		return scomposite;
+				
+			return scomposite;
+			
+			break;
+			
+		case LITMUS_ARRAY:	return mklist(name);				break;	// TODO: Requires N elements
+		
+		case LITMUS_STRUCT:
+			// Build up the empty structure.
+			scomposite = mklist(name);
+
+			// -FLEXIBLE_MATCHING_FIELDS to ignore "has", "similar", "type".
+			for (int i = 0; i < create->count() - Schema::FLEXIBLE_MATCHING_FIELDS; i++)
+			{
+				child = create_missing(create->extract_item(i));
+				if (child != NULL)
+					scomposite->append(child);
+			}
+
+			return scomposite;
+			
+			break;
+		
+		default:
+			error("Impossible switch error in create_missing");
 	}
-	else if (type == LITMUS_LIST || type == LITMUS_SEQ || type == LITMUS_ARRAY)
-	{
-		// Return an empty list.
-		return mklist(name);
-	}
-	else if (type == LITMUS_OPT)
-	{
-		// TODO: return what?
-		return pack((const char *)NULL, name);
-	}
-	else if (type == LITMUS_CHOICE)
-	{
-		// TODO: return what?
-		return pack((const char *)NULL, name);
-	}
-	else if (type == LITMUS_ENUM)
-	{
-		// TODO: return what?
-		return pack((const char *)NULL, name);
-	}
-	else
-		error ("Unknown type in create_missing\n");
 }
 
 void speer::serve(snode *sn, int seq, HashCode *hc)
