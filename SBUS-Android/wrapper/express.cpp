@@ -350,7 +350,7 @@ void subscription::qualify_path(sexpr *e, StringBuf *buf, snode *lookup, svector
 		// Otherwise the subscription will be an invalid logic statement.
 		else
 		{
-			warning("%s not in lookup table in subscription::qualify_path - should always be in it\n", e->path->item(i));
+			warning("%s not in lookup table - subscription may not work", e->path->item(i));
 			buf->cat(e->path->item(i));
 		}
 			

@@ -558,6 +558,7 @@ int sinternal::reveal(AbstractMessage *abst)
 		oob_ctrl = new scontrol();
 		oob_ctrl->address = decode_string(&pos);
 		oob_ctrl->target_endpoint = decode_string(&pos);
+		oob_ctrl->constraints = decode_string(&pos);
 	}
 	else if (type==MessagePrivilege){
 		oob_ctrl = new scontrol();
@@ -1283,7 +1284,7 @@ int read_startup(int sock, saddendpoint *add, sstartwrapper *start)
 
 scontrol::scontrol()
 {
-	address = target_endpoint = NULL;
+	address = target_endpoint = constraints = NULL;
 	subs = topic = peer = filename = NULL;
 	principal_cpt = strdup(""); //because NULLs are transmitted as empty strings...
 	principal_inst = strdup("");
@@ -1294,6 +1295,7 @@ scontrol::~scontrol()
 {
 	if(address != NULL) delete[] address;
 	if(target_endpoint != NULL) delete[] target_endpoint;
+	if(constraints != NULL) delete[] constraints;
 	if(subs != NULL) delete[] subs;
 	if(topic != NULL) delete[] topic;
 	if(peer != NULL) delete[] peer;
@@ -1336,6 +1338,7 @@ int scontrol::reveal(AbstractMessage *abst)
 	{
 		address = decode_string(&pos);
 		target_endpoint = decode_string(&pos);
+		constraints = decode_string(&pos);
 	}
 	
 	return 0;
@@ -1365,6 +1368,7 @@ AbstractMessage *scontrol::wrap(int fd)
 	{
 		sb->cat_string(address); // May be NULL
 		sb->cat_string(target_endpoint); // May be NULL
+		sb->cat_string(constraints); // May be NULL
 	}
 	abst = new AbstractMessage(fd, sb);
 	delete sb;

@@ -739,8 +739,7 @@ smessage *sendpoint::read_returncode()
 	return msg;
 }
 
-char *sendpoint::map(const char *address, const char *endpoint, int sflags,
-		const char *pub_key)
+char *sendpoint::map(const char *address, const char *endpoint, const char *constraints, int sflags, const char *pub_key)
 {
 	scontrol *ctrl;
 	smessage *msg;
@@ -754,6 +753,10 @@ char *sendpoint::map(const char *address, const char *endpoint, int sflags,
 	else
 		ctrl->target_endpoint = sdup(endpoint);
 	ctrl->address = sdup(address);
+	// This is for when address = IP:port but we want constraints too - otherwise, not used.
+
+	if (flexible_matching)
+		ctrl->constraints = sdup(constraints);
 	if(ctrl->write(fd) < 0)
 		error("Control connection to wrapper disconnected in map");
 	delete ctrl;	
@@ -1061,7 +1064,7 @@ void MapConstraints::pack_hashes(snode *hash_lookup, snode *convert, snode* cons
 			constraint_list->append(hash_constraint);
 		}
 		else
-			warning("Field '%s' does not exists in schema - map constraint may not be as expected\n", name);
+			warning("Field '%s' does not exist in schema - map constraint may not be as expected", name);
 	}
 }
 

@@ -2920,47 +2920,51 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 	  * Construct lookup table based on the map constraint string we used.
 	  * Everything covered by constraint string, i.e. any fields and their descendants will be added to the lookup.
 	  */
-	if (peer->map_constraint != NULL)
+	if (peer->map_constraint == NULL)
 	{
-		MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
-		const char *schema_constraint = mapcon->pack(mp->msg_schema->hashes)->extract_txt("schema");
-		snode *constraints = snode::import(schema_constraint, NULL);
-		delete mapcon;
-		delete schema_constraint;
-						
-		peer->lookup_forward = mklist("lookup");
-		peer->lookup_backward = mklist("lookup");
-		peer->layer = new svector();
-		peer->container = new pvector();
-		
-		int schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward, 
-															peer->container, peer->layer);
+		warning("No map constraints to match this peer against, cannot compare schema. Unmapping");
+		unmap(mp, peer->address, peer->endpoint, -1);
+		return;
+	}
 
-		if (peer->layer->count() == 0)
-		{
-			delete peer->layer;
-			peer->layer = NULL;
-		}
-		if (peer->container->count() == 0)
-		{
-			delete peer->container;
-			peer->container = NULL;
-		}
-		
-		delete constraints;
+	MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
+	const char *schema_constraint = mapcon->pack(mp->msg_schema->hashes)->extract_txt("schema");
+	snode *constraints = snode::import(schema_constraint, NULL);
+	delete mapcon;
+	delete schema_constraint;
+					
+	peer->lookup_forward = mklist("lookup");
+	peer->lookup_backward = mklist("lookup");
+	peer->layer = new svector();
+	peer->container = new pvector();
+	
+	int schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward, 
+														peer->container, peer->layer);
 
-		if (schema_match == 0)
-		{
-			warning("Peer's schema does not fit map constraint '%s' - unmapping\n", peer->map_constraint);
-			unmap(mp, peer->address, peer->endpoint, -1);
-		}
-		else
-		{
-			// If we have a subscription criteria.
-			if (mp->subs != NULL)
-				// Resubscribe, this will convert the subscription string to peer's schema.
-				peer->resubscribe(mp->subs, mp->topic);
-		}
+	if (peer->layer->count() == 0)
+	{
+		delete peer->layer;
+		peer->layer = NULL;
+	}
+	if (peer->container->count() == 0)
+	{
+		delete peer->container;
+		peer->container = NULL;
+	}
+	
+	delete constraints;
+
+	if (schema_match == 0)
+	{
+		warning("Peer's schema does not fit map constraint '%s' - unmapping", peer->map_constraint);
+		unmap(mp, peer->address, peer->endpoint, -1);
+	}
+	else
+	{
+		// If we have a subscription criteria.
+		if (mp->subs != NULL)
+			// Resubscribe, this will convert the subscription string to peer's schema.
+			peer->resubscribe(mp->subs, mp->topic);
 	}
 }
 
@@ -3228,8 +3232,7 @@ mapparams::~mapparams()
 	if(map_constraint != NULL) delete[] map_constraint;
 }
 
-void swrapper::map(smidpoint *mp, const char *addrstring, const char *endpoint,
-		int report_fd)
+void swrapper::map(smidpoint *mp, const char *addrstring, const char *endpoint, int report_fd, const char *constraints)
 {
 	// report_fd is -1 if no report to be sent
 		
@@ -3253,6 +3256,7 @@ void swrapper::map(smidpoint *mp, const char *addrstring, const char *endpoint,
 	else if(address_type == 0)
 	{
 		params->possibilities->add(addrstring);
+		params->map_constraint = sdup(constraints);
 		do_map(params);
 	}
 }
@@ -3763,7 +3767,7 @@ void swrapper::serve_endpoint(AbstractMessage *abst, smidpoint *mp)
 		switch(sint->type)
 		{
 			case MessageMap:
-				map(mp, ctrl->address, ctrl->target_endpoint, reply_fd);
+				map(mp, ctrl->address, ctrl->target_endpoint, reply_fd, ctrl->constraints);
 				break;
 			case MessageUnmap: 
 				unmap(mp, ctrl->address, ctrl->target_endpoint, reply_fd); break;

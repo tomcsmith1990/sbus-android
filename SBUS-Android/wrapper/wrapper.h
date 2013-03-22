@@ -283,8 +283,7 @@ class swrapper
 
 
 	// report_fd is -1 if no report to be sent in map() and unmap()
-	void map(smidpoint *mp, const char *addrstring, const char *endpoint,
-			int report_fd);
+	void map(smidpoint *mp, const char *addrstring, const char *endpoint, int report_fd, const char *constraints = NULL);
 	void do_map(mapparams *params);
 	void finalise_map(int fd, AbstractMessage *abst);
 	void unmap(smidpoint *mp, const char *addrstring, const char *endpoint, int report_fd);
