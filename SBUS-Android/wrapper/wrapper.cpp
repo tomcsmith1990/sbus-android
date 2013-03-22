@@ -2916,16 +2916,17 @@ void swrapper::finalise_server_visit(AbstractMessage *abst)
 
 void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_schema)
 {
-	/**
-	  * Construct lookup table based on the map constraint string we used.
-	  * Everything covered by constraint string, i.e. any fields and their descendants will be added to the lookup.
-	  */
 	if (peer->map_constraint == NULL)
 	{
-		warning("No map constraints to match this peer against, cannot compare schema. Unmapping");
-		unmap(mp, peer->address, peer->endpoint, -1);
+		// No map constraint to check schema against and make lookup table - unmap and report mapping unsuccessful.
+		warning("No map constraints to match this peer against, cannot compare schema");
+		unmap(mp, peer->address, peer->endpoint, mp->fd);
 		return;
 	}
+	
+	/**
+	  * Construct lookup table based on the map constraint string we used.
+	  */
 
 	MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
 	const char *schema_constraint = mapcon->pack(mp->msg_schema->hashes)->extract_txt("schema");
@@ -2941,6 +2942,7 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 	int schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward, 
 														peer->container, peer->layer);
 
+	// Only peer->layer or peer->container (or neither) will contain items, because only one of the schemas can be larger.
 	if (peer->layer->count() == 0)
 	{
 		delete peer->layer;
@@ -2956,11 +2958,15 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 
 	if (schema_match == 0)
 	{
-		warning("Peer's schema does not fit map constraint '%s' - unmapping", peer->map_constraint);
-		unmap(mp, peer->address, peer->endpoint, -1);
+		// Schema doesn't match - unmap and report mapping unsuccessful.
+		warning("Peer's schema does not fit map constraint '%s'", peer->map_constraint);
+		unmap(mp, peer->address, peer->endpoint, mp->fd);
 	}
 	else
 	{
+		// Report mapping successful.
+		map_report(mp->fd, 1, peer->address);
+	
 		// If we have a subscription criteria.
 		if (mp->subs != NULL)
 			// Resubscribe, this will convert the subscription string to peer's schema.
@@ -3473,6 +3479,15 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 			// We already know schema, construct lookup table.
 			construct_peer_lookup(peer->owner, peer, sch);
 		}
+		
+		delete welcome;
+	
+		peer->owner->peers->add(peer);
+		multi->add(peer->sock, MULTI_READ, "swrapper::finalise_map");
+		fdstate[peer->sock] = FDPeer;
+
+		// We will report mapping successful/unsuccessful once we've check the schema.
+		return;
 	}
 	
 	delete welcome;
