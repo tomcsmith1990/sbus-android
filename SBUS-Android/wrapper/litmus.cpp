@@ -95,20 +95,35 @@ int Schema::construct_lookup(Schema *target, snode *constraints, snode *lookup_f
 
 	const char *target_name, *current_name;
 
-	// Working backwards up the path (i.e. from constraint to the top), 
-	// add levels to the lookup tables until we reach the top of one of the schemas.
+	// Work backwards up the path (i.e. from constraint to the top) until the top of one of the schemas. 
 	int count = (target_path->count() <= current_path->count()) ? target_path->count() : current_path->count();
 	int i;
+	snode *children;
 	for (i = 0; i < count; i++)
 	{
 		target_name = target_path->item(i);
 		current_name = current_path->item(i);
 		
+		// Add structure names to the lookup tables.
 		if (!lookup_forward->exists(target_name))
 			lookup_forward->append(pack(current_name, target_name));
-			
+						
 		if (!lookup_backward->exists(current_name))
 			lookup_backward->append(pack(target_name, current_name));
+
+		// If there are no entries for the structure's childrens' names
+		// then add them to the lookup table with the same name in each schema.
+		// This will mean that any fields not specified in the constraint but with the same name will be repacked.
+		// -2 = skip "has" and "similar".
+		children = target->hashes->find(target_name);
+		for (int j = 0; j < children->count() - 2; j++)
+		{
+			if (!lookup_forward->exists(children->extract_item(j)->get_name()))
+			{
+				lookup_forward->append(pack(children->extract_item(j)->get_name(), children->extract_item(j)->get_name()));
+				lookup_backward->append(pack(children->extract_item(j)->get_name(), children->extract_item(j)->get_name()));
+			}
+		}
 	}
 	
 	// If the schema we're converting to has the longer path,
