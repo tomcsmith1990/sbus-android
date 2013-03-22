@@ -372,30 +372,14 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		// Add the hashes of this field.
 		if (sn != NULL)
 		{	
-		
-			const char *subschema;
-			HashCode *hash = new HashCode();
-			
 			snode *list = mklist(symbol_table->item(l->namesym));
-			list->append(pack(l->type, "type"));
-			
-			subschema = tbuf->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "similar"));
-			if (tsb != NULL)
-			{
-				tsb->append(tbuf);
-				tsb->cat('\n');
-			}
-		
-			subschema = sub->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "has"));
-
+			pack_field_info(list, l->type, sub, tbuf);
 			sn->append(list);
-			
-			delete hash;
-			delete subschema;
+		}
+		if (tsb != NULL)
+		{
+			tsb->append(tbuf);
+			tsb->cat('\n');
 		}
 		delete tbuf;
 
@@ -437,28 +421,11 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		// Add the hashes of this field.
 		if (sn != NULL)
 		{
-			const char *subschema;
-			HashCode *hash = new HashCode();
-			
-			list->append(pack(l->type, "type"));
-					
-			subschema = tbuf->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "similar"));
-			if (tsb != NULL)
-			{
-				tsb->append(tbuf);
-			}
-		
-			subschema = sub->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "has"));
-
+			pack_field_info(list, l->type, sub, tbuf);
 			sn->append(list);
-			
-			delete hash;
-			delete subschema;
 		}
+		if (tsb != NULL)
+			tsb->append(tbuf);
 		delete tbuf;
 		
 		sb->append(sub);
@@ -505,28 +472,11 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		// Add the hashes of this field.
 		if (sn != NULL)
 		{
-			const char *subschema;
-			HashCode *hash = new HashCode();
-			
-			list->append(pack(l->type, "type"));
-					
-			subschema = tbuf->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "similar"));
-			if (tsb != NULL)
-			{
-				tsb->append(tbuf);
-			}
-		
-			subschema = sub->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "has"));
-
+			pack_field_info(list, l->type, sub, tbuf);			
 			sn->append(list);
-			
-			delete hash;
-			delete subschema;
 		}
+		if (tsb != NULL)
+			tsb->append(tbuf);
 		delete tbuf;
 		
 		sb->append(sub);
@@ -554,28 +504,11 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		// Add the hashes of this field.
 		if (sn != NULL)
 		{
-			const char *subschema;
-			HashCode *hash = new HashCode();
-			
-			list->append(pack(l->type, "type"));
-			
-			subschema = tsb->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "similar"));
-			if (tsb != NULL)
-			{
-				tsb->append(tbuf);
-			}
-		
-			subschema = sub->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "has"));
-
+			pack_field_info(list, l->type, sub, tbuf);
 			sn->append(list);
-			
-			delete hash;
-			delete subschema;
 		}
+		if (tsb != NULL)
+			tsb->append(tbuf);
 		delete tbuf;
 		
 		sb->append(sub);
@@ -611,28 +544,11 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		// Add the hashes of this field.
 		if (sn != NULL)
 		{
-			const char *subschema;
-			HashCode *hash = new HashCode();
-			
-			list->append(pack(l->type, "type"));
-			
-			subschema = tsb->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "similar"));
-			if (tsb != NULL)
-			{
-				tsb->append(tbuf);
-			}
-		
-			subschema = sub->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "has"));
-
+			pack_field_info(list, l->type, sub, tbuf);
 			sn->append(list);
-			
-			delete hash;
-			delete subschema;
 		}
+		if (tsb != NULL)
+			tsb->append(tbuf);
 		delete tbuf;
 		
 		sb->append(sub);
@@ -660,35 +576,39 @@ void Schema::dump_litmus(StringBuf *sb, litmus *l, int offset, int defn, snode *
 		
 		// Add the hashes of this field.
 		if (sn != NULL)
-		{		
-			const char *subschema;
-			HashCode *hash = new HashCode();
-			
+		{					
 			snode *list = mklist(symbol_table->item(l->namesym));
-			list->append(pack(l->type, "type"));
-			
-			subschema = tbuf->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "similar"));
-			if (tsb != NULL)
-			{
-				tsb->append(tbuf);
-			}
-		
-			subschema = sub->extract();
-			hash->fromschema(subschema);
-			list->append(pack(hash->tostring(), "has"));
-
+			pack_field_info(list, l->type, sub, tbuf);
 			sn->append(list);
-			
-			delete hash;
-			delete subschema;
 		}
+		if (tsb != NULL)
+			tsb->append(tbuf);
 		delete tbuf;
 		
 		sb->append(sub);
 		delete sub;
 	}
+}
+
+void Schema::pack_field_info(snode *list, int type, StringBuf *sub, StringBuf *tbuf)
+{
+	const char *subschema;
+	HashCode *hash = new HashCode();
+	
+	list->append(pack(type, "type"));
+	
+	subschema = tbuf->extract();
+	hash->fromschema(subschema);
+	list->append(pack(hash->tostring(), "similar"));
+
+	delete subschema; 
+	
+	subschema = sub->extract();
+	hash->fromschema(subschema);
+	list->append(pack(hash->tostring(), "has"));
+	
+	delete hash;
+	delete subschema;
 }
 
 char *path_lookup(const char *filename)
