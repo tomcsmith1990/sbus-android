@@ -252,30 +252,8 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 	else if(e->type == XPath)
 	{
 		int parts = e->path->count();
+		qualify_path(e, buf, lookup, more, less);
 
-		for(int i = 0; i < parts; i++)
-		{
-			// If our schema has a longer path, skip however many extra levels we have.
-			if (less != NULL)
-				if (i < less->count())
-					continue;
-				
-			// If their schema has a longer path, add the extra path before anything.
-			if (i == 0 && more != NULL)
-			{
-				for (int j = 0; j < more->count(); j++)
-				{
-					buf->cat(more->item(j));
-					buf->cat("/");
-				}
-			}
-			if (lookup->exists(e->path->item(i)))
-				buf->cat(lookup->extract_txt(e->path->item(i)));
-			else
-				buf->cat(e->path->item(i));
-			if(i != parts - 1)
-				buf->cat("/");
-		}
 		/**
 		  * If either our schema doesn't have a longer path
 		  * or we haven't skipped all the parts while skipping levels.
@@ -291,40 +269,16 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 		/**
 		  *	We've skipped all the parts, therefore this field does not exist in the other schema.
 		  * That means that it must evaluate to false.
+		  * Cannot evaluate the path 'NULL' thus won't match.
 		  */
 		else
-		{
-			// Cannot evaluate the path 'NULL' thus won't match.
 			buf->cat("NULL");
-		}
 	}	
 	else if(e->type == XExists)
 	{
 		int parts = e->path->count();
+		qualify_path(e, buf, lookup, more, less);
 
-		for(int i = 0; i < parts; i++)
-		{
-			// If our schema has a longer path, skip however many extra levels we have.
-			if (less != NULL)
-				if (i < less->count())
-					continue;
-				
-			// If their schema has a longer path, add the extra path before anything.
-			if (i == 0 && more != NULL)
-			{
-				for (int j = 0; j < more->count(); j++)
-				{
-					buf->cat(more->item(j));
-					buf->cat("/");
-				}
-			}
-			if (lookup->exists(e->path->item(i)))
-				buf->cat(lookup->extract_txt(e->path->item(i)));
-			else
-				buf->cat(e->path->item(i));
-			if(i != parts - 1)
-				buf->cat("/");
-		}
 		/**
 		  * If either our schema doesn't have a longer path
 		  * or we haven't skipped all the parts while skipping levels.
@@ -342,12 +296,10 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 		/**
 		  *	We've skipped all the parts, therefore this field does not exist in the other schema.
 		  * That means that it must evaluate to false.
+		  * Cannot evaluate the path 'NULL' thus won't match.
 		  */
 		else
-		{
-			// Cannot evaluate the path 'NULL' thus won't match.
 			buf->cat("NULL ? ");
-		}
 	}
 	else if(e->type == XInt)
 	{
@@ -367,6 +319,43 @@ void subscription::dump_plaintext(sexpr *e, int depth, StringBuf *buf, snode *lo
 	{
 		buf->cat("$");
 		buf->cat(e->s);
+	}
+}
+
+void subscription::qualify_path(sexpr *e, StringBuf *buf, snode *lookup, svector *more, pvector *less)
+{
+	int parts = e->path->count();
+
+	for(int i = 0; i < parts; i++)
+	{
+		// If our schema has a longer path, skip however many extra levels we have.
+		if (less != NULL)
+			if (i < less->count())
+				continue;
+			
+		// If their schema has a longer path, add the extra path before anything.
+		if (i == 0 && more != NULL)
+		{
+			for (int j = 0; j < more->count(); j++)
+			{
+				buf->cat(more->item(j));
+				buf->cat("/");
+			}
+		}
+		
+		// Any item which is actually in our schema should be in the lookup table (I think).
+		if (lookup->exists(e->path->item(i)))
+			buf->cat(lookup->extract_txt(e->path->item(i)));
+		// Need to add the original string if it's not (e.g. some random field which isn't in our schema).
+		// Otherwise the subscription will be an invalid logic statement.
+		else
+		{
+			warning("%s not in lookup table in subscription::qualify_path - should always be in it\n", e->path->item(i));
+			buf->cat(e->path->item(i));
+		}
+			
+		if(i != parts - 1)
+			buf->cat("/");
 	}
 }
 
