@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Data Stream Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 797\footnotemark[1] \\
+Word Count:         & \bf 882\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -129,41 +129,47 @@ extent for a comparable purpose.
 \pagenumbering{arabic}
 \pagestyle{headings}
 
+% Intro + Preparation ~ 1400 words
 \chapter{Introduction}
 
 While many applications now exist for mobile devices, few of the applications themselves are truly mobile. 
 The user may happen to be mobile, however the application does not adapt to different environments. It simply ``calls home'' 
 to a known IP address from which it receives the data it requires, or the address of where to go for it.
 
-Different mobile environments mean that devices are operating in different contexts. 
-In some of these environments, there may be Wi-Fi networks available, in which it would be sufficient to use data from that network. 
-In others, proximity may be important, for example if we were exchanging data via Bluetooth. 
+Different mobile environments mean that devices are operating in different contexts and scopes. 
+In some of these environments, there may be Wi-Fi networks available, in which it would be sufficient to use a data source from that network. 
+However, this data source may have its scope limited to the network, so it becomes unavailable if we leave the network.
+In other environments, proximity may be important, for example if we were exchanging data via Bluetooth. 
 Location may also be an important factor, to ensure that localised and relevant data is used.
 
-% something about why to use local data sources
+Direct communication with local data sources may offer more useful data than an application might have available otherwise. 
+However, changes in context and scope mean that data sources an application is connected to may become out of scope, or stop providing useful data. 
+In this situation, the application must find an alternative data source.
 
-The application must still have some way of knowing whether a data source provides useful data. 
+Once this alternative data source has been found, the application must still have some way of knowing whether it provides useful data. 
 This can be achieved by evaluating the schema to check whether it contains particular fields. 
-While some fields may be absolutely necessary for operation of the application, others may be desired, but the application can manage without them.
+While some fields may be absolutely necessary for operation of the application, others may be desired, but operation can continue without them.
 
 Once a data source has been established as meaningful, the application still has the difficulty of that data being presented in a different format.
 Automatic conversion of this unknown format to the application's expected format allows the application to continue functioning as if it were connected to a source providing the exact data it expected.
 
 \cleardoublepage
 
-
+ 
 \chapter{Preparation}
 
 
 \cleardoublepage
 
 
+% ~ 4000 words
 \chapter{Implementation}
 
 
 \cleardoublepage
 
 
+% ~ Eval + Conclusion ~ 2000 words
 \chapter{Evaluation}
 
 
