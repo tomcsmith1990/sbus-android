@@ -1,0 +1,161 @@
+\vfil
+
+\centerline{\Large Computer Science Part II Project Proposal }
+\vspace{0.4in}
+\centerline{\Large Automated Data Stream Management on Mobile Devices }
+\vspace{0.4in}
+\centerline{\large Thomas Smith (tcs40), Sidney Sussex College}
+\vspace{0.3in}
+\centerline{\large Originator: Jatinder Singh}
+\vspace{0.3in}
+\centerline{\large 17$^{th}$ October 2012}
+
+\vfil
+
+
+\noindent
+{\bf Project Supervisor:} Jatinder Singh
+\vspace{0.2in}
+
+\noindent
+{\bf Director of Studies:} Chris Hadley
+\vspace{0.2in}
+\noindent
+
+\noindent
+{\bf Project Overseers:} David Greaves  \& John Daugman
+
+
+% Main document
+
+\section*{Introduction and Description of the Project}
+
+A typical approach for developing a smartphone app currently includes connecting to some central server over the Internet, and requesting data from it. An alternative approach would be to use data streams, where a data source and data sink are connected together, and the source automatically pushes data to the sink. Connections can then be made on an ad-hoc basis, allowing us to connect purely within a local network, or across the Internet.
+
+When considering mobile devices, the available data sources which can be discovered will largely depend upon the context and scope in which the device is operating. This context can be affected by many factors, including location, or 3G/WiFi networks which the device is connected to. Sources may have their scope limited to a local network, such that they are only visible on that network, meaning once we go outside that scope, we will have to find a new source.
+
+The project will investigate how a messaging middleware which handles both stream-based and request/response based interactions can be adapted to allow automated discovery of components. If a change in context causes a connected data source to become out of scope or irrelevant, the middleware would automatically search for other sources, and if possible reconnect to one providing the relevant service, allowing use of the app to continue seamlessly.
+
+An example of this is transportation. If we were outside Cambridge Railway Station, our location could be found using GPS, and the middleware could connect over 3G to a source providing details of upcoming departures. Upon boarding a train to London, and connecting to on-board WiFi, we no longer care about other departures - the context has changed, and we only want information relating to our train. The middleware would automatically find and connect to another source, perhaps giving arrival times for stations along the route. Upon arriving at King's Cross Station, we disconnect from the WiFi network which means the previous source is now out of scope. We could connect to King's Cross WiFi, and the middleware would find and connect to sources giving data about the London Underground, and/or National Rail trains. If we were then to get on an Underground train, even though we would not be able to establish a 3G connection, there could still be a source on board the train, providing data over Bluetooth, meaning use of the app can continue.
+
+Component discovery can be done in two ways. The first essentially uses a directory, which we can query. The second is by inspection of other components - given a component, we can ask which other components in the network is it linked to. The project will investigate using this second method to build a graph of connected components, which could be used to find a specific component.
+
+In order to connect to a component providing the correct function, it will be necessary to determine whether a service is relevant. This will involve more than comparing message types. As show in figure \ref{fig:differentSchemas}, both schemas show data offering the same service, but with different fields. The aim is to enable an app expecting data conforming to schema (a) to also handle data from sources serving schema (b).
+
+\begin{figure}[h]
+\begin{subfigure}[b]{0.5\textwidth}
+\begin{verbatim}
+weather {
+    dbl temperature;
+}
+\end{verbatim}
+\caption{A simple weather schema.}
+\end{subfigure}
+\begin{subfigure}[b]{0.5\textwidth}
+\begin{verbatim}
+weather {
+    dbl temperature;
+    dbl humidity;
+    int rainfall;
+}
+\end{verbatim}
+\caption{A more complicated weather schema.}
+\end{subfigure}
+\caption{Two different schemas, both serving weather data.}
+\label{fig:differentSchemas}
+\end{figure}
+
+\section*{Starting Point}
+
+SBUS\footnote{formerly PIRATES, http://www.cl.cam.ac.uk/research/time/pirates/docs/overview.pdf} is a messaging middleware which supports client/server and stream based communication. In using a data stream, sources and sinks can be connected in a peer-to-peer network, with optional filters on events the source wishes to receive.
+
+All of this is dynamically reconfigurable - one component can tell another to open or close connections to another component (subject to security policies). Message filters can also be changed at run time.
+
+A component can handle multiple different message types, where each type corresponds to a different endpoint. Network connections are made to the component, and the endpoint is then specified by name. For two endpoints to communicate, their message types must match. This type is currently specified in a component file.
+
+Component discovery can be done though a resource discovery component (RDC). A component can query the RDC using a component or endpoint name, and the RDC will then link the component to the appropriate partner. All components can be queried for identity, schemas, status, connected peers, given that the component is known.
+
+
+\section*{Work to be Undertaken}
+
+The project breaks down into the following sub-projects:
+
+\begin{enumerate}
+
+\item Port the existing SBUS library to Android using the Android NDK. Write an example app - a device will act as a source and transmit sensor measurements recorded with AIRS\footnote{https://play.google.com/store/apps/details?id=com.airs}, which a computer can then connect to.
+
+\item Implement a recursive method for discovery of components through inspection. We can currently inspect a known component to see what other components are connected to it - this would extend this functionality to inspect the entire network. This would allow discovery of all other components on a network through one known component, meaning that the network can be searched without using a central resource. This will require use of graph traversal algorithm to map out the network, and an efficient data structure to store the topology of the network.
+
+\item Connection to a new component may mean that a previously unseen data schema is being used. This will require the device to ``learn'' the new schema. This unknown schema could simply be a more, or less detailed version of a previous schema. May require use of reflection, or implementation of some handshaking protocol to exchange schemas.
+
+\item To decide whether a new component is relevant, we need to know what service it is providing. This will require investigating search criteria in order to discover components based on the data they handle. To allow partially compatible schemas (see figure \ref{fig:differentSchemas}), we will investigate the use of ontologies to classify message types into meaningful categories.
+
+\item Detect and act upon a change in context - search for new components using a RDC or inspection and where appropriate connect the device to these components. This will require monitoring various sensors on the device, such as location and connected networks in order to detect a change in context.
+
+\item Create apps demonstrating the use of this system, and record metrics from the device, which can be used as a comparison against other implementations.
+
+
+\end{enumerate}
+
+\section*{Success Criterion for the Project}
+
+
+The project will be a success if I can demonstrate that a mobile device can automatically reconnect to a different component upon a change in context, similar to the example outlined in the Introduction.
+
+We can compare the two methods of component discovery, to determine which is more appropriate in different scenarios. We can measure how effectively a component can accept partial schemas - whether performance deteriorates when a message contains far more fields than expected.
+
+The project can further be evaluated by comparison of an app developed using this system, to one developed using other approaches. There are many metrics which can be measured for comparison. From a performance viewpoint, we can measure overheads such as power consumption, network usage, and time taken to reconnect to a service.
+In development we can measure lines of code and the reusability of code - one app could even have multiple use cases! For example, one travel app, as described in the Introduction would replace the need for separate National Rail and London Underground apps.
+
+
+
+\section*{Possible Extensions}
+
+If the project were completed early, I could look at dynamic visibility of components. Components can specify security policies restricting access to themselves, which also prevents them being discovered. If this access control were to change after searching for the component, we would still have no knowledge of it unless searching again. This extension would look at how a component could be made aware, or even a connection automatically established to the previously ``hidden'' component, if the access control changes to allow us to discover it. This could be useful if we wanted to grant access to a larger group of users, from a previously prioritised group.
+
+
+\section*{Timetable and Milestones}
+
+Planned starting date is 19/10/2012.
+
+\begin{enumerate}
+
+\item {\bf Michaelmas weeks 3-4} Get SBUS in existing form running on Android, either by creating an interface to the native code, or writing an app entirely in native code. Write example sensor app.
+
+\item {\bf Michaelmas weeks 5-6} Investigate algorithms to build a graph of the network of components, and implement an appropriate one for recursive component inspection to allow decentralised component discovery.
+
+\item {\bf Michaelmas weeks 7-8} Implement a method to search for a new component when necessary. This will also include detecting when it is necessary - detect change of network, location change.
+
+\item {\bf MILESTONE: } Automatic reconnection to component complete.
+
+\item {\bf Michaelmas vacation} Write code to allow searching for components by type. This will be done in a way such that more general versions of a schema can be found, if a specific one cannot.
+
+\item {\bf Lent weeks 0-2} Extend current connection method to allow components to connect to schemas providing the correct service, but with different fields.
+
+\item {\bf MILESTONE: } Dynamic data typing complete.
+
+\item {\bf Lent weeks 3-5} Create example apps demonstrating the project and apps using a client/server mechanism, and measure overheads of using these in order to evaluate the project.
+
+\item {\bf Lent weeks 6-8} Finish any remaining programming.
+
+\item {\bf MILESTONE: } Programming complete.
+
+\item {\bf Easter vacation:} Write draft dissertation.
+
+\item {\bf Easter weeks 0-2:} Write final copy of dissertation, and ensure all demos are working.
+
+\item {\bf Easter week 3:} Early submission, allowing one week in case the project overruns.
+
+\item {\bf MILESTONE: } Project complete.
+
+\end{enumerate}
+
+\section*{Resource Declaration}
+
+For this project I will use my own computer running Ubuntu 12.04. I accept full responsibility for this machine and I have made contingency plans to protect myself against hardware and/or software failure. Backup will be to a repository hosted by GoogleCode, as well as copies to my Dropbox folder, and to USB drives. I will require use of Android devices for testing - either my own, or provided by the Computer Lab.
+
+I will use the Android SDK\footnote{http://developer.android.com/sdk/index.html} and Android NDK\footnote{http://developer.android.com/tools/sdk/ndk/index.html} to develop Android applications with the ability to run native code.
+
+I will be using the SBUS library as the data stream middleware, provided by Jat Singh.
+
+Should my machine suddenly fail, I will use the PWF computers running Linux. 
