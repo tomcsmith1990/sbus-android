@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Title coming soon	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 330\footnotemark[1] \\
+Word Count:         & \bf 615\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -84,16 +84,18 @@ by {\tt detex diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
 
 \section*{Original Aims of the Project}
 
-Stuff
-
+The original aim of the project was to create a system which could adapt to the changes in context which come with mobility, such as location or networks. 
+This required the ability to detect these changes, in order to find and connect to new data sources. 
+As a new data source may have different data schema to the expected schema, the system must offer a way to make meaningful use of this data in relation to the expected schema.
 
 \section*{Work Completed}
 
-Some
+A messaging middleware was modified to allow users to search for data sources by aspects of their schema. Users can search for an exact match on some part of a schema, or a looser match which only considers field types, and not names.
+This middleware was ported for use on Android. An application was created which could monitor changes in context and then inform other applications of this change, or automatically connect them to new data sources, dependent on their preferences.
 
 \section*{Special Difficulties}
 
-Some
+The main difficulty in the project came from porting the messaging middleware to Android. The Android NDK\footnote{http://developer.android.com/tools/sdk/ndk/index.html} toolkit was used in order to compile C++ for use on Android, however missing libraries and poor documentation made this task more difficult than expected.
  
 \newpage
 \section*{Declaration}
@@ -129,6 +131,19 @@ extent for a comparable purpose.
 \pagestyle{headings}
 
 \chapter{Introduction}
+
+\section{Possible Titles}
+
+\begin{itemize}
+\item Automatic Communication Configuration in Mobile Environments
+\item Data Stream Connection and Message Negotiation
+\item Flexibile Data Streams in Mobile Environments
+\item Automatic Data Stream Configuration in Mobile Environments
+\end{itemize}
+
+While many applications now exist for mobile devices, few of the applications themselves are truly mobile. 
+The user may happen to be mobile, however the application does not adapt to different environments. It simply ``calls home'' 
+to a known IP address from which it receives the data it requires, or the address of where to go for it.
 
 
 \cleardoublepage
