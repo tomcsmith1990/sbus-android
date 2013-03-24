@@ -38,7 +38,7 @@ public class Multiplex {
 	 * @throws Exception If we have found a message for an endpoint not on this component.
 	 */
 	public SEndpoint waitForMessage(int us) throws Exception {
-		long ptr = waitForMessage(m_MultiplexPtr, m_Component.getPointer(), us);
+		long ptr = waitForMessageTimeout(m_MultiplexPtr, m_Component.getPointer(), us);
 		if (ptr == -1)
 				return null;
 		
@@ -58,6 +58,6 @@ public class Multiplex {
 	private native long multiplex();
 	private native void add(long multiplexPtr, long endpointPtr);
 	private native long waitForMessage(long multiplexPtr, long componentPtr);
-	private native long waitForMessage(long multiplexPtr, long componentPtr, int us);
+	private native long waitForMessageTimeout(long multiplexPtr, long componentPtr, int us);
 	private native void delete(long multiplexPtr);
 }

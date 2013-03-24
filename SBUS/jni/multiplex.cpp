@@ -34,11 +34,11 @@ Java_uk_ac_cam_tcs40_sbus_Multiplex_waitForMessage(	 JNIEnv* env,
 }
 
 jlong
-Java_uk_ac_cam_tcs40_sbus_Multiplex_waitForMessage(	 JNIEnv* env,
-						                             jobject thiz,
-						                             jlong multi,
-						                             jlong component,
-						                             jint us )
+Java_uk_ac_cam_tcs40_sbus_Multiplex_waitForMessageTimeout(	 JNIEnv* env,
+										                     jobject thiz,
+										                     jlong multi,
+										                     jlong component,
+										                     jint us )
 {
 	int fd = ((multiplex *)multi)->wait(us);
 	if (fd < 0) return -1;
