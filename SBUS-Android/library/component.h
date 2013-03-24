@@ -198,6 +198,9 @@ class MapConstraints
 	snode *pack(snode *hash_lookup);
 	
 	void pack_hashes(snode *hash_lookup, snode *convert, snode* constraint_list);
+	void pack_hashes_structs_first(snode *hash_lookup, snode *convert, snode* constraint_list);
+	void pack_hashes_exact_first(snode *hash_lookup, snode *convert, snode* constraint_list);
+	void pack_hashes_structs_exact_first(snode *hash_lookup, snode *convert, snode* constraint_list);
 
 	void set_name(const char *s);	
 	void set_instance(const char *s);	
