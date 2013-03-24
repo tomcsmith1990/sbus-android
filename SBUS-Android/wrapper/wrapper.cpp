@@ -2920,7 +2920,11 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 	{
 		// No map constraint to check schema against and make lookup table - unmap and report mapping unsuccessful.
 		warning("No map constraints to match this peer against, cannot compare schema");
+		#ifndef __ANDROID__
 		unmap(mp, peer->address, peer->endpoint, mp->fd);
+		#else
+		unmap(mp, peer->address, peer->endpoint, -1);
+		#endif
 		return;
 	}
 	
@@ -2960,12 +2964,18 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 	{
 		// Schema doesn't match - unmap and report mapping unsuccessful.
 		warning("Peer's schema does not fit map constraint '%s'", peer->map_constraint);
+		#ifndef __ANDROID__
 		unmap(mp, peer->address, peer->endpoint, mp->fd);
+		#else
+		unmap(mp, peer->address, peer->endpoint, -1);
+		#endif
 	}
 	else
 	{
 		// Report mapping successful.
+		#ifndef __ANDROID__
 		map_report(mp->fd, 1, peer->address);
+		#endif
 	
 		// If we have a subscription criteria.
 		if (mp->subs != NULL)
@@ -3480,6 +3490,7 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 			construct_peer_lookup(peer->owner, peer, sch);
 		}
 		
+		#ifndef __ANDROID__
 		delete welcome;
 	
 		peer->owner->peers->add(peer);
@@ -3488,6 +3499,7 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 
 		// We will report mapping successful/unsuccessful once we've check the schema.
 		return;
+		#endif
 	}
 	
 	delete welcome;
@@ -4347,14 +4359,12 @@ snode *speer::repack(snode *sn)
 		// Add the child.
 		if (child != NULL)
 			scomposite->append(child);
-		
-		// If this is the final child, add anything which should come at the end.
-		if (i + 1 == sn->count())
-		{
-			for (; children < top->count() - Schema::FLEXIBLE_MATCHING_FIELDS; children++)
-				scomposite->append(create_missing(top->extract_item(children)));
-		}
 	}
+	
+	// Add any missing children at the end.
+	for (; children < top->count() - Schema::FLEXIBLE_MATCHING_FIELDS; children++)
+		scomposite->append(create_missing(top->extract_item(children)));
+		
 	return scomposite;
 }
 
