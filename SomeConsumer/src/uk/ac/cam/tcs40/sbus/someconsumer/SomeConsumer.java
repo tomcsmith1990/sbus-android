@@ -9,9 +9,6 @@ import uk.ac.cam.tcs40.sbus.SMessage;
 import uk.ac.cam.tcs40.sbus.SNode;
 import android.os.Bundle;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.util.Log;
 import android.widget.TextView;
 
 public class SomeConsumer extends Activity {
@@ -32,20 +29,19 @@ public class SomeConsumer extends Activity {
 		final TextView someVarTV = (TextView) findViewById(R.id.somevar);
 		final TextView averageTV = (TextView) findViewById(R.id.average);
 		
-		final Activity activity = this;
-
 		// Create a thread to run the sensor.
 		new Thread() {
 			public void run() {
 				m_Component = new SComponent("SomeConsumer", "instance");
-				m_Endpoint = m_Component.addEndpoint("SomeEpt", EndpointType.EndpointSink, "BE8A47EBEB58");
+				m_Endpoint = m_Component.addEndpoint("SomeEpt", EndpointType.EndpointSink, "BE8A47EBEB58", null, true);
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
 				final String cptFile = "SomeConsumer.cpt";
+				m_Component.setRDCUpdateAutoconnect(true);
 				m_Component.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
 				m_Component.setPermission("SomeSensor", "", true);
 
-				final SEndpoint rdcUpdate = m_Component.RDCUpdateNotificationsEndpoint();
+				m_Endpoint.setAutomapPolicy("+Ssomeval+Ssomestring", "SomeEpt");
 
 				SMessage message;
 				SNode node;
@@ -53,7 +49,6 @@ public class SomeConsumer extends Activity {
 
 				final Multiplex multi = m_Component.getMultiplex();
 				multi.add(m_Endpoint);
-				multi.add(rdcUpdate);
 				
 				int average = 0;
 				while (m_Component != null) {
@@ -65,45 +60,7 @@ public class SomeConsumer extends Activity {
 						break;
 					}
 
-					if (endpoint.getEndpointName().equals("rdc_update")) {
-
-						message = rdcUpdate.receive();
-						node = message.getTree();
-
-						final String rdcAddress = node.extractString("rdc_address");
-						final boolean arrived = node.extractBoolean("arrived");
-
-						message.delete();
-
-						runOnUiThread(new Runnable() {
-							public void run() {
-								AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-								// Add the buttons
-								builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog, int id) {
-										// User clicked OK button
-										if (arrived)
-											m_Component.addRDC(rdcAddress);
-										else
-											m_Component.removeRDC(rdcAddress);
-									}
-								});
-								builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog, int id) {
-										// User cancelled the dialog
-									}
-								});
-								builder.setMessage((arrived ? "Add " : "Remove ") + "RDC " + rdcAddress + "?");
-
-								// Create the AlertDialog
-								AlertDialog dialog = builder.create();
-								dialog.show();
-							}
-						});
-
-						Log.i("SomeConsumer", "RDC Update: " + rdcAddress + " has just " + (arrived ? "arrived" : "left"));
-
-					} else if (endpoint.getEndpointName().equals("SomeEpt")) {
+					if (endpoint.getEndpointName().equals("SomeEpt")) {
 
 						message = m_Endpoint.receive();
 						node = message.getTree();
