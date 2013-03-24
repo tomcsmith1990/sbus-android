@@ -1052,15 +1052,19 @@ void MapConstraints::pack_hashes(snode *hash_lookup, snode *convert, snode* cons
 									::pack(hash->extract_txt(exact ? "has" : "similar"), "hash"), 
 									::pack_bool(exact, "exact"), 
 								"constraint");
-								
-			// If there are any child constraints, pack their hash constraints.
-			if (name_constraint->exists("children"))
-			{
-				children = mklist("children");
-				pack_hashes(hash_lookup, name_constraint->extract_item("children"), children);
-				hash_constraint->append(children);
+			
+			// Don't need to pack children if this is an exact match - they must match anyway.
+			if (!exact)
+			{		
+				// If there are any child constraints, pack their hash constraints.
+				if (name_constraint->exists("children"))
+				{
+					children = mklist("children");
+					pack_hashes(hash_lookup, name_constraint->extract_item("children"), children);
+					hash_constraint->append(children);
+				}
 			}
-		
+			
 			constraint_list->append(hash_constraint);
 		}
 		else
