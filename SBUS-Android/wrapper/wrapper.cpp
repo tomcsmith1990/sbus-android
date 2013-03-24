@@ -4296,7 +4296,12 @@ snode *speer::repack(snode *sn)
 		return NULL;
 	
 	if (sn->get_type() == SStruct || sn->get_type() == SList)
+	{
 		scomposite = mklist(local_name);
+
+		// Find this structure in the hash lookup so that we can get the children.
+		top = owner->msg_schema->hashes->find(local_name);	
+	}
 	
 	for (int i = 0; i < sn->count(); i++) {	
 
@@ -4305,76 +4310,49 @@ snode *speer::repack(snode *sn)
 			local_name = lookup_backward->extract_txt(sn->extract_item(i)->get_name());
 		else
 			continue;
-
+		
+		// Add any children which should come before this.
+		
+		// Iterate through the children (-FLEXIBLE_MATCHING_FIELDS to skip "has", "similar", "type").
+		for (; children < top->count() - Schema::FLEXIBLE_MATCHING_FIELDS; children++)
+		{
+			// If the child has the same name as our node, pack it, otherwise pack an empty node.
+			if (!strcmp(top->extract_item(children)->get_name(), local_name))
+			{
+				// Increment children to say we're doing this one.
+				children++;
+				break;
+			}
+			else
+				scomposite->append(create_missing(top->extract_item(children)));
+		}
+		
+		// Repack the child.
 		switch(sn->extract_item(i)->get_type())
 		{
-			case SInt: 
-				scomposite->append(pack(sn->extract_int(i), local_name));
-				children++;
-				break;
-			case SDouble:
-				scomposite->append(pack(sn->extract_dbl(i), local_name));
-				children++;
-				break;
-			case SText:
-				scomposite->append(pack(sn->extract_txt(i), local_name));
-				children++;
-				break;
-			case SBinary:
-				scomposite->append(pack(sn->extract_bin(i), sn->num_bytes(i), local_name));
-				children++;
-				break;
-			case SBool: 
-				scomposite->append(pack_bool(sn->extract_flg(i), local_name));
-				children++;
-				break;
-			case SDateTime:
-				scomposite->append(pack(sn->extract_clk(i), local_name));
-				children++;
-				break;
-			case SLocation:
-				scomposite->append(pack(sn->extract_loc(i), local_name));
-				children++;
-				break;
-			case SStruct:
-				child = repack(sn->extract_item(i));
-				
-				if (child != NULL)
-				{
-					// Find this structure in the hash lookup.
-					top = owner->msg_schema->hashes->find(scomposite->get_name());
-					// Iterate through the children (-FLEXIBLE_MATCHING_FIELDS to skip "has", "similar", "type").
-					for (; children < top->count() - Schema::FLEXIBLE_MATCHING_FIELDS; children++)
-					{
-						// If the child has the same name as our node, pack it, otherwise pack an empty node.
-						if (!strcmp(top->extract_item(children)->get_name(), child->get_name()))
-						{
-							scomposite->append(child);
-							// If this isn't the last child of sn, break - we might add the extra children later.
-							if (i + 1 != sn->count()) break;
-						}
-						else
-							scomposite->append(create_missing(top->extract_item(children)));
-					}
-				}	
-				
-				break;
-			case SList:
-				child = repack(sn->extract_item(i));
-				if (child != NULL)
-				{
-					scomposite->append(child);
-					children++;
-				}
-				break;
-			case SValue:
-				scomposite->append(pack(sn->extract_value(i), local_name));
-				children++;
-				break;
-			case SEmpty: ; break;
-			default:
-				error("Unknown node type ");
-				break;
+			case SInt:		child = pack(sn->extract_int(i), local_name);						break;
+			case SDouble:	child = pack(sn->extract_dbl(i), local_name);						break;
+			case SText:		child = pack(sn->extract_txt(i), local_name);						break;
+			case SBinary:	child = pack(sn->extract_bin(i), sn->num_bytes(i), local_name);		break;
+			case SBool:		child = pack_bool(sn->extract_flg(i), local_name);					break;
+			case SDateTime:	child = pack(sn->extract_clk(i), local_name);						break;
+			case SLocation:	child = pack(sn->extract_loc(i), local_name);						break;
+			case SStruct:	child = repack(sn->extract_item(i));								break;
+			case SList:		child = repack(sn->extract_item(i));								break;
+			case SValue:	child = pack(sn->extract_value(i), local_name);						break;
+			case SEmpty:	child = NULL;														break;
+			default:		error("Unknown node type ");										break;
+		}
+		
+		// Add the child.
+		if (child != NULL)
+			scomposite->append(child);
+		
+		// If this is the final child, add anything which should come at the end.
+		if (i + 1 == sn->count())
+		{
+			for (; children < top->count() - Schema::FLEXIBLE_MATCHING_FIELDS; children++)
+				scomposite->append(create_missing(top->extract_item(children)));
 		}
 	}
 	return scomposite;
