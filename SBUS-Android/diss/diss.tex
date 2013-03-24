@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Data Stream Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 882\footnotemark[1] \\
+Word Count:         & \bf 1153\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -161,7 +161,15 @@ This project creates a context-aware system which can adapt according to changes
 In adapting to the new environment, the system automatically reconfigures applications' connections to allow use of them to continue with as little interruption as possible. 
 This reconfiguration has two parts to it: finding data sources, and handling different data formats.
 
+The system allows applications on the device to register to have their connections reconfigured when appropriate. 
+Registrations can either be to automatically reconfigure the connection for the application, or to simply notify the application of a change, allowing it to perform a callback method.
+As part of this registration, constraints may be specified about how the application wants the connection to be reconfigured. 
+These may be simple constraints, such as the name of a data source, or more complex constraints regarding the structure of the data which the source uses. 
+Once the system detects a change in the environment, it notifies applications of the change or connects them to different sources, as specified in their registrations.
 
+Depending on the constraints, an application may be connected to a data source which does not offer the exact data schema the application expects. 
+The system handles this by repackaging messages to map the application's schema. Any extraneous fields are removed, while any absent fields are filled in with ``empty'' values. The constraints are used to infer relationships between fields, even if they have different names. 
+Once the system has repackaged the message, it passes it to the application, allowing the application to continue as if it had received a message conforming to its schema.
 
 \cleardoublepage
 
