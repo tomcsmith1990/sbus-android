@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Data Stream Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 1153\footnotemark[1] \\
+Word Count:         & \bf 1133\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -138,6 +138,7 @@ The user may happen to be mobile, however the application does not adapt to diff
 This project addresses the issues faced in creating applications which can change to suit different environments. 
 I show how an application can find relevant data sources in an environment, and how it may offer flexibility in the data it uses.
 
+\section{Problem}
 % what's the problem
 Different environments mean that devices operate in different contexts and scopes, which dictate how a device can interact with the environment. 
 In some of these environments, there may be Wi-Fi networks available, in which it would be sufficient to use a data source from that network. 
@@ -147,15 +148,15 @@ Location may also be an important factor, to ensure that localised and relevant 
 
 Direct communication with local data sources may offer more useful data than an application might have available otherwise. 
 However, changes in context and scope mean that data sources an application is connected to may become out of scope, or stop providing useful data. 
-In this situation, the application must find an alternative data source.
+In this situation, an alternative data source must be found.
 
 Once this alternative data source has been found, the application must still have some way of knowing whether it provides useful data. 
-This can be achieved by evaluating the schema to check whether it contains particular fields. 
-While some fields may be absolutely necessary for operation of the application, others may be desired, but operation can continue without them.
+While some data may be absolutely necessary for operation of the application, other parts may be desired, but operation can continue without them. 
+However, even if a data source is deemed useful, the application may still have the difficulty of the data being presented in a different format. 
+Some fields may be missing, while others may have different names. 
+This means that an application must somehow cope with unknown data formats.
 
-Once a data source has been established as meaningful, the application still has the difficulty of that data being presented in a different format.
-Automatic conversion of this unknown format to the application's expected format allows the application to continue functioning as if it were connected to a source providing the exact data it expected.
-
+\section{Project}
 % what I've done
 This project creates a context-aware system which can adapt according to changes in the environment.\cite{Schilit:1994:CCA:1439278.1440041} 
 In adapting to the new environment, the system automatically reconfigures applications' connections to allow use of them to continue with as little interruption as possible. 
