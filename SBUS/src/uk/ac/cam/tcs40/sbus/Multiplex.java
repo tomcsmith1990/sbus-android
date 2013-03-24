@@ -32,6 +32,23 @@ public class Multiplex {
 	}
 	
 	/**
+	 * Wait until there is a message for one of the endpoints in this Multiplex.
+	 * @param us Microseconds to wait for a message.
+	 * @return An endpoint which has a message waiting.
+	 * @throws Exception If we have found a message for an endpoint not on this component.
+	 */
+	public SEndpoint waitForMessage(int us) throws Exception {
+		long ptr = waitForMessage(m_MultiplexPtr, m_Component.getPointer(), us);
+		if (ptr == -1)
+				return null;
+		
+		SEndpoint endpoint = m_Component.getEndpointByPtr(ptr);
+		if (endpoint == null)
+			throw new Exception("Received a message for an endpoint which is not on this component");
+		return endpoint;
+	}
+	
+	/**
 	 * Delete the native representation of this Multiplex.
 	 */
 	public void delete() {
@@ -41,5 +58,6 @@ public class Multiplex {
 	private native long multiplex();
 	private native void add(long multiplexPtr, long endpointPtr);
 	private native long waitForMessage(long multiplexPtr, long componentPtr);
+	private native long waitForMessage(long multiplexPtr, long componentPtr, int us);
 	private native void delete(long multiplexPtr);
 }
