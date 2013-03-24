@@ -1010,8 +1010,20 @@ snode *MapConstraints::pack(snode *hash_lookup)
 	// Schema constraints.
 	if (schema_constraints->count() > 0)
 	{
+		const bool structs_first = true;
+		const bool exact_first = true;
+		
 		subn = mklist("schema");
-		pack_hashes(hash_lookup, schema_constraints, subn);
+		
+		if (structs_first && exact_first)
+			pack_hashes_structs_exact_first(hash_lookup, schema_constraints, subn);
+		else if (structs_first)
+			pack_hashes_structs_first(hash_lookup, schema_constraints, subn);
+		else if (exact_first)
+			pack_hashes_exact_first(hash_lookup, schema_constraints, subn);
+		else
+			pack_hashes(hash_lookup, schema_constraints, subn);
+			
 		sn->append(::pack(subn->toxml(0), "schema"));
 		printf("%s\n", subn->toxml(1));
 	}
@@ -1037,11 +1049,6 @@ void MapConstraints::pack_hashes(snode *hash_lookup, snode *convert, snode* cons
 	snode *hash_constraint, *name_constraint, *hash, *children;
 	int exact;
 	const char *name;
-	
-	const bool structures_first = true;
-	pvector *non_structures;
-	if (structures_first)
-		non_structures = new pvector();
 	
 	for (int i = 0; i < convert->count(); i++)
 	{
@@ -1072,7 +1079,52 @@ void MapConstraints::pack_hashes(snode *hash_lookup, snode *convert, snode* cons
 				}
 			}
 			
-			if (!structures_first || (structures_first && hash->extract_int("type") == LITMUS_STRUCT))
+			constraint_list->append(hash_constraint);
+		}
+		else
+			warning("Field '%s' does not exist in schema - map constraint may not be as expected", name);
+	}
+}
+
+void MapConstraints::pack_hashes_structs_first(snode *hash_lookup, snode *convert, snode* constraint_list)
+{
+	snode *hash_constraint, *name_constraint, *hash, *children;
+	int exact;
+	const char *name;
+	
+	pvector *non_structures = new pvector();
+	
+	for (int i = 0; i < convert->count(); i++)
+	{
+		name_constraint = convert->extract_item(i);
+		exact = name_constraint->extract_flg("exact");
+		name = name_constraint->extract_txt("name");
+		
+		// If there is a field in our schema with this name, get its hash.
+		hash = hash_lookup->find(name);
+		if (hash != NULL)
+		{
+			// Pack the hash constraint.
+			hash_constraint = ::pack(
+									::pack(name, "name"),
+									::pack(hash->extract_txt(exact ? "has" : "similar"), "hash"), 
+									::pack_bool(exact, "exact"), 
+								"constraint");
+			
+			// Don't need to pack children if this is an exact match - they must match anyway.
+			if (!exact)
+			{		
+				// If there are any child constraints, pack their hash constraints.
+				if (name_constraint->exists("children"))
+				{
+					children = mklist("children");
+					pack_hashes_structs_first(hash_lookup, name_constraint->extract_item("children"), children);
+					hash_constraint->append(children);
+				}
+			}
+			
+			// Pack any which are structures immediately, otherwise add to stack.
+			if (hash->extract_int("type") == LITMUS_STRUCT)
 				constraint_list->append(hash_constraint);
 			else
 				non_structures->add((void *)hash_constraint);
@@ -1081,14 +1133,141 @@ void MapConstraints::pack_hashes(snode *hash_lookup, snode *convert, snode* cons
 			warning("Field '%s' does not exist in schema - map constraint may not be as expected", name);
 	}
 	
-	if (structures_first)
-	{
-		snode *sn;
-		while ((sn = (snode *)non_structures->pop()) != NULL)
-			constraint_list->append(sn);
-		delete non_structures;
-	}
+	// Add anything on the stack (anything which is not a structure).
+	snode *sn;
+	while ((sn = (snode *)non_structures->pop()) != NULL)
+		constraint_list->append(sn);
+	delete non_structures;
 }
+
+void MapConstraints::pack_hashes_exact_first(snode *hash_lookup, snode *convert, snode* constraint_list)
+{
+	snode *hash_constraint, *name_constraint, *hash, *children;
+	int exact;
+	const char *name;
+	
+	pvector *non_exact = new pvector();
+	
+	for (int i = 0; i < convert->count(); i++)
+	{
+		name_constraint = convert->extract_item(i);
+		exact = name_constraint->extract_flg("exact");
+		name = name_constraint->extract_txt("name");
+		
+		// If there is a field in our schema with this name, get its hash.
+		hash = hash_lookup->find(name);
+		if (hash != NULL)
+		{
+			// Pack the hash constraint.
+			hash_constraint = ::pack(
+									::pack(name, "name"),
+									::pack(hash->extract_txt(exact ? "has" : "similar"), "hash"), 
+									::pack_bool(exact, "exact"), 
+								"constraint");
+			
+			// Don't need to pack children if this is an exact match - they must match anyway.
+			if (!exact)
+			{		
+				// If there are any child constraints, pack their hash constraints.
+				if (name_constraint->exists("children"))
+				{
+					children = mklist("children");
+					pack_hashes_exact_first(hash_lookup, name_constraint->extract_item("children"), children);
+					hash_constraint->append(children);
+				}
+			}
+			
+			// Pack any which are exact immediately, otherwise add to stack.
+			if (exact)
+				constraint_list->append(hash_constraint);
+			else
+				non_exact->add((void *)hash_constraint);
+		}
+		else
+			warning("Field '%s' does not exist in schema - map constraint may not be as expected", name);
+	}
+	
+	// Add anything on the stack (anything which is not a structure).
+	snode *sn;
+	while ((sn = (snode *)non_exact->pop()) != NULL)
+		constraint_list->append(sn);
+	delete non_exact;
+}
+
+void MapConstraints::pack_hashes_structs_exact_first(snode *hash_lookup, snode *convert, snode* constraint_list)
+{
+	snode *hash_constraint, *name_constraint, *hash, *children;
+	int exact;
+	const char *name;
+	
+	pvector *non_structures = new pvector();
+	pvector *non_exact = new pvector();
+	pvector *non_exact_non_structures = new pvector();
+	
+	for (int i = 0; i < convert->count(); i++)
+	{
+		name_constraint = convert->extract_item(i);
+		exact = name_constraint->extract_flg("exact");
+		name = name_constraint->extract_txt("name");
+		
+		// If there is a field in our schema with this name, get its hash.
+		hash = hash_lookup->find(name);
+		if (hash != NULL)
+		{
+			// Pack the hash constraint.
+			hash_constraint = ::pack(
+									::pack(name, "name"),
+									::pack(hash->extract_txt(exact ? "has" : "similar"), "hash"), 
+									::pack_bool(exact, "exact"), 
+								"constraint");
+			
+			// Don't need to pack children if this is an exact match - they must match anyway.
+			if (!exact)
+			{		
+				// If there are any child constraints, pack their hash constraints.
+				if (name_constraint->exists("children"))
+				{
+					children = mklist("children");
+					pack_hashes_structs_exact_first(hash_lookup, name_constraint->extract_item("children"), children);
+					hash_constraint->append(children);
+				}
+			}
+			
+			// Pack any exact structures immediately, otherwise add to stack.
+			if (hash->extract_int("type") == LITMUS_STRUCT)
+			{
+				if (exact)
+					constraint_list->append(hash_constraint);
+				else
+					non_exact->add((void *)hash_constraint);
+			}
+			else
+			{
+				if (exact)
+					non_structures->add((void *)hash_constraint);
+				else
+					non_exact_non_structures->add((void *)hash_constraint);
+			}
+		}
+		else
+			warning("Field '%s' does not exist in schema - map constraint may not be as expected", name);
+	}
+	
+	// Add any non exact structures.
+	snode *sn;
+	while ((sn = (snode *)non_exact->pop()) != NULL)
+		constraint_list->append(sn);
+	delete non_exact;
+		
+	while ((sn = (snode *)non_structures->pop()) != NULL)
+		constraint_list->append(sn);
+	delete non_structures;
+	
+	while ((sn = (snode *)non_exact_non_structures->pop()) != NULL)
+		constraint_list->append(sn);
+	delete non_exact_non_structures;
+}
+
 
 void MapConstraints::set_name(const char *s)
 {
