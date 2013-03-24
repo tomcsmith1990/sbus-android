@@ -132,14 +132,17 @@ extent for a comparable purpose.
 % Intro + Preparation ~ 1400 words
 \chapter{Introduction}
 
+% summarise
 While many applications now exist for mobile devices, few of the applications themselves are truly mobile. 
-The user may happen to be mobile, however the application does not adapt to different environments. It simply ``calls home'' 
-to a known IP address from which it receives the data it requires, or the address of where to go for it.
+The user may happen to be mobile, however the application does not adapt to different environments. 
+This project addresses the issues faced in creating applications which can change to suit different environments. 
+I show how an application can find relevant data sources in an environment, and how it may offer flexibility in the data it uses.
 
-Different mobile environments mean that devices are operating in different contexts and scopes. 
+% what's the problem
+Different environments mean that devices operate in different contexts and scopes, which dictate how a device can interact with the environment. 
 In some of these environments, there may be Wi-Fi networks available, in which it would be sufficient to use a data source from that network. 
-However, this data source may have its scope limited to the network, so it becomes unavailable if we leave the network.
-In other environments, proximity may be important, for example if we were exchanging data via Bluetooth. 
+However, this data source may have its scope limited to the network, so it becomes unavailable when leaving the network.
+In other environments, proximity may be important, for example, when exchanging data via Bluetooth. 
 Location may also be an important factor, to ensure that localised and relevant data is used.
 
 Direct communication with local data sources may offer more useful data than an application might have available otherwise. 
@@ -152,6 +155,13 @@ While some fields may be absolutely necessary for operation of the application, 
 
 Once a data source has been established as meaningful, the application still has the difficulty of that data being presented in a different format.
 Automatic conversion of this unknown format to the application's expected format allows the application to continue functioning as if it were connected to a source providing the exact data it expected.
+
+% what I've done
+This project creates a context-aware system which can adapt according to changes in the environment.\cite{Schilit:1994:CCA:1439278.1440041} 
+In adapting to the new environment, the system automatically reconfigures applications' connections to allow use of them to continue with as little interruption as possible. 
+This reconfiguration has two parts to it: finding data sources, and handling different data formats.
+
+
 
 \cleardoublepage
 
@@ -177,7 +187,7 @@ Automatic conversion of this unknown format to the application's expected format
 
 
 \chapter{Conclusion}
-This is just a random cite so that the there aren't errors while compiling.\cite{moore95}
+
 
 \cleardoublepage
 
