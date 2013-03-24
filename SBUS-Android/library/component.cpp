@@ -20,6 +20,7 @@
 #include "component.h"
 #include "lowlevel.h"
 #include "net.h"
+#include "../wrapper/litmus.h"
 
 typedef sendpoint *sendpointptr;
 typedef Schema *SchemaPtr;
@@ -1012,6 +1013,7 @@ snode *MapConstraints::pack(snode *hash_lookup)
 		subn = mklist("schema");
 		pack_hashes(hash_lookup, schema_constraints, subn);
 		sn->append(::pack(subn->toxml(0), "schema"));
+		printf("%s\n", subn->toxml(1));
 	}
 	
 	subn = mklist("keywords");
@@ -1035,6 +1037,11 @@ void MapConstraints::pack_hashes(snode *hash_lookup, snode *convert, snode* cons
 	snode *hash_constraint, *name_constraint, *hash, *children;
 	int exact;
 	const char *name;
+	
+	const bool structures_first = true;
+	pvector *non_structures;
+	if (structures_first)
+		non_structures = new pvector();
 	
 	for (int i = 0; i < convert->count(); i++)
 	{
@@ -1065,10 +1072,21 @@ void MapConstraints::pack_hashes(snode *hash_lookup, snode *convert, snode* cons
 				}
 			}
 			
-			constraint_list->append(hash_constraint);
+			if (!structures_first || (structures_first && hash->extract_int("type") == LITMUS_STRUCT))
+				constraint_list->append(hash_constraint);
+			else
+				non_structures->add((void *)hash_constraint);
 		}
 		else
 			warning("Field '%s' does not exist in schema - map constraint may not be as expected", name);
+	}
+	
+	if (structures_first)
+	{
+		snode *sn;
+		while ((sn = (snode *)non_structures->pop()) != NULL)
+			constraint_list->append(sn);
+		delete non_structures;
 	}
 }
 
