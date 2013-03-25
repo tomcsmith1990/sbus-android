@@ -93,8 +93,11 @@ public class PhoneManagementComponent {
 	 * @param register Components can register with this RDC.
 	 */
 	public static void informComponentsAboutRDC(boolean register) {
-		if (s_RegisterRdc == null) return;
+		if (s_RegisterRdc == null || s_List == null) return;
 
+		// Don't do anything if there are no components.
+		if (RegistrationRepository.list().size() == 0) return;
+		
 		String mapString = s_List.map(getRemoteRDCAddress(), null);
 
 		// RDC doesn't exist.

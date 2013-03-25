@@ -61,8 +61,6 @@ public class PMCActivity extends Activity
 		
 		// Display the layout.
 		setContentView(R.layout.activity_pmc);
-
-		findViewById(R.id.layout).requestFocus();
 		
 		// Add event listener to the map button.
 		Button mapButton = (Button)findViewById(R.id.map_button);

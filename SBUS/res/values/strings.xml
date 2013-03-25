@@ -7,6 +7,6 @@
     <string name="map_local_button_text">Local Map</string>
     <string name="rdc_button_text">Register RDC</string>
     <string name="rdc_address">192.168.0.3:50123</string>
-    <string name="rdc_label">RDC Address:</string>
+    <string name="rdc_label">RDC:</string>
 
 </resources>
