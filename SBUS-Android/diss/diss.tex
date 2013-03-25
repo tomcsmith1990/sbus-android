@@ -72,7 +72,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 1222\footnotemark[1] \\
+Word Count:         & \bf 1587\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -210,6 +210,13 @@ Applications may specify constraints about how fields in a data source's schema 
 This gives the application control over which data sources it can be connected to, but does not require the application to find the data sources itself. 
 Upon a change in context, the system will reconfigure connections ensuring that they conform to these constraints, allowing applications to continue receiving fresh data.
 
+Referring back to the train example from the Introduction, there may be an application using the London Midland train schema (Figure \ref{fig:londonmidlandtrain}) which requires data sources to have at least a structure matching the type of the {\tt train} structure. 
+At a small train station which only London Midland trains serve, all data sources will match this schema exactly, so the application can connect to any of them.
+Upon arriving at a larger train station and connecting to a Wi-Fi network, the system detects a change in context, and consequently connects the application to a new data source. 
+The user may be changing to a Virgin train here, however information about these trains uses a different schema (Figure \ref{fig:virgintrain}). 
+This schema does not match the application schema exactly, however it does contain the necessary {\tt train} structure. 
+Therefore, the system connects the application to this data source, and repackages messages to match the application schema, allowing the same application code to handle the message.
+
 \section{Issues}
 
 \section{Changes}
@@ -245,77 +252,7 @@ Upon a change in context, the system will reconfigure connections ensuring that 
 
 \chapter{Example Schemas}
 
-\begin{figure}[h]
-\begin{lstlisting}
-@train
-{
-    int platform
-    date departure
-    stops
-    (
-    	station
-    	{
-    		txt name
-    		date arrival
-    	}
-    )
-}
-\end{lstlisting}
-\caption{A London Midland train schema, showing a platform number, a date and time of departure, and a list of stops, with names and estimated arrival times.}
-\label{fig:londonmidlandtrain}
-\end{figure}
-
-\begin{figure}[h]
-\begin{lstlisting}
-@virgin-train
-	train
-	{
-		int platform
-		date departure
-		stops
-		(
-			station
-			{
-				txt name
-				date arrival
-			}
-		)
-	}
-	shop
-	{
-		items
-		(
-			txt name
-			dbl price
-		)
-	}
-}
-\end{lstlisting}
-\caption{A Virgin train schema, showing a larger structure than the London Midland schema which contains that very schema as well as an additional structure containing a list of items for sale in the on-board shop.}
-\label{fig:virgintrain}
-\end{figure}
-
-
-\begin{figure}[h]
-\begin{lstlisting}
-@le-train
-{
-    int le-quai
-    date depart
-    arrets-de-train
-    (
-    	la-gare
-    	{
-    		txt nom-de-la-ville
-    		date arrivee
-    	}
-    )
-}
-\end{lstlisting}
-\caption{A French train schema, showing the same fields as the London Midland schema, however the field names are in French.}
-\label{fig:frenchtrain}
-\end{figure}
-
+\input{schemas}
 
 \cleardoublepage
 

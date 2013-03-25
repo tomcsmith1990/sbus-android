@@ -1,0 +1,70 @@
+\begin{figure}[h]
+\begin{lstlisting}
+@train
+{
+    int platform
+    date departure
+    stops
+    (
+    	station
+    	{
+    		txt name
+    		date arrival
+    	}
+    )
+}
+\end{lstlisting}
+\caption{A London Midland train schema, showing a platform number, a date and time of departure, and a list of stops, with names and estimated arrival times.}
+\label{fig:londonmidlandtrain}
+\end{figure}
+
+\begin{figure}[h]
+\begin{lstlisting}
+@virgin-train
+	train
+	{
+		int platform
+		date departure
+		stops
+		(
+			station
+			{
+				txt name
+				date arrival
+			}
+		)
+	}
+	shop
+	{
+		items
+		(
+			txt name
+			dbl price
+		)
+	}
+}
+\end{lstlisting}
+\caption{A Virgin train schema, showing a larger structure than the London Midland schema which contains that very schema as well as an additional structure containing a list of items for sale in the on-board shop.}
+\label{fig:virgintrain}
+\end{figure}
+
+
+\begin{figure}[h]
+\begin{lstlisting}
+@le-train
+{
+    int le-quai
+    date depart
+    arrets-de-train
+    (
+    	la-gare
+    	{
+    		txt nom-de-la-ville
+    		date arrivee
+    	}
+    )
+}
+\end{lstlisting}
+\caption{A French train schema, showing the same fields as the London Midland schema, however the field names are in French.}
+\label{fig:frenchtrain}
+\end{figure}
