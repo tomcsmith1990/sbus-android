@@ -9,6 +9,7 @@
 \usepackage{verbatim}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{listings}
 
 \input{epsf}                            % to allow postscript inclusions
 % On thor and CUS read top of file:
@@ -153,10 +154,10 @@ However, even if a data source is deemed useful, the application may still have 
 Some fields may be missing, there may be additional fields, and some fields may have different names. 
 
 % example
-For example, a transport application may face differences in data available about Virgin Trains and London Midland trains. 
-Both will offer the same data to a large extent, such as stations, arrival times, and platform numbers, however Virgin Trains might also include on-board shop opening hours. 
+For example, a transport application may face differences in data available about Virgin Trains (Figure \ref{fig:virgintrain}) and London Midland trains (Figure \ref{fig:londonmidlandtrain}). 
+Both will offer the same data to a large extent, such as stations, arrival times, and platform numbers, however Virgin Trains might also include a menu for an on-board shop. 
 Alternatively, the application may be used in a French railway station. 
-Data about the trains will still be very similar, however the field names may be in French. 
+Data about the trains will still be very similar, however the field names may be in French (Figure \ref{fig:frenchtrain}). 
 While these differences may be important when the user is sat waiting for a train, they become less important when the user is running to catch a train, and simply needs the departure time and platform number.
 Given the amount of uncertainty about what data will be available, a developer creating this application cannot hope to account for all possibilities. The developer can however specify how the application should behave in different contexts.
 
@@ -200,10 +201,14 @@ Once the system has repackaged the message, it passes it to the application, all
 
 \cleardoublepage
 
-
 \chapter{Conclusion}
 
-\section{Work Completed}
+% summarise
+The project has created a context-aware system which enables developers to write applications without knowing in advance where data will be available, or what format the data will be in.
+An application will only ever be presented with data conforming to its own schema, removing uncertainty about the format of the data. 
+Applications may specify constraints about how fields in a data source's schema must match its own, as either an exact match, a type-match, or don't care about a match.
+This gives the application control over which data sources it can be connected to, but does not require the application to find the data sources itself. 
+Upon a change in context, the system will reconfigure connections ensuring that they conform to these constraints, allowing applications to continue receiving fresh data.
 
 \section{Issues}
 
@@ -235,6 +240,82 @@ Once the system has repackaged the message, it passes it to the application, all
 \item Flexibile Data Streams in Mobile Environments
 \item Automatic Data Stream Configuration in Mobile Environments
 \end{itemize}
+
+\cleardoublepage
+
+\chapter{Example Schemas}
+
+\begin{figure}[h]
+\begin{lstlisting}
+@train
+{
+    int platform
+    date departure
+    stops
+    (
+    	station
+    	{
+    		txt name
+    		date arrival
+    	}
+    )
+}
+\end{lstlisting}
+\caption{A London Midland train schema, showing a platform number, a date and time of departure, and a list of stops, with names and estimated arrival times.}
+\label{fig:londonmidlandtrain}
+\end{figure}
+
+\begin{figure}[h]
+\begin{lstlisting}
+@virgin-train
+	train
+	{
+		int platform
+		date departure
+		stops
+		(
+			station
+			{
+				txt name
+				date arrival
+			}
+		)
+	}
+	shop
+	{
+		items
+		(
+			txt name
+			dbl price
+		)
+	}
+}
+\end{lstlisting}
+\caption{A Virgin train schema, showing a larger structure than the London Midland schema which contains that very schema as well as an additional structure containing a list of items for sale in the on-board shop.}
+\label{fig:virgintrain}
+\end{figure}
+
+
+\begin{figure}[h]
+\begin{lstlisting}
+@le-train
+{
+    int le-quai
+    date depart
+    arrets-de-train
+    (
+    	la-gare
+    	{
+    		txt nom-de-la-ville
+    		date arrivee
+    	}
+    )
+}
+\end{lstlisting}
+\caption{A French train schema, showing the same fields as the London Midland schema, however the field names are in French.}
+\label{fig:frenchtrain}
+\end{figure}
+
 
 \cleardoublepage
 
