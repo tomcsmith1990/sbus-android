@@ -33,10 +33,10 @@ public class WifiReceiver extends BroadcastReceiver {
 				// Set the current IP in phone RDC so we only register components on the phone.
 				PhoneManagementComponent.setPhoneIP(formatIP(ip));
 				
-				// Emit the map message to map once we connect to WiFi.
-				//PhoneRDC.remap();
-
-				// Connect to the new RDC.
+				// Status just to say what WiFi network we're on.
+				PMCActivity.addStatus("Wi-Fi: " + wifiInfo.getSSID());
+				
+				// Connect components to the new RDC and apply mapping policies.
 				PhoneManagementComponent.informComponentsAboutRDC(true);
 			}
 
@@ -44,7 +44,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
 			NetworkInfo networkInfo = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
 
-			if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI && ! networkInfo.isConnected()) {
+			if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI && !networkInfo.isConnected()) {
 				// WiFi is disconnected.
 				PhoneManagementComponent.setPhoneIP("127.0.0.1");
 				PhoneManagementComponent.informComponentsAboutRDC(false);
