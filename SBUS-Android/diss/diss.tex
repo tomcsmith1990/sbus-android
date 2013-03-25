@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 1219\footnotemark[1] \\
+Word Count:         & \bf 1222\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -165,11 +165,11 @@ Given the amount of uncertainty about what data will be available, a developer c
 \section{Project}
 
 % what I've done
-This project creates a context-aware system which can adapt according to changes in the environment.\cite{Schilit:1994:CCA:1439278.1440041} 
-In adapting to the new environment, the system automatically reconfigures applications' connections to allow use of them to continue with as little interruption as possible. 
+Schilit et al \cite{Schilit:1994:CCA:1439278.1440041}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
+This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment.
 This reconfiguration has two parts to it: finding data sources, and handling different data formats.
 
-Applications on the device can register with this system, which then handles any reconfiguration necessary.
+Applications on the device can register with the system, which then handles any reconfiguration necessary.
 When registering, an application can specify whether the system should automatically reconfigure it's connection, or whether it should simply notify the application of a change in context, allowing the application to perform a callback method.
 As part of this registration, constraints may be specified about how the application wants the connection to be reconfigured. 
 These may be simple constraints, such as the name of a data source, or more complex constraints regarding the structure of the data which the source uses. 
@@ -211,6 +211,8 @@ Once the system has repackaged the message, it passes it to the application, all
 % the bibliography
 
 \addcontentsline{toc}{chapter}{Bibliography}
+% nocite means add all references even if not cited - TODO: remove in final version
+\nocite{*}
 \bibliography{refs}
 \cleardoublepage
 
