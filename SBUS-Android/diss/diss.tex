@@ -45,7 +45,7 @@
 \vspace*{60mm}
 \begin{center}
 \Huge
-{\bf Automatic Data Stream Configuration in Mobile Environments} \\
+{\bf Automatic Configuration in Mobile Environments} \\
 \vspace*{5mm}
 Computer Science Tripos Part II \\
 \vspace*{5mm}
@@ -69,7 +69,7 @@ Sidney Sussex College \\
 \begin{tabular}{ll}
 Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
-Project Title:      & \bf Automatic Data Stream Configuration \\ &\bf in Mobile Environments	\\
+Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
 Word Count:         & \bf 1133\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
@@ -154,9 +154,16 @@ Once this alternative data source has been found, the application must still hav
 While some data may be absolutely necessary for operation of the application, other parts may be desired, but operation can continue without them. 
 However, even if a data source is deemed useful, the application may still have the difficulty of the data being presented in a different format. 
 Some fields may be missing, while others may have different names. 
-This means that an application must somehow cope with unknown data formats.
+
+% example
+For example, when writing a transport application a developer should not need to write separate code to handle data about Virgin Trains and London Midland trains. 
+Both will offer the same data to a large extent, such as stations, arrival times, and platform numbers, however Virgin Trains might also include on-board shop opening hours. 
+Alternatively, the application may be used in a French railway station. 
+Data about the trains will still be very similar, however the field names may be in French. 
+Given the amount of uncertainty about what data will be available, the developer cannot hope to account for all possibilities.
 
 \section{Project}
+
 % what I've done
 This project creates a context-aware system which can adapt according to changes in the environment.\cite{Schilit:1994:CCA:1439278.1440041} 
 In adapting to the new environment, the system automatically reconfigures applications' connections to allow use of them to continue with as little interruption as possible. 
