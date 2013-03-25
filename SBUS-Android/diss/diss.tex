@@ -72,7 +72,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 1587\footnotemark[1] \\
+Word Count:         & \bf 1772\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -217,12 +217,38 @@ The user may be changing to a Virgin train here, however information about these
 This schema does not match the application schema exactly, however it does contain the necessary {\tt train} structure. 
 Therefore, the system connects the application to this data source, and repackages messages to match the application schema, allowing the same application code to handle the message.
 
+%something about subscriptions
+
 \section{Issues}
+
+\begin{itemize}
+\item Rapidly changing context - connecting then disconnecting from Wi-Fi messes stuff up.
+\end{itemize}
 
 \section{Changes}
 
 \section{Further Work}
 
+Currently the system only uses a change in network status to detect a change in context. 
+The Android platform offers a whole host of different events\footnote{http://developer.android.com/reference/android/content/Intent.html} and sensors\footnote{http://developer.android.com/guide/topics/sensors/sensors\_overview.html} which can be used to determine a change in context, such as the battery level being low, the timezone changing, or accelerometer readings. 
+The system could be extended to use more of these features to determine a change in context, allowing applications to specify how they want to react to different types of change in context.
+
+Furthermore, the constraints on the schema of the data sources which the application can be connected to are specified in terms of the field names of the application schema. 
+While this works provided there are no repeated fields names within a schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema}. 
+A solution to this would be to qualify all names specified in the constraints in a similar way to subscriptions. 
+We could specify a constraint for {\tt sensor}, meaning the entire structure, or {\tt sensor/sensor}, meaning the text field.
+
+\begin{figure}[h]
+\begin{lstlisting}
+@sensor
+{
+	txt sensor
+	int value
+}
+\end{lstlisting}
+\caption[Schema with repeated name]{A schema with a structure named {\tt sensor} and a text field also named {\tt sensor}. A constraint specified on {\tt sensor} would be ambiguous without fully qualified names.}
+\label{fig:repeatednameschema}
+\end{figure}
 
 \cleardoublepage
 
@@ -256,6 +282,7 @@ Therefore, the system connects the application to this data source, and repackag
 
 \cleardoublepage
 
+% should this be an appendix?
 \chapter{Project Proposal}
 
 \input{propbody}
