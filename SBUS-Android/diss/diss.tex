@@ -223,15 +223,18 @@ Therefore, the system connects the application to this data source, and repackag
 
 \begin{itemize}
 \item Rapidly changing context - connecting then disconnecting from Wi-Fi messes stuff up.
+\item Security - ssl version
 \end{itemize}
 
 \section{Changes}
 
-\section{Further Work}
+\section{Future Work}
 
 Currently the system only uses a change in network status to detect a change in context. 
 The Android platform offers a whole host of different events\footnote{http://developer.android.com/reference/android/content/Intent.html} and sensors\footnote{http://developer.android.com/guide/topics/sensors/sensors\_overview.html} which can be used to determine a change in context, such as the battery level being low, the timezone changing, or accelerometer readings. 
-The system could be extended to use more of these features to determine a change in context, allowing applications to specify how they want to react to different types of change in context.
+The system could be extended to use more of these features to determine a change in context, allowing applications to specify how they want to react to different types of change in context. 
+In addition to applications specifying the types of change in context they are interested in, the user may have the ability to specify which types of context change are allowed to be used. 
+This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed.
 
 Furthermore, the constraints on the schema of the data sources which the application can be connected to are specified in terms of the field names of the application schema. 
 While this works provided there are no repeated fields names within a schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema}. 
