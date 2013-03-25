@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 1133\footnotemark[1] \\
+Word Count:         & \bf 1219\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -133,7 +133,7 @@ extent for a comparable purpose.
 \chapter{Introduction}
 
 % summarise
-While many applications now exist for mobile devices, few of the applications themselves are truly mobile. 
+While many applications now exist for mobile devices, few applications themselves are truly mobile. 
 The user may happen to be mobile, however the application does not adapt to different environments. 
 This project addresses the issues faced in creating applications which can change to suit different environments. 
 I show how an application can find relevant data sources in an environment, and how it may offer flexibility in the data it uses.
@@ -141,7 +141,7 @@ I show how an application can find relevant data sources in an environment, and 
 \section{Problem}
 % what's the problem
 Different environments mean that devices operate in different contexts and scopes, which dictate how a device can interact with the environment. 
-In some of these environments, there may be Wi-Fi networks available, in which it would be sufficient to use a data source from that network. 
+In some environments there may be Wi-Fi networks available, in which case it would be sufficient to use a data source from that network. 
 However, this data source may have its scope limited to the network, so it becomes unavailable when leaving the network.
 In other environments, proximity may be important, for example, when exchanging data via Bluetooth. 
 Location may also be an important factor, to ensure that localised and relevant data is used.
@@ -150,17 +150,17 @@ Direct communication with local data sources may offer more useful data than an 
 However, changes in context and scope mean that data sources an application is connected to may become out of scope, or stop providing useful data. 
 In this situation, an alternative data source must be found.
 
-Once this alternative data source has been found, the application must still have some way of knowing whether it provides useful data. 
-While some data may be absolutely necessary for operation of the application, other parts may be desired, but operation can continue without them. 
-However, even if a data source is deemed useful, the application may still have the difficulty of the data being presented in a different format. 
-Some fields may be missing, while others may have different names. 
+Once this alternative data source has been found, the application must still determine whether it provides useful data. 
+Some data may be absolutely necessary for operation of the application, while other parts may be desired, but operation can continue without them. 
+However, even if a data source is deemed useful, the application may still have the difficulty of the data being presented in an alternate format to the expected format. 
+Some fields may be missing, there may be additional fields, and some fields may have different names. 
 
 % example
-For example, when writing a transport application a developer should not need to write separate code to handle data about Virgin Trains and London Midland trains. 
+For example, a transport application may face differences in data available about Virgin Trains and London Midland trains. 
 Both will offer the same data to a large extent, such as stations, arrival times, and platform numbers, however Virgin Trains might also include on-board shop opening hours. 
 Alternatively, the application may be used in a French railway station. 
 Data about the trains will still be very similar, however the field names may be in French. 
-Given the amount of uncertainty about what data will be available, the developer cannot hope to account for all possibilities.
+Given the amount of uncertainty about what data will be available, a developer creating this application cannot hope to account for all possibilities.
 
 \section{Project}
 
@@ -169,14 +169,14 @@ This project creates a context-aware system which can adapt according to changes
 In adapting to the new environment, the system automatically reconfigures applications' connections to allow use of them to continue with as little interruption as possible. 
 This reconfiguration has two parts to it: finding data sources, and handling different data formats.
 
-The system allows applications on the device to register to have their connections reconfigured when appropriate. 
-Registrations can either be to automatically reconfigure the connection for the application, or to simply notify the application of a change, allowing it to perform a callback method.
+Applications on the device can register with this system, which then handles any reconfiguration necessary.
+When registering, an application can specify whether the system should automatically reconfigure it's connection, or whether it should simply notify the application of a change in context, allowing the application to perform a callback method.
 As part of this registration, constraints may be specified about how the application wants the connection to be reconfigured. 
 These may be simple constraints, such as the name of a data source, or more complex constraints regarding the structure of the data which the source uses. 
 Once the system detects a change in the environment, it notifies applications of the change or connects them to different sources, as specified in their registrations.
 
-Depending on the constraints, an application may be connected to a data source which does not offer the exact data schema the application expects. 
-The system handles this by repackaging messages to map the application's schema. Any extraneous fields are removed, while any absent fields are filled in with ``empty'' values. The constraints are used to infer relationships between fields, even if they have different names. 
+Depending on the constraints, an application may be connected to a data source which does not offer the expected data schema. 
+The system handles this by repackaging messages to match the application's schema. Any extraneous fields are removed, while any absent fields are filled with ``empty'' values. The constraints are used to infer relationships between fields, even if they have different names. 
 Once the system has repackaged the message, it passes it to the application, allowing the application to continue as if it had received a message conforming to its schema.
 
 \cleardoublepage
