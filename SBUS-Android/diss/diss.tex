@@ -141,16 +141,13 @@ I show how an application can find relevant data sources in an environment, and 
 \section{Problem}
 % what's the problem
 Different environments mean that devices operate in different contexts and scopes, which dictate how a device can interact with the environment. 
-In some environments there may be Wi-Fi networks available, in which case it would be sufficient to use a data source from that network. 
-However, this data source may have its scope limited to the network, so it becomes unavailable when leaving the network.
-In other environments, proximity may be important, for example, when exchanging data via Bluetooth. 
-Location may also be an important factor, to ensure that localised and relevant data is used.
-
-Direct communication with local data sources may offer more useful data than an application might have available otherwise. 
-However, changes in context and scope mean that data sources an application is connected to may become out of scope, or stop providing useful data. 
+Context may consist of both physical attributes, such as available Wi-Fi networks and location, and user behaviour. 
+For example, the device may deduce from the accelerometer that the user is running, in which case the user may be in a rush and require different data.
+Scope is also an important factor, since data sources may only be available on a particular network, or within a given time period. 
+Changes in context and scope mean that an application may no longer be able to communicate with a given data source, or the data it is providing may no longer be useful. 
 In this situation, an alternative data source must be found.
 
-Once this alternative data source has been found, the application must still determine whether it provides useful data. 
+Once this alternate data source has been found, the application must still determine whether it provides useful data. 
 Some data may be absolutely necessary for operation of the application, while other parts may be desired, but operation can continue without them. 
 However, even if a data source is deemed useful, the application may still have the difficulty of the data being presented in an alternate format to the expected format. 
 Some fields may be missing, there may be additional fields, and some fields may have different names. 
@@ -160,14 +157,16 @@ For example, a transport application may face differences in data available abou
 Both will offer the same data to a large extent, such as stations, arrival times, and platform numbers, however Virgin Trains might also include on-board shop opening hours. 
 Alternatively, the application may be used in a French railway station. 
 Data about the trains will still be very similar, however the field names may be in French. 
-Given the amount of uncertainty about what data will be available, a developer creating this application cannot hope to account for all possibilities.
+While these differences may be important when the user is sat waiting for a train, they become less important when the user is running to catch a train, and simply needs the departure time and platform number.
+Given the amount of uncertainty about what data will be available, a developer creating this application cannot hope to account for all possibilities. The developer can however specify how the application should behave in different contexts.
 
 \section{Project}
 
 % what I've done
 Schilit et al \cite{Schilit:1994:CCA:1439278.1440041}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
-This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment.
-This reconfiguration has two parts to it: finding data sources, and handling different data formats.
+This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment. 
+Pascoe \cite{Pascoe:1998:AGC:857199.858020} defines four context-aware capabilites, two of which occur in this reconfiguration. 
+Contextual resource discovery is used to discover data sources available within the context, and contextual adaptation allows the application to adapt to these data sources' schemas in order to use the sources.
 
 Applications on the device can register with the system, which then handles any reconfiguration necessary.
 When registering, an application can specify whether the system should automatically reconfigure it's connection, or whether it should simply notify the application of a change in context, allowing the application to perform a callback method.
@@ -203,6 +202,14 @@ Once the system has repackaged the message, it passes it to the application, all
 
 
 \chapter{Conclusion}
+
+\section{Work Completed}
+
+\section{Issues}
+
+\section{Changes}
+
+\section{Further Work}
 
 
 \cleardoublepage
