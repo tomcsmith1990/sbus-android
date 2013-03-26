@@ -1,8 +1,3 @@
-% The master copy of this demo dissertation is held on my filespace
-% on the cl file serve (/homes/mr/teaching/demodissert/)
-
-% Last updated by MR on 2 August 2001
-
 \documentclass[12pt,twoside,notitlepage]{report}
 
 \usepackage{a4}
@@ -72,7 +67,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 2004\footnotemark[1] \\
+Word Count:         & \bf 2197\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -152,7 +147,7 @@ Once this alternate data source has been found, the application must still deter
 Some data may be absolutely necessary for operation of the application, while other parts may be desired, but operation can continue without them. 
 However, even if a data source is deemed useful, the application may still have the difficulty of the data being presented in an alternate format to the expected format. 
 Some fields may be missing, there may be additional fields, and some fields may have different names. 
-The application may wish to specify some subscription filter about the messages it should receive, yet without knowledge of the data format, it cannot specify constraints on different fields.
+The application may also wish to specify some subscription filter about the messages it should receive, yet without knowledge of the data format, it cannot specify constraints on different fields.
 
 % example
 For example, a transport application may face differences in data available about London Midland trains (Figure \ref{fig:londonmidlandtrain}) and Virgin Trains (Figure \ref{fig:virgintrain}). 
@@ -205,6 +200,26 @@ As part of the reconfiguration process the system converts this subscription to 
 % ~ Eval + Conclusion ~ 2000 words
 \chapter{Evaluation}
 
+\begin{itemize}
+\item How long does the RDC take to find a matching schema (at the end of the list of components) when there are 0, 10, 50, 100 other components? How much faster is it with optimisations to put structure constraints or exact constraints (or both) first?
+
+\item How long does it take to repack messages for: similar size schemas (e.g. just different names), much larger schemas (removing fields), much smaller fields (adding fields)?
+
+\item How long does it take to construct a lookup table for: similar size schemas, much larger schemas, much smaller fields?
+
+\item How accurate is the lookup table? Are any fields repackaged as ``empty'' when we could have filled them with something else? Fairly qualitative, perhaps a discussion about how the constraints are used to create this lookup table, and how multiple constraints may be fulfilled by a single field. Possibly more suited to Implementation or Conclusion?
+
+\item How long does it take for components to have connections reconfigured after connecting to a new Wi-Fi network?
+
+\item Some screenshots? Perhaps just showing a repackaged message being passed to a consumer and the original sensor message?
+
+\item Example code for Android consumer, showing how easy flexibility is?
+
+\item Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
+
+\item Alternative search algorithms for schema comparison in RDC. What performance increases they may offer, and how the results would vary (i.e. a breadth first search would return the schema which matches the constraints at the highest level).
+\end{itemize}
+
 
 \cleardoublepage
 
@@ -214,10 +229,11 @@ As part of the reconfiguration process the system converts this subscription to 
 The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources, or the format of their data.
 An application will only ever be presented with data conforming to its own schema, removing uncertainty about the format of the data. 
 Applications may specify constraints about how fields in a data source's schema must match its own, as an exact match, a type-match, or ``don't care''.
-This gives the application control over which data sources it can be connected to, but does not require the application to find the data sources itself. 
-Furthermore, applications may specify subscription filters in terms of their own schemas, allowing applications to restrict which messages they will be sent, without requiring filters to be specified in terms of peers' schemas. 
-The system ensures that subscriptions applied to peers are in the correct format to restrict messages as dictated by applications. 
-Upon a change in context, the system will reconfigure connections ensuring that they conform to these schema constraints and apply subscription filters, allowing applications to continue receiving fresh data.
+This gives an application control over which data sources it can be connected to, but does not require the application to find the data sources itself. 
+Upon a change in context, the system will reconfigure connections ensuring that they conform to these schema constraints allowing applications to continue receiving fresh data.
+Furthermore, applications may specify subscription filters in terms of their own schemas, placing restrictions on which messages they will be sent, without requiring the filters to be specified in terms of peers' schemas. 
+When reconfiguring a connection, the system translates these filters to the peer's schema and applies them to the peer, filtering messages as dictated by the application.
+
 
 Referring back to the train example from the Introduction, there may be an application using the London Midland train schema (Figure \ref{fig:londonmidlandtrain}) which requires data sources to contain a structure matching the type of the {\tt train} structure. 
 At a small train station served only by London Midland trains, all data sources will match this schema exactly, so the application can connect to any one of them.
@@ -226,7 +242,7 @@ The user may be changing to a Virgin train here, however information about these
 This schema does not match the application schema exactly, however it does contain the necessary {\tt train} structure. 
 Therefore, the system can connect the application to this data source and repackage messages to match the application schema, allowing the same application code to handle the message. 
 The user could have subscribed to only receive data about trains which depart after midday. 
-Since this subscription is specified in terms of the London Midland train schema, it cannot be used for the Virgin train schema. 
+Since this subscription is specified in terms of the London Midland train schema, it will not function correctly if applied directly to the Virgin train schema. 
 In this case, the system reformats the subscription to match the Virgin train schema and applies it when connecting the application to the data source, ensuring the user's subscription filter is met.
 
 \section{Issues}
@@ -242,6 +258,7 @@ If a context change depended on the accelerometer, it might be that the accelero
 
 \section{Changes}
 % what I'd have done differently
+{\sl I think this section might be more obvious after writing the in Preparation chapter about how the project was planned. }
 
 
 \section{Future Work}
@@ -253,7 +270,7 @@ The system could be extended to use more of these features to determine a change
 In addition to applications specifying the types of change in context they are interested in, the user may have the ability to specify which types of context change are allowed to be used. 
 This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed.
 
-The constraints on the schema of the data sources which the application can be connected to are currently specified in terms of the field names of the application schema. 
+The constraints an application specifies about the schema of data sources it may be connected to are currently specified using the field names of the application schema.
 While this works provided there are no repeated fields names within a schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema}. 
 A solution to this would be to qualify all names specified in the constraints in a similar way to subscriptions. 
 We could specify a constraint for {\tt sensor}, meaning the entire structure, or {\tt sensor/sensor}, meaning the text field.
