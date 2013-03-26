@@ -72,7 +72,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 1772\footnotemark[1] \\
+Word Count:         & \bf 2004\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -152,6 +152,7 @@ Once this alternate data source has been found, the application must still deter
 Some data may be absolutely necessary for operation of the application, while other parts may be desired, but operation can continue without them. 
 However, even if a data source is deemed useful, the application may still have the difficulty of the data being presented in an alternate format to the expected format. 
 Some fields may be missing, there may be additional fields, and some fields may have different names. 
+The application may wish to specify some subscription filter about the messages it should receive, yet without knowledge of the data format, it cannot specify constraints on different fields.
 
 % example
 For example, a transport application may face differences in data available about London Midland trains (Figure \ref{fig:londonmidlandtrain}) and Virgin Trains (Figure \ref{fig:virgintrain}). 
@@ -181,6 +182,9 @@ Once the system detects a change in the environment, it notifies applications of
 Depending on the constraints, an application may be connected to a data source which does not offer the expected data schema. 
 The system handles this by repackaging messages to match the application's schema. Any extraneous fields are removed, while any absent fields are filled with ``empty'' values. The constraints are used to infer relationships between fields, even if they have different names. 
 Once the system has repackaged the message, it passes it to the application, allowing the application to continue as if it had received a message conforming to its schema.
+
+The system allows an application to specify subscription filters in terms of its own schema. 
+As part of the reconfiguration process the system converts this subscription to match the data source's schema, connecting the application with a working subscription in place.
 
 \cleardoublepage
 
@@ -223,7 +227,7 @@ Therefore, the system can connect the application to this data source and repack
 %something about subscriptions
 
 \section{Issues}
-
+% remaining problems
 The system currently faces issues with a rapidly changing context, for example, moving in and out of range of a Wi-Fi network. 
 The network connection drops causing the system to reconfigure connections, which may disconnect applications from their peers.
 However, the network connection is almost immediately re-established causing the system to reconfigure connections again, possibly connecting applications to these same peers. 
@@ -234,9 +238,11 @@ In a Wi-Fi network, there may be a constraint that the network signal must be gr
 If a context change depended on the accelerometer, it might be that the accelerometer must detect some pattern for several seconds before reconfiguration.
 
 \section{Changes}
+% what I'd have done differently
+
 
 \section{Future Work}
-
+% other stuff that could be done
 Currently the system only uses a change in network status to detect a change in context. 
 The Android platform offers a whole host of different events\footnote{http://developer.android.com/reference/android/content/Intent.html} and sensors\footnote{http://developer.android.com/guide/topics/sensors/sensors\_overview.html} which can be used to determine a change in context, such as the battery level being low, the timezone changing, or accelerometer readings. 
 The system could be extended to use more of these features to determine a change in context, allowing applications to specify how they want to react to different types of change in context. 
