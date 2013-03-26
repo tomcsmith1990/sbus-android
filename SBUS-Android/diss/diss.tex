@@ -211,27 +211,30 @@ As part of the reconfiguration process the system converts this subscription to 
 \chapter{Conclusion}
 
 % summarise
-The project has created a context-aware system which enables developers to write applications without prior knowledge of where data will be available, or what format the data will be in.
+The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources, or the format of their data.
 An application will only ever be presented with data conforming to its own schema, removing uncertainty about the format of the data. 
-Applications may specify constraints about how fields in a data source's schema must match its own, as either an exact match, a type-match, or ``don't care''.
+Applications may specify constraints about how fields in a data source's schema must match its own, as an exact match, a type-match, or ``don't care''.
 This gives the application control over which data sources it can be connected to, but does not require the application to find the data sources itself. 
-Upon a change in context, the system will reconfigure connections ensuring that they conform to these constraints, allowing applications to continue receiving fresh data.
+Furthermore, applications may specify subscription filters in terms of their own schemas, allowing applications to restrict which messages they will be sent, without requiring filters to be specified in terms of peers' schemas. 
+The system ensures that subscriptions applied to peers are in the correct format to restrict messages as dictated by applications. 
+Upon a change in context, the system will reconfigure connections ensuring that they conform to these schema constraints and apply subscription filters, allowing applications to continue receiving fresh data.
 
 Referring back to the train example from the Introduction, there may be an application using the London Midland train schema (Figure \ref{fig:londonmidlandtrain}) which requires data sources to contain a structure matching the type of the {\tt train} structure. 
 At a small train station served only by London Midland trains, all data sources will match this schema exactly, so the application can connect to any one of them.
 Upon arriving at a larger train station and connecting to a Wi-Fi network, the system detects a change in context, and consequently connects the application to a new data source. 
 The user may be changing to a Virgin train here, however information about these trains uses a different schema (Figure \ref{fig:virgintrain}). 
 This schema does not match the application schema exactly, however it does contain the necessary {\tt train} structure. 
-Therefore, the system can connect the application to this data source and repackage messages to match the application schema, allowing the same application code to handle the message.
-
-%something about subscriptions
+Therefore, the system can connect the application to this data source and repackage messages to match the application schema, allowing the same application code to handle the message. 
+The user could have subscribed to only receive data about trains which depart after midday. 
+Since this subscription is specified in terms of the London Midland train schema, it cannot be used for the Virgin train schema. 
+In this case, the system reformats the subscription to match the Virgin train schema and applies it when connecting the application to the data source, ensuring the user's subscription filter is met.
 
 \section{Issues}
 % remaining problems
-The system currently faces issues with a rapidly changing context, for example, moving in and out of range of a Wi-Fi network. 
+The system currently faces issues when context is rapidly changing, for example, moving in and out of range of a Wi-Fi network. 
 The network connection drops causing the system to reconfigure connections, which may disconnect applications from their peers.
 However, the network connection is almost immediately re-established causing the system to reconfigure connections again, possibly connecting applications to these same peers. 
-If this reconnection occurs before the disconnection has completed, the application believes itself to still be connected to the peer, thus will not create a new connection.
+If this reconnection occurs before disconnection has completed, the application believes itself to still be connected to the peer, thus will not create a new connection.
 
 A solution to this problem might be to implement constraints which must be satisfied before reconfiguration occurs. 
 In a Wi-Fi network, there may be a constraint that the network signal must be greater than a given threshold, meaning no reconfiguration would occur until the user moves firmly into the network. 
@@ -243,8 +246,9 @@ If a context change depended on the accelerometer, it might be that the accelero
 
 \section{Future Work}
 % other stuff that could be done
-Currently the system only uses a change in network status to detect a change in context. 
-The Android platform offers a whole host of different events\footnote{http://developer.android.com/reference/android/content/Intent.html} and sensors\footnote{http://developer.android.com/guide/topics/sensors/sensors\_overview.html} which can be used to determine a change in context, such as the battery level being low, the timezone changing, or accelerometer readings. 
+
+The system currently depends solely on a change in network status to detect a change in context. 
+The Android platform offers a whole host of different events\footnote{http://developer.android.com/reference/android/content/Intent.html} and sensors\footnote{http://developer.android.com/guide/topics/sensors/sensors\_overview.html} which could be used to determine a change in context, such as the battery level being low, the timezone changing, or accelerometer readings. 
 The system could be extended to use more of these features to determine a change in context, allowing applications to specify how they want to react to different types of change in context. 
 In addition to applications specifying the types of change in context they are interested in, the user may have the ability to specify which types of context change are allowed to be used. 
 This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed.
