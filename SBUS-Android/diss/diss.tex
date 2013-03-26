@@ -224,9 +224,14 @@ Therefore, the system can connect the application to this data source and repack
 
 \section{Issues}
 
-\begin{itemize}
-\item Rapidly changing context - connecting then disconnecting from Wi-Fi messes stuff up.
-\end{itemize}
+The system currently faces issues with a rapidly changing context, for example, moving in and out of range of a Wi-Fi network. 
+The network connection drops causing the system to reconfigure connections, which may disconnect applications from their peers.
+However, the network connection is almost immediately re-established causing the system to reconfigure connections again, possibly connecting applications to these same peers. 
+If this reconnection occurs before the disconnection has completed, the application believes itself to still be connected to the peer, thus will not create a new connection.
+
+A solution to this problem might be to implement constraints which must be satisfied before reconfiguration occurs. 
+In a Wi-Fi network, there may be a constraint that the network signal must be greater than a given threshold, meaning no reconfiguration would occur until the user moves firmly into the network. 
+If a context change depended on the accelerometer, it might be that the accelerometer must detect some pattern for several seconds before reconfiguration.
 
 \section{Changes}
 
@@ -238,7 +243,7 @@ The system could be extended to use more of these features to determine a change
 In addition to applications specifying the types of change in context they are interested in, the user may have the ability to specify which types of context change are allowed to be used. 
 This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed.
 
-Furthermore, the constraints on the schema of the data sources which the application can be connected to are specified in terms of the field names of the application schema. 
+The constraints on the schema of the data sources which the application can be connected to are currently specified in terms of the field names of the application schema. 
 While this works provided there are no repeated fields names within a schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema}. 
 A solution to this would be to qualify all names specified in the constraints in a similar way to subscriptions. 
 We could specify a constraint for {\tt sensor}, meaning the entire structure, or {\tt sensor/sensor}, meaning the text field.
