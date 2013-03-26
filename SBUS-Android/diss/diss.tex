@@ -142,8 +142,8 @@ I show how an application can find relevant data sources in an environment, and 
 \section{Problem}
 % what's the problem
 Different environments mean that devices operate in different contexts and scopes, which dictate how a device can interact with the environment. 
-Context may consist of both physical attributes, such as available Wi-Fi networks and location, and user behaviour. 
-For example, the device may deduce from the accelerometer that the user is running, in which case the user may be in a rush and require different data.
+Context may consist of both physical attributes, such as available Wi-Fi networks and location, as well as psychological aspects such as the user's behaviour or mood.
+For example, the device may deduce from the accelerometer that the user is running, in which case the user may be in a rush and require different data than if they were sat calmly.
 Scope is also an important factor, since data sources may only be available on a particular network, or within a given time period. 
 Changes in context and scope mean that an application may no longer be able to communicate with a given data source, or the data it is providing may no longer be useful. 
 In this situation, an alternative data source must be found.
@@ -154,26 +154,29 @@ However, even if a data source is deemed useful, the application may still have 
 Some fields may be missing, there may be additional fields, and some fields may have different names. 
 
 % example
-For example, a transport application may face differences in data available about Virgin Trains (Figure \ref{fig:virgintrain}) and London Midland trains (Figure \ref{fig:londonmidlandtrain}). 
-Both will offer the same data to a large extent, such as stations, arrival times, and platform numbers, however Virgin Trains might also include a menu for an on-board shop. 
+For example, a transport application may face differences in data available about London Midland trains (Figure \ref{fig:londonmidlandtrain}) and Virgin Trains (Figure \ref{fig:virgintrain}). 
+Both offer the same data to a large extent, including as stations, arrival times, and platform numbers, however Virgin Trains might also provide a menu for an on-board shop. 
 Alternatively, the application may be used in a French railway station. 
 Data about the trains will still be very similar, however the field names may be in French (Figure \ref{fig:frenchtrain}). 
 While these differences may be important when the user is sat waiting for a train, they become less important when the user is running to catch a train, and simply needs the departure time and platform number.
-Given the amount of uncertainty about what data will be available, a developer creating this application cannot hope to account for all possibilities. The developer can however specify how the application should behave in different contexts.
+Given the amount of uncertainty about what data will be available, a developer creating this application cannot hope to account for all possibilities. 
+However, the developer can specify how the application should behave in different contexts.
 
 \section{Project}
 
 % what I've done
 Schilit et al \cite{Schilit:1994:CCA:1439278.1440041}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
 This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment. 
-Pascoe \cite{Pascoe:1998:AGC:857199.858020} defines four context-aware capabilites, two of which occur in this reconfiguration. 
+Pascoe \cite{Pascoe:1998:AGC:857199.858020} lists four context-aware capabilites, two of which occur in this reconfiguration. 
 Contextual resource discovery is used to discover data sources available within the context, and contextual adaptation allows the application to adapt to these data sources' schemas in order to use the sources.
 
-Applications on the device can register with the system, which then handles any reconfiguration necessary.
-When registering, an application can specify whether the system should automatically reconfigure it's connection, or whether it should simply notify the application of a change in context, allowing the application to perform a callback method.
-As part of this registration, constraints may be specified about how the application wants the connection to be reconfigured. 
+Applications on the device can use this system in two ways. 
+The first option allows the application to register to be notified of any change in context by the system. 
+This allows the application to perform a callback method to determine any action which should be taken as a result of the change. 
+The application may also register to allow the system to perform reconfiguration when necessary. 
+As part of this registration, the application may specify constraints about how its connection should be reconfigured. 
 These may be simple constraints, such as the name of a data source, or more complex constraints regarding the structure of the data which the source uses. 
-Once the system detects a change in the environment, it notifies applications of the change or connects them to different sources, as specified in their registrations.
+Once the system detects a change in the environment, it notifies applications of the change or connects them to different sources according to their registrations.
 
 Depending on the constraints, an application may be connected to a data source which does not offer the expected data schema. 
 The system handles this by repackaging messages to match the application's schema. Any extraneous fields are removed, while any absent fields are filled with ``empty'' values. The constraints are used to infer relationships between fields, even if they have different names. 
