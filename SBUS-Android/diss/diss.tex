@@ -207,18 +207,18 @@ Once the system has repackaged the message, it passes it to the application, all
 \chapter{Conclusion}
 
 % summarise
-The project has created a context-aware system which enables developers to write applications without knowing in advance where data will be available, or what format the data will be in.
+The project has created a context-aware system which enables developers to write applications without prior knowledge of where data will be available, or what format the data will be in.
 An application will only ever be presented with data conforming to its own schema, removing uncertainty about the format of the data. 
-Applications may specify constraints about how fields in a data source's schema must match its own, as either an exact match, a type-match, or don't care about a match.
+Applications may specify constraints about how fields in a data source's schema must match its own, as either an exact match, a type-match, or ``don't care''.
 This gives the application control over which data sources it can be connected to, but does not require the application to find the data sources itself. 
 Upon a change in context, the system will reconfigure connections ensuring that they conform to these constraints, allowing applications to continue receiving fresh data.
 
-Referring back to the train example from the Introduction, there may be an application using the London Midland train schema (Figure \ref{fig:londonmidlandtrain}) which requires data sources to have at least a structure matching the type of the {\tt train} structure. 
-At a small train station which only London Midland trains serve, all data sources will match this schema exactly, so the application can connect to any of them.
+Referring back to the train example from the Introduction, there may be an application using the London Midland train schema (Figure \ref{fig:londonmidlandtrain}) which requires data sources to contain a structure matching the type of the {\tt train} structure. 
+At a small train station served only by London Midland trains, all data sources will match this schema exactly, so the application can connect to any one of them.
 Upon arriving at a larger train station and connecting to a Wi-Fi network, the system detects a change in context, and consequently connects the application to a new data source. 
 The user may be changing to a Virgin train here, however information about these trains uses a different schema (Figure \ref{fig:virgintrain}). 
 This schema does not match the application schema exactly, however it does contain the necessary {\tt train} structure. 
-Therefore, the system connects the application to this data source, and repackages messages to match the application schema, allowing the same application code to handle the message.
+Therefore, the system can connect the application to this data source and repackage messages to match the application schema, allowing the same application code to handle the message.
 
 %something about subscriptions
 
@@ -226,7 +226,6 @@ Therefore, the system connects the application to this data source, and repackag
 
 \begin{itemize}
 \item Rapidly changing context - connecting then disconnecting from Wi-Fi messes stuff up.
-\item Security - ssl version
 \end{itemize}
 
 \section{Changes}
