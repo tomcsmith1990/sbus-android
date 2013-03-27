@@ -1025,7 +1025,6 @@ snode *MapConstraints::pack(snode *hash_lookup)
 			pack_hashes(hash_lookup, schema_constraints, subn);
 			
 		sn->append(::pack(subn->toxml(0), "schema"));
-		printf("%s\n", subn->toxml(1));
 	}
 	
 	subn = mklist("keywords");
