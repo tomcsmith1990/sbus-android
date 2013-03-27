@@ -1485,6 +1485,7 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 				Schema *msg_schema = (Schema *)msg_schema_list->item(j);
 				if (msg_schema == NULL || !msg_schema->match_constraints(sn))
 					continue;
+				delete sn;
 			}
 			// Let's assume if we're doing a flexible matching (for similar schemas) we don't want the LITMUS tests.
 			else

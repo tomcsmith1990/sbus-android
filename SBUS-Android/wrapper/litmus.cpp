@@ -233,7 +233,8 @@ int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, sno
 						for (int j = 0; j < constraint->extract_item("children")->count(); j++)
 						{
 							snode *sn = mklist("schema");
-							sn->append(constraint->extract_item("children")->extract_item(j));
+							// Append a copy so that we can delete sn.
+							sn->append(new snode(constraint->extract_item("children")->extract_item(j)));
 							
 							// Try to match within any of the children of 'have'.
 							for (int k = 0; k < have->count(); k++)
@@ -243,6 +244,8 @@ int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, sno
 								if (match)
 									break;
 							}
+							
+							delete sn;
 							
 							// If we haven't matched, don't both checking other child constraints.
 							if (!match)
@@ -277,10 +280,11 @@ int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, sno
 		}
 
 		// Still no match - depth first check the children of 'have'.
+		snode *sn = mklist("schema");
+		// Append a copy so that we can delete sn.
+		sn->append(new snode(constraint));
 		for (int j = 0; j < have->count(); j++)
 		{
-			snode *sn = mklist("schema");
-			sn->append(constraint);
 			// If constraint is matched somewhere in a child, check next constraint.
 			if (construct_lookup(sn, have->extract_item(j), target_hashes, lookup_forward, lookup_backward))
 			{
@@ -288,6 +292,7 @@ int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, sno
 				break;
 			}
 		}
+		delete sn;
 		
 		// If we still haven't matched this constraint, we fail.
 		if (!match) break;
