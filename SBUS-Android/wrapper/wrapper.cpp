@@ -2931,19 +2931,33 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 	/**
 	  * Construct lookup table based on the map constraint string we used.
 	  */
-
+	int schema_match;
+	
 	MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
-	const char *schema_constraint = mapcon->pack(mp->msg_schema->hashes)->extract_txt("schema");
-	snode *constraints = snode::import(schema_constraint, NULL);
+	snode *map_constraints = mapcon->pack(mp->msg_schema->hashes);
+	snode *constraints = snode::import(map_constraints->extract_txt("schema"), NULL);
+	
+	delete map_constraints;
 	delete mapcon;
-	delete schema_constraint;
-					
+
+	if (peer->lookup_forward != NULL)
+		delete peer->lookup_forward;
+
+	if (peer->lookup_backward != NULL)
+		delete peer->lookup_backward;
+
+	if (peer->layer != NULL)
+		delete peer->layer;
+
+	if (peer->container != NULL)
+		delete peer->container;
+		
 	peer->lookup_forward = mklist("lookup");
 	peer->lookup_backward = mklist("lookup");
 	peer->layer = new svector();
 	peer->container = new pvector();
-	
-	int schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward, 
+
+	schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward, 
 														peer->container, peer->layer);
 
 	// Only peer->layer or peer->container (or neither) will contain items, because only one of the schemas can be larger.
@@ -2957,7 +2971,7 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 		delete peer->container;
 		peer->container = NULL;
 	}
-	
+
 	delete constraints;
 
 	if (schema_match == 0)
