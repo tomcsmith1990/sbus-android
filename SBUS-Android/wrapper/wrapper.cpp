@@ -12,6 +12,9 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 
+//evaluation
+#include <time.h>
+
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
@@ -2932,47 +2935,70 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 	  * Construct lookup table based on the map constraint string we used.
 	  */
 	int schema_match;
+
+	// ***EVALUATION***
+	time_t start, end;
+	double seconds;
+	// Do one million times and average result.
+	const int iter = 1; //1000000;
+	const int runs = 1;
+	FILE *file;
+	file = fopen("construct-lookup-results.txt", "w");
 	
-	MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
-	snode *map_constraints = mapcon->pack(mp->msg_schema->hashes);
-	snode *constraints = snode::import(map_constraints->extract_txt("schema"), NULL);
-	
-	delete map_constraints;
-	delete mapcon;
-
-	if (peer->lookup_forward != NULL)
-		delete peer->lookup_forward;
-
-	if (peer->lookup_backward != NULL)
-		delete peer->lookup_backward;
-
-	if (peer->layer != NULL)
-		delete peer->layer;
-
-	if (peer->container != NULL)
-		delete peer->container;
+	for (int k = 0; k < runs; k++)
+	{
+		time(&start);
+		for (int j = 0; j < iter; j++)
+		{
+			
+			MapConstraints *mapcon = new MapConstraints(peer->map_constraint);
+			snode *map_constraints = mapcon->pack(mp->msg_schema->hashes);
+			snode *constraints = snode::import(map_constraints->extract_txt("schema"), NULL);
+			
+			delete map_constraints;
+			delete mapcon;
 		
-	peer->lookup_forward = mklist("lookup");
-	peer->lookup_backward = mklist("lookup");
-	peer->layer = new svector();
-	peer->container = new pvector();
+			if (peer->lookup_forward != NULL)
+				delete peer->lookup_forward;
 
-	schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward, 
-														peer->container, peer->layer);
+			if (peer->lookup_backward != NULL)
+				delete peer->lookup_backward;
 
-	// Only peer->layer or peer->container (or neither) will contain items, because only one of the schemas can be larger.
-	if (peer->layer->count() == 0)
-	{
-		delete peer->layer;
-		peer->layer = NULL;
+			if (peer->layer != NULL)
+				delete peer->layer;
+
+			if (peer->container != NULL)
+				delete peer->container;
+				
+			peer->lookup_forward = mklist("lookup");
+			peer->lookup_backward = mklist("lookup");
+			peer->layer = new svector();
+			peer->container = new pvector();
+
+			schema_match = peer_schema->construct_lookup(mp->msg_schema, constraints, peer->lookup_forward, peer->lookup_backward, 
+																peer->container, peer->layer);
+
+			// Only peer->layer or peer->container (or neither) will contain items, because only one of the schemas can be larger.
+			if (peer->layer->count() == 0)
+			{
+				delete peer->layer;
+				peer->layer = NULL;
+			}
+			if (peer->container->count() == 0)
+			{
+				delete peer->container;
+				peer->container = NULL;
+			}
+	
+			delete constraints;
+	
+		}
+		time(&end);
+		seconds = difftime(end, start);
+		fprintf(file, "%f\n", seconds / iter);
 	}
-	if (peer->container->count() == 0)
-	{
-		delete peer->container;
-		peer->container = NULL;
-	}
-
-	delete constraints;
+	fclose(file);
+	// ***END EVALUATION***
 
 	if (schema_match == 0)
 	{
@@ -4255,46 +4281,71 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 	// If we support partial matching, the schemas are actually different, and we have a lookup table.
 	if (owner->flexible_matching && owner->msg_hc->equals(msg->hc) == 0 && lookup_backward != NULL)
 	{
-		snode *repacked;
+		snode *repacked = NULL;
 		snode *node;
 		
-		node = sn;
-				
-		// In this case, the other schema is bigger - follow the path to our top level node.
-		if (layer != NULL)
-			node = sn->follow_path(layer);
-
-		// Repack the message using our names.
-		// Skip any fields which are not in the lookup table.
-		// Add any of our fields which the message does not have.
-		repacked = repack(node);
-
-		// In this case, our schema is bigger than the other schema.	
-		if (container != NULL)
+		// ***EVALUATION***
+		time_t start, end;
+		double seconds;
+		// Do one million times and average result.
+		const int iter = 1; //1000000;
+		const int runs = 1;
+		FILE *file;
+		file = fopen("repack-results.txt", "w");
+	
+		for (int k = 0; k < runs; k++)
 		{
-			svector *level;
-			const char *level_name;
-			// Loop through the outer layers, from closest to us to the top level.
-			for (int i = 0; i < container->count(); i++)
+			time(&start);
+			for (int j = 0; j < iter; j++)
 			{
-				// Each item contains the name of the level, plus any additional fields we expect.
-				level = (svector *)container->item(i);
-				level_name = level->item(0);
-				snode *parent = mklist(level_name);
-				
-				// Iterate through the additional expected fields.
-				for (int j = 1; j < level->count(); j++)
+				if (repacked != NULL)
+					delete repacked;
+					
+				node = sn;
+			
+				// In this case, the other schema is bigger - follow the path to our top level node.
+				if (layer != NULL)
+					node = sn->follow_path(layer);
+
+				// Repack the message using our names.
+				// Skip any fields which are not in the lookup table.
+				// Add any of our fields which the message does not have.
+				repacked = repack(node);
+
+				// In this case, our schema is bigger than the other schema.	
+				if (container != NULL)
 				{
-					// If the child has the same name as our node, pack it, otherwise pack the empty structure.
-					if (!strcmp(level->item(j), repacked->get_name()))
-						parent->append(repacked);
-					else
-						parent->append(create_missing(owner->msg_schema->hashes->find(level->item(j))));
+					svector *level;
+					const char *level_name;
+					// Loop through the outer layers, from closest to us to the top level.
+					for (int i = 0; i < container->count(); i++)
+					{
+						// Each item contains the name of the level, plus any additional fields we expect.
+						level = (svector *)container->item(i);
+						level_name = level->item(0);
+						snode *parent = mklist(level_name);
+				
+						// Iterate through the additional expected fields.
+						for (int j = 1; j < level->count(); j++)
+						{
+							// If the child has the same name as our node, pack it, otherwise pack the empty structure.
+							if (!strcmp(level->item(j), repacked->get_name()))
+								parent->append(repacked);
+							else
+								parent->append(create_missing(owner->msg_schema->hashes->find(level->item(j))));
+						}
+				
+						repacked = parent;
+					}
 				}
 				
-				repacked = parent;
 			}
+			time(&end);
+			seconds = difftime(end, start);
+			fprintf(file, "%f\n", seconds / iter);
 		}
+		fclose(file);
+		// ***END EVALUATION***
 
 		delete sn;
 

@@ -1124,6 +1124,36 @@ void rdc::lookup(sendpoint *ep)
 	sn_interface = query->tree->extract_item("interface");
 	result = mklist("results"); // @results ( txt address )
 	pthread_mutex_lock(&live_mutex);
+
+	// ***EVALUATION***
+	time_t start, end;
+	double seconds;
+	// Do one million times and average result.
+	const int iter = 1000000;
+	const int runs = 0;
+	FILE *file;
+	file = fopen("rdc-results.txt", "w");
+	
+	for (int k = 0; k < runs; k++)
+	{
+		matches = mklist("endpoints");
+		time(&start);
+		for (int j = 0; j < iter; j++)
+		{
+			for(int i = 0; i < live->count(); i++)
+			{
+				img = live->item(i);
+				img->match(sn_interface, sn_constraints, matches, com, query->source_cpt,query->source_inst);
+			}
+		}
+		time(&end);
+		//delete matches;
+		seconds = difftime(end, start);
+		fprintf(file, "%f\n", seconds / iter);
+	}
+	fclose(file);
+	// ***END EVALUATION***
+
 	for(int i = 0; i < live->count(); i++)
 	{
 
@@ -1141,6 +1171,7 @@ void rdc::lookup(sendpoint *ep)
 		}
 
 	}
+	
 	pthread_mutex_unlock(&live_mutex);
 	printf("Lookup component returning %d matching endpoint(s) on %d component(s)\n", endpoint_count, count);
 	ep->reply(query, result);
