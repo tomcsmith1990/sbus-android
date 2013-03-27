@@ -834,13 +834,15 @@ MapConstraints::MapConstraints(const char *string)
 	int brackets = 0;
 	init();
 	
-	// sn is the snode we are adding constraints to -> the top level constraint list, or as children of a constraint.
-	snode *sn = schema_constraints;
-	// last is a constraint, whose children we are currently adding constraints to.
-	snode *last = NULL;
+	// The list of constraints we are adding to.
+	snode *constraint_list = schema_constraints;
+	// The current constraint.
+	snode *current = NULL;
+	
 	// stacks to keep both.
 	pvector *stack = new pvector();
 	pvector *last_stack = new pvector();
+	
 	char *field;
 	
 	while(*string != '\0')
@@ -850,44 +852,78 @@ MapConstraints::MapConstraints(const char *string)
 			if (*string == '[')
 			{
 				brackets++;
-				// Add currents to stack.
-				stack->add((void *)sn);
-				last_stack->add((void *)last);
-				// If we've already got a list of children for this, use that one, else create new list.
-				if (last != NULL)
+				
+				// Add the current constraint list to the stack.
+				stack->add((void *)constraint_list);
+				
+				// Add the current constraint to the stack.
+				last_stack->add((void *)current);
+				
+				// If the current constraint already has a list of children, use that. Otherwise, create a new list for children.
+				if (current != NULL)
 				{
-					if (last->exists("children"))
-						sn = last->extract_item("children");
+					if (current->exists("children"))
+						constraint_list = current->extract_item("children");
 					else
-						sn = mklist("children");
+						constraint_list = mklist("children");
 				}
 			}
 			else
 			{
-				// Get whoever we are adding these constraints to.
-				last = (snode *)last_stack->pop();
-				// If we have a list of constraints under the name "children", and there's more than one in the list
-				// And we haven't already added the list of children, add the constraints.
-				if (!strcmp(sn->get_name(), "children") && sn->count() > 0 && !last->exists("children"))
-					last->append(sn);
+				// Get the constraint that these children should be added under.
+				current = (snode *)last_stack->pop();
+				
+				/**
+				  * If 
+				  *		- constraint_list is called "children"
+				  *		- there is at least one constraint in that list
+				  *		- there current constraint doesn't already have a list of children (we would have used that list if it did)
+				  * Then
+				  *		- add the list of constraints to this constraint
+				  */
+				if (!strcmp(constraint_list->get_name(), "children") && constraint_list->count() > 0 && !current->exists("children"))
+					current->append(constraint_list);
 					
-				// Restore sn from stack.
-				sn = (snode *)stack->pop();
+				// Restore the constraint list from stack.
+				constraint_list = (snode *)stack->pop();
 				brackets--;
 			}
-				
-			if (brackets < 0) { failed_parse = 2; delete stack; delete last_stack; return; }
+			
+			// If more brackets have been closed than opened, return immediately.
+			if (brackets < 0)
+			{
+				failed_parse = 2;
+				delete stack;
+				delete last_stack;
+				return;
+			}
 							
 			string++;
 		}
 		
-		if(*string == '\0') { delete stack; delete last_stack; return; }
-		if(*string != '+') { failed_parse = 1; delete stack; delete last_stack; return; }
+		// If end of string, return.
+		if(*string == '\0')
+		{
+			delete stack;
+			delete last_stack;
+			return;
+		}
+		
+		// If the string doesn't have a + to indicate a code, return.
+		if(*string != '+')
+		{
+			failed_parse = 1;
+			delete stack;
+			delete last_stack;
+			return;
+		}
+		
 		string++;
 		code = *string;
 		string++;
 		while(*string == ' ' || *string == '\t')
 			string++;
+			
 		switch(code)
 		{
 			case 'N':
@@ -909,16 +945,16 @@ MapConstraints::MapConstraints(const char *string)
 			case 'H':	// has
 				// packing creates a copy, so we need to delete this word after.
 				field = read_word(&string);
-				last = ::pack(::pack(field, "name"), ::pack_bool(1, "exact"), "constraint");
+				current = ::pack(::pack(field, "name"), ::pack_bool(1, "exact"), "constraint");
+				constraint_list->append(current);
 				delete[] field;
-				sn->append(last);
 				break;
 			case 'S':	// similar
 				// packing creates a copy, so we need to delete this word after.
 				field = read_word(&string);
-				last = ::pack(::pack(field, "name"), ::pack_bool(0, "exact"), "constraint");
+				current = ::pack(::pack(field, "name"), ::pack_bool(0, "exact"), "constraint");
+				constraint_list->append(current);
 				delete[] field;
-				sn->append(last);
 				break;
 			case 'K':
 				keywords->add(read_word(&string));
@@ -929,12 +965,19 @@ MapConstraints::MapConstraints(const char *string)
 			case 'A':
 				ancestors->add(read_word(&string));
 				break;
-			default: failed_parse = 1; delete stack; delete last_stack; return;
+			default:
+				failed_parse = 1;
+				delete stack;
+				delete last_stack;
+				return;
 		}
 		while(*string == ' ' || *string == '\t')
 			string++;
 	}
-	if (brackets) { failed_parse = 2; delete stack; delete last_stack; return; }
+	
+	// If there were any brackets left open, we have a failed parse.
+	if (brackets)
+		failed_parse = 2;
 	
 	delete stack;
 	delete last_stack;
