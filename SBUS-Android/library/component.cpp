@@ -841,6 +841,7 @@ MapConstraints::MapConstraints(const char *string)
 	// stacks to keep both.
 	pvector *stack = new pvector();
 	pvector *last_stack = new pvector();
+	char *field;
 	
 	while(*string != '\0')
 	{
@@ -875,13 +876,13 @@ MapConstraints::MapConstraints(const char *string)
 				brackets--;
 			}
 				
-			if (brackets < 0) { failed_parse = 2; return; }
+			if (brackets < 0) { failed_parse = 2; delete stack; delete last_stack; return; }
 							
 			string++;
 		}
 		
-		if(*string == '\0') return;
-		if(*string != '+') { failed_parse = 1; return; }
+		if(*string == '\0') { delete stack; delete last_stack; return; }
+		if(*string != '+') { failed_parse = 1; delete stack; delete last_stack; return; }
 		string++;
 		code = *string;
 		string++;
@@ -906,11 +907,17 @@ MapConstraints::MapConstraints(const char *string)
 				pub_key = read_word(&string);
 				break;
 			case 'H':	// has
-				last = ::pack(::pack(read_word(&string), "name"), ::pack_bool(1, "exact"), "constraint");
+				// packing creates a copy, so we need to delete this word after.
+				field = read_word(&string);
+				last = ::pack(::pack(field, "name"), ::pack_bool(1, "exact"), "constraint");
+				delete[] field;
 				sn->append(last);
 				break;
 			case 'S':	// similar
-				last = ::pack(::pack(read_word(&string), "name"), ::pack_bool(0, "exact"), "constraint");
+				// packing creates a copy, so we need to delete this word after.
+				field = read_word(&string);
+				last = ::pack(::pack(field, "name"), ::pack_bool(0, "exact"), "constraint");
+				delete[] field;
 				sn->append(last);
 				break;
 			case 'K':
@@ -922,12 +929,15 @@ MapConstraints::MapConstraints(const char *string)
 			case 'A':
 				ancestors->add(read_word(&string));
 				break;
-			default: failed_parse = 1; return;
+			default: failed_parse = 1; delete stack; delete last_stack; return;
 		}
 		while(*string == ' ' || *string == '\t')
 			string++;
 	}
-	if (brackets) { failed_parse = 2; return; }
+	if (brackets) { failed_parse = 2; delete stack; delete last_stack; return; }
+	
+	delete stack;
+	delete last_stack;
 }
 
 MapConstraints::~MapConstraints()
@@ -1023,8 +1033,12 @@ snode *MapConstraints::pack(snode *hash_lookup)
 			pack_hashes_exact_first(hash_lookup, schema_constraints, subn);
 		else
 			pack_hashes(hash_lookup, schema_constraints, subn);
-			
-		sn->append(::pack(subn->toxml(0), "schema"));
+		
+		char *xml = subn->toxml(0);
+		sn->append(::pack(xml, "schema"));
+		delete[] xml;
+		
+		delete subn;
 	}
 	
 	subn = mklist("keywords");
