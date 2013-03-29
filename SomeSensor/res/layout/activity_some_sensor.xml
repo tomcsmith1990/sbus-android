@@ -4,12 +4,10 @@
     android:layout_height="match_parent" >
 
     <TextView
+        android:id="@+id/sensor_output"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="54dp"
-        android:text="@string/hello_world"
-        tools:context=".SomeSensor" />
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
