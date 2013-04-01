@@ -1,12 +1,12 @@
 \begin{figure}[h]
 \begin{lstlisting}
-@train
+@coach
 {
-    int platform
+    int stand
     date departure
     stops
     (
-    	station
+    	town
     	{
     		txt name
     		date arrival
@@ -14,14 +14,14 @@
     )
 }
 \end{lstlisting}
-\caption[Example schema for a London Midland train]{A London Midland train schema, showing a platform number, a date and time of departure, and a list of stops, with names and estimated arrival times.}
-\label{fig:londonmidlandtrain}
+\caption[Example schema for a coach]{A coach schema, showing a stand number, a date and time of departure, and a list of stops, with town names and estimated arrival times.}
+\label{fig:coach-schema}
 \end{figure}
 
 \begin{figure}[h]
 \begin{lstlisting}
-@virgin-train
-	train
+@train
+	info
 	{
 		int platform
 		date departure
@@ -44,20 +44,20 @@
 	}
 }
 \end{lstlisting}
-\caption[Example schema for a Virgin train]{A Virgin train schema, showing a larger structure than the London Midland schema which contains that very schema as well as an additional structure containing a list of items for sale in the on-board shop.}
-\label{fig:virgintrain}
+\caption[Example schema for a train]{A train schema, showing a structure containing a stand number, a date and time of departure, and a list of stops, with names and estimated arrival times, as well as an additional structure containing a list of items for sale in the on-board shop.}
+\label{fig:train-schema}
 \end{figure}
 
 
 \begin{figure}[h]
 \begin{lstlisting}
-@le-train
+@autobus
 {
-    int le-quai
+    int station
     date depart
-    arrets-de-train
+    stations
     (
-    	la-gare
+    	ville
     	{
     		txt nom-de-la-ville
     		date arrivee
@@ -65,6 +65,6 @@
     )
 }
 \end{lstlisting}
-\caption[Example schema for a French train]{A French train schema, showing the same fields as the London Midland schema, however the field names are in French.}
-\label{fig:frenchtrain}
+\caption[Example schema for a French coach]{A French coach schema, showing the same fields as the English coach schema, however the field names are in French.}
+\label{fig:french-coach-schema}
 \end{figure}
