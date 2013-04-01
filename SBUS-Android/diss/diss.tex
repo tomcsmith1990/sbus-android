@@ -70,7 +70,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 2197\footnotemark[1] \\
+Word Count:         & \bf 2466\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -89,7 +89,7 @@ As a new data source may have different data schema to the expected schema, the 
 \section*{Work Completed}
 
 A messaging middleware was modified to allow users to search for data sources by aspects of their schema. Users can search for an exact match on some part of a schema, or a looser match which only considers field types, and not names.
-This middleware was ported for use on Android. An application was created which could monitor changes in context and then inform other applications of this change, or automatically connect them to new data sources, dependent on their preferences.
+Once this middleware was ported for use on Android, an application was created to monitor changes in context, particularly those that arise as a result of mobility. Upon detection of a change in context, the application informs other applications of the change, or automatically reconfigures their connections to connect them to a new data source.
 
 \section*{Special Difficulties}
 
@@ -153,11 +153,11 @@ Some fields may be missing, there may be additional fields, and some fields may 
 The application may also wish to specify some subscription filter about the messages it should receive, yet without knowledge of the data format, it cannot specify constraints on different fields.
 
 % example
-For example, a transport application may face differences in data available about London Midland trains (Figure \ref{fig:londonmidlandtrain}) and Virgin Trains (Figure \ref{fig:virgintrain}). 
-Both offer the same data to a large extent, including as stations, arrival times, and platform numbers, however Virgin Trains might also provide a menu for an on-board shop. 
-Alternatively, the application may be used in a French railway station. 
-Data about the trains will still be very similar, however the field names may be in French (Figure \ref{fig:frenchtrain}). 
-While these differences may be important when the user is sat waiting for a train, they become less important when the user is running to catch a train, and simply needs the departure time and platform number.
+For example, a transport application may face differences in data available about coaches (Figure \ref{fig:coach-schema}) and trains (Figure \ref{fig:train-schema}). 
+While both offer similar data to a large extent, fields are named differently, and the train schema also offers a menu for an on-board shop.
+Furthermore, if the application were to be used abroad, for example in a French coach station, the data will still be very similar, but fields names may be in French (Figure \ref{fig:french-coach-schema}).
+
+While these differences may be important when the user is sat waiting in a station, they become less important if the user is running to catch a coach or a train and simply requires the departure time and location.
 Given the amount of uncertainty about what data will be available, a developer creating this application cannot hope to account for all possibilities. 
 However, the developer can specify how the application should behave in different contexts.
 
@@ -169,16 +169,14 @@ This project creates such a system, which performs automatic contextual reconfig
 Pascoe \cite{Pascoe:1998:AGC:857199.858020} lists four context-aware capabilites, two of which occur in this reconfiguration. 
 Contextual resource discovery is used to discover data sources available within the context, and contextual adaptation allows the application to adapt to these data sources' schemas in order to use the sources.
 
-Applications on the device can use this system in two ways. 
-The first option allows the application to register to be notified of any change in context by the system. 
-This allows the application to perform a callback method to determine any action which should be taken as a result of the change. 
-The application may also register to allow the system to perform reconfiguration when necessary. 
-As part of this registration, the application may specify constraints about how its connection should be reconfigured. 
-These may be simple constraints, such as the name of a data source, or more complex constraints regarding the structure of the data which the source uses. 
-Once the system detects a change in the environment, it notifies applications of the change or connects them to different sources according to their registrations.
+A ``mobile policy engine'' is the part of the system which performs the automatic reconfiguration. 
+Applications are given control over how their connections should be reconfigured through policies, which may include the name of a data source, or more complex rules regarding the structure of a data source's schema. 
+The policy engine monitors the environment, and upon detecting a change will apply these policies, connecting applications to different data sources where appropriate.
+Alternatively, applications may opt to be notified of a relevant change, rather than have their connection reconfigured. 
+This allows applications to perform callback methods upon a change, taking any action they deem necessary.
 
-Depending on the constraints, an application may be connected to a data source which does not offer the expected data schema. 
-The system handles this by repackaging messages to match the application's schema. Any extraneous fields are removed, while any absent fields are filled with ``empty'' values. The constraints are used to infer relationships between fields, even if they have different names. 
+Depending on the policy, an application may be connected to a data source which does not offer the expected data schema. 
+The system handles this by repackaging messages to match the application's schema. Any extraneous fields are removed, while any absent fields are filled with ``empty'' values. The policy is used to infer relationships between fields, even if they have different names. 
 Once the system has repackaged the message, it passes it to the application, allowing the application to continue as if it had received a message conforming to its schema.
 
 The system allows an application to specify subscription filters in terms of its own schema. 
@@ -231,24 +229,23 @@ As part of the reconfiguration process the system converts this subscription to 
 \chapter{Conclusion}
 
 % summarise
-The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources, or the format of their data.
-An application will only ever be presented with data conforming to its own schema, removing uncertainty about the format of the data. 
-Applications may specify constraints about how fields in a data source's schema must match its own, as an exact match, a type-match, or ``don't care''.
-This gives an application control over which data sources it can be connected to, but does not require the application to find the data sources itself. 
-Upon a change in context, the system will reconfigure connections ensuring that they conform to these schema constraints allowing applications to continue receiving fresh data.
+The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources, or the format of their data. 
+A ``mobile policy engine'' is used to detect changes in context, and applies applications' policies, reconfiguring their connections as appropriate. 
+These policies may be simple, such as the name of a data source, or more complex, specifying how fields in a data source's schema must match the application's own, in terms of exact matches, type-matches, or uninterested. 
+Through these policies, applications can place restrictions on which data sources they can be connected to, without requiring applications to find data sources themselves. 
+An application will only ever be presented with data conforming to its own schema, removing uncertainty about the format of the data.
 Furthermore, applications may specify subscription filters in terms of their own schemas, placing restrictions on which messages they will be sent, without requiring the filters to be specified in terms of peers' schemas. 
 When reconfiguring a connection, the system translates these filters to the peer's schema and applies them to the peer, filtering messages as dictated by the application.
 
-
-Referring back to the train example from the Introduction, there may be an application using the London Midland train schema (Figure \ref{fig:londonmidlandtrain}) which requires data sources to contain a structure matching the type of the {\tt train} structure. 
-At a small train station served only by London Midland trains, all data sources will match this schema exactly, so the application can connect to any one of them.
-Upon arriving at a larger train station and connecting to a Wi-Fi network, the system detects a change in context, and consequently connects the application to a new data source. 
-The user may be changing to a Virgin train here, however information about these trains uses a different schema (Figure \ref{fig:virgintrain}). 
-This schema does not match the application schema exactly, however it does contain the necessary {\tt train} structure. 
+Referring back to the transport example from the Introduction, there may be an application using the coach schema (Figure \ref{fig:coach-schema}) which requires data sources to offer a structure matching the type of the {\tt coach} structure. 
+At a coach station, all data sources will match this schema exactly, so the application can connect to any one of them. 
+Upon arriving at a larger station and connecting to a Wi-Fi network, the system detects a change in context, and consequently connects the application to a new data source. 
+The user may be changing to a train here, however information about trains use a different schema (Figure \ref{fig:train-schema}). 
+This schema does not match the application schema exactly, however it does contain a structure matching the necessary {\tt coach} structure. 
 Therefore, the system can connect the application to this data source and repackage messages to match the application schema, allowing the same application code to handle the message. 
-The user could have subscribed to only receive data about trains which depart after midday. 
-Since this subscription is specified in terms of the London Midland train schema, it will not function correctly if applied directly to the Virgin train schema. 
-In this case, the system reformats the subscription to match the Virgin train schema and applies it when connecting the application to the data source, ensuring the user's subscription filter is met.
+The user could have subscribed to only receive data for which the departure time is after midday. 
+Since this subscription is specified in terms of the coach schema, it will not function correctly if applied directly to the train schema. 
+In this case, the system reformats the subscription to match the train schema and applies it when connecting the application to the data source, ensuring the user's subscription filter is met.
 
 \section{Issues}
 % remaining problems
