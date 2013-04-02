@@ -140,17 +140,18 @@ I show how relevant data sources in an environment can be found for applications
 % what's the problem
 
 % describe current approach
-Current applications tend to be inflexible in the data sources they use, often selecting from a list of possible data sources, regardless of the environment. 
+Current applications tend to be inflexible in data sources they use, often selecting from a list of possibilities, regardless of the environment. 
 While some localisation might be achieved by including appropriate parameters during connection, the parameters accepted by the data source have already been fixed, restricting how well the application can adapt to the environment. 
 By connecting to local data sources, an application can gain greater flexibility due to the fact that the data sources reside in the same environment.
 Given an application which requires the current temperature, a global server may use current GPS co-ordinates to determine the nearest weather station. 
 Yet if the application were being used indoors, maybe a value from a local temperature sensor would not only suffice, but be more appropriate. 
 Perhaps this could be achieved otherwise, if the server had known about the temperature sensor, however why should the application need to connect to a global server in order to use a local connection? Perhaps there isn't even an Internet connection available. 
 Furthermore, given that the user is mobile, the server would need to know about {\sl every} temperature sensor. 
-Using local data sources allows applications usage of a dynamic set of data sources, more related to their environment.
+Using local data sources allows applications usage of a dynamic set of data sources, more related to their environment. 
+Applications are further restricted by requiring knowledge of the exact data format which will be used. 
 
 % context and scope
-Different environments mean that devices operate in different contexts and scopes, which dictate how devices can interact with the environment. 
+Devices operate in different contexts and scopes, which dictate how devices can interact with the environment. 
 Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{Muhl:2006:DES:1162246}.
 Scope is also an important factor, since data sources may only be available within a particular network, or during a given time period. 
 Upon a change in context or scope an application may no longer be able to communicate with a given data source, or the data it is providing may no longer be useful. 
@@ -177,7 +178,7 @@ However, the developer can specify how the application should behave in differen
 Schilit et al \cite{Schilit:1994:CCA:1439278.1440041}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
 This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment. 
 Pascoe \cite{Pascoe:1998:AGC:857199.858020} lists four context-aware capabilites, two of which occur in this reconfiguration. 
-Contextual resource discovery is used to discover data sources available within the context, and contextual adaptation allows applications to adapt to different data schemas in order to use the sources.
+Contextual resource discovery is used to discover data sources available within the context, and contextual adaptation allows applications to adapt to different data schemas in order to use the sources. 
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
 M\"{u}hl defines three kinds of events which can be used to detect a change in context: physical events, timer events, and a state change in the system \cite[page 11]{Muhl:2006:DES:1162246}, all of which may warrant some kind of reconfiguration. 
@@ -187,7 +188,7 @@ Finally, there are state changes in the system, such as changing network connect
 This project focuses on these state changes, particularly using a change in network connection to indicate a change in context. 
 
 % policy engine
-Upon detection of a change in context, a ``policy engine'' on the device performs the automatic reconfiguration. 
+Upon detection of a change in context, the ``policy engine'' on the device performs the automatic reconfiguration. 
 Applications control how their connections should be reconfigured through policies. 
 These policies may specify the name of a data sources, or be more complex rules regarding the structure of data sources' schemas. 
 The policy engine monitors the environment, and upon detecting a change applies these policies, connecting applications to different data sources where appropriate.
@@ -201,6 +202,11 @@ Once the system has repackaged the message, it passes it to the application, all
 % subscription
 The system allows an application to specify subscription filters in terms of its own schema. 
 As part of the reconfiguration process the system converts this subscription to match the data source's schema, connecting the application with a working subscription in place.
+
+% summarise
+The system automatically reconfigures applications' connections and repackages messages to fit their schemas, granting the applications flexibility in the data sources they use.
+Local data sources can be used to provide data relevant to the environment, and by repackaging these messages an application is no longer bound to an exact schema. 
+Applications can control how they interact with an environment, while still being able to seamlessly communicate within that environment.
 
 \cleardoublepage
 
