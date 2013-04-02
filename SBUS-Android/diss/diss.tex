@@ -70,7 +70,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 2712\footnotemark[1] \\
+Word Count:         & \bf 2919\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -140,10 +140,18 @@ I show how relevant data sources in an environment can be found for applications
 % what's the problem
 
 % describe current approach
+Current applications tend to be inflexible in the data sources they use, often selecting from a list of possible data sources, regardless of the environment. 
+While some localisation might be achieved by including appropriate parameters during connection, the parameters accepted by the data source have already been fixed, restricting how well the application can adapt to the environment. 
+By connecting to local data sources, an application can gain greater flexibility due to the fact that the data sources reside in the same environment.
+Given an application which requires the current temperature, a global server may use current GPS co-ordinates to determine the nearest weather station. 
+Yet if the application were being used indoors, maybe a value from a local temperature sensor would not only suffice, but be more appropriate. 
+Perhaps this could be achieved otherwise, if the server had known about the temperature sensor, however why should the application need to connect to a global server in order to use a local connection? Perhaps there isn't even an Internet connection available. 
+Furthermore, given that the user is mobile, the server would need to know about {\sl every} temperature sensor. 
+Using local data sources allows applications usage of a dynamic set of data sources, more related to their environment.
+
+% context and scope
 Different environments mean that devices operate in different contexts and scopes, which dictate how devices can interact with the environment. 
 Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{Muhl:2006:DES:1162246}.
-%Context may consist of both physical attributes, such as available Wi-Fi networks and location, as well as psychological aspects such as the user's behaviour or mood.
-%For example, the device may deduce from the accelerometer that the user is running, in which case the user may be in a rush and require different data than if they were sat calmly.
 Scope is also an important factor, since data sources may only be available within a particular network, or during a given time period. 
 Upon a change in context or scope an application may no longer be able to communicate with a given data source, or the data it is providing may no longer be useful. 
 In this situation, an alternative data source must be found.
@@ -255,7 +263,7 @@ The project has created a context-aware system which enables developers to write
 
 Upon detecting a change in context, the ``mobile policy engine'' applies applications' policies, reconfiguring their connections as appropriate. 
 Applications' connections are reconfigured without requiring the applications to find data sources themselves.
-Through these policies applications may restrict which data sources they should be connected to, with simple policies such as the name of a data source, or more complex policies specifying how fields in a data source's schema must match their own.
+Through these policies applications may control which data sources they should be connected to, with simple policies such as the name of a data source, or more complex policies specifying how fields in a data source's schema must match their own.
 
 Applications will only ever be presented with data conforming to their own schema, removing uncertainty about the format of the data.
 Furthermore, applications may specify subscription filters in terms of their own schemas, placing restrictions on which messages they will be sent, without requiring knowledge of peers' schemas.
@@ -297,11 +305,9 @@ If a context change depended on the accelerometer, it might be that the accelero
 The system currently depends solely on a change in network status to detect a change in context, however a wide range of alternatives could be used. 
 Other state change events offered by the Android platform\footnote{http://developer.android.com/reference/android/content/Intent.html} might be used, such as the battery level being low. 
 However, the system need not be limited to these OS events. 
-The policy engine could subscribe to notifications from the AIRS gateway, allowing it to react to data from sensors on the device. 
+The policy engine could subscribe to messages from the AIRS gateway, allowing it to react to data from sensors on the device. 
 This would allow the policy engine to trigger changes based on simple events, such as one message indicating a network change, or more complex events made up of multiple messages, such as a rapid accelerometer change followed by no movement, representing a fall. 
-Applications could then specify a reconfiguration policy for each context change that they are interested in, allowing an alternate action to be taken for each.
-%The Android platform offers a whole host of different events\footnote{http://developer.android.com/reference/android/content/Intent.html} and sensors\footnote{http://developer.android.com/guide/topics/sensors/sensors\_overview.html} which could be used to determine a change in context, such as the battery level being low, the timezone changing, or accelerometer readings. 
-%The system could be extended to use more of these features to determine a change in context, allowing applications to specify how they want to react to different types of change in context. 
+Applications could then specify a reconfiguration policy for each context change that they are interested in, allowing an alternate action to be taken for each. 
 In addition to applications specifying the types of context change that they are interested in, the user may have the ability to specify which types of context change are allowed to be used. 
 This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed.
 
