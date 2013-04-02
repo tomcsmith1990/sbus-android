@@ -70,7 +70,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 2537\footnotemark[1] \\
+Word Count:         & \bf 2655\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -142,14 +142,15 @@ I show how relevant data sources in an environment can be found for applications
 % describe current approach
 Different environments mean that devices operate in different contexts and scopes, which dictate how devices can interact with the environment. 
 % describe context more, then say you're mainly focusing on mobility
-Context may consist of both physical attributes, such as available Wi-Fi networks and location, as well as psychological aspects such as the user's behaviour or mood.
-For example, the device may deduce from the accelerometer that the user is running, in which case the user may be in a rush and require different data than if they were sat calmly.
-Scope is also an important factor, since data sources may only be available on a particular network, or within a given time period. 
-Changes in context and scope mean that an application may no longer be able to communicate with a given data source, or the data it is providing may no longer be useful. 
+Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{Muhl:2006:DES:1162246}.
+%Context may consist of both physical attributes, such as available Wi-Fi networks and location, as well as psychological aspects such as the user's behaviour or mood.
+%For example, the device may deduce from the accelerometer that the user is running, in which case the user may be in a rush and require different data than if they were sat calmly.
+Scope is also an important factor, since data sources may only be available within a particular network, or during a given time period. 
+Upon a change in context or scope an application may no longer be able to communicate with a given data source, or the data it is providing may no longer be useful. 
 In this situation, an alternative data source must be found.
 
 Once this alternate data source has been found, the application must still determine whether it provides useful data. 
-Some data may be absolutely necessary for operation of the application, while other parts may be desired, but operation can continue without them. 
+Some data may be absolutely necessary for operation of the application, while other parts may be desired, but not crucial for operation.  
 However, even if a data source is deemed useful, the application may still have the difficulty of the data being presented in an alternate format to the expected format. 
 Some fields may be missing, there may be additional fields, and some fields may have different names. 
 The application may also wish to specify some subscription filter about the messages it should receive, yet without knowledge of the data format, it cannot specify filters on different fields.
@@ -171,7 +172,14 @@ This project creates such a system, which performs automatic contextual reconfig
 Pascoe \cite{Pascoe:1998:AGC:857199.858020} lists four context-aware capabilites, two of which occur in this reconfiguration. 
 Contextual resource discovery is used to discover data sources available within the context, and contextual adaptation allows applications to adapt to different data schemas in order to use the sources.
 
-A ``policy engine'' on the device performs the automatic reconfiguration. 
+% describe context, say only focusing on mobility (Wi-Fi) for now.
+M\"{u}hl defines three kinds of events which can be used to detect a change in context: physical events, timer events, and a state change in the system \cite[page 11]{Muhl:2006:DES:1162246}, all of which may warrant some kind of reconfiguration. 
+In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (namely a fall), in which case the system may wish to connect the sensors to an emergency response team.
+A timer event indicates the progression of real time, which could be used by advertisers to show advertisements for nearby restaurants at lunch time. 
+Finally, there are state changes in the system, such as changing network connection, or a change of location. 
+This project focuses on these state changes in Android, particularly using a change in network connection to indicate a change in context. 
+
+Upon detection of a change in context, a ``policy engine'' on the device performs the automatic reconfiguration. 
 Applications control how their connections should be reconfigured through policies. 
 These policies may specify the name of a data sources, or be more complex rules regarding the structure of data sources' schemas. 
 The policy engine monitors the environment, and upon detecting a change applies these policies, connecting applications to different data sources where appropriate.
