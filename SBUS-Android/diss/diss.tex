@@ -70,7 +70,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 2655\footnotemark[1] \\
+Word Count:         & \bf 2712\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -121,8 +121,7 @@ extent for a comparable purpose.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % now for the chapters
 
-\cleardoublepage        % just to make sure before the page numbering
-                        % is changed
+\cleardoublepage        % just to make sure before the page numbering is changed
 
 \setcounter{page}{1}
 \pagenumbering{arabic}
@@ -139,9 +138,9 @@ I show how relevant data sources in an environment can be found for applications
 
 \section{Problem}
 % what's the problem
+
 % describe current approach
 Different environments mean that devices operate in different contexts and scopes, which dictate how devices can interact with the environment. 
-% describe context more, then say you're mainly focusing on mobility
 Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{Muhl:2006:DES:1162246}.
 %Context may consist of both physical attributes, such as available Wi-Fi networks and location, as well as psychological aspects such as the user's behaviour or mood.
 %For example, the device may deduce from the accelerometer that the user is running, in which case the user may be in a rush and require different data than if they were sat calmly.
@@ -165,8 +164,8 @@ Given the amount of uncertainty about what data will be available, a developer c
 However, the developer can specify how the application should behave in different contexts.
 
 \section{Project}
-
 % what I've done
+
 Schilit et al \cite{Schilit:1994:CCA:1439278.1440041}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
 This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment. 
 Pascoe \cite{Pascoe:1998:AGC:857199.858020} lists four context-aware capabilites, two of which occur in this reconfiguration. 
@@ -177,18 +176,21 @@ M\"{u}hl defines three kinds of events which can be used to detect a change in c
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (namely a fall), in which case the system may wish to connect the sensors to an emergency response team.
 A timer event indicates the progression of real time, which could be used by advertisers to show advertisements for nearby restaurants at lunch time. 
 Finally, there are state changes in the system, such as changing network connection, or a change of location. 
-This project focuses on these state changes in Android, particularly using a change in network connection to indicate a change in context. 
+This project focuses on these state changes, particularly using a change in network connection to indicate a change in context. 
 
+% policy engine
 Upon detection of a change in context, a ``policy engine'' on the device performs the automatic reconfiguration. 
 Applications control how their connections should be reconfigured through policies. 
 These policies may specify the name of a data sources, or be more complex rules regarding the structure of data sources' schemas. 
 The policy engine monitors the environment, and upon detecting a change applies these policies, connecting applications to different data sources where appropriate.
 Alternatively, applications may opt to be notified of a relevant change, rather than have their connection reconfigured, allowing them to perform callback methods upon a change.
 
+% repackaging
 Depending on the policy, an application may be connected to a data source which does not offer the expected data schema. 
 The system handles this by repackaging messages to match the application's schema. Any extraneous fields are removed, while any absent fields are filled with ``empty'' values. The policy is used to infer relationships between fields, even if they have different names. 
 Once the system has repackaged the message, it passes it to the application, allowing the application to continue as if it had received a message conforming to its schema.
 
+% subscription
 The system allows an application to specify subscription filters in terms of its own schema. 
 As part of the reconfiguration process the system converts this subscription to match the data source's schema, connecting the application with a working subscription in place.
 
@@ -291,12 +293,19 @@ If a context change depended on the accelerometer, it might be that the accelero
 \section{Future Work}
 % other stuff that could be done
 
-The system currently depends solely on a change in network status to detect a change in context. 
-The Android platform offers a whole host of different events\footnote{http://developer.android.com/reference/android/content/Intent.html} and sensors\footnote{http://developer.android.com/guide/topics/sensors/sensors\_overview.html} which could be used to determine a change in context, such as the battery level being low, the timezone changing, or accelerometer readings. 
-The system could be extended to use more of these features to determine a change in context, allowing applications to specify how they want to react to different types of change in context. 
-In addition to applications specifying the types of change in context they are interested in, the user may have the ability to specify which types of context change are allowed to be used. 
+% alternate events for change in context - AIRS
+The system currently depends solely on a change in network status to detect a change in context, however a wide range of alternatives could be used. 
+Other state change events offered by the Android platform\footnote{http://developer.android.com/reference/android/content/Intent.html} might be used, such as the battery level being low. 
+However, the system need not be limited to these OS events. 
+The policy engine could subscribe to notifications from the AIRS gateway, allowing it to react to data from sensors on the device. 
+This would allow the policy engine to trigger changes based on simple events, such as one message indicating a network change, or more complex events made up of multiple messages, such as a rapid accelerometer change followed by no movement, representing a fall. 
+Applications could then specify a reconfiguration policy for each context change that they are interested in, allowing an alternate action to be taken for each.
+%The Android platform offers a whole host of different events\footnote{http://developer.android.com/reference/android/content/Intent.html} and sensors\footnote{http://developer.android.com/guide/topics/sensors/sensors\_overview.html} which could be used to determine a change in context, such as the battery level being low, the timezone changing, or accelerometer readings. 
+%The system could be extended to use more of these features to determine a change in context, allowing applications to specify how they want to react to different types of change in context. 
+In addition to applications specifying the types of context change that they are interested in, the user may have the ability to specify which types of context change are allowed to be used. 
 This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed.
 
+% qualify names if multiple fields in sensor have same name
 The constraints an application specifies about the schema of data sources it may be connected to are currently specified using the field names of the application schema.
 While this works provided there are no repeated fields names within a schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema}. 
 A solution to this would be to qualify all names specified in the constraints in a similar way to subscriptions. 
