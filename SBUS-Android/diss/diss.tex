@@ -70,7 +70,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 2998\footnotemark[1] \\
+Word Count:         & \bf 3213\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -142,15 +142,15 @@ I show how relevant data sources in an environment can be found for applications
 % describe current approach
 Current applications tend to be inflexible in data sources they use, often selecting from a list of possibilities, regardless of the environment. 
 While some localisation might be achieved by including parameters during connection, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
+The data formats that applications and data sources use have also been fixed, restricting applications even further.
 By connecting to local data sources, applications gain greater flexibility due to the fact that the data sources reside within the same environment.
 Given an application which requires the current temperature, a global server may use current GPS co-ordinates to determine the nearest weather station. 
 Yet if the application were being used indoors, a value from a local temperature sensor might not only suffice, but be more appropriate. 
 Perhaps this could be achieved otherwise, if the server had known about the temperature sensor, however why should the application need to connect to a global server in order to use a local connection? Perhaps there isn't even an Internet connection available. 
 Furthermore, given that the user is mobile, the server would need to know about {\sl every} temperature sensor. 
 Local data sources allow applications to use a dynamic set of data sources, more related to their environment. 
-Applications are further restricted by requiring knowledge of the exact data format which will be used. 
 
-% context and scope
+% context
 Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{muhl2006distributed}. 
 Mobile devices constantly operate in different contexts, which dictate how devices can interact with the environment. 
 Upon a change in context an application may no longer be able to communicate with a given data source, or the data it is providing may no longer be useful. 
@@ -182,14 +182,14 @@ Contextual resource discovery is used to discover data sources available within 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
 M\"{u}hl defines three kinds of events which can be used to detect a change in context: physical events, timer events, and a state change in the system \cite[page 11]{muhl2006distributed}, all of which may warrant some kind of reconfiguration. 
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (namely a fall), in which case the application may need to send data to an emergency response team.
-A timer event indicates the progression of real time, which advertisers could use to show advertisements for nearby restaurants at lunch time. 
+A timer event indicates the progression of real time, which advertisers could use to connect to advertisements for nearby restaurants at lunch time. 
 Finally, there are state changes in the system, such as a change in network connection or location. 
 This project focuses on these state changes, particularly using a change in network connection to indicate a change in context. 
 
 % policy engine
 Applications control how their connections should be reconfigured through policies. 
 The ``policy engine'' monitors the environment and upon detecting a change in context applies these policies, reconfiguring applications' connections to connect them to different data sources, where appropriate.
-These policies may specify the name of a data sources, or be more complex rules regarding the structure of data sources' schemas. 
+These policies may specify the name of data sources, or be more complex rules regarding the structure of data sources' schemas. 
 Alternatively, applications may opt to be notified of a relevant change, rather than have their connection reconfigured, allowing them to perform callback methods upon a change.
 
 % repackaging
@@ -201,11 +201,6 @@ Once the system has repackaged the message, it passes it to the application, all
 The system allows an application to specify subscription filters in terms of its own schema. 
 As part of the reconfiguration process the system converts this subscription to match the peer's schema, connecting the application with a working subscription in place.
 
-% summarise
-The system automatically reconfigures applications' connections and repackages messages to fit their schemas, granting the applications flexibility in the data sources they use.
-Local data sources can be used to provide data relevant to the environment, and by repackaging these messages an application is no longer bound to an exact schema. 
-Applications control how they interact with an environment through policies, while still seamlessly communicating within that environment.
-
 % pervasive computing
 The system supports many of the goals of the pervasive computing vision \cite{weiser1991computer}.
 Use of local data sources allows the system to be scalable. 
@@ -215,6 +210,11 @@ Repackaging messages achieves some level of heterogeneity within the system.
 Different environments may represent data in different formats, though application policies allow the system to interpret this data in a meaningful way. 
 The policy engine can perceive context, and use these perceptions in an intelligent way, namely by reconfiguring applications' connections according to their policies. 
 While all of this is invisible to the user, applications can be configured by the user through the use of policies \cite{saha2003pervasive}.
+
+% summarise
+The system automatically reconfigures applications' connections and repackages messages to fit their schemas, granting the applications flexibility in the data sources they use.
+Local data sources can be used to provide data relevant to the environment, and by repackaging these messages an application is no longer bound to an exact schema. 
+Applications control how they interact with an environment through policies, while still seamlessly communicating within that environment.
 
 \cleardoublepage
 
@@ -281,9 +281,9 @@ Upon detecting a change in context, the policy engine applies applications' poli
 Through these policies applications may control which data sources they should be connected to, without requiring applications to find data sources themselves.
 Policies may be simple, such as the name of a data source, or more complex, specifying how fields in a data source's schema must match their own. 
 
-The system repackages message so that applications will only ever be presented with data conforming to their own schema, removing uncertainty about the format of the data.
+The system repackages messages so that applications will only ever be presented with data conforming to their own schema, removing uncertainty about the format of the data.
 Furthermore, applications may specify subscription filters in terms of their own schemas, placing restrictions on which messages they will be sent, without requiring knowledge of peers' schemas.
-When reconfiguring a connection, the system translates these filters to match peer's schema and applies them to the peer, filtering messages as dictated by the application.
+When reconfiguring a connection, the system translates these filters to match the peer's schema and applies them to the peer, filtering messages as dictated by the application.
 
 % example
 Referring back to the transport example from the Introduction, there may be a transport application based on the coach schema (Figure \ref{fig:coach-schema}) which requires data sources to offer a structure matching the type of the {\tt coach} structure. 
