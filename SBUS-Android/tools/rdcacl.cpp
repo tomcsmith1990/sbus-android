@@ -1129,11 +1129,11 @@ void rdc::lookup(sendpoint *ep)
 	time_t start, end;
 	double seconds;
 	// Do one million times and average result.
-	const int iter = 1000000;
-	const int runs = 0;
+	const int iter = 10000;
+	const int runs = 100;
 	FILE *file;
-	file = fopen("rdc-results.txt", "w");
-	
+	file = fopen("/home/tom/rdc-results.txt", "a");
+	fprintf(file, "=== RDC TIME WITH %d COMPONENTS TO CHECK, %d RUNS, %d ITER ===\n", live->count() - 1, runs, iter);
 	for (int k = 0; k < runs; k++)
 	{
 		matches = mklist("endpoints");
@@ -1143,7 +1143,7 @@ void rdc::lookup(sendpoint *ep)
 			for(int i = 0; i < live->count(); i++)
 			{
 				img = live->item(i);
-				img->match(sn_interface, sn_constraints, matches, com, query->source_cpt,query->source_inst);
+				img->match(sn_interface, sn_constraints, matches, com, query->source_cpt, query->source_inst);
 			}
 		}
 		time(&end);
@@ -1159,7 +1159,7 @@ void rdc::lookup(sendpoint *ep)
 
 		img = live->item(i);
 		matches = mklist("endpoints");
-		if(img->match(sn_interface, sn_constraints, matches, com, query->source_cpt,query->source_inst)	)
+		if(img->match(sn_interface, sn_constraints, matches, com, query->source_cpt, query->source_inst))
 		{
 			cpt = mklist("component");
 			cpt->append(pack(img->address, "address"));
@@ -1515,7 +1515,11 @@ int image::match(snode *interface, snode *constraints, snode *matches, scomponen
 
 				Schema *msg_schema = (Schema *)msg_schema_list->item(j);
 				if (msg_schema == NULL || !msg_schema->match_constraints(sn))
+				{
+					// Be sure to delete sn here, otherwise if there isn't a match we never delete it.
+					delete sn;
 					continue;
+				}
 				delete sn;
 			}
 			// Let's assume if we're doing a flexible matching (for similar schemas) we don't want the LITMUS tests.

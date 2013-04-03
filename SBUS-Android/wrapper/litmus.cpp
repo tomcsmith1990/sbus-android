@@ -272,9 +272,8 @@ int Schema::construct_lookup(snode *want, snode *have, snode *target_hashes, sno
 							want = target_hashes->find(constraint->extract_txt("name"));
 						
 						construct_lookup(want, have, lookup_forward, lookup_backward);
-
-						continue;
 					}
+					continue;
 				}
 			}
 		}

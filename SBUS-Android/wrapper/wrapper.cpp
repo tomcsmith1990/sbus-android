@@ -2940,10 +2940,11 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 	time_t start, end;
 	double seconds;
 	// Do one million times and average result.
-	const int iter = 1; //1000000;
-	const int runs = 1;
+	const int iter = 10000; //1000000;
+	const int runs = 100;
 	FILE *file;
-	file = fopen("construct-lookup-results.txt", "w");
+	file = fopen("/home/tom/construct-lookup-results.txt", "a");
+	fprintf(file, "=== CONSTRUCT LOOKUP TIME %d RUNS, %d ITER ===\n", runs, iter);
 	
 	for (int k = 0; k < runs; k++)
 	{
@@ -4288,10 +4289,11 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		time_t start, end;
 		double seconds;
 		// Do one million times and average result.
-		const int iter = 1; //1000000;
-		const int runs = 1;
+		const int iter = 10000; //1000000;
+		const int runs = 100;
 		FILE *file;
-		file = fopen("repack-results.txt", "w");
+		file = fopen("home/tom/repack-results.txt", "a");
+		fprintf(file, "=== REPACKAGE TIME %d RUNS, %d ITER ===\n", runs, iter);
 	
 		for (int k = 0; k < runs; k++)
 		{
