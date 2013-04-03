@@ -151,7 +151,7 @@ Local data sources allow applications to use a dynamic set of data sources, more
 Applications are further restricted by requiring knowledge of the exact data format which will be used. 
 
 % context and scope
-Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{Muhl:2006:DES:1162246}. 
+Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{muhl2006distributed}. 
 Mobile devices constantly operate in different contexts, which dictate how devices can interact with the environment. 
 Upon a change in context an application may no longer be able to communicate with a given data source, or the data it is providing may no longer be useful. 
 In this situation, an alternative data source must be found.
@@ -174,13 +174,13 @@ However, the developer can specify how the application should behave in differen
 \section{Project}
 % what I've done
 
-Schilit et al \cite{Schilit:1994:CCA:1439278.1440041}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
+Schilit et al \cite{schilit1994context}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
 This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment. 
-Pascoe \cite{Pascoe:1998:AGC:857199.858020} lists four context-aware capabilites, two of which occur in this reconfiguration. 
+Pascoe \cite{pascoe1998adding} lists four context-aware capabilites, two of which occur in this reconfiguration. 
 Contextual resource discovery is used to discover data sources available within the context, and contextual adaptation allows applications to adapt to different data schemas in order to use the sources. 
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
-M\"{u}hl defines three kinds of events which can be used to detect a change in context: physical events, timer events, and a state change in the system \cite[page 11]{Muhl:2006:DES:1162246}, all of which may warrant some kind of reconfiguration. 
+M\"{u}hl defines three kinds of events which can be used to detect a change in context: physical events, timer events, and a state change in the system \cite[page 11]{muhl2006distributed}, all of which may warrant some kind of reconfiguration. 
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (namely a fall), in which case the application may need to send data to an emergency response team.
 A timer event indicates the progression of real time, which advertisers could use to show advertisements for nearby restaurants at lunch time. 
 Finally, there are state changes in the system, such as a change in network connection or location. 
@@ -207,14 +207,14 @@ Local data sources can be used to provide data relevant to the environment, and 
 Applications control how they interact with an environment through policies, while still seamlessly communicating within that environment.
 
 % pervasive computing
-The systems supports many of the goals of the pervasive computing vision. 
+The system supports many of the goals of the pervasive computing vision \cite{weiser1991computer}.
 Use of local data sources allows the system to be scalable. 
 Connections are created on an ad-hoc basis, based entirely upon what data sources are available within the environment. 
 This allows for a dynamic set of sources which can be modified at will. 
 Repackaging messages achieves some level of heterogeneity within the system. 
 Different environments may represent data in different formats, though application policies allow the system to interpret this data in a meaningful way. 
 The policy engine can perceive context, and use these perceptions in an intelligent way, namely by reconfiguring applications' connections according to their policies. 
-While all of this is invisible to the user, applications can be configured by the user through the use of policies.
+While all of this is invisible to the user, applications can be configured by the user through the use of policies \cite{saha2003pervasive}.
 
 \cleardoublepage
 
