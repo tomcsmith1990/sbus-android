@@ -206,6 +206,16 @@ The system automatically reconfigures applications' connections and repackages m
 Local data sources can be used to provide data relevant to the environment, and by repackaging these messages an application is no longer bound to an exact schema. 
 Applications control how they interact with an environment through policies, while still seamlessly communicating within that environment.
 
+% pervasive computing
+The systems supports many of the goals of the pervasive computing vision. 
+Use of local data sources allows the system to be scalable. 
+Connections are created on an ad-hoc basis, based entirely upon what data sources are available within the environment. 
+This allows for a dynamic set of sources which can be modified at will. 
+Repackaging messages achieves some level of heterogeneity within the system. 
+Different environments may represent data in different formats, though application policies allow the system to interpret this data in a meaningful way. 
+The policy engine can perceive context, and use these perceptions in an intelligent way, namely by reconfiguring applications' connections according to their policies. 
+While all of this is invisible to the user, applications can be configured by the user through the use of policies.
+
 \cleardoublepage
 
  
@@ -263,7 +273,8 @@ Applications control how they interact with an environment through policies, whi
 \chapter{Conclusion}
 
 % summarise
-The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources or the format of their data, decoupling applications from their data sources.
+The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources or the format of their data, decoupling applications from their data sources. 
+The system supports the goals of pervasive computing by allowing scalability in the data sources used, heterogeneity in the data applications use, all while being invisible to the user.
 
 The ``policy engine'' monitors the environment for events which the system or user believe to represent a change in context (in this case, network connection).
 Upon detecting a change in context, the policy engine applies applications' policies, reconfiguring their connections as appropriate. 
@@ -313,8 +324,12 @@ However, the system need not be limited to these OS events.
 The policy engine could subscribe to messages from the AIRS gateway, allowing it to react to data from sensors on the device. 
 This would allow the policy engine to trigger changes based on simple events, such as one message indicating a network change, or more complex events made up of multiple messages, such as a rapid accelerometer change followed by no movement, representing a fall. 
 Applications could specify a reconfiguration policy for each context change that they are interested in, allowing an alternate action to be taken for each. 
+This moves the system further towards the pervasive vision. 
+The AIRS gateway would allow the system to use whatever sensors are available on the device. 
+Although not all devices have the same sensors, each would operate in the same way, simply using different sets of events to indicate a change in context.
+
 % how this could do the constraints in issues section.
-These complex events could form the constraints for reconfiguration, discussed in the Issues section. 
+These complex events could also form the constraints for reconfiguration, discussed in the Issues section. 
 In the case of Wi-Fi, several readings indicating a connection has been established may be required before the context change is detected. 
 
 In addition to applications specifying the types of context change that they are interested in, the user may have the ability to specify which types of context change can be used. 
