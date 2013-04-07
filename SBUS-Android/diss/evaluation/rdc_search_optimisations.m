@@ -49,4 +49,4 @@ title('RDC Schema search for query +Ssomeval+Snum+Hmore+Hn');
 xlabel('Number of other components registered on RDC');
 ylabel('Time to search through components (milliseconds)');
 
-print -depsc "../figs/rdc_search_optimisations.eps"
+print -depsc 'rdc_search_optimisations.eps'
