@@ -1126,18 +1126,25 @@ void rdc::lookup(sendpoint *ep)
 	pthread_mutex_lock(&live_mutex);
 
 	// ***EVALUATION***
-	time_t start, end;
-	double seconds;
-	// Do one million times and average result.
-	const int iter = 10000;
+	
+	timeval start, end;
+	long seconds;
+	
+	const int iter = 100;
 	const int runs = 100;
+	
 	FILE *file;
-	file = fopen("/home/tom/rdc-results.txt", "a");
+	char filename[strlen("/home/tom/rdc-results-s0e0.txt") + 1];
+	sprintf(filename, "/home/tom/rdc-results-s%de%d.txt", MapConstraints::structs_first, MapConstraints::exact_first);
+	file = fopen((const char *)filename, "a");
 	fprintf(file, "=== RDC TIME WITH %d COMPONENTS TO CHECK, %d RUNS, %d ITER ===\n", live->count() - 1, runs, iter);
+	fclose(file);
+	
 	for (int k = 0; k < runs; k++)
 	{
+		file = fopen((const char *)filename, "a");
 		matches = mklist("endpoints");
-		time(&start);
+		gettimeofday(&start, NULL);
 		for (int j = 0; j < iter; j++)
 		{
 			for(int i = 0; i < live->count(); i++)
@@ -1146,12 +1153,11 @@ void rdc::lookup(sendpoint *ep)
 				img->match(sn_interface, sn_constraints, matches, com, query->source_cpt, query->source_inst);
 			}
 		}
-		time(&end);
-		//delete matches;
-		seconds = difftime(end, start);
-		fprintf(file, "%f\n", seconds / iter);
+		gettimeofday(&end, NULL);
+		seconds = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
+		fprintf(file, "%ld\n",  seconds / iter);
+		fclose(file);
 	}
-	fclose(file);
 	// ***END EVALUATION***
 
 	for(int i = 0; i < live->count(); i++)

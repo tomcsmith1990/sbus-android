@@ -187,6 +187,9 @@ class MapConstraints
 	MapConstraints(const char *string);
 	~MapConstraints();
 	
+	const static bool structs_first = true;
+	const static bool exact_first = true;
+	
 	/* is_constraint returns 1 if the string looks like a constraint string,
 		0 if it looks like host and/or port, and -1 if it resembles
 		neither of these (and hence is definitely an invalid address).

@@ -2937,18 +2937,23 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 	int schema_match;
 
 	// ***EVALUATION***
-	time_t start, end;
-	double seconds;
-	// Do one million times and average result.
-	const int iter = 10000; //1000000;
+	timeval start, end;
+	long seconds;
+
+	const int iter = 100;
 	const int runs = 100;
+	
 	FILE *file;
-	file = fopen("/home/tom/construct-lookup-results.txt", "a");
+	char filename[strlen("/home/tom/construct-lookup--.txt")+strlen(peer->instance)+strlen(instance_name)+1];
+	sprintf(filename, "/home/tom/construct-lookup-%s-%s.txt", instance_name, peer->instance);
+	file = fopen(filename, "a");
 	fprintf(file, "=== CONSTRUCT LOOKUP TIME %d RUNS, %d ITER ===\n", runs, iter);
+	fclose(file);
 	
 	for (int k = 0; k < runs; k++)
 	{
-		time(&start);
+		file = fopen(filename, "a");
+		gettimeofday(&start, NULL);
 		for (int j = 0; j < iter; j++)
 		{
 			
@@ -2994,11 +2999,11 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 			delete constraints;
 	
 		}
-		time(&end);
-		seconds = difftime(end, start);
-		fprintf(file, "%f\n", seconds / iter);
+		gettimeofday(&end, NULL);
+		seconds = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
+		fprintf(file, "%ld\n",  seconds / iter);
+		fclose(file);
 	}
-	fclose(file);
 	// ***END EVALUATION***
 
 	if (schema_match == 0)
@@ -4286,18 +4291,21 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		snode *node;
 		
 		// ***EVALUATION***
-		time_t start, end;
-		double seconds;
-		// Do one million times and average result.
-		const int iter = 10000; //1000000;
+		timeval start, end;
+		long seconds;
+
+		const int iter = 100;
 		const int runs = 100;
+		
 		FILE *file;
 		file = fopen("home/tom/repack-results.txt", "a");
 		fprintf(file, "=== REPACKAGE TIME %d RUNS, %d ITER ===\n", runs, iter);
-	
+		fclose(file);
+		
 		for (int k = 0; k < runs; k++)
 		{
-			time(&start);
+			file = fopen("home/tom/repack-results.txt", "a");
+			gettimeofday(&start, NULL);
 			for (int j = 0; j < iter; j++)
 			{
 				if (repacked != NULL)
@@ -4342,11 +4350,11 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 				}
 				
 			}
-			time(&end);
-			seconds = difftime(end, start);
-			fprintf(file, "%f\n", seconds / iter);
+			gettimeofday(&end, NULL);
+			seconds = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
+			fprintf(file, "%ld\n",  seconds / iter);
+			fclose(file);
 		}
-		fclose(file);
 		// ***END EVALUATION***
 
 		delete sn;

@@ -1063,9 +1063,6 @@ snode *MapConstraints::pack(snode *hash_lookup)
 	// Schema constraints.
 	if (schema_constraints->count() > 0)
 	{
-		const bool structs_first = true;
-		const bool exact_first = true;
-		
 		subn = mklist("schema");
 		
 		if (structs_first && exact_first)
