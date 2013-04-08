@@ -137,7 +137,8 @@ public class EventComponent implements Runnable
 		// signal thread that being disconnected -> will disconnect TCP Client and show alerter
 		if (thread!=null)
 			thread.interrupt();
-		current_TCPClient.disconnect();
+		if (current_TCPClient != null)
+			current_TCPClient.disconnect();
 	}
 
 	/***********************************************************************

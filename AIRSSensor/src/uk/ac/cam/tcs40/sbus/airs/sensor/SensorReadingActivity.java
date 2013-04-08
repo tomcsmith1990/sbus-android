@@ -54,7 +54,7 @@ public class SensorReadingActivity extends Activity {
 		this.m_Adapter = new ArrayAdapter<Sensor>(this, android.R.layout.simple_list_item_multiple_choice, m_Sensors);
 		this.m_SensorList.setAdapter(this.m_Adapter);
 		this.m_SensorList.setOnItemClickListener(m_ListClick);
-		
+
 		// Create the component.
 		this.m_Gateway = new AirsSbusGateway(this);
 		new Thread() {
@@ -63,6 +63,12 @@ public class SensorReadingActivity extends Activity {
 				m_Gateway.startReadings();
 			}
 		}.start();
+	}
+
+	public void onDestroy() {
+		super.onDestroy();
+		if (m_Gateway != null)
+			m_Gateway.stop();
 	}
 
 	public void addSensorToList(final Sensor sensor) {

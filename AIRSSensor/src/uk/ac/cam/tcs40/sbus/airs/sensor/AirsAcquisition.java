@@ -44,47 +44,40 @@ public class AirsAcquisition extends Acquisition implements Callback {
 		if (endpoint == null) {
 			if (this.m_EptManager == null) return;
 
-			final String intSchema = "@reading { txt somestring clk timestamp int var }";
-			final String txtSchema = "@reading { txt somestring clk timestamp txt val }";
-			String schema = intSchema;
-
-			if (sensor != null) {
-				if (sensor.type.equals("int")) schema = intSchema;
-				else if (sensor.type.equals("txt")) schema = txtSchema;
-			} else {
-				if (length == 6 && reading[2] == 0) schema = intSchema;
-				else schema = txtSchema;
-			}
+			final String schema = "@reading { txt sensor clk timestamp [ int var ] [ txt val ] }";
 
 			SEndpoint ept = this.m_EptManager.createEndpoint(sensorCode, schema);
 			endpoint = new AirsEndpoint(ept, sensorCode, UIManager.getInstance().getUIHandler());
 			AirsEndpointRepository.addEndpoint(endpoint);
+			
+			ept.map(":50123", "AIRS");
 		}
 
 		SNode node = endpoint.getEndpoint().createMessage("reading");
-		node.packString("AIRS: " + endpoint.getEndpoint().getEndpointName());
+		node.packString(sensorCode, "sensor");
 
 		node.packTime(new Date(), "timestamp");
 
-		//System.out.println("...SENSOR : " + sensorCode);
-
 		if (sensor != null) {
-			//System.out.println("...DESCRIPTION: " + sensor.Description);
 
 			if (sensor.type.equals("int")) {
 
 				node.packInt(parseInt(reading, length), "var");
+				node.packString(null, "val");
 
 			} else if (sensor.type.equals("txt")) {
 
+				node.packInt(0, "var");
 				node.packString(parseString(reading, length), "val");
 			}
 		} else {
 			if (length == 6 && reading[2] == 0) {
 				// guess that it is an int.
 				node.packInt(parseInt(reading, length), "var");
+				node.packString(null, "val");
 
 			} else {
+				node.packInt(0, "var");
 				node.packString(parseString(reading, length), "val");
 			}
 		}

@@ -17,7 +17,7 @@ public class PhoneManagementComponent {
 
 	private static String s_PhoneIP = "127.0.0.1";	// localhost to begin with.
 	private static SComponent s_PMC;
-	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, s_RegisterRdc, s_MapPolicy;
+	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, s_RegisterRdc, s_MapPolicy, s_AIRS;
 
 	private static Context s_Context;
 
@@ -265,6 +265,7 @@ public class PhoneManagementComponent {
 		multi.add(s_Register);
 		multi.add(s_SetACL);
 		multi.add(s_MapPolicy);
+		multi.add(s_AIRS);
 
 		SEndpoint endpoint;
 		String name;
@@ -288,6 +289,24 @@ public class PhoneManagementComponent {
 			} else if (name.equals("lookup_cpt")) {
 				// There's some problem with components reading these messages, they're currently not using it.
 				lookup();
+			} else if (name.equals("AIRS")) {
+				SMessage message = s_AIRS.receive();
+				SNode tree = message.getTree();
+				
+				String sensorCode = tree.extractString("sensor");
+				
+				if (sensorCode.equals("WC")) {
+					if (tree.extractInt("var") == 1)
+						informComponentsAboutRDC(true);
+					else
+						informComponentsAboutRDC(false);
+					
+				} else if (sensorCode.equals("Rd")) {
+					if (tree.extractInt("var") == 0)
+						informComponentsAboutRDC(false);
+				}
+				
+				message.delete();
 			}
 		}
 	}
@@ -351,6 +370,8 @@ public class PhoneManagementComponent {
 		s_Lookup = s_PMC.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
 
 		s_MapPolicy = s_PMC.addEndpoint("map_policy", EndpointType.EndpointSink, "857FC4B7506D");
+		
+		s_AIRS = s_PMC.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
 
 		// Start the component on the default RDC port.
 		s_PMC.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
@@ -384,6 +405,7 @@ public class PhoneManagementComponent {
 		s_SetACL.unmap();
 		s_Status.unmap();
 		s_MapPolicy.unmap();
+		s_AIRS.unmap();
 
 		s_PMC.delete();
 
@@ -395,6 +417,7 @@ public class PhoneManagementComponent {
 		s_SetACL = null;
 		s_Status = null;
 		s_MapPolicy = null;
+		s_AIRS = null;
 
 		s_PMC = null;
 

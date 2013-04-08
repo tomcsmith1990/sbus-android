@@ -80,17 +80,17 @@ public class Acquisition implements Callback
 	{
 		QueryResolver query = null;
 		int positive = 0;
-
+/*
 		debug("Acquisition::callback:received method");
 		debug("...FROM  : " + new String(dialog.current_method.FROM.string));
 		debug("...TO	 : " + new String(dialog.current_method.TO.string));
-
+*/
 		// what method type??
 		switch(dialog.current_method.method_type)
 		{
 		case method_type.method_SUBSCRIBE:
-			debug("...event : " + new String(dialog.current_method.event_name.string));
-			debug("...body  : " + new String(dialog.current_method.event_body.string));
+			//debug("...event : " + new String(dialog.current_method.event_name.string));
+			//debug("...body  : " + new String(dialog.current_method.event_body.string));
 
 			if (QueryResolver.s_parse(dialog.current_method.event_body.string) != null)
 			{
@@ -107,7 +107,7 @@ public class Acquisition implements Callback
 
 					// accept subscription and set state right!
 					dialog.dialog_state = dialog_state.SUBSCRIPTION_VALID;
-					debug("...and send back CONFIRM with '200 OK'");
+					//debug("...and send back CONFIRM with '200 OK'");
 					// save query in doalog information for later
 					dialog.query = query;
 					// unlock dialog -> do not forget otherwise the dialog becomes unusuable!
@@ -130,7 +130,7 @@ public class Acquisition implements Callback
 			{
 				// reject subscription and set state right!
 				dialog.dialog_state = dialog_state.SUBSCRIPTION_TERMINATED_SERVER;
-				debug("...and send back CONFIRM with negative result");
+				//debug("...and send back CONFIRM with negative result");
 				// unlock dialog -> do not forget otherwise the dialog becomes unusuable!
 				dialog.locked = false;
 				// send CONFIRM
@@ -156,27 +156,27 @@ public class Acquisition implements Callback
 			if (ret_code.equals("200 OK"))
 			{
 				dialog.dialog_state = dialog_state.SUBSCRIPTION_VALID;
-				debug("...it's a positive CONFIRM - doing nothing");
+				//debug("...it's a positive CONFIRM - doing nothing");
 			}
 			else
 			{
-				debug("...it's a CONFIRM with code '" + ret_code + "' -> tearing down later");
+				//debug("...it's a CONFIRM with code '" + ret_code + "' -> tearing down later");
 			}
 			// unlock dialog -> do not forget otherwise the dialog becomes unusuable!
 			dialog.locked = false;								
 			break;
 		case method_type.method_BYE:
 			// set state right in order to send further NOTIFYs
-			debug("...it's a BYE -> terminating dialog " + dialog.dialog_id);
+			//debug("...it's a BYE -> terminating dialog " + dialog.dialog_id);
 			// set state to terminated to avoid future NOTIFYs
 			dialog.dialog_state = dialog_state.SUBSCRIPTION_TERMINATED_CLIENT;
 			// terminate query
-			debug("...terminate query");
+			//debug("...terminate query");
 			dialog.query.terminate = true;
 			// unlock dialog -> do not forget otherwise the dialog becomes unusuable!
 			dialog.locked = false;								
 			// send positive CONFIRM
-			debug("...send confirm back");
+			//debug("...send confirm back");
 			current_EC.Confirm(dialog, Ret_Codes.RC_200_OK);
 			break;
 		case method_type.method_NOTIFY:
@@ -186,7 +186,7 @@ public class Acquisition implements Callback
 		default:
 			// unlock dialog -> do not forget otherwise the dialog becomes unusuable!
 			dialog.locked = false;
-			debug("...there is another method - shouldn't happen");
+			//debug("...there is another method - shouldn't happen");
 		}
 	}
 
@@ -195,25 +195,25 @@ public class Acquisition implements Callback
 		String sensorCode = new String(reading, 0, 2);
 		Sensor sensor = SensorRepository.findSensor(sensorCode);
 
-		System.out.println("...SENSOR : " + sensorCode);
+		//System.out.println("...SENSOR : " + sensorCode);
 
 		if (sensor != null) {
-			System.out.println("...DESCRIPTION: " + sensor.Description);
+			//System.out.println("...DESCRIPTION: " + sensor.Description);
 			
 			if (sensor.type.equals("int")) {
 				
-				System.out.println("...VALUE :" + parseInt(reading, length) + " [" + sensor.Unit + "]");
+				//System.out.println("...VALUE :" + parseInt(reading, length) + " [" + sensor.Unit + "]");
 				
 			} else if (sensor.type.equals("txt")) {
 
-				System.out.println("...VALUE :" + parseString(reading, length) + " [" + sensor.Unit + "]");
+				//System.out.println("...VALUE :" + parseString(reading, length) + " [" + sensor.Unit + "]");
 			}
 		} else {
 			if (length == 6 && reading[2] == 0) {
 				// guess that it is an int.
-				System.out.println("...VALUE :" + parseInt(reading, length));
+				//System.out.println("...VALUE :" + parseInt(reading, length));
 			} else {
-				System.out.println("...VALUE : " + parseString(reading, length));
+				//System.out.println("...VALUE : " + parseString(reading, length));
 			}
 		}
 
