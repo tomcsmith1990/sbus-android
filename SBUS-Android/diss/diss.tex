@@ -221,6 +221,7 @@ Applications control how they interact with an environment through policies, whi
  
 \chapter{Preparation}
 
+Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
 
 \cleardoublepage
 
@@ -228,6 +229,26 @@ Applications control how they interact with an environment through policies, whi
 % ~ 4000 words
 \chapter{Implementation}
 
+\section{Flexible Schema Matching}
+
+Talk about the schema matching stuff - syntax, similar/exact, constructing lookup/repacking, subscriptions.
+
+How accurate is the lookup table? 
+Are any fields repackaged as ``empty'' when we could have filled them with something else? 
+Fairly qualitative, perhaps a discussion about how the constraints are used to create this lookup table, and how multiple constraints may be fulfilled by a single field.
+
+Should multiple constraints (e.g. must have two int fields) be allowed to match to the same field?
+
+Alternative search algorithms for schema comparison in RDC. 
+What performance increases they may offer, and how the results would vary (i.e. a breadth first search would return the schema which matches the constraints at the highest level).
+
+\section{Android Port}
+
+Talk about port - problems
+
+\section{Policy Engine/Phone Manager}
+
+Talk about policy engine - what it is, how it works, what it reacts to. AIRS SBUS gateway, how events from that signify context.
 
 \cleardoublepage
 
@@ -235,43 +256,50 @@ Applications control how they interact with an environment through policies, whi
 % ~ Eval + Conclusion ~ 2000 words
 \chapter{Evaluation}
 
+\section{Overall Picture (rename this)}
+
+Example
+
+Show policies - events, conditions, actions.
+
+AIRS events as policies.
+
+Screenshots of original message + repackaged?
+
+UI for user to set policy (system can also set policy).
+
+Diagram of communication order - setting policy then applying as a result of message.
+
+How long to go through policy list (all the if statements)
+
+How long to tell a component about context change - long list, might take a while for last one - prioritise?
+
+\section{System Performance}
+
+How long for RDC to search schemas - want it to be quick, not some stupid query bogging it down. Figure \ref{fig:rdc_search_optimisations}
+
 \begin{figure}[tbh]
 \centerline{\epsfbox{figs/rdc_search_optimisations.eps}}
-\caption{\label{fig:rdc_search_optimisations}RDC Search Optimisations}
+\caption[RDC Search Optimisations]{As seen from the graph, time taken to search for a schema increases linearly with the number of components registered. All optimisations perform more efficiently than searching without optimisation.}
+\label{fig:rdc_search_optimisations}
 \end{figure}
 
-\begin{itemize}
-\item
-{\bf TEST: } How long does the RDC take to find a matching schema (at the end of the list of components) when there are 0, 10, 50, 100 other components? How much faster is it with optimisations to put structure constraints or exact constraints (or both) first?\\
-{\bf REASON: } In reality, will have some other components, don't want too big a delay, especially if it affects other components. Could optimise searches with a hash table?
+How long to construct lookup/repack messages between different sized components (e.g. larger, smaller, similar). 
+No good if waiting 10 minutes for a message.
 
-\item
-{\bf TEST: } How long does it take for components to have connections reconfigured after connecting to a new Wi-Fi network?\\
-{\bf REASON: } If a lot of components are registered on the phone, how long does it take to get to the last one? Perhaps some priority is needed?
+\section{Android Port}
 
-\item
-{\bf TEST: } How long does it take to repack messages for: similar size schemas (e.g. just different names), much larger schemas (removing fields), much smaller fields (adding fields)?\\
-{\bf REASON: } Some applications may be time sensitive (e.g. stock market). Don't want to wait ages for each message to be repacked.
+How long to map compared to on laptop?
 
-\item
-{\bf TEST: } How long does it take to construct a lookup table for: similar size schemas, much larger schemas, much smaller fields?\\
-{\bf REASON: } Again, time sensitive.
+How long to recieve messages compared to on laptop?
 
-\item How accurate is the lookup table? Are any fields repackaged as ``empty'' when we could have filled them with something else? Fairly qualitative, perhaps a discussion about how the constraints are used to create this lookup table, and how multiple constraints may be fulfilled by a single field. Possibly more suited to Implementation or Conclusion?
+Android might have slower sockets - not my fault, but show where the bottlenecks are if in networking.
 
-\item Should multiple constraints (e.g. must have two int fields) be allowed to match to the same field?
+Stress test? How many components on Android can communicate?
 
-\item Some screenshots? Perhaps just showing a repackaged message being passed to a consumer and the original sensor message?
+Example code for Android SBUS component?
 
-\item Example code for Android consumer, showing how easy flexibility is?
-
-\item Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
-
-\item Alternative search algorithms for schema comparison in RDC. What performance increases they may offer, and how the results would vary (i.e. a breadth first search would return the schema which matches the constraints at the highest level).
-
-\item Table of example policies, how reconfiguration works.
-\end{itemize}
-
+Screenshots?
 
 \cleardoublepage
 
@@ -346,7 +374,7 @@ While this works provided there are no repeated fields names within the schema, 
 A solution to this would be to qualify all names specified in the constraints in a similar way to subscriptions. 
 We could specify a constraint for {\tt sensor}, meaning the entire structure, or {\tt sensor/sensor}, meaning the text field.
 
-\begin{figure}[h]
+\begin{figure}[tbh]
 \begin{lstlisting}
 @sensor
 {
