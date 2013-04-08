@@ -27,10 +27,10 @@ ef10 = dlmread(ef_file, delimiter, range10);
 ef50 = dlmread(ef_file, delimiter, range50);
 ef100 = dlmread(ef_file, delimiter, range100);
 
-sef0 = dlmread(ef_file, delimiter, range0);
-sef10 = dlmread(ef_file, delimiter, range10);
-sef50 = dlmread(ef_file, delimiter, range50);
-sef100 = dlmread(ef_file, delimiter, range100);
+sef0 = dlmread(sef_file, delimiter, range0);
+sef10 = dlmread(sef_file, delimiter, range10);
+sef50 = dlmread(sef_file, delimiter, range50);
+sef100 = dlmread(sef_file, delimiter, range100);
 
 no = [mean(no0) mean(no10) mean(no50) mean(no100)];
 sf = [mean(sf0) mean(sf10) mean(sf50) mean(sf100)];
@@ -39,10 +39,10 @@ sef = [mean(sef0) mean(sef10) mean(sef50) mean(sef100)];
 
 hold all;
 
-h1 = plot(components, 1000*no, '-o');
-h2 = plot(components, 1000*sf, '-+');
-h3 = plot(components, 1000*ef, '-*');
-h4 = plot(components, 1000*sef, '-x');
+h1 = plot(components, no/1000, '-o');
+h2 = plot(components, sf/1000, '-+');
+h3 = plot(components, ef/1000, '-*');
+h4 = plot(components, sef/1000, '-x');
 
 legend([h1 h2 h3 h4], 'No optimisation', 'Structures first', 'Exacts first', 'Structures-Exacts first', 'Location', 'Best');
 title('RDC Schema search for query +Ssomeval+Snum+Hmore+Hn');
