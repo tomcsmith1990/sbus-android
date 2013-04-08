@@ -32,14 +32,14 @@ public class AirsDiscovery extends Discovery implements Callback {
 
 			if (dialog.current_method.event_body.length > 0) {
 
-				debug("Discovery::callback: received PUBLISH with at least one sensor");
+				//debug("Discovery::callback: received PUBLISH with at least one sensor");
 
 				saveSensorsToFile(dialog.current_method.event_body.string);
 				loadSensorsFromFile();
 				
 			} else {
 
-				debug("Discovery::callback: received PUBLISH with no sensor information");
+				//debug("Discovery::callback: received PUBLISH with no sensor information");
 			}
 		}
 

@@ -126,5 +126,19 @@
 			</message>
 			<response>!</response>
 		</endpoint>
+		<endpoint>
+			<name>AIRS</name>
+			<type>#sink</type>
+			<message>
+				@reading
+				{
+					txt sensor
+					clk timestamp
+					[ int var ]
+					[ txt val ]
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
 	</endpoints>
 </component-metadata>
