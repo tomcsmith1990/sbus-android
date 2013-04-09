@@ -276,28 +276,43 @@ How long to tell a component about context change - long list, might take a whil
 
 \section{System Performance}
 
-How long for RDC to search schemas - want it to be quick, not some stupid query bogging it down. Figure \ref{fig:rdc_search_optimisations}
-
+% rdc search optimisation
 \begin{figure}[tbh]
 \centerline{\epsfbox{figs/rdc_search_optimisations.eps}}
 \caption[RDC Search Optimisations]{As seen from the graph, time taken to search for a schema increases linearly with the number of components registered. All optimisations perform more efficiently than searching without optimisation.}
 \label{fig:rdc_search_optimisations}
 \end{figure}
 
+Figure \ref{fig:rdc_search_optimisations} shows the time taken for a the RDC to search through all registered components to match schema constraints. 
+As expected, the time taken to search increases linearly with the number of components registered. 
+The structures first optimisation narrowly beats the exact first, and exact structures optimisations, all of which beat no optimisation. 
+Even in the worst case, the RDC can perform the search with 100 other components registered in just over 40 milliseconds. 
+This demonstrates that a schema search is not {\sl too} expensive, and will not impact performance on other components to a high extent. 
+
+% construct lookup
 \begin{figure}[tbh]
 \centerline{\epsfbox{figs/construct_lookup.eps}}
-\caption[Construct Lookup Times]{The increase from left to right shows that the time taken to construct a lookup table for a schema increases with the size of the schema. The higher values in the top right corner show that the time taken is longer when the schema is much larger, while the lower values in the bottom right corner show that time taken is shorter when the schema is a similar size.}
+\caption[Construct Lookup Times]{Time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers.}
 \label{fig:construct_lookup}
 \end{figure}
 
+In Figure \ref{fig:construct_lookup} and Figure \ref{fig:repack_message}, the schema constraint used is a type match on the smaller schema. 
+
+Figure \ref{fig:construct_lookup} shows the time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers. 
+The general increase in time from left to right shows that more time is taken to construct a lookup table as the size of the producer schema increases, as expected, since there are more fields. 
+The greater values in the upper right half of the graph show a disparity with the smaller values in the lower left half of the graph. 
+This shows that the time taken to construct a lookup table is greater when the producer's schema is larger than the consumer's schema. 
+This corresponds to searching in the larger producer schema for the smaller consumer schema to be matched, as opposed to simply finding the missing structures if the consumer schema were larger.
+In either case, the lookup table is constructed once per connection, and takes microseconds.
+
 \begin{figure}[tbh]
 \centerline{\epsfbox{figs/repack_message.eps}}
-\caption[Repackage Message]{The increase from left to right and top to bottom show that time taken to repack a message is proportional to the size of the message.}
+\caption[Repackage Message]{Time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers.}
 \label{fig:repack_message}
 \end{figure}
 
-How long to construct lookup/repack messages between different sized components (e.g. larger, smaller, similar). 
-No good if waiting 10 minutes for a message.
+Figure \ref{fig:repack_message} shows the time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers. 
+The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected, because more fields are been repackaged.
 
 \section{Android Port}
 
