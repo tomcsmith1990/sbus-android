@@ -284,6 +284,18 @@ How long for RDC to search schemas - want it to be quick, not some stupid query 
 \label{fig:rdc_search_optimisations}
 \end{figure}
 
+\begin{figure}[tbh]
+\centerline{\epsfbox{figs/construct_lookup.eps}}
+\caption[Construct Lookup Times]{The increase from left to right shows that the time taken to construct a lookup table for a schema increases with the size of the schema. The higher values in the top right corner show that the time taken is longer when the schema is much larger, while the lower values in the bottom right corner show that time taken is shorter when the schema is a similar size.}
+\label{fig:construct_lookup}
+\end{figure}
+
+\begin{figure}[tbh]
+\centerline{\epsfbox{figs/repack_message.eps}}
+\caption[Repackage Message]{The increase from left to right and top to bottom show that time taken to repack a message is proportional to the size of the message.}
+\label{fig:repack_message}
+\end{figure}
+
 How long to construct lookup/repack messages between different sized components (e.g. larger, smaller, similar). 
 No good if waiting 10 minutes for a message.
 
