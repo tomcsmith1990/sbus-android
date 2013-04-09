@@ -2940,7 +2940,7 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 	timeval start, end;
 	long seconds;
 
-	const int iter = 100;
+	const int iter = 1000;
 	const int runs = 100;
 	
 	FILE *file;
@@ -4294,17 +4294,17 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		timeval start, end;
 		long seconds;
 
-		const int iter = 100;
+		const int iter = 1000;
 		const int runs = 100;
 		
 		FILE *file;
-		file = fopen("home/tom/repack-results.txt", "a");
+		file = fopen("/home/tom/repack-results.txt", "a");
 		fprintf(file, "=== REPACKAGE TIME %d RUNS, %d ITER ===\n", runs, iter);
 		fclose(file);
 		
 		for (int k = 0; k < runs; k++)
 		{
-			file = fopen("home/tom/repack-results.txt", "a");
+			file = fopen("/home/tom/repack-results.txt", "a");
 			gettimeofday(&start, NULL);
 			for (int j = 0; j < iter; j++)
 			{
