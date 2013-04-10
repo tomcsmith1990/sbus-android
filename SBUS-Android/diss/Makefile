@@ -7,6 +7,7 @@
 DISS = diss.tex refs.bib propbody.tex
 
 "":
+	make figures
 	make diss.pdf
 	make clean
 	
@@ -36,11 +37,17 @@ diss.ps:	$(DISS)
 
 diss.pdf:	diss.ps
 	ps2pdf diss.ps
-
+	
 count:
 	detex diss.tex | tr -cd '0-9A-Za-z \n' | wc -w
 
 all:	proposal.dvi diss.ps
+
+figures:
+	pdfcrop -margins 10 figs/*.pdf
+	pdftops -eps figs/*-crop.pdf
+	rm figs/*-crop.pdf
+	rename -f 's/\-crop.eps/.eps/' figs/*.eps
 
 clean:
 	rm -f diss.ps *.dvi *.aux *.log *.err
