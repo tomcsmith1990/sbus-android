@@ -70,13 +70,13 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 3213\footnotemark[1] \\
+Word Count:         & \bf 3694\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
 }
 
-\footnotetext[1]{This word count was computed by {\tt detex diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}}
+\footnotetext[1]{This word count was computed by {\tt detex -e `appendix,figure' diss.tex | tr -cd `0-9A-Za-z $\tt\backslash$n' | wc -w}}
 \stepcounter{footnote}
 
 
@@ -263,9 +263,32 @@ Talk about policy engine - what it is, how it works, what it reacts to. AIRS SBU
 %set the image x size to the width of the page
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/overview.eps}}
-\caption{System Overview}
+\caption[System Overview]{The light blue boxes represent components and the green boxes within them represent endpoints. The purple boxes are lists of components registered with the RDC and Phone Manager, and the orange box is a list of policies set on the Phone Manager.}
 \label{fig:system_overview}
 \end{figure}
+
+Figure \ref{fig:system_overview} shows the interactions that occur within the system, detailing how applications are reconfigured upon a change in context. 
+
+\begin{enumerate}
+
+\item After an application has registered with the Phone Manager, the application can send policies to the Phone Manager, which specify how the application endpoints should be reconfigured upon a change in context.
+
+\item The AIRS-SBUS gateway acts as a server for sensor readings from AIRS, which then emits the readings as SBUS events, which are consumed by the Phone Manager. The Phone Manager also receives other intents from Android, signalling a change in Wi-Fi network.
+
+\item The Phone Manager processes these events to determine whether a change in context has occurred. Once a change happens, the Phone Manager informs all of the components registered of whether an RDC should be added or removed.
+
+\item The application will either automatically accept this RDC change, registering or deregistering with the RDC, or perform some callback method, dependent upon its preferences.
+
+\item The Phone Manager applies all of the policies within its policy table, instructing application endpoints to map to different components. These policies have been specified by the application, and may contain an IP address, or some constraint for a component to be mapped to.
+
+\item If the policy specifies a constraint, the application will query the RDC for components matching this constraint. A constraint may be a component name, or schema constraints.
+
+\item The RDC searches components registered with it for those matching the constraints, and returns the list of results to the application.
+
+\item The application endpoint is then mapped to a new component in the environment, allowing communication to continue.
+
+\end{enumerate}
+
 
 Example
 
@@ -276,8 +299,6 @@ AIRS events as policies.
 Screenshots of original message + repackaged?
 
 UI for user to set policy (system can also set policy).
-
-Diagram of communication order - setting policy then applying as a result of message.
 
 How long to go through policy list (all the if statements)
 
@@ -307,7 +328,7 @@ This demonstrates that a schema search is not {\sl too} expensive, and will not 
 \label{fig:construct_lookup}
 \end{figure}
 
-In Figure \ref{fig:construct_lookup} and Figure \ref{fig:repack_message}, the schema constraint used is a type match on the smaller schema. 
+Figures \ref{fig:construct_lookup} and \ref{fig:repack_message} both use a schema constraint which matches the type of the smallest schema.
 
 Figure \ref{fig:construct_lookup} shows the time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers. 
 The general increase in time from left to right shows that more time is taken to construct a lookup table as the size of the producer schema increases, as expected, since there are more fields. 
@@ -325,7 +346,8 @@ In either case, the lookup table is constructed once per connection, and takes m
 \end{figure}
 
 Figure \ref{fig:repack_message} shows the time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers. 
-The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected, because more fields are been repackaged.
+The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected, because more fields are been repackaged. 
+As with constructing the lookup table, messages are repackaged within microseconds.
 
 \section{Android Port}
 
@@ -439,7 +461,7 @@ We could specify a constraint for {\tt sensor}, meaning the entire structure, or
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the appendices
-\appendix
+\begin{appendix}
 
 \chapter{Possible Titles}
 
@@ -462,5 +484,7 @@ We could specify a constraint for {\tt sensor}, meaning the entire structure, or
 \chapter{Project Proposal}
 
 \input{propbody}
+
+\end{appendix}
 
 \end{document}
