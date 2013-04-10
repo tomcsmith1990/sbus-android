@@ -256,7 +256,16 @@ Talk about policy engine - what it is, how it works, what it reacts to. AIRS SBU
 % ~ Eval + Conclusion ~ 2000 words
 \chapter{Evaluation}
 
-\section{Overall Picture (rename this)}
+\section{System Overview}
+
+% overview of system image
+\begin{figure}[tbh]
+%set the image x size to the width of the page
+\epsfxsize=\hsize
+\centerline{\epsfbox{figs/overview.eps}}
+\caption{System Overview}
+\label{fig:system_overview}
+\end{figure}
 
 Example
 
@@ -278,6 +287,7 @@ How long to tell a component about context change - long list, might take a whil
 
 % rdc search optimisation
 \begin{figure}[tbh]
+\epsfxsize=\hsize
 \centerline{\epsfbox{figs/rdc_search_optimisations.eps}}
 \caption[RDC Search Optimisations]{As seen from the graph, time taken to search for a schema increases linearly with the number of components registered. All optimisations perform more efficiently than searching without optimisation.}
 \label{fig:rdc_search_optimisations}
@@ -291,6 +301,7 @@ This demonstrates that a schema search is not {\sl too} expensive, and will not 
 
 % construct lookup
 \begin{figure}[tbh]
+\epsfxsize=\hsize
 \centerline{\epsfbox{figs/construct_lookup.eps}}
 \caption[Construct Lookup Times]{Time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers.}
 \label{fig:construct_lookup}
@@ -305,7 +316,9 @@ This shows that the time taken to construct a lookup table is greater when the p
 This corresponds to searching in the larger producer schema for the smaller consumer schema to be matched, as opposed to simply finding the missing structures if the consumer schema were larger.
 In either case, the lookup table is constructed once per connection, and takes microseconds.
 
+% repack message
 \begin{figure}[tbh]
+\epsfxsize=\hsize
 \centerline{\epsfbox{figs/repack_message.eps}}
 \caption[Repackage Message]{Time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers.}
 \label{fig:repack_message}
