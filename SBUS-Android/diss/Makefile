@@ -39,7 +39,7 @@ diss.pdf:	diss.ps
 	ps2pdf diss.ps
 	
 count:
-	detex diss.tex | tr -cd '0-9A-Za-z \n' | wc -w
+	detex -e 'appendix,figure' diss.tex | tr -cd '0-9A-Za-z \n' | wc -w
 
 all:	proposal.dvi diss.ps
 
