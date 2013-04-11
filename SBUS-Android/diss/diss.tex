@@ -318,7 +318,7 @@ An IP address may be useful when the application should always be mapped to the 
 In the first example, a healthcare system has registered to have heart rate readings mapped directly to an endpoint at a known IP address, perhaps a relative or emergency response team. 
 However the real flexibility of the system lies in the queries. 
 These will be resolved by some RDC, ensuring components are mapped only to other components satisfying their queries. 
-In the second row, the transport application sets a policy for any component named ``Stagecoach'' which has an endpoint named ``Coach'', while in the third row it sets a policy for any component which has a structure matching the type of {\tt coach}. 
+In the second row, the transport application sets a policy for any component named ``Stagecoach'' which has an endpoint named ``Coach'', while in the third row it sets a policy for any endpoint which has a structure matching the type of {\tt coach}. 
 
 The system could easily be extended to an event-condition-action model, allowing applications to specify AIRS sensors to use as events, and actions to be taken upon an event satisfying some condition.
 
@@ -350,13 +350,13 @@ The application may also display adverts, where policies could be used to determ
 
 % todo:
 
-Screenshots of original message + repackaged?
+%Screenshots of original message + repackaged?
 
-UI for user to set policy (system can also set policy).
+%UI for user to set policy (system can also set policy).
 
-How long to go through policy list (all the if statements)
+%How long to go through policy list (all the if statements)
 
-How long to tell a component about context change - long list, might take a while for last one - prioritise?
+%How long to tell a component about context change - long list, might take a while for last one - prioritise?
 
 \section{System Performance}
 
