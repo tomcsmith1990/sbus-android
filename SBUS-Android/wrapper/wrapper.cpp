@@ -985,49 +985,55 @@ void swrapper::handle_new_rdc(int arrive, const char *address)
 {
 	if (arrive)
 	{
-		// add the rdc if it is not already.
-		rdc->add_noduplicates(address);
-
-		// register the component with the rdc		
-		register_cpt(1, address);
-
-		// need to send all permissions we have.
-		smidpoint *mp;
-		privilegeparamsvector *privilegevector = new privilegeparamsvector();
-		spermission *permission;
-		
-		// Create a list of all permissions to be sent.
-		for (int i = 0; i < mps->count(); i++)
+		if (rdc->find(address) == -1)
 		{
-			mp = mps->item(i);
-			for (int j = 0; j < mp->acl_ep->count(); j++)
+			// add the rdc if it is not already.
+			rdc->add_noduplicates(address);
+
+			// register the component with the rdc		
+			register_cpt(1, address);
+
+			// need to send all permissions we have.
+			smidpoint *mp;
+			privilegeparamsvector *privilegevector = new privilegeparamsvector();
+			spermission *permission;
+		
+			// Create a list of all permissions to be sent.
+			for (int i = 0; i < mps->count(); i++)
 			{
-				permission = mp->acl_ep->item(j);
-				privilegevector->add(new privilegeparams(mp->name, permission->principal_cpt, permission->principal_inst, true));
+				mp = mps->item(i);
+				for (int j = 0; j < mp->acl_ep->count(); j++)
+				{
+					permission = mp->acl_ep->item(j);
+					privilegevector->add(new privilegeparams(mp->name, permission->principal_cpt, permission->principal_inst, true));
+				}
 			}
-		}
 		
-		// Send permissions to new RDC only, and clean up.
-		privilegeparams *privs;
-		while ((privs = privilegevector->pop()) != NULL)
-		{
-			update_privileges_on_rdc(privs, address);
-			delete privs;
-		}
-		
-		delete privilegevector;
-		
+			// Send permissions to new RDC only, and clean up.
+			privilegeparams *privs;
+			while ((privs = privilegevector->pop()) != NULL)
+			{
+				update_privileges_on_rdc(privs, address);
+				delete privs;
+			}
+			
+			delete privilegevector;
+		}		
 	}
 	else
 	{
 		// deregister from rdc and remove the rdc from our list.
 		// Note: we may still be registered (cannot send message because left the network).
 		// The rdc will detect this if we leave the network.
-		register_cpt(0, address);
+		
+		if (rdc->find(address) != -1)
+		{
+			register_cpt(0, address);
 
-		// don't remove localhost
-		if (strcmp(address, "localhost:50123"))
-			rdc->remove(address);
+			// don't remove localhost
+			if (strcmp(address, "localhost:50123"))
+				rdc->remove(address);
+		}
 	}
 }
 
@@ -4298,13 +4304,15 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		const int runs = 100;
 		
 		FILE *file;
-		file = fopen("/home/tom/repack-results.txt", "a");
+		char filename[strlen("/home/tom/repack-message--.txt")+strlen(instance)+strlen(wrap->instance_name)+1];
+		sprintf(filename, "/home/tom/repack-message-%s-%s.txt", wrap->instance_name, instance);
+		file = fopen(filename, "a");
 		fprintf(file, "=== REPACKAGE TIME %d RUNS, %d ITER ===\n", runs, iter);
 		fclose(file);
 		
 		for (int k = 0; k < runs; k++)
 		{
-			file = fopen("/home/tom/repack-results.txt", "a");
+			file = fopen(filename, "a");
 			gettimeofday(&start, NULL);
 			for (int j = 0; j < iter; j++)
 			{
