@@ -70,7 +70,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 3694\footnotemark[1] \\
+Word Count:         & \bf 4251\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -269,25 +269,25 @@ Talk about policy engine - what it is, how it works, what it reacts to. AIRS SBU
 \label{fig:system_overview}
 \end{figure}
 
-Figure \ref{fig:system_overview} shows the interactions that occur within the system, detailing how applications are reconfigured upon a change in context. 
+Figure \ref{fig:system_overview} shows the interactions that occur within the system, detailing how a transport application which uses the coach schema in Figure \ref{fig:coach-schema} might have its connection reconfigured upon a change in context.
 
 \begin{enumerate}
 
-\item After an application has registered with the Phone Manager, the application can send policies to the Phone Manager, which specify how the application endpoints should be reconfigured upon a change in context.
+\item After the transport application has registered with the Phone Manager, it can send policies to the Phone Manager which specify how its endpoints should be reconfigured upon a change in context. For instance, the application may wish to be connected to any components which offer a structure matching the type of {\tt coach}. In another case, it may simply give an IP address it should be connected to.
 
 \item The AIRS-SBUS gateway acts as a server for sensor readings from AIRS, which then emits the readings as SBUS events, which are consumed by the Phone Manager. The Phone Manager also receives other intents from Android, signalling a change in Wi-Fi network.
 
-\item The Phone Manager processes these events to determine whether a change in context has occurred. Once a change happens, the Phone Manager informs all of the components registered of whether an RDC should be added or removed.
+\item The Phone Manager processes these events to determine whether a change in context has occurred. Once a change happens, the Phone Manager will inform the transport application about the change by sending it details of whether an RDC should be added or removed. 
 
-\item The application will either automatically accept this RDC change, registering or deregistering with the RDC, or perform some callback method, dependent upon its preferences.
+\item The transport application receives this message about the RDC change and will automatically accept this RDC change, registering or deregistering with the RDC, or perform some callback method, perhaps prompting the user to make a decision. The transport application may have chosen to automatically accept the change, but display a message to the user to indicate that the context has changed.
 
-\item The Phone Manager applies all of the policies within its policy table, instructing application endpoints to map to different components. These policies have been specified by the application, and may contain an IP address, or some constraint for a component to be mapped to.
+\item The Phone Manager applies all of the policies within its policy table, sending messages to application endpoints, instructing them to connect to different components. The transport application will be sent whatever it has set in its policy.
 
-\item If the policy specifies a constraint, the application will query the RDC for components matching this constraint. A constraint may be a component name, or schema constraints.
+\item If the transport application has specified an IP address in its policy, the endpoint will receive this IP address and can connect directly to it to start receiving messages. However, if the policy specified that a component must have a structure matching the type of {\tt coach}, the endpoint will query the RDC with this constraint to find matching components.
 
-\item The RDC searches components registered with it for those matching the constraints, and returns the list of results to the application.
+\item The RDC searches components registered with it for those matching the constraints. In this case, it might find only a component sending coach data, while in other cases it may find components offering train data. In both cases, these components match the constraints, so the RDC returns the list of matching components to the application.
 
-\item The application endpoint is then mapped to a new component in the environment, allowing communication to continue.
+\item The application endpoint then connects to one of the matching component, allowing the user to continue receiving fresh travel data without any interaction needed.
 
 \end{enumerate}
 
@@ -300,9 +300,9 @@ Figure \ref{fig:system_overview} shows the interactions that occur within the sy
 Component & Endpoint & Remote Address & Remote Endpoint \\
 \hline
 
-Healthcare & HeartRate & 192.168.0.10:44444 & HeartRate \\
-Transport & Train & +NTransportProducer & Train \\
-Transport & Transport & +Scoach & NULL \\
+Healthcare & HeartRate & 128.232.0.20:44444 & HeartRate \\
+Transport & Departures & +NStagecoach & Coach \\
+Transport & Departures & +Scoach & NULL \\
 
 \hline
 \end{tabular}
@@ -318,11 +318,9 @@ An IP address may be useful when the application should always be mapped to the 
 In the first example, a healthcare system has registered to have heart rate readings mapped directly to an endpoint at a known IP address, perhaps a relative or emergency response team. 
 However the real flexibility of the system lies in the queries. 
 These will be resolved by some RDC, ensuring components are mapped only to other components satisfying their queries. 
-In the second row, the query is simply for a component named ``TransportProducer'', with an endpoint named ``Train''. 
-In the third row, the query allows for any component which has a structure matching the type of {\tt coach}, where {\tt NULL} means the remote endpoint name doesn't matter. 
+In the second row, the transport application sets a policy for any component named ``Stagecoach'' which has an endpoint named ``Coach'', while in the third row it sets a policy for any component which has a structure matching the type of {\tt coach}. 
 
-The Phone Manager currently assumes that changes in context are limited to changes in Wi-Fi network. 
-However, by using sensor readings from AIRS, the policies could easily be extended to an event-condition-action model.
+The system could easily be extended to an event-condition-action model, allowing applications to specify AIRS sensors to use as events, and actions to be taken upon an event satisfying some condition.
 
 % table of example policies with events and conditions
 \begin{table}[tbh]
@@ -333,10 +331,10 @@ However, by using sensor readings from AIRS, the policies could easily be extend
 Event & Condition & Component & Remote Address \\
 \hline
 
-Accelerometer & \begin{math} val \ge50 \end{math} & Healthcare & 192.168.0.10:44444 \\
+Accelerometer & \begin{math} val \ge50 \end{math} & Healthcare & 128.232.0.20:44444 \\
 Time & \begin{math} 12 \le val.hour \le 14 \end{math} & Adverts & +IRestaurant \\
-Wi-Fi & \begin{math} val = true \end{math} & Transport & +NTransportProducer \\
-Wi-Fi & \begin{math} val = true \end{math} & Transport & +Scoach \\
+Wi-Fi & \begin{math} val = true \end{math} & Transport & +NStagecoach \\
+GPS & \begin{math} location(val) = France \end{math} & Transport & +Scoach \\
 
 \hline
 \end{tabular}
@@ -345,12 +343,12 @@ Wi-Fi & \begin{math} val = true \end{math} & Transport & +Scoach \\
 \label{tab:event_condition_action}
 \end{table}
 
-As shown in Table \ref{tab:event_condition_action}, applications would not only specify their policy, which is the action they wish to take, but also the events and conditions they wish to take that action in. 
-This would allow the healthcare system to specify that it only wishes for this mapping to occur if a high accelerometer value was measured, which might indicate that a fall has happened. 
-An application receiving adverts might connect to adverts from nearby restaurants around lunchtime. 
+As shown in Table \ref{tab:event_condition_action}, applications would not only specify the action they wish to take through their map constraints, but also the events and conditions in which they wish to take that action.
+The healthcare system could specify that it only wishes for heart rate data to be connected to the IP address if a high accelerometer value was measured, because the reading may indicate that a fall has occurred. 
+The transport application can set different policies for different events. If a Wi-Fi connection is established, the application wants to connect specifically to Stagecoach components, however if a GPS event indicates that the user were in France, the application is more lenient and willing to accept any component offering a structure matching the type of {\tt coach}. 
+The application may also display adverts, where policies could be used to determine the source of the adverts, perhaps from nearby restaurants around lunchtime. 
 
 % todo:
-AIRS events as policies.
 
 Screenshots of original message + repackaged?
 
