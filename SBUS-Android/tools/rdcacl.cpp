@@ -1369,7 +1369,7 @@ image::~image()
 	if(state != NULL) delete state;
 	delete msg_hsh;
 	delete reply_hsh;
-	//delete msg_schema_list;
+	delete msg_schema_list;
 	delete acpolicies;
 	delete buffered_policies;
 }
