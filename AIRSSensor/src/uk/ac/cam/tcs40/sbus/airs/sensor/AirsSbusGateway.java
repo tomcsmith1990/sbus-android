@@ -7,38 +7,42 @@ import com.airs.platform.Server;
 
 import android.content.Context;
 import uk.ac.cam.tcs40.sbus.FileBootloader;
+import uk.ac.cam.tcs40.sbus.Multiplex;
 import uk.ac.cam.tcs40.sbus.SComponent;
+import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
+import uk.ac.cam.tcs40.sbus.SEndpoint;
+import uk.ac.cam.tcs40.sbus.SMessage;
+import uk.ac.cam.tcs40.sbus.SNode;
 import uk.ac.cam.tcs40.sbus.airs.sensor.dynamic.EndpointManager;
 
 public class AirsSbusGateway {
 
 	private SComponent m_Component;
+	private SEndpoint m_SubscriptionEndpoint;
 	private Server m_Server;
 
 	private SensorReadingActivity m_Activity;
 	private Context m_Context;
+	
+	private final String m_CptFile = "AirsSensor.cpt";
 
 	public AirsSbusGateway(SensorReadingActivity activity) {
-		this.m_Activity = activity;
-		this.m_Context = activity.getApplicationContext();
+		m_Activity = activity;
+		m_Context = activity.getApplicationContext();
 
 		// Store the component files used.
 		storeComponentFiles();
 
 		// Create the component.
-		this.m_Component = new SComponent("AirsSensor", "airs");
-
-		String cptFile;
-
-		// The component file to use.
-		cptFile = "AirsSensorDynamic.cpt";
+		m_Component = new SComponent("AirsSensor", "airs");
+		m_SubscriptionEndpoint = m_Component.addEndpoint("subscribe", EndpointType.EndpointSink, "8C59332D91B9");
 
 		// Register RDC if it is available.
 		//this.m_Component.addRDC("192.168.0.3:50123");
 
 		// Start the component, load the .cpt file.
-		this.m_Component.start(this.m_Context.getFilesDir() + "/" + cptFile, -1, true);
-		this.m_Component.setPermission("AirsConsumer", "", true);
+		m_Component.start(m_Context.getFilesDir() + "/" + m_CptFile, -1, true);
+		m_Component.setPermission("AirsConsumer", "", true);
 	}
 
 	public void subscribe(String sensorCode) {
@@ -78,6 +82,29 @@ public class AirsSbusGateway {
 
 			this.m_Activity.setStatusText("ready for AIRS subscriptions");
 
+			Multiplex multi = m_Component.getMultiplex();
+			multi.add(m_SubscriptionEndpoint);
+			
+			while (m_Component != null) {
+
+				// Wait until a message is ready.
+				try {
+					multi.waitForMessage();
+				} catch (Exception e) {
+					// Exception thrown if waitForMessage() returns with an endpoint not on the component which owns the Multiplex.
+					break;
+				}
+
+				SMessage message = m_SubscriptionEndpoint.receive();
+				SNode node = message.getTree();
+
+				String sensorCode = node.extractString("sensor-code");
+
+				message.delete();
+				
+				subscribe(sensorCode);
+			}
+
 		} catch (IOException e) {
 
 		}
@@ -85,6 +112,6 @@ public class AirsSbusGateway {
 
 	private void storeComponentFiles() {
 		// Create a FileBootloader to store our component file.
-		new FileBootloader(this.m_Context).store("AirsSensorDynamic.cpt");
+		new FileBootloader(this.m_Context).store(m_CptFile);
 	}
 }

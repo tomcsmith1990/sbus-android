@@ -140,5 +140,16 @@
 			</message>
 			<response>!</response>
 		</endpoint>
+		<endpoint>
+			<name>airs_subscribe</name>
+			<type>#source</type>
+			<message>
+				@subscription
+				{
+					txt sensor-code
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
 	</endpoints>
 </component-metadata>
