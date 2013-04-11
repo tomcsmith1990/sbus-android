@@ -205,6 +205,8 @@ class swrapper
 
 	void departure(speer *peer, int unexpected);
 	
+	char *instance_name;
+	
 	private:
 	
 	void begin_accept();
@@ -271,7 +273,7 @@ class swrapper
 	char *canonical_address;
 	char *local_address;
 	
-	char *cpt_name, *instance_name;
+	char *cpt_name;
 	char *cmdline;
 	sadmin *admin;
 	svector *rdc;
