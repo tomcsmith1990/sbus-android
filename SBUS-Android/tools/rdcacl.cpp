@@ -1124,7 +1124,7 @@ void rdc::lookup(sendpoint *ep)
 	sn_interface = query->tree->extract_item("interface");
 	result = mklist("results"); // @results ( txt address )
 	pthread_mutex_lock(&live_mutex);
-
+/*
 	// ***EVALUATION***
 	
 	timeval start, end;
@@ -1159,7 +1159,7 @@ void rdc::lookup(sendpoint *ep)
 		fclose(file);
 	}
 	// ***END EVALUATION***
-
+*/
 	for(int i = 0; i < live->count(); i++)
 	{
 
@@ -1369,7 +1369,7 @@ image::~image()
 	if(state != NULL) delete state;
 	delete msg_hsh;
 	delete reply_hsh;
-	delete msg_schema_list;
+	//delete msg_schema_list;
 	delete acpolicies;
 	delete buffered_policies;
 }
