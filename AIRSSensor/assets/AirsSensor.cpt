@@ -4,5 +4,16 @@
 	<keywords></keywords>
 	<designer>Tom Smith</designer>
 	<endpoints>
+		<endpoint>
+			<name>subscribe</name>
+			<type>#sink</type>
+			<message>
+				@subscription
+				{
+					txt sensor-code
+				}
+			</message>
+			<response>!</response>
+		</endpoint>
 	</endpoints>
 </component-metadata>

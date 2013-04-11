@@ -1,5 +1,6 @@
 package uk.ac.cam.tcs40.sbus.mapper;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import uk.ac.cam.tcs40.sbus.Multiplex;
@@ -17,7 +18,11 @@ public class PhoneManagementComponent {
 
 	private static String s_PhoneIP = "127.0.0.1";	// localhost to begin with.
 	private static SComponent s_PMC;
-	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, s_RegisterRdc, s_MapPolicy, s_AIRS;
+	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, 
+								s_RegisterRdc, s_MapPolicy, s_AIRS, s_AIRSSubscribe;
+	
+	private static String s_AIRSAddress;
+	private static final List<String> s_AIRSSubscriptions = new LinkedList<String>();
 
 	private static Context s_Context;
 
@@ -158,6 +163,22 @@ public class PhoneManagementComponent {
 	public PhoneManagementComponent(Context context) {
 		s_Context = context;
 	}
+	
+	private void subscribeToAIRS(String sensorCode) {
+		if (s_AIRSAddress == null) 
+			return;
+		
+		if (!s_AIRSSubscriptions.contains(sensorCode)) {
+			s_AIRSSubscribe.map(s_AIRSAddress, "subscribe");
+			SNode subscription = s_AIRSSubscribe.createMessage("subscription");
+			subscription.packString(sensorCode, "sensor-code");
+			s_AIRSSubscribe.emit(subscription);
+			s_AIRSSubscribe.unmap();
+			
+			s_AIRSSubscriptions.add(sensorCode);
+		}
+			
+	}
 
 	private void acceptRegistration() {
 		String address, host, port, sourceComponent, sourceInstance;
@@ -184,6 +205,9 @@ public class PhoneManagementComponent {
 
 		if (register) {
 
+			if (sourceComponent.equals("AirsSensor"))
+				s_AIRSAddress = ":" + port;
+				
 			Registration registration = RegistrationRepository.add(port, sourceComponent, sourceInstance);
 			if (registration != null) {
 				PMCActivity.addStatus("Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
@@ -302,8 +326,11 @@ public class PhoneManagementComponent {
 						informComponentsAboutRDC(false);
 					
 				} else if (sensorCode.equals("Rd")) {
-					if (tree.extractInt("var") == 0)
+					int var = tree.extractInt("var");
+					if (var < 10000)
 						informComponentsAboutRDC(false);
+					else if (var > 50000)
+						informComponentsAboutRDC(true);
 				}
 				
 				message.delete();
@@ -342,6 +369,8 @@ public class PhoneManagementComponent {
 			}
 		}
 		message.delete();
+		
+		subscribeToAIRS("Rd");
 	}
 
 	public void start() {
@@ -372,6 +401,8 @@ public class PhoneManagementComponent {
 		s_MapPolicy = s_PMC.addEndpoint("map_policy", EndpointType.EndpointSink, "857FC4B7506D");
 		
 		s_AIRS = s_PMC.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
+		
+		s_AIRSSubscribe = s_PMC.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "8C59332D91B9");
 
 		// Start the component on the default RDC port.
 		s_PMC.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
@@ -406,6 +437,7 @@ public class PhoneManagementComponent {
 		s_Status.unmap();
 		s_MapPolicy.unmap();
 		s_AIRS.unmap();
+		s_AIRSSubscribe.unmap();
 
 		s_PMC.delete();
 
@@ -418,6 +450,7 @@ public class PhoneManagementComponent {
 		s_Status = null;
 		s_MapPolicy = null;
 		s_AIRS = null;
+		s_AIRSSubscribe = null;
 
 		s_PMC = null;
 
