@@ -105,8 +105,10 @@ does not contain material that has already been used to any substantial
 extent for a comparable purpose.
 
 \bigskip
+\bigskip
 \leftline{Signed: }
 
+\bigskip
 \bigskip
 \leftline{Date: }
 
@@ -289,11 +291,65 @@ Figure \ref{fig:system_overview} shows the interactions that occur within the sy
 
 \end{enumerate}
 
+% table of example policies
+\begin{table}[tbh]
+\centering
 
-Example
+\begin{tabular}{c c c c}
+\hline\hline
+Component & Endpoint & Remote Address & Remote Endpoint \\
+\hline
 
-Show policies - events, conditions, actions.
+Healthcare & HeartRate & 192.168.0.10:44444 & HeartRate \\
+Transport & Train & +NTransportProducer & Train \\
+Transport & Transport & +Scoach & NULL \\
 
+\hline
+\end{tabular}
+
+\caption{Phone Manager Example Policies}
+\label{tab:example_policies}
+\end{table}
+
+Table \ref{tab:example_policies} shows example policies which components might set with the Phone Manager. 
+Both the local component and local endpoint are implicitly set as whichever endpoint sent the policy. 
+The remote address may be an IP address or a query to be resolved by an RDC. 
+An IP address may be useful when the application should always be mapped to the same IP address. 
+In the first example, a healthcare system has registered to have heart rate readings mapped directly to an endpoint at a known IP address, perhaps a relative or emergency response team. 
+However the real flexibility of the system lies in the queries. 
+These will be resolved by some RDC, ensuring components are mapped only to other components satisfying their queries. 
+In the second row, the query is simply for a component named ``TransportProducer'', with an endpoint named ``Train''. 
+In the third row, the query allows for any component which has a structure matching the type of {\tt coach}, where {\tt NULL} means the remote endpoint name doesn't matter. 
+
+The Phone Manager currently assumes that changes in context are limited to changes in Wi-Fi network. 
+However, by using sensor readings from AIRS, the policies could easily be extended to an event-condition-action model.
+
+% table of example policies with events and conditions
+\begin{table}[tbh]
+\centering
+
+\begin{tabular}{c c c c}
+\hline\hline
+Event & Condition & Component & Remote Address \\
+\hline
+
+Accelerometer & \begin{math} val \ge50 \end{math} & Healthcare & 192.168.0.10:44444 \\
+Time & \begin{math} 12 \le val.hour \le 14 \end{math} & Adverts & +IRestaurant \\
+Wi-Fi & \begin{math} val = true \end{math} & Transport & +NTransportProducer \\
+Wi-Fi & \begin{math} val = true \end{math} & Transport & +Scoach \\
+
+\hline
+\end{tabular}
+
+\caption{Phone Manager Example Policies using Event-Condition-Action Model}
+\label{tab:event_condition_action}
+\end{table}
+
+As shown in Table \ref{tab:event_condition_action}, applications would not only specify their policy, which is the action they wish to take, but also the events and conditions they wish to take that action in. 
+This would allow the healthcare system to specify that it only wishes for this mapping to occur if a high accelerometer value was measured, which might indicate that a fall has happened. 
+An application receiving adverts might connect to adverts from nearby restaurants around lunchtime. 
+
+% todo:
 AIRS events as policies.
 
 Screenshots of original message + repackaged?
