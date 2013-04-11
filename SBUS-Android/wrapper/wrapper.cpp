@@ -1031,7 +1031,7 @@ void swrapper::handle_new_rdc(int arrive, const char *address)
 			register_cpt(0, address);
 
 			// don't remove localhost
-			if (strcmp(address, "localhost:50123"))
+			if (strcmp(address, "localhost:50123") != 0)
 				rdc->remove(address);
 		}
 	}
