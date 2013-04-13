@@ -233,7 +233,23 @@ Why the recursive discovery through peer inspection hasn't been implemented, and
 
 \section{Flexible Schema Matching}
 
-Talk about the schema matching stuff - syntax, similar/exact, constructing lookup/repacking, subscriptions.
+\begin{itemize}
+
+\item Syntax: +H, +S, what they mean. Nested searches +S[+H]
+
+\item How system handles these - hashes.
+
+\item Constructing looking table from these.
+
+\item Repacking messages from lookup table.
+
+\item Updating subscription from lookup table.
+
+\item How RDC searches for matching schemas. Alternative search methods, e.g. hash table of linked lists or search tree. What performance increases they may offer, and how the results would vary (i.e. a breadth first search would return the schema which matches the constraints at the highest level).
+
+\item Optimisations - reordering constraints - also don't repeat constraints.
+
+\end{itemize}
 
 How accurate is the lookup table? 
 Are any fields repackaged as ``empty'' when we could have filled them with something else? 
@@ -241,16 +257,37 @@ Fairly qualitative, perhaps a discussion about how the constraints are used to c
 
 Should multiple constraints (e.g. must have two int fields) be allowed to match to the same field?
 
-Alternative search algorithms for schema comparison in RDC. 
-What performance increases they may offer, and how the results would vary (i.e. a breadth first search would return the schema which matches the constraints at the highest level).
-
 \section{Android Port}
 
-Talk about port - problems
+\begin{itemize}
+
+\item Android NDK
+
+\item Rewriting method to get IP address
+
+\item Putting files (sbuswrapper) onto phone - issues using Android FS without rooting.
+
+\item JNI
+
+\end{itemize}
 
 \section{Policy Engine/Phone Manager}
 
-Talk about policy engine - what it is, how it works, what it reacts to. AIRS SBUS gateway, how events from that signify context.
+\begin{itemize}
+
+\item Policy engine - mini-RDC for phone
+
+\item AIRS-SBUS gateway - events as context change
+
+\item Dynamically add/remove RDC (rdc\_update endpoint). Callback method for find out about RDC
+
+\item Ideas for where to get this RDC from (currently set by user)
+
+\item map\_policy endpoint to set policy
+
+\item Applying policies.
+
+\end{itemize}
 
 \cleardoublepage
 
