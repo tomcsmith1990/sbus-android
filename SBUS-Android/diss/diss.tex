@@ -440,8 +440,8 @@ The project has created a context-aware system which enables developers to write
 The system supports the goals of pervasive computing by allowing scalability in the data sources used, heterogeneity in the data applications use, all while being invisible to the user.
 
 The ``policy engine'' monitors the environment for events which the system or user believe to represent a change in context.
-Upon detecting a change in context, the policy engine applies applications' policies, reconfiguring their connections as appropriate. 
-Through these policies applications may control which data sources they should be connected to, without requiring applications to find data sources themselves.
+Upon detection of an event, the policy engine applies applications' policies, reconfiguring their connections as appropriate. 
+Through these policies, applications may control which data sources they should be connected to, without requiring applications to find data sources themselves.
 Policies may be simple, such as the name of a data source, or more complex, specifying how fields in a data source's schema must match their own. 
 
 The system repackages messages so that applications will only ever be presented with data conforming to their own schema, removing uncertainty about the format of the data.
@@ -453,7 +453,7 @@ Referring back to the transport example from the Introduction, there may be a tr
 At a coach station, all data sources match this schema exactly, so the application can connect to any one of them. 
 The user may then travel to a larger station, offering train and coach services. 
 Although train data sources use a different schema (Figure \ref{fig:train-schema}) to the application, their schema contains a structure matching the required {\tt coach} structure.
-Upon arrival at the station and connecting to a Wi-Fi network, the policy engine will detect a change in context and can connect the application to a train data source. 
+Upon arrival at the station, the user connects to the Wi-Fi network. The policy engine detects this change in context and connects the application to a train data source. 
 Messages will be repackaged to match the application schema, meaning that the same code handles messages for coaches or trains.
 The user might have subscribed to only receive data for which the departure time is after midday. 
 Since this subscription is specified in terms of the coach schema, it will not function correctly if applied directly to the train schema. 
