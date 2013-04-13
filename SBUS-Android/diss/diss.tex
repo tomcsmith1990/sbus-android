@@ -70,7 +70,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 4251\footnotemark[1] \\
+Word Count:         & \bf 4352\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -258,6 +258,9 @@ Talk about policy engine - what it is, how it works, what it reacts to. AIRS SBU
 % ~ Eval + Conclusion ~ 2000 words
 \chapter{Evaluation}
 
+The project set out to create a system which would allow applications to automatically reconnect to different sources upon a change in context, where these sources may not necessarily present data in the format expected. 
+The project has been successful in this respect. Sensor readings from AIRS and Android intents are used to detect a change in context. After detecting a change, applications will be connected to sources which satisfy any constraints they have specified and messages will automatically be converted to applications' expected format, allowing operation of the application to continue without interruption.
+
 \section{System Overview}
 
 % overview of system image
@@ -265,7 +268,7 @@ Talk about policy engine - what it is, how it works, what it reacts to. AIRS SBU
 %set the image x size to the width of the page
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/overview.eps}}
-\caption[System Overview]{The light blue boxes represent components and the green boxes within them represent endpoints. The purple boxes are lists of components registered with the RDC and Phone Manager, and the orange box is a list of policies set on the Phone Manager.}
+\caption[System Overview]{The light blue boxes represent components and the green boxes within them represent endpoints. The purple boxes are lists of components registered with the RDC and Phone Manager, and the orange box is a list of policies set on the Phone Manager}
 \label{fig:system_overview}
 \end{figure}
 
@@ -311,6 +314,7 @@ Transport & Departures & +Scoach & NULL \\
 \label{tab:example_policies}
 \end{table}
 
+% about example policies
 Table \ref{tab:example_policies} shows example policies which components might set with the Phone Manager. 
 Both the local component and local endpoint are implicitly set as whichever endpoint sent the policy. 
 The remote address may be an IP address or a query to be resolved by an RDC. 
@@ -320,6 +324,7 @@ However the real flexibility of the system lies in the queries.
 These will be resolved by some RDC, ensuring components are mapped only to other components satisfying their queries. 
 In the second row, the transport application sets a policy for any component named ``Stagecoach'' which has an endpoint named ``Coach'', while in the third row it sets a policy for any endpoint which has a structure matching the type of {\tt coach}. 
 
+% event-condition-action through specifying AIRS sensor + condition
 The system could easily be extended to an event-condition-action model, allowing applications to specify AIRS sensors to use as events, and actions to be taken upon an event satisfying some condition.
 
 % table of example policies with events and conditions
@@ -343,16 +348,25 @@ GPS & \begin{math} location(val) = France \end{math} & Transport & +Scoach \\
 \label{tab:event_condition_action}
 \end{table}
 
+% about examples
 As shown in Table \ref{tab:event_condition_action}, applications would not only specify the action they wish to take through their map constraints, but also the events and conditions in which they wish to take that action.
 The healthcare system could specify that it only wishes for heart rate data to be connected to the IP address if a high accelerometer value was measured, because the reading may indicate that a fall has occurred. 
 The transport application can set different policies for different events. If a Wi-Fi connection is established, the application wants to connect specifically to Stagecoach components, however if a GPS event indicates that the user were in France, the application is more lenient and willing to accept any component offering a structure matching the type of {\tt coach}. 
 The application may also display adverts, where policies could be used to determine the source of the adverts, perhaps from nearby restaurants around lunchtime. 
 
-% todo:
-
-%Screenshots of original message + repackaged?
+% user policies
+This could further be used to allow the user to set their own policies for components. 
+The application developer cannot possibly account for every scenario, however by allowing the user to set their own policies, through which they are specifying context changes they are interested in, the system becomes fully customisable and personal. 
+The user of the transport application might not want to wait for a bus when it is raining. 
+Therefore, they could create a policy using a weather event from AIRS, with the condition ``rain''. 
+The action might be to connect the application to the IP address of a local taxi company, which provides information about when the next taxi will be available using the schema in Figure \ref{fig:taxi-schema}.
 
 %UI for user to set policy (system can also set policy).
+
+
+%TODO:
+
+%Screenshots of original message + repackaged?
 
 %How long to go through policy list (all the if statements)
 
@@ -364,7 +378,7 @@ The application may also display adverts, where policies could be used to determ
 \begin{figure}[tbh]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/rdc_search_optimisations.eps}}
-\caption[RDC Search Optimisations]{As seen from the graph, time taken to search for a schema increases linearly with the number of components registered. All optimisations perform more efficiently than searching without optimisation.}
+\caption[RDC Search Optimisations]{As seen from the graph, time taken to search for a schema increases linearly with the number of components registered. All optimisations perform more efficiently than searching without optimisation}
 \label{fig:rdc_search_optimisations}
 \end{figure}
 
@@ -378,7 +392,7 @@ This demonstrates that a schema search is not {\sl too} expensive, and will not 
 \begin{figure}[tbh]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/construct_lookup.eps}}
-\caption[Construct Lookup Times]{Time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers.}
+\caption[Construct Lookup Times]{Time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers}
 \label{fig:construct_lookup}
 \end{figure}
 
@@ -395,7 +409,7 @@ In either case, the lookup table is constructed once per connection, and takes m
 \begin{figure}[tbh]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/repack_message.eps}}
-\caption[Repackage Message]{Time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers.}
+\caption[Repackage Message]{Time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers}
 \label{fig:repack_message}
 \end{figure}
 
@@ -404,7 +418,7 @@ The general increase in time from top to bottom shows that more time is taken wh
 As with constructing the lookup table, messages are repackaged within microseconds.
 
 \section{Android Port}
-
+% TODO:
 How long to map compared to on laptop?
 
 How long to recieve messages compared to on laptop?
@@ -425,7 +439,7 @@ Screenshots?
 The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources or the format of their data, decoupling applications from their data sources. 
 The system supports the goals of pervasive computing by allowing scalability in the data sources used, heterogeneity in the data applications use, all while being invisible to the user.
 
-The ``policy engine'' monitors the environment for events which the system or user believe to represent a change in context (in this case, network connection).
+The ``policy engine'' monitors the environment for events which the system or user believe to represent a change in context.
 Upon detecting a change in context, the policy engine applies applications' policies, reconfiguring their connections as appropriate. 
 Through these policies applications may control which data sources they should be connected to, without requiring applications to find data sources themselves.
 Policies may be simple, such as the name of a data source, or more complex, specifying how fields in a data source's schema must match their own. 
@@ -456,7 +470,8 @@ If this reconnection occurs before disconnection has completed, the application 
 
 A solution to this problem might be to implement constraints which must be satisfied before reconfiguration occurs. 
 In a Wi-Fi network, there may be a constraint that the network signal must be greater than a given threshold, meaning no reconfiguration would occur until the user moves firmly into the network. 
-If a context change depended on the accelerometer, it might be that the accelerometer must detect some pattern for several seconds before reconfiguration.
+Alternatively, conditions on multiple context changes might be required before performing reconfiguration.  
+For an accelerometer context change, a high accelerometer message followed by a message indicating little movement might be used to detect a fall.
 
 \section{Changes}
 % what I'd have done differently
@@ -467,21 +482,18 @@ If a context change depended on the accelerometer, it might be that the accelero
 % other stuff that could be done
 
 % alternate events for change in context - AIRS
-The system currently depends solely on a change in network status to detect a change in context, however a wide range of alternatives could be used. 
-Other state change events offered by the Android platform\footnote{http://developer.android.com/reference/android/content/Intent.html} might be used, such as the battery level being low. 
-However, the system need not be limited to these OS events. 
-The policy engine could subscribe to messages from the AIRS gateway, allowing it to react to data from sensors on the device. 
-This would allow the policy engine to trigger changes based on simple events, such as one message indicating a network change, or more complex events made up of multiple messages, such as a rapid accelerometer change followed by no movement, representing a fall. 
-Applications could specify a reconfiguration policy for each context change that they are interested in, allowing an alternate action to be taken for each. 
+Applications cannot currently specify changes in context which they are interested in. 
+The policy engine will trigger all policies upon detecting a change.
+Applications could specify the type of context change within their policy, with the ability to specify different policies for different context changes. 
+This moves the system to an event driven architecture, where context changes are represented as events. 
+Upon receiving an event, the policy engine would check whether the event satisfies the conditions of a policy, only applying the policy when does. 
+This allows applications to specify policies for simple events, such as a Wi-Fi change event, to more complex events, such as a high accelerometer reading followed by no movement to represent a fall. 
+
+As well as applications specifying policies, users could also specify policies for different applications. 
 This moves the system further towards the pervasive vision. 
-The AIRS gateway would allow the system to use whatever sensors are available on the device. 
-Although not all devices have the same sensors, each would operate in the same way, simply using different sets of events to indicate a change in context.
+Applications would take sensible actions for different changes in context, however the user could refine how applications should react to changes in context, causing them to behave in a way more suited to the user's needs.
 
-% how this could do the constraints in issues section.
-These complex events could also form the constraints for reconfiguration, discussed in the Issues section. 
-In the case of Wi-Fi, several readings indicating a connection has been established may be required before the context change is detected. 
-
-In addition to applications specifying the types of context change that they are interested in, the user may have the ability to specify which types of context change can be used. 
+The user may have the ability to specify which types of events can be used. 
 This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed.
 
 % qualify names if multiple fields in sensor have same name
@@ -498,7 +510,7 @@ We could specify a constraint for {\tt sensor}, meaning the entire structure, or
 	int value
 }
 \end{lstlisting}
-\caption[Schema with repeated name]{A schema with a structure named {\tt sensor} and a text field also named {\tt sensor}. A constraint specified on {\tt sensor} would be ambiguous without fully qualified names.}
+\caption[Schema with repeated name]{A schema with a structure named {\tt sensor} and a text field also named {\tt sensor}. A constraint specified on {\tt sensor} would be ambiguous without fully qualified names}
 \label{fig:repeatednameschema}
 \end{figure}
 
