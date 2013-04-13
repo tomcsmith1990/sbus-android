@@ -70,7 +70,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 4352\footnotemark[1] \\
+Word Count:         & \bf 4555\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -225,11 +225,36 @@ Applications control how they interact with an environment through policies, whi
 
 Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
 
+\section{SBUS}
+
+\section{Planning}
+
+\begin{itemize}
+
+\item How applications will find data sources relevant to them (constraints in terms of schema).
+
+\item How applications will cope with unexpected data format - must be done at system level.
+
+\item How change in context will be detected.
+
+\item How applications' connections will be reconfigured (spoke map)
+
+\item How the Phone Manager knows what to reconfigure to (policies)
+
+\item Android NDK
+
+\end{itemize}
+
 \cleardoublepage
 
 
 % ~ 4000 words
 \chapter{Implementation}
+
+This chapter consists of three main parts. 
+The first shows how applications can find data sources which offer the data they require, and how they can use these sources despite differences in schemas. 
+The second part explains how the SBUS library was ported to Android, and how it can be used by application developers. 
+Finally, this is all brought together with the Phone Manager which is responsible for detecting changes in context and reconfiguring applications' connections upon a change.
 
 \section{Flexible Schema Matching}
 
@@ -283,7 +308,7 @@ Should multiple constraints (e.g. must have two int fields) be allowed to match 
 
 \item Ideas for where to get this RDC from (currently set by user)
 
-\item map\_policy endpoint to set policy
+\item How applications set policies.
 
 \item Applying policies.
 
