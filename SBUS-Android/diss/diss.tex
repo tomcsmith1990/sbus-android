@@ -223,28 +223,72 @@ Applications control how they interact with an environment through policies, whi
  
 \chapter{Preparation}
 
-This chapter first outlines the requirements of the system to be implemented. 
+This chapter first outlines the requirements of the system. 
 It then summarises related work which the project will build upon, namely the SBUS middleware \cite{ingram2009reconfigurable}. 
-Finally, it describes how the system will be implemented.
+Finally, it describes how the system will be implemented to meet these requirements.
 
 %Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
 
 \section{Requirements Analysis}
 
 % use cases
-
-% TODO: reword this probs.
-John regularly travels from Cambridge to London. He uses his phone to check details of each part of his journey. From his home, he wants to know when the next taxi will be available to take him to the train station, and what time trains are leaving for London. Once he arrives in London, he wants details of Underground trains departing from whichever station he is in.
+John lives in a retirement village. He has a heart condition and as such he regularly suffers from falls. He uses a heart monitor connected to his phone and upon a fall wishes for his heart monitor readings to be sent the retirement village nurse. The nurse can then determine if John is in any immediate danger, and take appropriate action.
 
 The following use cases show John's requirements of the system.
 
 \begin{itemize}
 
-\item {\bf Detecting and acting upon change in context}
+\item {\bf Detect and Act upon Change in Context}
 
-\item {\bf Finding relevant components}
+\begin{enumerate}
 
-\item {\bf Communicating with different schemas}
+\item John has an application on his phone which displays readings from his heart monitor.
+
+\item John is in his house, and falls over.
+
+\item The system detects that John has fallen over.
+
+\item The system connects John's heart monitor readings to the nurse's office in the retirement village, over the local network.
+
+\item The nurse can check John's heart monitor readings, and dispatch an ambulance if necessary.
+
+\end{enumerate}
+
+\item {\bf Allow Mobility}
+
+\begin{enumerate}
+
+\item John enjoys visiting the local library, however since it is so large and often empty, John is concerned that he may suffer a fall which will go unnoticed.
+
+\item The system will allow for this mobility, alerting an appropriate person wherever John is.
+
+\end{enumerate}
+
+\item {\bf Find Relevant Components}
+
+\begin{enumerate}
+
+\item John arrives at the library and connects his phone to the library's Wi-Fi network.
+
+\item John goes about his business until he falls over while reaching for a book.
+
+\item The system will find search the Wi-Fi network for an application which accepts heart rate readings, and connect John's readings to the application.
+
+\item The library staff can then see that some kind of accident has happened, and search for John or call an ambulance.
+
+\end{enumerate}
+
+\item {\bf Allow Communicate Between Incompatible Schemas}
+
+\begin{enumerate}
+
+\item John uses HeartMonitor 3000 which not only monitors his heart rate, but also blood pressure.
+
+\item While the retirement village supports this system so can use John's heart rate and blood pressure, the library runs an outdated system which only supports heart rate.
+
+\item The system will convert John's sensor readings to match the library's system, making the two systems compatible.
+
+\end{enumerate}
 
 \end{itemize}
 
@@ -265,7 +309,9 @@ The RDC itself is a component, and acts as a name service.
 Components may query the RDC for other components within the system, using parameters including component name, connected peers, or public key. 
 The RDC will return IP addresses of matching components, allowing a direct connection to be established.
 
-\section{Planning}
+\section{System Design}
+
+The system will be based upon the SBUS middleware, using and extending it to meet the requirements. 
 
 \begin{itemize}
 
