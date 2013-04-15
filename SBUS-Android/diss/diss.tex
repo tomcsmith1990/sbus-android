@@ -223,9 +223,47 @@ Applications control how they interact with an environment through policies, whi
  
 \chapter{Preparation}
 
-Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
+This chapter first outlines the requirements of the system to be implemented. 
+It then summarises related work which the project will build upon, namely the SBUS middleware \cite{ingram2009reconfigurable}. 
+Finally, it describes how the system will be implemented.
+
+%Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
+
+\section{Requirements Analysis}
+
+% use cases
+
+% TODO: reword this probs.
+John regularly travels from Cambridge to London. He uses his phone to check details of each part of his journey. From his home, he wants to know when the next taxi will be available to take him to the train station, and what time trains are leaving for London. Once he arrives in London, he wants details of Underground trains departing from whichever station he is in.
+
+The following use cases show John's requirements of the system.
+
+\begin{itemize}
+
+\item {\bf Detecting and acting upon change in context}
+
+\item {\bf Finding relevant components}
+
+\item {\bf Communicating with different schemas}
+
+\end{itemize}
 
 \section{SBUS}
+
+SBUS is a messaging middleware which can be used for stream based communication. 
+The basic entity in SBUS is a {\sl component}. 
+Each component consists of one or more {\sl endpoints} which can be connected, or {\sl mapped} together in order to communicate directly, rather than through some central server. 
+Every endpoint has an associated message type, and in order for two endpoints to communicate their type must match. 
+Additionally, {\sl polymorphic} endpoints can be created which will accept any message type. 
+An endpoint may specify a subscription filter on events it wishes to receive. Any connected peer endpoints will only publish events to this endpoint if the event matches the subscription.
+
+These connections and subscriptions are dynamically reconfigurable and may be modified by any other component, subject to security policies. 
+This allows third party remapping to take place, where a component may remap another component's endpoints, or update its subscription filters.
+
+The only central point of the system is a resource discovery component (RDC). 
+The RDC itself is a component, and acts as a name service. 
+Components may query the RDC for other components within the system, using parameters including component name, connected peers, or public key. 
+The RDC will return IP addresses of matching components, allowing a direct connection to be established.
 
 \section{Planning}
 
