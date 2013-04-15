@@ -232,7 +232,7 @@ Finally, it describes how the system will be implemented to meet these requireme
 \section{Requirements Analysis}
 
 % use cases
-John lives in a retirement village. He has a heart condition and as such he regularly suffers from falls. He uses a heart monitor connected to his phone and upon a fall wishes for his heart monitor readings to be sent the retirement village nurse. The nurse can then determine if John is in any immediate danger, and take appropriate action.
+John lives in a retirement village. He has a heart condition and as such he regularly suffers from falls. He uses a heart monitor connected to an application on his phone which displays the heart monitor readings. Upon a fall, John wishes for his heart monitor readings to be sent the retirement village nurse. The nurse can then determine if John is in any immediate danger, and take appropriate action.
 
 The following use cases show John's requirements of the system.
 
@@ -241,8 +241,6 @@ The following use cases show John's requirements of the system.
 \item {\bf Detect and Act upon Change in Context}
 
 \begin{enumerate}
-
-\item John has an application on his phone which displays readings from his heart monitor.
 
 \item John is in his house, and falls over.
 
@@ -311,12 +309,12 @@ The RDC will return IP addresses of matching components, allowing a direct conne
 \section{System Design}
 
 The system will be based upon the SBUS middleware, using and extending it to meet the requirements. 
+Applications will use SBUS to send and receive messages.
 
 % Android NDK
 The system will be required to work on Android devices to allow for mobility. 
 SBUS is written in C++ and will be ported to Android, rather than being completely rewritten. 
 The Android Native Development Kit\footnote{http://developer.android.com/tools/sdk/ndk/index.html} (NDK) will be used to compile SBUS for Android, and the Java Native Interface (JNI) framework will be used to allow applications to use this library. 
-Applications will then use SBUS for communication, accessing the library via the JNI methods.
 Due to the fact that the NDK presents the largest unknown factor in the system, this work will be carried out first, allowing for modification to the project should it take more or less time than expected.
 
 % How applications will find data sources relevant to them (constraints in terms of schema)
