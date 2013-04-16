@@ -310,46 +310,46 @@ The system will be based upon the SBUS middleware, using and extending it to mee
 Applications will use SBUS to send and receive messages.
 
 % Android NDK
-The system will be required to work on Android devices to allow for mobility. 
-SBUS is written in C++ and will be ported to Android, rather than being completely rewritten. 
+SBUS is written in C++ and will need to be ported for use on Android. 
 The Android Native Development Kit\footnote{http://developer.android.com/tools/sdk/ndk/index.html} (NDK) will be used to compile SBUS for Android, and the Java Native Interface (JNI) framework will be used to allow applications to use this library. 
-Due to the fact that the NDK presents the largest unknown factor in the system, this work will be carried out first, allowing for modification to the project should it take more or less time than expected.
+Since the NDK offers fairly obscure documentation with little more than trivial examples, some time will be required to understand how the build process works. This presents the largest unknown factor in the system, so will be the first work undertaken, to allow for modification to the project should more or less time be required than expected.
 
 % How applications will find data sources relevant to them (constraints in terms of schema)
-When components query the RDC they generally know something about the metadata of the component they want, such as its name, or connected peers. 
-In a mobile system this is unlikely to be the case simply because of the scale of the system. 
-Generally, there are too many possible environments for a component to know this information in every case. 
-The system will be extended to allow components to search by the data they require. 
-A component will then be able to search for a relevant component in any environment, without prior knowledge of components that exist within it.
+When components query the RDC they generally know something about the metadata of the component they want, such as its name or connected peers. 
+In a mobile system, applications are unlikely to have this information available in every case, simply because there are too many possible environments. 
+To allow applications to find relevant components in any environment, the system will be extended to allow queries centred around data.
+Applications will be able to search by the format of the data they use, connecting to any component supporting that format without any other prior knowledge of that component.
 
 % How applications will cope with unexpected data format - must be done at system level
-SBUS endpoints can only communicate when they share a common message type. 
-This ensures that endpoints only ever receive messages matching that type, so can values can be extracted from the message without problem. 
-In a mobile system, applications cannot assume that data they require will always match the format which they expect. 
-This means that applications may not know where a particular value is located within a message, so have to perform some complex parsing to find the value. 
-To avoid each application having to parse every message, the system will handle messages which do not match the expected type. 
-The system will reformat any incoming message before it reaches the endpoint, so that the endpoint only ever receives messages matching its type.
+SBUS endpoints can currently only communicate if they share a common message type. 
+This ensures that endpoints only ever receive messages matching that type, so values can be extracted from the message through a known path. 
+When searching for components by data, an application may be connected to some endpoint which contains the required message type nested somewhere within its own type.
+% TODO: example
+This means that an application may not know where a particular value is located within a message, so would have to perform some complex parsing to find the value. 
+This is obviously undesirable since each environment might use a slightly different message type.
+To avoid each application implementing such a parser, these differences will be handled at the system level, before the application receives the message. 
+The system will reformat any incoming message to match the application message type, meaning an application will never face uncertainity in a message. 
 
 % How change in context will be detected
 A typical smartphone offers many sensors which can be used to determine a context change. 
 Android allows applications to register to receive intents\footnote{http://developer.android.com/reference/android/content/Intent.html} which indicate some event such as a network change, or an incoming phone call. 
-Furthermore, the AIRS application\footnote{https://play.google.com/store/apps/details?id=com.airs} can be used to obtain sensor readings, which can be sent to a remote server. 
+Furthermore, the AIRS application\footnote{https://play.google.com/store/apps/details?id=com.airs} can be used to obtain sensor readings.
 The system can use these intents and sensor readings to monitor the environment, and determine context changes. 
 Upon detecting a context change, it can then remap other applications on the phone connecting them to peers suited to the environmental context. 
 
 % How applications' connections will be reconfigured (spoke map)
-In order for the system to remap applications, it needs to first know about them. 
+In order for the system to remap applications, it will first need to know about them. 
 An RDC is well suited for this, because it maintains a list of registered components, which can then be searched when a component queries the RDC. 
 This list can also serve as a list of components which the system can remap.
 
 These two aspects can be combined into a Phone Manager (PM) application. The PM will act similarly to an RDC, allowing applications to register with it. It will also detect context changes, and issue messages to registered components to instruct them to remap to other components upon these context changes.
 
 % How the Phone Manager knows what to reconfigure to (policies)
-The PM can remap applications upon a change in context, but must remap them to appropriate places. 
+The PM will remap applications upon a change in context, but must remap them to appropriate places. 
 The PM cannot decide what constitutes ``appropriate'' for any given application, as such, the application must decide for itself. 
-An application may register a {\sl policy} with the PM which dictates how it should be remapped upon a context change. 
+Applications will register {\sl policies} with the PM which dictate how they should be remapped upon a context change. 
 This policy might be an IP address to map to, or a query which can be performed against an RDC in the environment to return matching components. 
-The PM simply remaps applications as specified by their policies.
+The PM will simply remap applications as specified by their policies.
 
 \cleardoublepage
 
