@@ -70,7 +70,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 5709\footnotemark[1] \\
+Word Count:         & \bf 5796\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -224,17 +224,17 @@ Applications control how they interact with an environment through policies, whi
 \chapter{Preparation}
 
 This chapter first outlines the requirements of the system. 
-It then summarises related work which the project will build upon, namely the SBUS middleware \cite{ingram2009reconfigurable}. 
+It goes on to summarise related work which the project will build upon, namely the SBUS middleware \cite{ingram2009reconfigurable}. 
 Finally, it describes how the system will be implemented to meet these requirements.
 
 %Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
 
 \section{Requirements Analysis}
 
-% use cases
-John lives in a retirement village. He has a heart condition and as such he regularly suffers from falls. He uses a heart monitor connected to an application on his phone which displays the heart monitor readings. Upon a fall, John wishes for his heart monitor readings to be sent the retirement village nurse. The nurse can then determine if John is in any immediate danger, and take appropriate action.
+The following use cases outline the functional requirements of the system, describing how the system will operate in different circumstances.
 
-The following use cases show John's requirements of the system.
+% use cases - functional requirements
+John lives in a retirement village. He has a heart condition and as such he regularly suffers from falls. He uses a heart monitor connected to an application on his phone which displays the heart monitor readings. Upon a fall, John wishes for his heart monitor readings to be sent the retirement village nurse. The nurse can then determine if John is in any immediate danger, and take appropriate action.
 
 \begin{itemize}
 
@@ -242,37 +242,29 @@ The following use cases show John's requirements of the system.
 
 \begin{enumerate}
 
-\item John is in his house, and falls over.
+\item John has his phone in his pocket when he falls over in his home.
 
-\item The system detects that John has fallen over.
+\item The system detects that John has fallen over which represents a change in his context.
 
-\item The system connects John's heart monitor readings to the nurse's office in the retirement village, over the local network.
+\item The system reacts to this change in context and connects John's heart monitor readings to the nurse's office over the local network.
 
-\item The nurse can check John's heart monitor readings, and dispatch an ambulance if necessary.
-
-\end{enumerate}
-
-\item {\bf Allow Mobility}
-
-\begin{enumerate}
-
-\item John enjoys visiting the local library, however since it is so large and often empty, John is concerned that he may suffer a fall which will go unnoticed.
-
-\item The system will allow for this mobility, alerting an appropriate person wherever John is.
+\item The nurse checks John's heart monitor readings, and dispatches an ambulance if necessary.
 
 \end{enumerate}
 
-\item {\bf Find Relevant Components}
+\item {\bf Connect to Relevant Peers}
 
 \begin{enumerate}
 
-\item John arrives at the library and connects his phone to the library's Wi-Fi network.
+\item John enjoys visiting the local library, however is concerned that he may suffer a fall which will go unnoticed, since it is large and often empty.
 
-\item John goes about his business until he falls over while reaching for a book.
+\item John visits the library and connects his phone to the library's Wi-Fi network.
 
-\item The system will find search the Wi-Fi network for an application which accepts heart rate readings, and connect John's readings to the application.
+\item John finds the book he wants, but falls while reaching for it on a high shelf.
 
-\item The library staff can then see that some kind of accident has happened, and search for John or call an ambulance.
+\item The system detects this fall but cannot connect John's heart monitor to the nurse's office. It searches for some application on the Wi-Fi network which can accept heart rate readings, and upon finding the librarian running such an application, connects John's heart monitor to the application.
+
+\item The librarian sees that some kind of accident has happened, and can search for John or call an ambulance.
 
 \end{enumerate}
 
@@ -280,26 +272,32 @@ The following use cases show John's requirements of the system.
 
 \begin{enumerate}
 
-\item John uses HeartMonitor 3000 which not only monitors his heart rate, but also blood pressure.
+\item John uses a high end heart monitor which not only monitors his heart rate, but also blood pressure.
 
-\item While the retirement village supports this system so can use John's heart rate and blood pressure, the library runs an outdated system which only supports heart rate.
+\item The retirement village supports this system so can use John's heart rate and blood pressure, however the librarian runs an outdated system which only supports heart rate.
 
-\item The system will convert John's sensor readings to match the library's system, making the two systems compatible.
+\item The system converts John's sensor readings to match the library's system, making the two systems compatible.
 
 \end{enumerate}
 
 \end{itemize}
 
+%TODO: more of this.
+% non-functional requirements
+Due to the ever changing nature of mobile environments, the system must also meet certain non-functional requirements to ensure that is is responsive and usable. 
+The system must search for peers to connect to within a reasonable time, and any message conversion required for a given peer must incur negligible delay.
+These constraints are necessary so that any communication between peers remains relevant to the user's context.
+
 \section{SBUS}
 
 SBUS \cite{ingram2009reconfigurable} is a messaging middleware which can be used for stream based communication. 
 The basic entity in SBUS is a {\sl component}. 
-Each component consists of one or more {\sl endpoints} which can be connected, or {\sl mapped} together in order to communicate directly, rather than through some central server. 
-Every endpoint has an associated message type, and in order for two endpoints to communicate their type must match. 
+Each component consists of one or more {\sl endpoints} which can be connected, or {\sl mapped} together allowing direct communication between the two endpoints. 
+Every endpoint has an associated message type, and in order for two endpoints to be mapped together, their type must match. 
 An endpoint may specify a subscription filter on events it wishes to receive. Any connected peer endpoints will only publish events to this endpoint if the event matches the subscription.
 
-These connections and subscriptions are dynamically reconfigurable and may be modified by any other component, subject to security policies. 
-This allows third party remapping to take place. A component may issue a message to some other component, instructing it to remap to another component's endpoints, or update its subscription filters.
+These connections and subscriptions are dynamically reconfigurable and may be modified by any other component, allowing thrid party remapping to occur, subject to security policies. 
+A component may issue a message to some other component, instructing it to remap to another component's endpoints, or update its subscription filters.
 
 The only central point of the system is a resource discovery component (RDC). 
 The RDC itself is a component, and acts as a name service. 
