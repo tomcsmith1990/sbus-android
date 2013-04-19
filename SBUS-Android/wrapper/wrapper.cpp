@@ -3572,9 +3572,9 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 	multi->add(peer->sock, MULTI_READ, "swrapper::finalise_map");
 	fdstate[peer->sock] = FDPeer;
 	// delete abst;
-	/*
+	
 	// EVALUATION
-	if (start_time != 0)
+	/*if (start_time != 0)
 	{
 		timeval end;
 		gettimeofday(&end, NULL);
@@ -3583,7 +3583,7 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 		
 		FILE *file;
 		#ifdef __ANDROID__
-		file = fopen("/data/data/uk.ac.cam.tcs40.sbus.sbus/files/.sbus/spoke-map.txt");
+		file = fopen("/data/data/uk.ac.cam.tcs40.sbus.sbus/files/.sbus/spoke-map.txt", "a");
 		#else
 		file = fopen("/home/tom/spoke-map.txt", "a");
 		#endif
