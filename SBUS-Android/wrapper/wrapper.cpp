@@ -40,6 +40,8 @@
 #include "permission.h"
 #include "wrapper.h"
 
+// evaluation
+//long int start_time = 0;
 
 swrapper *wrap;
 const char *callback_address;
@@ -2107,6 +2109,14 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 		
 		peer_address = sn->extract_txt("peer_address");
 		peer_endpoint = sn->extract_txt("peer_endpoint");
+		
+		/* EVALUATION */
+		/*timeval start;		
+		gettimeofday(&start, NULL);
+		start_time = start.tv_sec * 1000000 + start.tv_usec;
+*/
+		/* EVALUATION */
+		
 		map(mp, peer_address, peer_endpoint, -1);
 	}
 	else if(!strcmp(fn_endpoint, "unmap"))
@@ -2946,20 +2956,22 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 	timeval start, end;
 	long seconds;
 
-	const int iter = 1000;
-	const int runs = 100;
+	//const int iter = 1000;
+	//const int runs = 100;
+	const int iter = 1;
+	const int runs = 1;
 	
-	FILE *file;
+	/*FILE *file;
 	char filename[strlen("/home/tom/construct-lookup--.txt")+strlen(peer->instance)+strlen(instance_name)+1];
 	sprintf(filename, "/home/tom/construct-lookup-%s-%s.txt", instance_name, peer->instance);
 	file = fopen(filename, "a");
 	fprintf(file, "=== CONSTRUCT LOOKUP TIME %d RUNS, %d ITER ===\n", runs, iter);
 	fclose(file);
-	
+	*/
 	for (int k = 0; k < runs; k++)
 	{
-		file = fopen(filename, "a");
-		gettimeofday(&start, NULL);
+		/*file = fopen(filename, "a");
+		gettimeofday(&start, NULL);*/
 		for (int j = 0; j < iter; j++)
 		{
 			
@@ -3005,10 +3017,10 @@ void swrapper::construct_peer_lookup(smidpoint *mp, speer *peer, Schema *peer_sc
 			delete constraints;
 	
 		}
-		gettimeofday(&end, NULL);
+		/*gettimeofday(&end, NULL);
 		seconds = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
 		fprintf(file, "%ld\n",  seconds / iter);
-		fclose(file);
+		fclose(file);*/
 	}
 	// ***END EVALUATION***
 
@@ -3560,6 +3572,26 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 	multi->add(peer->sock, MULTI_READ, "swrapper::finalise_map");
 	fdstate[peer->sock] = FDPeer;
 	// delete abst;
+	/*
+	// EVALUATION
+	if (start_time != 0)
+	{
+		timeval end;
+		gettimeofday(&end, NULL);
+		
+		long int end_time = end.tv_sec * 1000000 + end.tv_usec;
+		
+		FILE *file;
+		#ifdef __ANDROID__
+		file = fopen("/data/data/uk.ac.cam.tcs40.sbus.sbus/files/.sbus/spoke-map.txt");
+		#else
+		file = fopen("/home/tom/spoke-map.txt", "a");
+		#endif
+		fprintf(file, "%ld\n", end_time - start_time);
+		fclose(file);
+		
+		start_time = 0;
+	}*/
 
 	// Report mapping successful:
 	map_report(report_fd, 1, peer->address);
@@ -4300,20 +4332,22 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 		timeval start, end;
 		long seconds;
 
-		const int iter = 1000;
-		const int runs = 100;
-		
+		const int iter = 1;
+		const int runs = 1;
+		//const int iter = 1000;
+		//const int runs = 100;
+		/*
 		FILE *file;
 		char filename[strlen("/home/tom/repack-message--.txt")+strlen(instance)+strlen(wrap->instance_name)+1];
 		sprintf(filename, "/home/tom/repack-message-%s-%s.txt", wrap->instance_name, instance);
 		file = fopen(filename, "a");
 		fprintf(file, "=== REPACKAGE TIME %d RUNS, %d ITER ===\n", runs, iter);
 		fclose(file);
-		
+		*/
 		for (int k = 0; k < runs; k++)
 		{
-			file = fopen(filename, "a");
-			gettimeofday(&start, NULL);
+			/*file = fopen(filename, "a");
+			gettimeofday(&start, NULL);*/
 			for (int j = 0; j < iter; j++)
 			{
 				if (repacked != NULL)
@@ -4358,10 +4392,10 @@ void speer::sink(snode *sn, HashCode *hc, const char *topic)
 				}
 				
 			}
-			gettimeofday(&end, NULL);
+			/*gettimeofday(&end, NULL);
 			seconds = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
 			fprintf(file, "%ld\n",  seconds / iter);
-			fclose(file);
+			fclose(file);*/
 		}
 		// ***END EVALUATION***
 
