@@ -70,7 +70,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 5796\footnotemark[1] \\
+Word Count:         & \bf 5859\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -256,7 +256,7 @@ John lives in a retirement village. He has a heart condition and as such he regu
 
 \begin{enumerate}
 
-\item John enjoys visiting the local library, however is concerned that he may suffer a fall which will go unnoticed, since it is large and often empty.
+\item John enjoys visiting the local library, however is concerned that he may suffer a fall which will go unnoticed, since the library is large and often empty.
 
 \item John visits the library and connects his phone to the library's Wi-Fi network.
 
@@ -342,7 +342,7 @@ In order for the system to remap applications, it will first need to know about 
 An RDC is well suited for this, because it maintains a list of registered components, which can then be searched when a component queries the RDC. 
 This list can also serve as a list of components which the system can remap.
 
-These two aspects can be combined into a Phone Manager (PM) application. The PM will act similarly to an RDC, allowing applications to register with it. It will also detect context changes, and issue messages to registered components to instruct them to remap to other components upon these context changes.
+These two aspects can be combined into a Phone Manager (PM) application. The PM will act similarly to an RDC, allowing applications on the device to register with it. It will detect context changes and issue messages to registered components to instruct them to remap to other components upon these context changes.
 
 % How the Phone Manager knows what to reconfigure to (policies)
 The PM will remap applications upon a change in context, but must remap them to appropriate places. 
@@ -350,6 +350,10 @@ The PM cannot decide what constitutes ``appropriate'' for any given application,
 Applications will register {\sl policies} with the PM which dictate how they should be remapped upon a context change. 
 This policy might be an IP address to map to, or a query which can be performed against an RDC in the environment to return matching components. 
 The PM will simply remap applications as specified by their policies.
+
+% Security
+This project will not focus on security. 
+A secure version of SBUS which uses OpenSSL to encrypt communications between components exists, and all of the work undertaken in this project could be applied to that version of SBUS.
 
 \cleardoublepage
 
