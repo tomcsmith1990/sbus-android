@@ -591,17 +591,45 @@ As with constructing the lookup table, messages are repackaged within microsecon
 
 \section{Android Port}
 % TODO:
-How long to map compared to on laptop?
 
-How long to recieve messages compared to on laptop?
+% table showing map times
+\begin{table}[tbh]
+\centering
 
-Android might have slower sockets - not my fault, but show where the bottlenecks are if in networking.
+\begin{tabular}{c c c}
+\hline\hline
 
-Stress test? How many components on Android can communicate?
+Connection & Mean \begin{math} (\mu s) \end{math} & Standard Deviation  \begin{math} (\mu s) \end{math} \\
+\hline
 
-Example code for Android SBUS component?
+Laptop-Laptop	& \begin{math} 1.9168\times10^3	\end{math} & \begin{math} 1.8468\times10^3 \end{math} \\
+Laptop-Phone	& \begin{math} 1.3575\times10^4	\end{math} & \begin{math} 1.1301\times10^4 \end{math} \\
+Phone-Laptop	& \begin{math} 2.4754\times10^4	\end{math} & \begin{math} 1.0319\times10^4 \end{math} \\
+Phone-Phone	& \begin{math} 1.6680\times10^4	\end{math} & \begin{math} 3.0993\times10^3 \end{math} \\
+\hline
+\end{tabular}
 
-Screenshots?
+\caption{Connection Times Between Components on Laptops and Phones}
+\label{tab:map_times}
+\end{table}
+
+As shown in Table \ref{tab:map_times}, the average time taken to connect components without any schema conversion is of the order of ten times more when a phone is involved compared to that of no phone. 
+The Phone-Laptop connection is approximately double that of the Laptop-Phone connection because the phone queries the RDC before connecting to the component on the laptop, requiring two connections.
+These figures show that there is a greater network delay associated with Android sockets, and unfortunately little can be done to counter this. 
+However, components can still establish a connection within tens of milliseconds, meaning that the system can perform reasonably.
+
+
+\begin{itemize}
+\item How long to recieve messages compared to on laptop?
+
+\item Android might have slower sockets - not my fault, but show where the bottlenecks are if in networking.
+
+\item Stress test? How many components on Android can communicate?
+
+\item Example code for Android SBUS component?
+
+\item Screenshots?
+\end{itemize}
 
 \cleardoublepage
 
