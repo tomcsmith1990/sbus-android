@@ -1,21 +1,33 @@
-file = 'construct-lookup';
-
 delimiter = '\n';
 
-rangeLaptop = [0 0 99 0];
-rangePhone = [100 0 199 0];
+range1 = [0 0 99 0];
+range2 = [100 0 199 0];
 
-laptop = dlmread('spoke-map.txt', delimiter, rangeLaptop);
-phone = dlmread('spoke-map.txt', delimiter, rangePhone);
+laptop_laptop = dlmread('spoke-map.txt', delimiter, range1);
+laptop_phone = dlmread('spoke-map.txt', delimiter, range2);
+phone_laptop = dlmread('spoke-map-phone.txt', delimiter, range1);
+phone_phone = dlmread('spoke-map-phone.txt', delimiter, range2);
 
-disp('Laptop mean = ')
-disp(mean(laptop))
+disp('laptop_laptop mean = ')
+disp(mean(laptop_laptop))
 
-disp('Laptop std = ')
-disp(std(laptop))
+disp('laptop_laptop std = ')
+disp(std(laptop_laptop))
 
-disp('Phone mean = ')
-disp(mean(phone))
+disp('laptop_phone mean = ')
+disp(mean(laptop_phone))
 
-disp('Phone std = ')
-disp(std(phone))
+disp('laptop_phone std = ')
+disp(std(laptop_phone))
+
+disp('phone_laptop mean = ')
+disp(mean(phone_laptop))
+
+disp('phone_laptop std = ')
+disp(std(phone_laptop))
+
+disp('phone_phone mean = ')
+disp(mean(phone_phone))
+
+disp('phone_phone std = ')
+disp(std(phone_phone))
