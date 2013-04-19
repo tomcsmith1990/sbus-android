@@ -9,13 +9,7 @@
 % set tab size for lstlisting
 \lstset{tabsize=4}
 
-\input{epsf}                            % to allow postscript inclusions
-% On thor and CUS read top of file:
-%     /opt/TeX/lib/texmf/tex/dvips/epsf.sty
-% On CL machines read:
-%     /usr/lib/tex/macros/dvips/epsf.tex
-
-
+\input{epsf}
 
 \raggedbottom                           % try to avoid widows and orphans
 \sloppy
@@ -70,7 +64,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 5859\footnotemark[1] \\
+Word Count:         & \bf 5944\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -227,7 +221,7 @@ This chapter first outlines the requirements of the system.
 It goes on to summarise related work which the project will build upon, namely the SBUS middleware \cite{ingram2009reconfigurable}. 
 Finally, it describes how the system will be implemented to meet these requirements.
 
-%Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
+%TODO: Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
 
 \section{Requirements Analysis}
 
@@ -533,16 +527,13 @@ The user of the transport application might not want to wait for a bus when it i
 Therefore, they could create a policy using a weather event from AIRS, with the condition ``rain''. 
 The action might be to connect the application to the IP address of a local taxi company, which provides information about when the next taxi will be available using the schema in Figure \ref{fig:taxi-schema}.
 
-%UI for user to set policy (system can also set policy).
+%TODO: UI for user to set policy (system can also set policy).
 
+%TODO: Screenshots of original message + repackaged?
 
-%TODO:
+%TODO: How long to go through policy list (all the if statements)
 
-%Screenshots of original message + repackaged?
-
-%How long to go through policy list (all the if statements)
-
-%How long to tell a component about context change - long list, might take a while for last one - prioritise?
+%TODO: How long to tell a component about context change - long list, might take a while for last one - prioritise?
 
 \section{System Performance}
 
@@ -589,8 +580,8 @@ Figure \ref{fig:repack_message} shows the time taken to repackage a message betw
 The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected, because more fields are been repackaged. 
 As with constructing the lookup table, messages are repackaged within microseconds.
 
+
 \section{Android Port}
-% TODO:
 
 % table showing map times
 \begin{table}[tbh]
@@ -618,18 +609,11 @@ The Phone-Laptop connection is approximately double that of the Laptop-Phone con
 These figures show that there is a greater network delay associated with Android sockets, and unfortunately little can be done to counter this. 
 However, components can still establish a connection within tens of milliseconds, meaning that the system can perform reasonably.
 
+%TODO: Stress test? How many components on Android can communicate?
 
-\begin{itemize}
-\item How long to recieve messages compared to on laptop?
+%TODO: Example code for Android SBUS component?
 
-\item Android might have slower sockets - not my fault, but show where the bottlenecks are if in networking.
-
-\item Stress test? How many components on Android can communicate?
-
-\item Example code for Android SBUS component?
-
-\item Screenshots?
-\end{itemize}
+%TODO: Screenshots?
 
 \cleardoublepage
 
@@ -674,7 +658,7 @@ Alternatively, conditions on multiple context changes might be required before p
 For an accelerometer context change, a high accelerometer message followed by a message indicating little movement might be used to detect a fall.
 
 \section{Changes}
-% what I'd have done differently
+%TODO: what I'd have done differently
 {\sl I think this section might be more obvious after writing in the Preparation chapter about how the project was planned. }
 
 
@@ -684,9 +668,9 @@ For an accelerometer context change, a high accelerometer message followed by a 
 % alternate events for change in context - AIRS
 Applications cannot currently specify changes in context which they are interested in. 
 The policy engine will trigger all policies upon detecting a change.
-Applications could specify the type of context change within their policy, with the ability to specify different policies for different context changes. 
+Applications could specify the type of context change within their policy, giving them the ability to specify different policies for different context changes. 
 This moves the system to an event driven architecture, where context changes are represented as events. 
-Upon receiving an event, the policy engine would check whether the event satisfies the conditions of a policy, only applying the policy when does. 
+Upon receiving an event, the policy engine would check whether the event satisfies the conditions of a policy, only applying the policy when it does. 
 This allows applications to specify policies for simple events, such as a Wi-Fi change event, to more complex events, such as a high accelerometer reading followed by no movement to represent a fall. 
 
 As well as applications specifying policies, users could also specify policies for different applications. 
@@ -720,7 +704,7 @@ We could specify a constraint for {\tt sensor}, meaning the entire structure, or
 % the bibliography
 
 \addcontentsline{toc}{chapter}{Bibliography}
-% nocite means add all references even if not cited - TODO: remove in final version
+% nocite means add all references even if not cited.
 \nocite{*}
 \bibliography{refs}
 \cleardoublepage
