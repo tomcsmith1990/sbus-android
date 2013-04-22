@@ -31,3 +31,21 @@ disp(mean(phone_phone))
 
 disp('phone_phone std = ')
 disp(std(phone_phone))
+
+hold all;
+
+errorbar(1, mean(laptop_laptop), std(laptop_laptop), '-o');
+errorbar(2, mean(laptop_phone), std(laptop_phone), '-+');
+errorbar(3, mean(phone_laptop), std(phone_laptop), '-*');
+errorbar(4, mean(phone_phone), std(phone_phone), '-X');
+
+xlabel('Consumer-Producer');
+ylabel('Time (\mus)');
+title('Connection Times Between Producers and Consumers on a Laptop and Phone');
+set(gca, 'XTick', [1 2 3 4]);
+set(gca, 'XTickLabel', {'Laptop-Laptop', 'Laptop-Phone', 'Phone-Laptop', 'Phone-Phone'});
+
+print -depsc 'map.eps';
+
+close all;
+

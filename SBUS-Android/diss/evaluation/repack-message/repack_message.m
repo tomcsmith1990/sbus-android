@@ -37,4 +37,6 @@ set(gca, 'YTickLabel', sizes);
 set(gca, 'YTick', [1 2 3 4]);
 set(gca, 'XTick', [1 2 3 4]);
 
-print -depsc 'repack_message.eps'
+print -depsc 'repack_message.eps';
+
+close all;
