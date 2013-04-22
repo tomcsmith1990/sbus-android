@@ -583,31 +583,44 @@ As with constructing the lookup table, messages are repackaged within microsecon
 
 \section{Android Port}
 
+This section evaluates the performance of using SBUS on a phone in comparison to using SBUS on a laptop, investigating whether any significant gains or losses occur as a result of the port.
+
 % table showing map times
 \begin{table}[tbh]
 \centering
 
-\begin{tabular}{c c c}
+\begin{tabular}{c c c c}
 \hline\hline
 
-Connection & Mean \begin{math} (\mu s) \end{math} & Standard Deviation  \begin{math} (\mu s) \end{math} \\
+Consumer & Producer & Mean \begin{math} (\mu s) \end{math} & Standard Deviation  \begin{math} (\mu s) \end{math} \\
 \hline
 
-Laptop-Laptop	& \begin{math} 1.9168\times10^3	\end{math} & \begin{math} 1.8468\times10^3 \end{math} \\
-Laptop-Phone	& \begin{math} 1.3575\times10^4	\end{math} & \begin{math} 1.1301\times10^4 \end{math} \\
-Phone-Laptop	& \begin{math} 2.4754\times10^4	\end{math} & \begin{math} 1.0319\times10^4 \end{math} \\
-Phone-Phone	& \begin{math} 1.6680\times10^4	\end{math} & \begin{math} 3.0993\times10^3 \end{math} \\
+Laptop	&	Laptop	& \begin{math} 0.7979\times10^4	\end{math} & \begin{math} 0.9787\times10^4 \end{math} \\
+Laptop	&	Phone	& \begin{math} 2.0824\times10^4	\end{math} & \begin{math} 2.0064\times10^4 \end{math} \\
+Phone	&	Laptop	& \begin{math} 2.1834\times10^4	\end{math} & \begin{math} 1.5705\times10^4 \end{math} \\
+Phone	& Phone	& \begin{math} 1.0933\times10^4	\end{math} & \begin{math} 0.2810\times10^4 \end{math} \\
 \hline
 \end{tabular}
 
-\caption{Connection Times Between Components on Laptops and Phones}
+\caption{Connection Times Between Producers and Consumers on a Laptop and Phone}
 \label{tab:map_times}
 \end{table}
 
-As shown in Table \ref{tab:map_times}, the average time taken to connect components without any schema conversion is of the order of ten times more when a phone is involved compared to that of no phone. 
-The Phone-Laptop connection is approximately double that of the Laptop-Phone connection because the phone queries the RDC before connecting to the component on the laptop, requiring two connections.
-These figures show that there is a greater network delay associated with Android sockets, and unfortunately little can be done to counter this. 
-However, components can still establish a connection within tens of milliseconds, meaning that the system can perform reasonably.
+% figure showing map times
+\begin{figure}[tbh]
+\epsfxsize=\hsize
+\centerline{\epsfbox{figs/map.eps}}
+\caption{Connection Times Between Producers and Consumers on a Laptop and Phone}
+\label{fig:map_times}
+\end{figure}
+
+Table \ref{tab:map_times} and Figure \ref{fig:map_times} show mean times and standard deviations for consumers to connect to producers, across phones and laptops.
+Each consumer first queries an RDC on a remote machine by the producer name, to find the appropriate producer to connect to. 
+No schema conversion occurs as part of this map. 
+Once the consumer receives the IP of the producer from the RDC, it then establishes the connection with it, hence two connections occur within each mapping.
+These figures show that a greater time is required when the producer and consumer are on different devices than when they are on the same device. 
+This bears no surprise since the local connections are faster than the network connections. 
+The mean time taken is slightly greater when both the producer and consumer are on the phone rather than both on the laptop, though the standard deviation is less. 
 
 %TODO: Stress test? How many components on Android can communicate?
 
