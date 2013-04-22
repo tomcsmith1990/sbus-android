@@ -1,6 +1,6 @@
 delimiter = '\n';
 
-range = [1 0 100 0];
+range = [1 0 1000 0];
 
 java = dlmread('jni-java.txt', delimiter, range);
 cpp = dlmread('jni.txt', delimiter, range);
