@@ -37,4 +37,6 @@ set(gca, 'YTickLabel', sizes);
 set(gca, 'YTick', [1 2 3 4]);
 set(gca, 'XTick', [1 2 3 4]);
 
-print -depsc 'construct_lookup.eps'
+print -depsc 'construct_lookup.eps';
+
+close all;
