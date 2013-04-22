@@ -491,7 +491,8 @@ These will be resolved by some RDC, ensuring components are mapped only to other
 In the second row, the transport application sets a policy for any component named ``Stagecoach'' which has an endpoint named ``Coach'', while in the third row it sets a policy for any endpoint which has a structure matching the type of {\tt coach}. 
 
 % event-condition-action through specifying AIRS sensor + condition
-The system could easily be extended to an event-condition-action model, allowing applications to specify AIRS sensors to use as events, and actions to be taken upon an event satisfying some condition.
+The system is in line with an event-condition-action model, where events are the sensor readings and actions are mapping applications according to their policies. 
+This could easily be extended to allow applications to specify which sensors to use as events, and conditions those events should fulfill in order to take an action.
 
 % table of example policies with events and conditions
 \begin{table}[tbh]
@@ -537,6 +538,10 @@ The action might be to connect the application to the IP address of a local taxi
 
 \section{System Performance}
 
+This section examines the performance of the system, specifically aspects related to the schema conversion part of the system. 
+The schema conversion plays an important role in mobility because it allows applications to function despite some level of uncertainty, which in turn makes them more adaptable to different environments. 
+This schema conversion can only be useful if it can be done in a reasonable time though, since the whole idea behind the system is to provide users with meaningful, {\sl real time} data.
+
 % rdc search optimisation
 \begin{figure}[tbh]
 \epsfxsize=\hsize
@@ -545,11 +550,11 @@ The action might be to connect the application to the IP address of a local taxi
 \label{fig:rdc_search_optimisations}
 \end{figure}
 
-Figure \ref{fig:rdc_search_optimisations} shows the time taken for a the RDC to search through all registered components to match schema constraints. 
+Figure \ref{fig:rdc_search_optimisations} shows the time taken for an RDC to search through all registered components to match schema constraints for different numbers of components. 
 As expected, the time taken to search increases linearly with the number of components registered. 
 The structures first optimisation narrowly beats the exact first, and exact structures optimisations, all of which beat no optimisation. 
-Even in the worst case, the RDC can perform the search with 100 other components registered in just over 40 milliseconds. 
-This demonstrates that a schema search is not {\sl too} expensive, and will not impact performance on other components to a high extent. 
+In a real environment, many RDCs are likely to have large numbers of components registered and as such these optimisations become more important, to ensure that any one schema search does not impact performance of other components too greatly.
+Even in the worst case, the RDC can perform the search with 100 other components registered in just over 40 milliseconds, so should not present a bottleneck given expected usage.
 
 % construct lookup
 \begin{figure}[tbh]
@@ -558,8 +563,6 @@ This demonstrates that a schema search is not {\sl too} expensive, and will not 
 \caption[Construct Lookup Times]{Time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers}
 \label{fig:construct_lookup}
 \end{figure}
-
-Figures \ref{fig:construct_lookup} and \ref{fig:repack_message} both use a schema constraint which matches the type of the smallest schema.
 
 Figure \ref{fig:construct_lookup} shows the time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers. 
 The general increase in time from left to right shows that more time is taken to construct a lookup table as the size of the producer schema increases, as expected, since there are more fields. 
@@ -580,6 +583,7 @@ Figure \ref{fig:repack_message} shows the time taken to repackage a message betw
 The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected, because more fields are been repackaged. 
 As with constructing the lookup table, messages are repackaged within microseconds.
 
+Figures \ref{fig:construct_lookup} and \ref{fig:repack_message} both use a schema constraint which matches the type of the smallest schema.
 
 \section{Android Port}
 
@@ -622,6 +626,18 @@ These figures show that a greater time is required when the producer and consume
 This bears no surprise since the local connections are faster than the network connections. 
 The mean time taken is slightly greater when both the producer and consumer are on the phone rather than both on the laptop, though the standard deviation is less. 
 
+% figure showing jni times
+\begin{figure}[tbh]
+\epsfxsize=\hsize
+\centerline{\epsfbox{figs/jni.eps}}
+\caption{JNI Timing Breakdown}
+\label{fig:jni_times}
+\end{figure}
+
+Figure \ref{fig:jni_times} shows the breakdown of time taken to perform an SBUS function call via JNI, in this case emit(). 
+This clearly shows that the use of JNI introduces a delay, almost five milliseconds here. 
+Each call to an SBUS function using the JNI wrapper will incur some delay, meaning that applications on a phone will never operate as quickly as those written in C++.
+However, this delay is known and unlikely to vary, and overall it should not cause any problems under normal circumstances.
 %TODO: Stress test? How many components on Android can communicate?
 
 %TODO: Example code for Android SBUS component?
