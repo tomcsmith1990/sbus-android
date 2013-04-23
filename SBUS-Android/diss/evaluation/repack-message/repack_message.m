@@ -23,19 +23,22 @@ repack(4,2) = mean(dlmread(strcat(file, '-GiantConsumer-SmallSensor.txt'), delim
 repack(4,3) = mean(dlmread(strcat(file, '-GiantConsumer-BigSensor.txt'), delimiter, range));
 repack(4,4) = mean(dlmread(strcat(file, '-GiantConsumer-GiantSensor.txt'), delimiter, range));
 
-colormap('jet');
-imagesc(repack);
+colormap(winter(ceil(max(max(repack)))));
+image(repack)
 c = colorbar;
 ylabel(c, 'Time (\mus)');
-title('Time taken to repackage a message for various sensor and consumer sizes');
+title('Time taken to repackage a message for various producer and consumer sizes');
 ylabel('Consumer');
-xlabel('Sensor');
+xlabel('Producer');
 
 sizes = ['Tiny ' ; 'Small' ; 'Big  ' ; 'Giant'];
 set(gca, 'XTickLabel', sizes);
 set(gca, 'YTickLabel', sizes);
 set(gca, 'YTick', [1 2 3 4]);
 set(gca, 'XTick', [1 2 3 4]);
+
+[x,y] = meshgrid(1:4, 1:4);
+text(x(:),y(:),num2str(repack(:), '%.2f'), 'HorizontalAlignment', 'center');
 
 print -depsc 'repack_message.eps';
 

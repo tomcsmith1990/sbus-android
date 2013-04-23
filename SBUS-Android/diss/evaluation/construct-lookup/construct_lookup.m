@@ -23,13 +23,13 @@ lookup(4,2) = mean(dlmread(strcat(file, '-GiantConsumer-SmallSensor.txt'), delim
 lookup(4,3) = mean(dlmread(strcat(file, '-GiantConsumer-BigSensor.txt'), delimiter, range));
 lookup(4,4) = mean(dlmread(strcat(file, '-GiantConsumer-GiantSensor.txt'), delimiter, range));
 
-colormap('jet');
-imagesc(lookup);
+colormap(winter(ceil(max(max(lookup)))));
+image(lookup);
 c = colorbar;
 ylabel(c, 'Time (\mus)');
-title('Time taken to construct a lookup table for various sensor and consumer sizes');
+title('Time taken to construct a lookup table for various producer and consumer sizes');
 ylabel('Consumer');
-xlabel('Sensor');
+xlabel('Producer');
 
 sizes = ['Tiny ' ; 'Small' ; 'Big  ' ; 'Giant'];
 set(gca, 'XTickLabel', sizes);
@@ -37,6 +37,7 @@ set(gca, 'YTickLabel', sizes);
 set(gca, 'YTick', [1 2 3 4]);
 set(gca, 'XTick', [1 2 3 4]);
 
-print -depsc 'construct_lookup.eps';
+[x,y] = meshgrid(1:4, 1:4);
+text(x(:),y(:),num2str(lookup(:), '%.2f'), 'HorizontalAlignment', 'center');
 
-close all;
+print -depsc 'construct_lookup.eps'

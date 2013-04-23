@@ -540,19 +540,20 @@ The action might be to connect the application to the IP address of a local taxi
 
 This section examines the performance of the system, specifically aspects related to the schema conversion part of the system. 
 The schema conversion plays an important role in mobility because it allows applications to function despite some level of uncertainty, which in turn makes them more adaptable to different environments. 
-This schema conversion can only be useful if it can be done in a reasonable time though, since the whole idea behind the system is to provide users with meaningful, {\sl real time} data.
+This schema conversion can only be useful if it can be done in a reasonable time though, since the whole idea behind the system is to provide users with meaningful, {\sl real time} data. 
+These tests show the kind of performance which can be expected from the system. 
 
 % rdc search optimisation
 \begin{figure}[tbh]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/rdc_search_optimisations.eps}}
-\caption[RDC Search Optimisations]{As seen from the graph, time taken to search for a schema increases linearly with the number of components registered. All optimisations perform more efficiently than searching without optimisation}
+\caption{RDC Search Optimisations}
 \label{fig:rdc_search_optimisations}
 \end{figure}
 
 Figure \ref{fig:rdc_search_optimisations} shows the time taken for an RDC to search through all registered components to match schema constraints for different numbers of components. 
 As expected, the time taken to search increases linearly with the number of components registered. 
-The structures first optimisation narrowly beats the exact first, and exact structures optimisations, all of which beat no optimisation. 
+The structures first optimisation narrowly beats the exact first and exact structures optimisations, all of which peform more efficiently than searching without optimisation. 
 In a real environment, many RDCs are likely to have large numbers of components registered and as such these optimisations become more important, to ensure that any one schema search does not impact performance of other components too greatly.
 Even in the worst case, the RDC can perform the search with 100 other components registered in just over 40 milliseconds, so should not present a bottleneck given expected usage.
 
@@ -581,7 +582,7 @@ In either case, the lookup table is constructed once per connection, and takes m
 
 Figure \ref{fig:repack_message} shows the time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers. 
 The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected, because more fields are been repackaged. 
-As with constructing the lookup table, messages are repackaged within microseconds.
+As with constructing the lookup table, messages are repackaged within microseconds, meaning that any message will likely still be relevant after the time taken for repackaging.
 
 Figures \ref{fig:construct_lookup} and \ref{fig:repack_message} both use a schema constraint which matches the type of the smallest schema.
 
@@ -620,8 +621,8 @@ Phone	& Phone	& \begin{math} 1.0933\times10^4	\end{math} & \begin{math} 0.2810\t
 
 Table \ref{tab:map_times} and Figure \ref{fig:map_times} show mean times and standard deviations for consumers to connect to producers, across phones and laptops.
 Each consumer first queries an RDC on a remote machine by the producer name, to find the appropriate producer to connect to. 
+Once the consumer receives the IP of the producer from the RDC, it then establishes the connection with it, hence two connections occur within each mapping. 
 No schema conversion occurs as part of this map. 
-Once the consumer receives the IP of the producer from the RDC, it then establishes the connection with it, hence two connections occur within each mapping.
 These figures show that a greater time is required when the producer and consumer are on different devices than when they are on the same device. 
 This bears no surprise since the local connections are faster than the network connections. 
 The mean time taken is slightly greater when both the producer and consumer are on the phone rather than both on the laptop, though the standard deviation is less. 
