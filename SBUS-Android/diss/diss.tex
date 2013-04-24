@@ -64,7 +64,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 6410\footnotemark[1] \\
+Word Count:         & \bf 6570\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -460,6 +460,20 @@ Figure \ref{fig:system_overview} shows the interactions that occur within the sy
 
 \end{enumerate}
 
+%TODO: Other approaches.
+Other messaging systems:
+\begin{itemize}
+
+\item RabbitMQ based on AMQP (uses a central broker)
+\item ActiveMQ
+\item Java Messaging System
+\end{itemize}
+
+AWARE\footnote{http://www.awareframework.com/home/} is a new ``Android framework dedicated to instrument, infer, log and share mobile context information for application developers'' which could be used in place of AIRS to detect a change in context.
+AWARE uses broadcasts to notify applications of the current context, and these broadcasts can be captured by Android BroadcastReceivers\footnote{http://developer.android.com/reference/android/content/BroadcastReceiver.html}. This allows the Phone Manager, or indeed any application, to implement broadcast receivers to be notified of changes in context, rather than using AIRS and the AIRS-SBUS gateway. 
+Some applications might choose to implement broadcast receivers themselves, in order to use this framework in place of the Phone Manager to detect context changes.
+However, the Phone Manager would still be useful because it would provide this service for any application to use, mapping them as per their policies and reducing complexity in the applications themselves.
+
 % table of example policies
 \begin{table}[tbh]
 \centering
@@ -643,7 +657,9 @@ In this case, the function call is to emit a message.
 This clearly shows that using JNI to call a native method from Java introduces a delay, almost five milliseconds here. 
 Each call to an SBUS function via Java will incur some delay, meaning that applications written in Java for a phone will never operate as quickly as those written in C++.
 Application developers can expect this delay, which is likely to show less variance than any network delay, and build their applications to take account of it. 
-Provided an application is calling SBUS functions less frequently than this delay, such as a emitting a message, it is unlikely to cause any problems.
+Provided an application is calling SBUS functions less frequently than this delay, such as a emitting a message less than once every ten milliseconds, it is unlikely to cause any problems.
+
+%TODO: JNI times for other method calls?
 
 %TODO: Stress test? How many components on Android can communicate?
 
