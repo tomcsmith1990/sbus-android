@@ -64,7 +64,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 6271\footnotemark[1] \\
+Word Count:         & \bf 6410\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -551,11 +551,12 @@ These tests show the kind of performance which can be expected from the system.
 \label{fig:rdc_search_optimisations}
 \end{figure}
 
-Figure \ref{fig:rdc_search_optimisations} shows the time taken for an RDC to search through all registered components to match schema constraints for different numbers of components. 
+Figure \ref{fig:rdc_search_optimisations} shows the time taken for an RDC to search through all registered components to find those matching schema constraints, for different numbers of registered components and with different optimisations applied. 
+In a real environment, RDCs are likely to have many components registered, so one search cannot impact the performance of any other component too greatly.
 As expected, the time taken to search increases linearly with the number of components registered. 
 The structures first optimisation narrowly beats the exact first and exact structures optimisations, all of which peform more efficiently than searching without optimisation. 
-In a real environment, many RDCs are likely to have large numbers of components registered and as such these optimisations become more important, to ensure that any one schema search does not impact performance of other components too greatly.
-Even in the worst case, the RDC can perform the search with 100 other components registered in just over 40 milliseconds, so should not present a bottleneck given expected usage.
+These optimisations play a greater role as the number of components increases, becoming more important in order to prevent a bottleneck in the system. 
+However, even in the worst case the RDC can perform the search with 100 other components registered in just over 40 milliseconds, so should not pose a problem given expected usage.
 
 % construct lookup
 \begin{figure}[tbh]
@@ -566,10 +567,10 @@ Even in the worst case, the RDC can perform the search with 100 other components
 \end{figure}
 
 Figure \ref{fig:construct_lookup} shows the time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers. 
-The general increase in time from left to right shows that more time is taken to construct a lookup table as the size of the producer schema increases, as expected, since there are more fields. 
+The lookup table is created before any messages can be exchanged between different schemas, therefore could cause messages to become stale if the process takes too long.
+The general increase in time from left to right shows that more time is taken to construct a lookup table as the size of the producer schema increases, as expected since there are more fields. 
 The greater values in the upper right half of the graph show a disparity with the smaller values in the lower left half of the graph. 
-This shows that the time taken to construct a lookup table is greater when the producer's schema is larger than the consumer's schema. 
-This corresponds to searching in the larger producer schema for the smaller consumer schema to be matched, as opposed to simply finding the missing structures if the consumer schema were larger.
+This shows that the time taken to construct a lookup table is greater when the producer's schema is larger than the consumer's schema, corresponding to searching in the larger producer schema for the smaller consumer schema to be matched, as opposed to identifying the missing outer structures if the consumer schema were larger.
 In either case, the lookup table is constructed once per connection, and takes microseconds.
 
 % repack message
@@ -581,7 +582,8 @@ In either case, the lookup table is constructed once per connection, and takes m
 \end{figure}
 
 Figure \ref{fig:repack_message} shows the time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers. 
-The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected, because more fields are been repackaged. 
+This repackaging happens once per message, thus causes a delay on every single message received. 
+The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected because more fields are being repackaged under the appropriate names. 
 As with constructing the lookup table, messages are repackaged within microseconds, meaning that any message will likely still be relevant after the time taken for repackaging.
 
 Figures \ref{fig:construct_lookup} and \ref{fig:repack_message} both use a schema constraint which matches the type of the smallest schema.
@@ -626,19 +628,23 @@ No schema conversion occurs as part of this map.
 These figures show that a greater time is required when the producer and consumer are on different devices than when they are on the same device. 
 This bears no surprise since the local connections are faster than the network connections. 
 The mean time taken is slightly greater when both the producer and consumer are on the phone rather than both on the laptop, though the standard deviation is less. 
+Overall, an application written in Java running a phone would see very similar network delays to that of a program written in C++ running on any other machine.
 
 % figure showing jni times
 \begin{figure}[tbh]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/jni.eps}}
-\caption{JNI Timing Breakdown}
+\caption{Function Call via JNI Timing Breakdown}
 \label{fig:jni_times}
 \end{figure}
 
-Figure \ref{fig:jni_times} shows the breakdown of time taken to perform an SBUS function call via JNI, in this case emit(). 
-This clearly shows that the use of JNI introduces a delay, almost five milliseconds here. 
-Each call to an SBUS function using the JNI wrapper will incur some delay, meaning that applications on a phone will never operate as quickly as those written in C++.
-However, this delay is known and unlikely to vary, and overall it should not cause any problems under normal circumstances.
+Figure \ref{fig:jni_times} shows the breakdown of time taken to perform an SBUS function call via Java compared to C++. 
+In this case, the function call is to emit a message. 
+This clearly shows that using JNI to call a native method from Java introduces a delay, almost five milliseconds here. 
+Each call to an SBUS function via Java will incur some delay, meaning that applications written in Java for a phone will never operate as quickly as those written in C++.
+Application developers can expect this delay, which is likely to show less variance than any network delay, and build their applications to take account of it. 
+Provided an application is calling SBUS functions less frequently than this delay, such as a emitting a message, it is unlikely to cause any problems.
+
 %TODO: Stress test? How many components on Android can communicate?
 
 %TODO: Example code for Android SBUS component?
