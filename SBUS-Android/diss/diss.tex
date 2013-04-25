@@ -76,18 +76,18 @@ Supervisor:         & Dr Jatinder Singh		\\
 
 \section*{Original Aims of the Project}
 
-The original aim of the project was to create a system which could adapt to the changes in context which come with mobility, such as location or networks. 
-This required the ability to detect these changes, in order to find and connect to new data sources. 
-As a new data source may have different data schema to the expected schema, the system must offer a way to make meaningful use of this data in relation to the expected schema.
+The original aim of the project was to create a system which could adapt to changes in context which come with mobility, such as location or networks. 
+This required the ability to detect these changes, and to find and connect to new data sources. 
+As a new data source may have a different data schema to the expected schema, the system must offer a way to make meaningful use of this data in relation to the expected schema.
 
 \section*{Work Completed}
 
-A messaging middleware was modified to allow users to search for data sources by aspects of their schema. Users can search for exact matches on some part of a schema, or a looser matches, considering field types only, not names.
-Once this middleware was ported for use on Android, an application was created to monitor changes in context, particularly those that arise as a result of mobility. Upon detection of a change in context, the application informs other applications of the change, or automatically reconfigures their connections to connect them to a new data source, based on their policies.
+A messaging middleware was modified to allow users to search for data sources by aspects of their schema. Users can search for exact matches on some part of a schema, or looser matches, considering field types only, not names.
+This middleware was ported for use on Android, and an application was created to monitor changes in context, particularly those that arise as a result of mobility. Upon detection of a change in context, the application informs other applications of the change, or automatically reconfigures their connections to connect them to new data sources, based on their policies.
 
 \section*{Special Difficulties}
 
-The main difficulty in the project came from porting the messaging middleware to Android. The Android NDK\footnote{http://developer.android.com/tools/sdk/ndk/index.html} toolkit was used in order to compile C++ for use on Android, however missing libraries and poor documentation made this task more difficult than expected.
+The main difficulty in the project came from porting the messaging middleware to Android. The Android NDK\footnote{http://developer.android.com/tools/sdk/ndk/index.html} toolkit was used in order to compile the C++ library for use on Android, however missing standard libraries and poor documentation made this task more difficult than expected.
  
 \newpage
 \section*{Declaration}
@@ -127,20 +127,20 @@ extent for a comparable purpose.
 \chapter{Introduction}
 
 % summarise
-While many applications now exist for mobile devices, few applications themselves are truly mobile. 
+While many applications exist for mobile devices, few applications themselves are truly mobile. 
 The user may happen to be mobile, however applications do not adapt to different environments. 
 This project addresses the issues faced in creating applications which can change to suit different environments. 
-I show how relevant data sources in an environment can be found for applications, and how flexibility in the data they use can be achieved. 
+I show how applications can find relevant data sources in a new environment, and how they can achieve some flexibility in the data that they use. 
 
 \section{Problem}
 % what's the problem
 
 % describe current approach
-Current applications tend to be inflexible in data sources they use, often selecting from a list of possibilities, regardless of the environment. 
-While some localisation might be achieved by including parameters during connection, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
+Current applications tend to be inflexible in data sources they use, often just selecting from a list of possibilities, regardless of the environment. 
+While some localisation might be achieved by including parameters during connection, such as sending GPS co-ordinates, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
 The data formats that applications and data sources use have also been fixed, restricting applications even further.
-By connecting to local data sources, applications gain greater flexibility due to the fact that the data sources reside within the same environment.
-Given an application which requires the current temperature, a global server may use current GPS co-ordinates to determine the nearest weather station. 
+By connecting to local data sources, applications can gain greater flexibility due to the fact that the data sources reside within the same environment.
+Given an application which requires the current temperature, a global server may use current GPS co-ordinates to determine the nearest weather station and return its most recent reading. 
 Yet if the application were being used indoors, a value from a local temperature sensor might not only suffice, but be more appropriate. 
 Perhaps this could be achieved otherwise, if the server had known about the temperature sensor, however why should the application need to connect to a global server in order to use a local connection? Perhaps there isn't even an Internet connection available. 
 Furthermore, given that the user is mobile, the server would need to know about {\sl every} temperature sensor. 
@@ -148,18 +148,18 @@ Local data sources allow applications to use a dynamic set of data sources, more
 
 % context
 Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{muhl2006distributed}. 
-Mobile devices constantly operate in different contexts, which dictate how devices can interact with the environment. 
-Upon a change in context an application may no longer be able to communicate with a given data source, or the data it is providing may no longer be useful. 
+Mobile devices constantly operate in different contexts, which dictate how the devices can interact with the environment. 
+Upon a change in context, an application may move out of scope of a given data source, or the data it is providing may no longer be relevant. 
 In this situation, an alternative data source must be found.
 
-Once this alternate data source has been found, the application must still determine whether it provides useful data. 
+Once this alternate data source has been located, the application must still determine whether it provides useful data. 
 Some data may be fundamental to the operation of the application, while other parts may be desired, but not crucial.  
-Even once a data source is deemed useful, the application may still face the difficulty of the data being presented in an alternate format to the expected format. 
+Even once a data source is deemed useful, the application may still face the difficulty of the data being presented in an unexpected format. 
 Fields may be missing, there may be additional fields, and fields may have different names. 
-The application may also wish to specify some subscription filter about the messages it should receive, yet without knowledge of the data format, it cannot specify filters on different fields.
+The application may also wish to specify a subscription filter about the messages it should receive, yet without knowledge of the data format, it cannot specify filters on different fields.
 
 % example
-For example, a transport application may face differences in data available for coaches (Figure \ref{fig:coach-schema}) and for trains (Figure \ref{fig:train-schema}). 
+For example, a transport application may face differences in the data format for coaches (Figure \ref{fig:coach-schema}) and for trains (Figure \ref{fig:train-schema}). 
 While both offer similar data to a large extent, fields are named differently, and the train schema additionally offers a menu for an on-board shop.
 Alternatively, the application might be used abroad, for example in a French coach station. The data will still be very similar, but fields names may be in French (Figure \ref{fig:french-coach-schema}).
 
@@ -173,25 +173,25 @@ However, the developer can specify how the application should behave in differen
 Schilit et al \cite{schilit1994context}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
 This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment. 
 Pascoe \cite{pascoe1998adding} lists four context-aware capabilites, two of which occur in this reconfiguration. 
-Contextual resource discovery is used to discover data sources available within the context, and contextual adaptation allows applications to adapt to different data schemas in order to use the sources. 
+Contextual resource discovery is used to discover data sources available within the current context, and contextual adaptation allows applications to adapt to different data schemas in order to use the sources. 
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
 M\"{u}hl defines three kinds of events which can be used to detect a change in context: physical events, timer events, and a state change in the system \cite[page 11]{muhl2006distributed}, all of which may warrant some kind of reconfiguration. 
-In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (namely a fall), in which case the application may need to send data to an emergency response team.
+In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (a fall), in which case the application may need to send data to an emergency response team.
 A timer event indicates the progression of real time, which advertisers could use to connect to advertisements for nearby restaurants at lunch time. 
 Finally, there are state changes in the system, such as a change in network connection or location. 
 This project focuses on these state changes, particularly using a change in network connection to indicate a change in context. 
 
 % policy engine
 Applications control how their connections should be reconfigured through policies. 
-The ``policy engine'' monitors the environment and upon detecting a change in context applies these policies, reconfiguring applications' connections to connect them to different data sources, where appropriate.
+A policy engine monitors the environment and upon detecting a change in context applies these policies, reconfiguring applications' connections to connect them to different data sources, where appropriate.
 These policies may specify the name of data sources, or be more complex rules regarding the structure of data sources' schemas. 
-Alternatively, applications may opt to be notified of a relevant change, rather than have their connection reconfigured, allowing them to perform callback methods upon a change.
+Alternatively, applications may opt to be notified of a change in context, rather than have their connection reconfigured, allowing them to perform callback methods upon the change.
 
 % repackaging
-Depending on the policy, an application may be connected to a data source which does not offer the expected data schema. 
+Depending on its policy, an application may be connected to a data source which does not offer the expected data schema. 
 The system handles this by repackaging messages to match the application's schema. Any extraneous fields are removed, any absent fields are filled with ``empty'' values, and the policy is used to infer relationships between fields with different names. 
-Once the system has repackaged the message, it passes it to the application, allowing the application to continue as if it had received a message conforming to its schema.
+Once the system has repackaged a message, it passes it to the application, allowing the application to continue as if it had received a message conforming to its schema.
 
 % subscription
 The system allows an application to specify subscription filters in terms of its own schema. 
@@ -201,15 +201,14 @@ As part of the reconfiguration process the system converts this subscription to 
 The system supports many of the goals of the pervasive computing vision \cite{weiser1991computer}.
 Use of local data sources allows the system to be scalable. 
 Connections are created on an ad-hoc basis, based entirely upon what data sources are available within the environment. 
-This allows for a dynamic set of sources which can be modified at will. 
 Repackaging messages achieves some level of heterogeneity within the system. 
-Different environments may represent data in different formats, though application policies allow the system to interpret this data in a meaningful way. 
-The policy engine can perceive context, and use these perceptions in an intelligent way, namely by reconfiguring applications' connections according to their policies. 
+Different sources may represent data in different formats, though application policies allow the system to interpret this data in a meaningful way. 
+The policy engine can perceive context, and use these perceptions in an intelligent way, by reconfiguring applications' connections according to their policies. 
 While all of this is invisible to the user, applications can be configured by the user through the use of policies \cite{saha2003pervasive}.
 
 % summarise
 The system automatically reconfigures applications' connections and repackages messages to fit their schemas, granting the applications flexibility in the data sources they use.
-Local data sources can be used to provide data relevant to the environment, and by repackaging these messages an application is no longer bound to an exact schema. 
+Local data sources can be used to provide data relevant to the environment, and by repackaging these messages applications are no longer bound to exact schemas. 
 Applications control how they interact with an environment through policies, while still seamlessly communicating within that environment.
 
 \cleardoublepage
