@@ -64,7 +64,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 6562\footnotemark[1] \\
+Word Count:         & \bf 6622\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -216,9 +216,7 @@ Applications control how they interact with an environment through policies, whi
  
 \chapter{Preparation}
 
-This chapter first outlines the requirements of the system. 
-It goes on to summarise related work which the project will build upon, namely the SBUS middleware \cite{ingram2009reconfigurable}. 
-Finally, it describes how the system will be implemented to meet these requirements.
+This chapter first outlines the requirements of the system, going on to summarise related work which the project will build upon, namely the SBUS middleware \cite{ingram2009reconfigurable}, and finally describing how the system will be implemented to meet these requirements.
 
 %TODO: Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
 
@@ -237,7 +235,7 @@ John lives in a retirement village. He has a heart condition and as such he regu
 
 \item John has his phone in his pocket when he falls over in his home.
 
-\item The system detects that John has fallen over which represents a change in his context.
+\item The system detects that John has fallen over, representing a change in his context.
 
 \item The system reacts to this change in context and connects John's heart monitor readings to the nurse's office over the local network.
 
@@ -255,7 +253,7 @@ John lives in a retirement village. He has a heart condition and as such he regu
 
 \item John finds the book he wants, but falls while reaching for it on a high shelf.
 
-\item The system detects this fall but cannot connect John's heart monitor to the nurse's office. It searches for some application on the Wi-Fi network which can accept heart rate readings, and upon finding the librarian running such an application, connects John's heart monitor to the application.
+\item The system detects this fall but cannot connect John's heart monitor to the nurse's office. It searches for some application on the Wi-Fi network which accepts heart rate readings, and upon finding the librarian running such an application, connects John's heart monitor to the application.
 
 \item The librarian sees that some kind of accident has happened, and can search for John or call an ambulance.
 
@@ -265,11 +263,11 @@ John lives in a retirement village. He has a heart condition and as such he regu
 
 \begin{enumerate}
 
-\item John uses a high end heart monitor which not only monitors his heart rate, but also blood pressure.
+\item John uses a high end heart monitor which not only monitors his heart rate, but also his blood pressure.
 
 \item The retirement village supports this system so can use John's heart rate and blood pressure, however the librarian runs an outdated system which only supports heart rate.
 
-\item The system converts John's sensor readings to match the library's system, making the two systems compatible.
+\item The system converts John's sensor readings to match the library's system, making the two systems compatible, allowing the librarian to receive John's readings.
 
 \end{enumerate}
 
@@ -287,47 +285,49 @@ SBUS \cite{ingram2009reconfigurable} is a messaging middleware which can be used
 The basic entity in SBUS is a {\sl component}. 
 Each component consists of one or more {\sl endpoints} which can be connected, or {\sl mapped} together allowing direct communication between the two endpoints. 
 Every endpoint has an associated message type, and in order for two endpoints to be mapped together, their type must match. 
-An endpoint may specify a subscription filter on events it wishes to receive. Any connected peer endpoints will only publish events to this endpoint if the event matches the subscription.
+An endpoint may specify a subscription filter on events it wishes to receive, in terms of its message type.
+ Any connected peers will only publish events to this endpoint if the event matches the subscription.
 
-These connections and subscriptions are dynamically reconfigurable and may be modified by any other component, allowing thrid party remapping to occur, subject to security policies. 
-A component may issue a message to some other component, instructing it to remap to another component's endpoints, or update its subscription filters.
+These connections and subscriptions are dynamically reconfigurable and may be modified by any other component, allowing third party remapping to occur, subject to security policies. 
+A component may issue a message to some other component, instructing it to map or unmap its endpoints, or to update its subscription filters.
 
 The only central point of the system is a resource discovery component (RDC). 
 The RDC itself is a component, and acts as a name service. 
 Components may query the RDC for other components within the system, using parameters including component name, connected peers, or public key. 
-The RDC will return IP addresses of matching components, allowing a direct connection to be established.
+The RDC will return IP addresses of matching components, allowing the component to establish a direct connection to a match.
 
 \section{System Design}
 
 The system will be based upon the SBUS middleware, using and extending it to meet the requirements. 
-Applications will use SBUS to send and receive messages.
+Applications will implement an SBUS component, sending and receiving messages on endpoints. 
 
 % Android NDK
 SBUS is written in C++ and will need to be ported for use on Android. 
 The Android Native Development Kit\footnote{http://developer.android.com/tools/sdk/ndk/index.html} (NDK) will be used to compile SBUS for Android, and the Java Native Interface (JNI) framework will be used to allow applications to use this library. 
-Since the NDK offers fairly obscure documentation with little more than trivial examples, some time will be required to understand how the build process works. This presents the largest unknown factor in the system, so will be the first work undertaken, to allow for modification to the project should more or less time be required than expected.
+Since the NDK offers fairly obscure documentation with little more than trivial examples, some time will be required to understand how the build process works. 
+This presents the largest unknown factor in the system, so will be the first work undertaken, to allow for modification to the project should it take more or less time than expected.
 
 % How applications will find data sources relevant to them (constraints in terms of schema)
 When components query the RDC they generally know something about the metadata of the component they want, such as its name or connected peers. 
 In a mobile system, applications are unlikely to have this information available in every case, simply because there are too many possible environments. 
-To allow applications to find relevant components in any environment, the system will be extended to allow queries centred around data.
-Applications will be able to search by the format of the data they use, connecting to any component supporting that format without any other prior knowledge of that component.
+To allow applications to find relevant components in any environment, the system will be extended to allow RDC queries centred around data.
+Applications will be able to search by the format of the data they use, connecting to any component which supports that format, without any other prior knowledge of that component.
 
 % How applications will cope with unexpected data format - must be done at system level
 SBUS endpoints can currently only communicate if they share a common message type. 
 This ensures that endpoints only ever receive messages matching that type, so values can be extracted from the message through a known path. 
-When searching for components by data, an application may be connected to some endpoint which contains the required message type nested somewhere within its own type.
+When searching for components by data, an application may be connected to some endpoint which contains the required message type, nested somewhere within a larger type.
 % TODO: example
 This means that an application may not know where a particular value is located within a message, so would have to perform some complex parsing to find the value. 
 This is obviously undesirable since each environment might use a slightly different message type.
 To avoid each application implementing such a parser, these differences will be handled at the system level, before the application receives the message. 
-The system will reformat any incoming message to match the application message type, meaning an application will never face uncertainity in a message. 
+The system will reformat any incoming message to match the application message type, meaning an application will never face uncertainity in a the structure of a message. 
 
 % How change in context will be detected
 A typical smartphone offers many sensors which can be used to determine a context change. 
-Android allows applications to register to receive intents\footnote{http://developer.android.com/reference/android/content/Intent.html} which indicate some event such as a network change, or an incoming phone call. 
-Furthermore, the AIRS application\footnote{https://play.google.com/store/apps/details?id=com.airs} can be used to obtain sensor readings.
-The system can use these intents and sensor readings to monitor the environment, and determine context changes. 
+Android applications can register to receive intents\footnote{http://developer.android.com/reference/android/content/Intent.html} which indicate events such as a network change, or an incoming phone call. 
+Furthermore, the AIRS application\footnote{https://play.google.com/store/apps/details?id=com.airs} observes sensor readings, and can output them to a remote server.
+The system can use these intents, and act as a server for AIRS to obtain these sensor readings, allowing it to monitor the environment, and determine context changes. 
 Upon detecting a context change, it can then remap other applications on the phone connecting them to peers suited to the environmental context. 
 
 % How applications' connections will be reconfigured (spoke map)
@@ -335,13 +335,15 @@ In order for the system to remap applications, it will first need to know about 
 An RDC is well suited for this, because it maintains a list of registered components, which can then be searched when a component queries the RDC. 
 This list can also serve as a list of components which the system can remap.
 
-These two aspects can be combined into a Phone Manager (PM) application. The PM will act similarly to an RDC, allowing applications on the device to register with it. It will detect context changes and issue messages to registered components to instruct them to remap to other components upon these context changes.
+These two aspects of detecting context change and acting as an RDC can be combined into a Phone Manager (PM) application. 
+The PM will act similarly to an RDC, allowing applications on the device to register with it. 
+It will detect context changes and upon a change will issue messages to registered components to instruct them to remap to other components.
 
 % How the Phone Manager knows what to reconfigure to (policies)
 The PM will remap applications upon a change in context, but must remap them to appropriate places. 
 The PM cannot decide what constitutes ``appropriate'' for any given application, as such, the application must decide for itself. 
 Applications will register {\sl policies} with the PM which dictate how they should be remapped upon a context change. 
-This policy might be an IP address to map to, or a query which can be performed against an RDC in the environment to return matching components. 
+This policy might be an IP address to map to, or a query which can be performed against an RDC in the environment, which will then return matching components. 
 The PM will simply remap applications as specified by their policies.
 
 % Security
@@ -424,7 +426,8 @@ Should multiple constraints (e.g. must have two int fields) be allowed to match 
 \chapter{Evaluation}
 
 The project set out to create a system which would allow applications to automatically reconnect to different sources upon a change in context, where these sources may not necessarily present data in the format expected. 
-The project has been successful in this respect. Sensor readings from AIRS and Android intents are used to detect a change in context. After detecting a change, applications will be connected to sources which satisfy any constraints they have specified and messages will automatically be converted to applications' expected format, allowing operation of the application to continue without interruption.
+The project has been successful in this respect. Sensor readings from the AIRS application\footnote{https://play.google.com/store/apps/details?id=com.airs} and Android intents are used to detect a change in context. 
+Once a change is detected, applications will be connected to sources which satisfy the constraints they have specified and messages will automatically be converted to applications' expected format, allowing operation of the application to continue without interruption.
 
 \section{System Overview}
 
@@ -447,13 +450,13 @@ Figure \ref{fig:system_overview} shows the interactions that occur within the sy
 
 \item The Phone Manager processes these events to determine whether a change in context has occurred. Once a change happens, the Phone Manager will inform the transport application about the change by sending it details of whether an RDC should be added or removed. 
 
-\item The transport application receives this message about the RDC change and will automatically accept this RDC change, registering or deregistering with the RDC, or perform some callback method, perhaps prompting the user to make a decision. The transport application may have chosen to automatically accept the change, but display a message to the user to indicate that the context has changed.
+\item The transport application receives this message about the RDC change and will either automatically accept this change, registering or deregistering with the RDC, or perform some callback method, perhaps prompting the user to make a decision. The transport application may have chosen to automatically accept the change, but display a message to the user to indicate that the context has changed.
 
 \item The Phone Manager applies all of the policies within its policy table, sending messages to application endpoints, instructing them to connect to different components. The transport application will be sent whatever it has set in its policy.
 
 \item If the transport application has specified an IP address in its policy, the endpoint will receive this IP address and can connect directly to it to start receiving messages. However, if the policy specified that a component must have a structure matching the type of {\tt coach}, the endpoint will query the RDC with this constraint to find matching components.
 
-\item The RDC searches components registered with it for those matching the constraints. In this case, it might find only a component sending coach data, while in other cases it may find components offering train data. In both cases, these components match the constraints, so the RDC returns the list of matching components to the application.
+\item The RDC searches components registered with it for those matching the constraints. In this case, it might find only a component sending coach data, while in other cases it may find components offering train data. In both cases, these components contain a structure matching the type of {\tt coach}, so the RDC returns the IP addresses to the application.
 
 \item The application endpoint then connects to one of the matching components, allowing the user to continue receiving fresh travel data without any interaction needed.
 
@@ -503,10 +506,6 @@ However the real flexibility of the system lies in the queries.
 These will be resolved by some RDC, ensuring components are mapped only to other components satisfying their queries. 
 In the second row, the transport application sets a policy for any component named ``Stagecoach'' which has an endpoint named ``Coach'', while in the third row it sets a policy for any endpoint which has a structure matching the type of {\tt coach}. 
 
-% event-condition-action through specifying AIRS sensor + condition
-The system is in line with an event-condition-action model, where events are the sensor readings and actions are mapping applications according to their policies. 
-This could easily be extended to allow applications to specify which sensors to use as events, and conditions those events should fulfill in order to take an action.
-
 % table of example policies with events and conditions
 \begin{table}[tbh]
 \centering
@@ -528,17 +527,19 @@ GPS & \begin{math} location(val) = France \end{math} & Transport & +Scoach \\
 \label{tab:event_condition_action}
 \end{table}
 
-% about examples
+% event-condition-action through specifying AIRS sensor + condition
+The system is in line with an event-condition-action model, where events are the sensor readings and actions are mapping applications according to their policies. 
+The system could easily be extended to allow applications to specify which sensors to use as events, and conditions those events should fulfill for the Phone Manager to apply a mapping policy. 
 As shown in Table \ref{tab:event_condition_action}, applications would not only specify the action they wish to take through their map constraints, but also the events and conditions in which they wish to take that action.
 The healthcare system could specify that it only wishes for heart rate data to be connected to the IP address if a high accelerometer value was measured, because the reading may indicate that a fall has occurred. 
 The transport application can set different policies for different events. If a Wi-Fi connection is established, the application wants to connect specifically to Stagecoach components, however if a GPS event indicates that the user were in France, the application is more lenient and willing to accept any component offering a structure matching the type of {\tt coach}. 
-The application may also display adverts, where policies could be used to determine the source of the adverts, perhaps from nearby restaurants around lunchtime. 
+The application may display adverts, where policies could be used to determine the source of the adverts, perhaps from nearby restaurants around lunchtime. 
 
 % user policies
-This could further be used to allow the user to set their own policies for components. 
+This could further be used to allow the user to set their own policies for applications. 
 The application developer cannot possibly account for every scenario, however by allowing the user to set their own policies, through which they are specifying context changes they are interested in, the system becomes fully customisable and personal. 
 The user of the transport application might not want to wait for a bus when it is raining. 
-Therefore, they could create a policy using a weather event from AIRS, with the condition ``rain''. 
+Therefore, they could create a policy using a weather event with the condition ``rain''. 
 The action might be to connect the application to the IP address of a local taxi company, which provides information about when the next taxi will be available using the schema in Figure \ref{fig:taxi-schema}.
 
 %TODO: UI for user to set policy (system can also set policy).
@@ -581,7 +582,7 @@ However, even in the worst case the RDC can perform the search with 100 other co
 
 Figure \ref{fig:construct_lookup} shows the time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers. 
 The lookup table is created before any messages can be exchanged between different schemas, therefore could cause messages to become stale if the process takes too long.
-The general increase in time from left to right shows that more time is taken to construct a lookup table as the size of the producer schema increases, as expected since there are more fields. 
+The general increase in time from left to right shows that more time is taken to construct a lookup table as the size of the producer schema increases, as expected, since there are more fields. 
 The greater values in the upper right half of the graph show a disparity with the smaller values in the lower left half of the graph. 
 This shows that the time taken to construct a lookup table is greater when the producer's schema is larger than the consumer's schema, corresponding to searching in the larger producer schema for the smaller consumer schema to be matched, as opposed to identifying the missing outer structures if the consumer schema were larger.
 In either case, the lookup table is constructed once per connection, and takes microseconds.
@@ -597,7 +598,7 @@ In either case, the lookup table is constructed once per connection, and takes m
 Figure \ref{fig:repack_message} shows the time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers. 
 This repackaging happens once per message, thus causes a delay on every single message received. 
 The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected because more fields are being repackaged under the appropriate names. 
-As with constructing the lookup table, messages are repackaged within microseconds, meaning that any message will likely still be relevant after the time taken for repackaging.
+As with constructing the lookup table, messages are repackaged within microseconds, meaning that any message should still be relevant after the time taken for repackaging, for any realistic use of the system. 
 
 Figures \ref{fig:construct_lookup} and \ref{fig:repack_message} both use a schema constraint which matches the type of the smallest schema.
 
@@ -655,7 +656,7 @@ Figure \ref{fig:jni_times} shows the breakdown of time taken to perform an SBUS 
 In this case, the function call is to emit a message. 
 This clearly shows that using JNI to call a native method from Java introduces a delay, almost five milliseconds here. 
 Each call to an SBUS function via Java will incur some delay, meaning that applications written in Java for a phone will never operate as quickly as those written in C++.
-Application developers can expect this delay, which is likely to show less variance than any network delay, and build their applications to take account of it. 
+Application developers can expect this delay, which is likely to show less variance than any network delay, and can build their applications to take account of it. 
 Provided an application is calling SBUS functions less frequently than this delay, such as a emitting a message less than once every ten milliseconds, it is unlikely to cause any problems.
 
 %TODO: JNI times for other method calls?
@@ -674,7 +675,7 @@ Provided an application is calling SBUS functions less frequently than this dela
 The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources or the format of their data, decoupling applications from their data sources. 
 The system supports the goals of pervasive computing by allowing scalability in the data sources used, heterogeneity in the data applications use, all while being invisible to the user.
 
-The ``policy engine'' monitors the environment for events which the system or user believe to represent a change in context.
+A policy engine monitors the environment for events which the system or user believe to represent a change in context.
 Upon detection of an event, the policy engine applies applications' policies, reconfiguring their connections as appropriate. 
 Through these policies, applications may control which data sources they should be connected to, without requiring applications to find data sources themselves.
 Policies may be simple, such as the name of a data source, or more complex, specifying how fields in a data source's schema must match their own. 
@@ -691,7 +692,7 @@ Although train data sources use a different schema (Figure \ref{fig:train-schema
 Upon arrival at the station, the user connects to the Wi-Fi network. The policy engine detects this change in context and connects the application to a train data source. 
 Messages will be repackaged to match the application schema, meaning that the same code handles messages for coaches or trains.
 The user might have subscribed to only receive data for which the departure time is after midday. 
-Since this subscription is specified in terms of the coach schema, it will not function correctly if applied directly to the train schema. 
+Since this subscription is specified in terms of the coach schema, it cannot be applied directly to the train schema. 
 In this case, the system reformats the subscription to match the train schema and applies it when connecting the application to the data source, ensuring the user's subscription filter is met.
 
 The application might equally have used the train schema, yet only required the {\tt info} structure, allowing it to use coach data sources.
@@ -717,7 +718,7 @@ For an accelerometer context change, a high accelerometer message followed by a 
 % other stuff that could be done
 
 % alternate events for change in context - AIRS
-Applications cannot currently specify changes in context which they are interested in. 
+Applications cannot currently specify which changes in context they are interested in. 
 The policy engine will trigger all policies upon detecting a change.
 Applications could specify the type of context change within their policy, giving them the ability to specify different policies for different context changes. 
 This moves the system to an event driven architecture, where context changes are represented as events. 
