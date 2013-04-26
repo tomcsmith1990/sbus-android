@@ -64,7 +64,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 6622\footnotemark[1] \\
+Word Count:         & \bf 6638\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -201,7 +201,7 @@ As part of the reconfiguration process the system converts this subscription to 
 The system supports many of the goals of the pervasive computing vision \cite{weiser1991computer}.
 Use of local data sources allows the system to be scalable. 
 Connections are created on an ad-hoc basis, based entirely upon what data sources are available within the environment. 
-Repackaging messages achieves some level of heterogeneity within the system. 
+Repackaging messages allows applications to adapt to heterogeneous content and devices, allowing applications to operate in a multitude of environments. 
 Different sources may represent data in different formats, though application policies allow the system to interpret this data in a meaningful way. 
 The policy engine can perceive context, and use these perceptions in an intelligent way, by reconfiguring applications' connections according to their policies. 
 While all of this is invisible to the user, applications can be configured by the user through the use of policies \cite{saha2003pervasive}.
@@ -673,7 +673,7 @@ Provided an application is calling SBUS functions less frequently than this dela
 
 % summarise
 The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources or the format of their data, decoupling applications from their data sources. 
-The system supports the goals of pervasive computing by allowing scalability in the data sources used, heterogeneity in the data applications use, all while being invisible to the user.
+The system supports the goals of pervasive computing, achieving scalability by allowing applications to use any relevant data source, and allowing applications to adapt to use heterogeneous content, all while being invisible to the user.
 
 A policy engine monitors the environment for events which the system or user believe to represent a change in context.
 Upon detection of an event, the policy engine applies applications' policies, reconfiguring their connections as appropriate. 
