@@ -64,7 +64,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 6638\footnotemark[1] \\
+Word Count:         & \bf 7441\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -389,19 +389,9 @@ Should multiple constraints (e.g. must have two int fields) be allowed to match 
 
 \section{Android Port}
 
-\begin{itemize}
+The Android NDK was used to compile SBUS to support Android, and embed the native machine code into applications. 
+The documentation for the NDK offers little more than trivial examples, and few other resources exist, so this stage of the project was largely achieved through experimentation. 
 
-\item Android NDK (write how bad the documentation is)
-
-\item Rewriting method to get IP address
-
-\item Putting files (sbuswrapper) onto phone - issues using Android FS without rooting.
-
-\item JNI
-
-\end{itemize}
-
-The Android NDK was used to compile SBUS to add support for Android. 
 A standalone toolchain from the NDK can be used to set the correct compilation variables when running {\tt ./configure}. 
 In setting up the toolchain, the architecture of the device and the Android native API platform must be specified. 
 ARM-based devices, and Android platform 9 where chosen here, since these corresponded to the device which was available. 
@@ -436,6 +426,21 @@ Since {\tt sbuswrapper} is large compared to the available internal memory on th
 Therefore, one copy was included with the Phone Manager, which then modified the permissions to make {\tt sbuswrapper} world executable.
 
 Although not an ideal solution, rooting the device would have devalued the project, since it would only then work on rooted devices.
+
+%TODO: write about closing sockets and all those FIN_WAIT2? Nothing actually changed now, but it was a pain.
+
+The Android NDK was finally used in conjunction with Java Native Interface (JNI) to allow applications to call SBUS functions via Java. 
+This involved writing Java classes for components, endpoints and messages, as well as some helper classes. 
+The SBUS library is linked via the {\tt Android.mk} file, which {\tt ndk-build} then uses to copy the shared library into the application's root project directory. 
+The application can then be built to generate a package file which can run on an Android device.
+
+Each Java object has a one-to-one correspondence with a native object. 
+Native methods which create an object return a pointer to that object, cast to an integer. 
+The pointer is passed to the constructor of the Java object representing the native object.
+When method is invoked on the Java object, the pointer is passed back to the native method, which then casts it to a pointer to the native object.
+The Java classes hide this complexity from the user, simply providing methods with parameters and return values in terms of these other Java classes.
+
+These classes are exported as a JAR file, which applications can then simply import to use the Java SBUS library.
 
 \section{Phone Manager}
 
