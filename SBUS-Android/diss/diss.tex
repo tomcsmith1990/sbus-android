@@ -401,7 +401,43 @@ Should multiple constraints (e.g. must have two int fields) be allowed to match 
 
 \end{itemize}
 
-\section{Policy Engine/Phone Manager}
+The Android NDK was used to compile SBUS to add support for Android. 
+A standalone toolchain from the NDK can be used to set the correct compilation variables when running {\tt ./configure}. 
+In setting up the toolchain, the architecture of the device and the Android native API platform must be specified. 
+ARM-based devices, and Android platform 9 where chosen here, since these corresponded to the device which was available. 
+The standalone toolchain is still in beta which meant there were several problems compiling SBUS directly, typically due to missing libraries. 
+Some SBUS code had to be rewritten to account for this, in many cases using {\tt \#ifdef} statements to substitute blocks of code specific to Android.
+The toolchain setup did include a bug\footnote{https://code.google.com/p/android/issues/detail?id=35279} which meant some include paths were missing, so {\tt <limits>} could not be referenced. A workaround for this is to fix the directory structure.
+
+The Android version of {\tt pwd.h} which defines {\tt struct passwd} contains no member {\tt pw\_gecos}. 
+This corresponds to the user's full name, which was used by SBUS to set the {\tt creator} field in a component's metadata. 
+The creator was simply replaced by the string `Android'.
+
+One of the greatest problems by far was that {\tt <sys/sockio.h>} was missing from Android.
+SBUS uses this to determine the IP address which a component is running on, which is then used as part of connection setup. 
+This meant that the entire method to determine the IP address had to be rewritten to work on Android. 
+This was achieved using {\tt ioctl()}, to return a list of network interfaces and their IP addresses. 
+From this list, the appropriate interface was chosen by name, and the IP address returned. 
+The Wi-Fi address, if connected, was prioritised over the mobile network address.
+
+Another large issue was the Android filesystem. 
+SBUS invokes a wrapper, typically residing at {\tt /usr/bin/sbuswrapper} which means it can be invoked via a call to {\tt sbuswrapper}, since the {\tt PATH} environment variable contains {\tt /usr/bin}. 
+This wrapper is responsible for handling the low level messages between components, which are then passed to the library level as structured messages. 
+For the same functionality, the wrapper needed to be stored in a directory which is in the {\tt PATH} variable, which on Android, amounts to {\tt /system/bin}. 
+The Android SDK provides the Android Debug Bridge ({\tt adb}) to push and pull files to and from a device. 
+On the Android emulator, {\tt /system} can be remounted as writeable\footnote{using {\tt mount -o rw,remount -t yaffs2 /dev/block/mtd3 /system }}, allowing {\tt sbuswrapper} to be pushed to {\tt /system/bin/sbuswrapper}. 
+However, on a device without root access, {\tt /system/bin} cannot be remounted in this way, thus cannot be written to. 
+This meant that a writeable directory was needed, and {\tt sbuswrapper} would have to be invoked using the full path. 
+The SD card ({\tt /mnt/sdcard}) is writeable so was considered, however is mounted with the option {\tt noexec}, which means that although a file can be pushed to it, it cannot be executed. 
+The best approach to use was to include {\tt sbuswrapper} as an asset to the application, and copy it to the application's filespace.
+Android uses a sandbox concept for security, where each application has access only to its own resources on the device. 
+This is enforced by assigning each application a unique user ID, and setting the appropriate permissions. 
+Since {\tt sbuswrapper} is large compared to the available internal memory on the device, it was infeasible to include a copy with every application. 
+Therefore, one copy was included with the Phone Manager, which then modified the permissions to make {\tt sbuswrapper} world executable.
+
+Although not an ideal solution, rooting the device would have devalued the project, since it would only then work on rooted devices.
+
+\section{Phone Manager}
 
 \begin{itemize}
 
