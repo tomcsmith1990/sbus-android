@@ -6,6 +6,12 @@
 \usepackage{subcaption}
 \usepackage{listings}
 \usepackage{siunitx}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=false,
+    pdfborder={0 0 0},
+}
 
 % set tab size for lstlisting
 \lstset{tabsize=4,basicstyle=\ttfamily}
@@ -65,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 7531\footnotemark[1] \\
+Word Count:         & \bf 7553\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -88,7 +94,7 @@ This middleware was ported for use on Android, and an application was created to
 
 \section*{Special Difficulties}
 
-The main difficulty in the project came from porting the messaging middleware to Android. The Android NDK\footnote{http://developer.android.com/tools/sdk/ndk/index.html} toolkit was used in order to compile the C++ library for use on Android, however missing standard libraries and poor documentation made this task more difficult than expected.
+The main difficulty in the project came from porting the messaging middleware to Android. The Android NDK\footnote{\url{http://developer.android.com/tools/sdk/ndk/index.html}} toolkit was used in order to compile the C++ library for use on Android, however missing standard libraries and poor documentation made this task more difficult than expected.
  
 \newpage
 \section*{Declaration}
@@ -304,7 +310,7 @@ Applications will implement an SBUS component, sending and receiving messages on
 
 % Android NDK
 SBUS is written in C++ and will need to be ported for use on Android. 
-The Android Native Development Kit\footnote{http://developer.android.com/tools/sdk/ndk/index.html} (NDK) will be used to compile SBUS for Android, and the Java Native Interface (JNI) framework will be used to allow applications to use this library. 
+The Android Native Development Kit\footnote{\url{http://developer.android.com/tools/sdk/ndk/index.html}} (NDK) will be used to compile SBUS for Android, and the Java Native Interface (JNI) framework will be used to allow applications to use this library. 
 Since the NDK offers fairly obscure documentation with little more than trivial examples, some time will be required to understand how the build process works. 
 This presents the largest unknown factor in the system, so will be the first work undertaken, to allow for modification to the project should it take more or less time than expected.
 
@@ -326,8 +332,8 @@ The system will reformat any incoming message to match the application message t
 
 % How change in context will be detected
 A typical smartphone offers many sensors which can be used to determine a context change. 
-Android applications can register to receive intents\footnote{http://developer.android.com/reference/android/content/Intent.html} which indicate events such as a network change, or an incoming phone call. 
-Furthermore, the AIRS application\footnote{https://play.google.com/store/apps/details?id=com.airs} observes sensor readings, and can output them to a remote server.
+Android applications can register to receive intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} which indicate events such as a network change, or an incoming phone call. 
+Furthermore, the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} observes sensor readings, and can output them to a remote server.
 The system can use these intents, and act as a server for AIRS to obtain these sensor readings, allowing it to monitor the environment, and determine context changes. 
 Upon detecting a context change, it can then remap other applications on the phone connecting them to peers suited to the environmental context. 
 
@@ -398,16 +404,17 @@ In setting up the toolchain, the architecture of the device and the Android nati
 ARM-based devices, and Android platform 9 where chosen here, since these corresponded to the available device. 
 The standalone toolchain is still in beta which meant there were several problems compiling SBUS directly, typically due to missing libraries. 
 Some SBUS code had to be rewritten to account for this, in many cases using {\tt \#ifdef} statements to substitute blocks of code specific to Android. 
-The toolchain setup did include a bug\footnote{https://code.google.com/p/android/issues/detail?id=35279} which meant some include paths were missing. 
+The toolchain setup did include a bug\footnote{\url{https://code.google.com/p/android/issues/detail?id=35279}} which meant some include paths were missing. 
 In this case, {\tt <limits>} could not be referenced. 
 The workaround for this was to fix the directory structure.
 
 The Android version of {\tt pwd.h} which defines {\tt struct passwd} contains no member {\tt pw\_gecos}. 
 This contains the user's full name, which is used by SBUS to set the {\tt creator} field in a component's metadata, allowing components to query an RDC by creator. 
 To remedy this, the creator was simply replaced by the string `Android'. 
-In principle, the user's full name or username could be found in Java using the AccountManager class\footnote{http://developer.android.com/reference/android/accounts/AccountManager.html}, which could then be passed as a parameter to the component via JNI. 
+In principle, the user's full name or username could be found in Java using the AccountManager class\footnote{\url{http://developer.android.com/reference/android/accounts/AccountManager.html}}, which could then be passed as a parameter to the component via JNI. 
 This would allow the creator to be set more accurately, however it was deemed to be unimportant to the project. 
 
+% IP address.
 One of the greatest problems was that {\tt <sys/sockio.h>} was missing from Android.
 SBUS uses this as part of determining the IP address which a component is running on, which is then used during connection setup. 
 This meant that the entire method to determine the IP address had to be rewritten to work on Android. 
@@ -415,6 +422,7 @@ This was achieved by passing an {\tt ifconf} structure to {\tt ioctl()}, which p
 The list can then be searched for the appropriate interface and the IP address returned. 
 In this case, the {\tt eth0} interface for Wi-Fi was prioritised over the 3G interface.
 
+% Android FS.
 Another large issue was the Android filesystem. 
 When creating a component, SBUS invokes a wrapper which is responsible for handling the low level messages between components, passing them to the library level as structured messages.
 This typically resides at {\tt /usr/bin/sbuswrapper} which means it can be invoked via a call to {\tt sbuswrapper}, since the {\tt PATH} environment variable contains {\tt /usr/bin}. 
@@ -430,12 +438,14 @@ The best approach to use was to include {\tt sbuswrapper} as an asset to an appl
 Android uses a sandbox concept for security, where each application has access only to its own resources on the device. 
 This is enforced by assigning each application a unique user ID, and setting the appropriate permissions. 
 Since {\tt sbuswrapper} is approximately \SI{1}{MB}, compared to approximately \SI{30}{MB} available internal memory on the device, it was infeasible to include a copy with every application. 
-Therefore, one copy was included with the Phone Manager, which then modified the permissions to make {\tt sbuswrapper} world executable.
+Therefore, one copy was included with the Phone Manager, which then modified the permissions to make {\tt sbuswrapper} world executable. 
+An additional directory was created and made world writable, which is where SBUS stores log files. 
 
 Although the device simply could have been rooted, allowing a much cleaner solution of storing {\tt sbuswrapper} at {\tt /system/bin/sbuswrapper}, it would have devalued the project, since it would only then work on rooted devices.
 
 %TODO: write about closing sockets and all those FIN_WAIT2? Nothing actually changed now, but it was a pain.
 
+% JNI.
 The Android NDK was finally used in conjunction with Java Native Interface (JNI) to allow applications to call SBUS functions via Java. 
 This involved writing Java classes for components, endpoints and messages, as well as some helper classes. 
 The SBUS library is linked via the {\tt Android.mk} file, which {\tt ndk-build} then uses to copy the shared library into the application's root project directory. 
@@ -444,7 +454,7 @@ The application can then be built to generate a package file which can run on an
 Each Java object has a one-to-one correspondence with a native object. 
 Native methods which create an object return a pointer to that object, cast to an integer. 
 The pointer is passed to the constructor of the Java object representing the native object.
-When method is invoked on the Java object, the pointer is passed back to the native method, which then casts it to a pointer to the native object.
+When a method is invoked on the Java object, the pointer is passed back to the native method, which then casts it to a pointer to the native object.
 The Java classes hide this complexity from the user, simply providing methods with parameters and return values in terms of these other Java classes.
 
 These classes are exported as a JAR file, which applications can then simply import to use the Java SBUS library.
@@ -474,7 +484,7 @@ These classes are exported as a JAR file, which applications can then simply imp
 \chapter{Evaluation}
 
 The project set out to create a system which would allow applications to automatically reconnect to different sources upon a change in context, where these sources may not necessarily present data in the format expected. 
-The project has been successful in this respect. Sensor readings from the AIRS application\footnote{https://play.google.com/store/apps/details?id=com.airs} and Android intents are used to detect a change in context. 
+The project has been successful in this respect. Sensor readings from the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android intents are used to detect a change in context. 
 Once a change is detected, applications will be connected to sources which satisfy the constraints they have specified and messages will automatically be converted to applications' expected format, allowing operation of the application to continue without interruption.
 
 \section{System Overview}
@@ -519,8 +529,8 @@ Other messaging systems:
 \item Java Messaging System
 \end{itemize}
 
-AWARE\footnote{http://www.awareframework.com/home/} is a new ``Android framework dedicated to instrument, infer, log and share mobile context information for application developers'' which could be used in place of AIRS to detect a change in context.
-AWARE uses broadcasts to notify applications of the current context, and these broadcasts can be captured by Android BroadcastReceivers\footnote{http://developer.android.com/reference/android/content/BroadcastReceiver.html}. This allows the Phone Manager, or indeed any application, to implement broadcast receivers to be notified of changes in context, rather than using AIRS and the AIRS-SBUS gateway. 
+AWARE\footnote{\url{http://www.awareframework.com/home/}} is a new ``Android framework dedicated to instrument, infer, log and share mobile context information for application developers'' which could be used in place of AIRS to detect a change in context.
+AWARE uses broadcasts to notify applications of the current context, and these broadcasts can be captured by Android BroadcastReceivers\footnote{\url{http://developer.android.com/reference/android/content/BroadcastReceiver.html}}. This allows the Phone Manager, or indeed any application, to implement broadcast receivers to be notified of changes in context, rather than using AIRS and the AIRS-SBUS gateway. 
 Some applications might choose to implement broadcast receivers themselves, in order to use this framework in place of the Phone Manager to detect context changes.
 However, the Phone Manager would still be useful because it would provide this service for any application to use, mapping them as per their policies and reducing complexity in the applications themselves.
 
