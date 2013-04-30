@@ -481,6 +481,13 @@ Query & Meaning \\
 \label{tab:nested_schema_syntax}
 \end{table}
 
+% how the parser build up the nested structure of constraints to match
+A parser was already implemented for reading constraints from a string, so these new constraint types were added to that same parser. 
+When one of this constraints was encountered, an item was added to the current list of schema constraints, containing the field name, whether this is an exact match or a type match, and a pointer to a list of child constraints. 
+Upon reading an opening bracket, the current list being added to was added to a stack, and the previous item's list became the main list which constraints were added to. 
+When reading a closing bracket, the previous list was popped off the stack, and new constraints are added to that.
+%TODO: psuedocode?
+
 \section{Android Port}
 
 The Android NDK was used to compile SBUS to support Android, and embed the native machine code into applications. 
