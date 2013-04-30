@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 7553\footnotemark[1] \\
+Word Count:         & \bf 8069\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -374,7 +374,7 @@ Finally, this is all brought together with the Phone Manager which is responsibl
 
 \item Syntax: +H, +S, what they mean. Nested searches +S[+H]
 
-\item How system handles these - hashes.
+\item How system handles these - hashes. 
 
 \item Constructing looking table from these.
 
@@ -386,13 +386,100 @@ Finally, this is all brought together with the Phone Manager which is responsibl
 
 \item Optimisations - reordering constraints - also don't repeat constraints.
 
+\item How accurate is the lookup table? 
+\item Are any fields repackaged as ``empty'' when we could have filled them with something else? Fairly qualitative, perhaps a discussion about how the constraints are used to create this lookup table, and how multiple constraints may be fulfilled by a single field.
+
+\item Should multiple constraints (e.g. must have two int fields) be allowed to match to the same field?
+
 \end{itemize}
 
-How accurate is the lookup table? 
-Are any fields repackaged as ``empty'' when we could have filled them with something else? 
-Fairly qualitative, perhaps a discussion about how the constraints are used to create this lookup table, and how multiple constraints may be fulfilled by a single field.
+% syntax
+The most natural way for a component to query an RDC with data constraints seemed to be to extend the current query mechanism. 
+When searching for a component using a particular data type, an application may be interested in an exact match, where names as well as types are matched, or may only be interested in the types. 
+A component can only know about its own schema in advance, therefore queries must be specified in terms of the component's own schema.
+This have been introduced as two new query parameters, where {\tt +H} represent an exact match, and {\tt +S} represent a type match. 
+Each of these is used with the name of a single item in the component's schema.
+If this item is a single field, it refers only to that field, whereas if it is a structure, the query applies recursively to the entire structure. 
+Any item which does not exist in the schema is ignored. 
+Table \ref{tab:example_schema_syntax} demonstrates some possible queries, based on the schema in Figure \ref{fig:locationschema}.
 
-Should multiple constraints (e.g. must have two int fields) be allowed to match to the same field?
+\begin{figure}[tbh]
+\begin{lstlisting}
+@location
+{
+	gps
+	{
+		dbl longitude
+		dbl latitude
+		int altitude
+	}
+	txt city
+}
+\end{lstlisting}
+\caption{Location Schema}
+\label{fig:locationschema}
+\end{figure}
+
+\begin{table}[tbh]
+\centering
+
+\begin{tabular}{l l}
+\hline\hline
+Query & Meaning \\
+\hline
+
+{\tt +Scity}		& Match the type of {\tt city} (a {\tt txt} field) \\
+{\tt +Hlongitude}	& Match the {\tt longitude} field exactly \\
+
+{\tt +Sgps}			& Match the {\tt gps} substructure type \\
+{\tt +Hgps}			& Match the {\tt gps} substructure exactly \\
+
+{\tt +Hcountry}		& {\tt <ignored>} \\
+{\tt +Hlocation}	& Match the entire {\tt location} schema exactly \\
+
+{\tt +Sgps+Hlongitude}	& Match {\tt gps} type AND match {\tt longitude} exactly \\
+
+\hline
+\end{tabular}
+
+\caption{Example Schema Syntax}
+\label{tab:example_schema_syntax}
+\end{table}
+
+% nested syntax
+The final entry in Table \ref{tab:example_schema_syntax}, {\tt +Sgps+Hlongitude} bears an interesting case. 
+This currently specifies that the schema must contain a structure matching the type of {\tt gps} and must also contain the field {\tt longitude} {\sl anywhere} in the schema. 
+An alternative use might be considered where the user wishes to specify that the schema must contain a structure matching the type of {\tt gps}, and must also contain the field {\tt longitude} {\sl within that structure}. 
+This would allow a query to be specified that would match a structure which has renamed {\tt altitude} to {\tt height}, but not one which has renamed {\tt longitude} to {\tt long}. 
+The latter could be matched in the current case, if a the {\tt longitude} field existed elsewhere in that schema. 
+
+This usage is implemented using a nested syntax, and Table \ref{tab:nested_schema_syntax} demonstrates some possible nested queries, based on the schema in Figure \ref{fig:locationschema}. 
+Clearly in the last two cases, the nested constraint is irrelevant, because they offer no stronger match criteria than their parent. 
+In this situation, the nested constraint is simply ignored.
+
+\begin{table}[tbh]
+\centering
+
+\begin{tabular}{l p{8cm}}
+\hline\hline
+Query & Meaning \\
+\hline
+
+{\tt +Sgps}							& Match a structure with the type of {\tt gps} \\
+{\tt +Sgps[+Hlongitude]}			& Match a structure with the type of {\tt gps}, if it contains a field matching {\tt longitude} exactly \\
+{\tt +Sgps[+Hlongitude+Hlatitude]}	& Match a structure with the type of {\tt gps}, if it contains fields matching {\tt longitude} and {\tt latitude} exactly \\
+
+{\tt +Sgps[+Hlongitude]+Hcity}	& Match a structure with the type of {\tt gps}, if it contains a field matching {\tt longitude} exactly AND match the field {\tt city} exactly \\
+
+{\tt +Sgps[+Slongitude]}	& Match a structure with the type of {\tt gps}, if it contains a field matching the type of {\tt longitude} \\
+{\tt +Hgps[+Slongitude]}	& Match a structure which matches {\tt gps} exactly, if it contains a field matching the type of {\tt longitude} \\
+
+\hline
+\end{tabular}
+
+\caption{Nested Schema Syntax}
+\label{tab:nested_schema_syntax}
+\end{table}
 
 \section{Android Port}
 
@@ -476,6 +563,8 @@ These classes are exported as a JAR file, which applications can then simply imp
 \item Applying policies.
 
 \end{itemize}
+
+The Phone Manager is an Android application which detects changes in context and reconfigures other applications' connections. 
 
 \cleardoublepage
 
