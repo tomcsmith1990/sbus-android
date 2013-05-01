@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 8164\footnotemark[1] \\
+Word Count:         & \bf 8203\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -83,14 +83,19 @@ Supervisor:         & Dr Jatinder Singh		\\
 
 \section*{Original Aims of the Project}
 
-The original aim of the project was to create a system which could adapt to changes in context which come with mobility, such as location or networks. 
-This required the ability to detect these changes, and to find and connect to new data sources. 
-As a new data source may have a different data schema to the expected schema, the system must offer a way to make meaningful use of this data in relation to the expected schema.
+The aim of the project was to investigate how applications can respond to changes in context, primarily those arising as a result of mobility. 
+This requires some system which allows applications on a mobile device to communicate with those in different environments. 
+There must be some mechanism for detecting context changes. 
+Applications need to be able to discover and connect to relevant peers. 
+Finally, applications should be able to make meaningful use of data which is slightly different to their expectations. 
+This grants applications the ability to interact with a wider range of peers, allowing greater adaptability to different environments.
 
 \section*{Work Completed}
 
-A messaging middleware was modified to allow users to search for data sources by aspects of their schema. Users can search for exact matches on some part of a schema, or looser matches, considering field types only, not names.
-This middleware was ported for use on Android, and an application was created to monitor changes in context, particularly those that arise as a result of mobility. Upon detection of a change in context, the application informs other applications of the change, or automatically reconfigures their connections to connect them to new data sources, based on their policies.
+A messaging middleware was modified to allow searching for peers by aspects of their schema, offering exact matches based on names and types, or looser matches which only consider types.
+This middleware was ported for use on Android, allowing applications on a mobile device to communicate with other systems using the same middleware. 
+An application was created to monitor changes in context through various sensors on the device. 
+Upon detection of a change in context, this application informs other applications of the change or automatically reconfigures their connections to connect them to new peers, based on policies the appplications define.
 
 \section*{Special Difficulties}
 
@@ -144,14 +149,14 @@ I show how applications can find relevant data sources in a new environment, and
 % what's the problem
 
 % describe current approach
-Current applications tend to be inflexible in data sources they use, often just selecting from a list of possibilities, regardless of the environment. 
+Current applications tend to be inflexible in data sources they use, often selecting from some hardcoded list of possibilities, regardless of the environment. 
 While some localisation might be achieved by including parameters during connection, such as sending GPS co-ordinates, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
-The data formats that applications and data sources use have also been fixed, restricting applications even further.
-By connecting to local data sources, applications can gain greater flexibility due to the fact that the data sources reside within the same environment.
+The format of the data which is being exchanged has also been fixed, restricting applications even further.
+By connecting to local data sources, applications can gain more releveant data due to the fact that the data sources reside within the same environment.
 Given an application which requires the current temperature, a global server may use current GPS co-ordinates to determine the nearest weather station and return its most recent reading. 
 Yet if the application were being used indoors, a value from a local temperature sensor might not only suffice, but be more appropriate. 
-Perhaps this could be achieved otherwise, if the server had known about the temperature sensor, however why should the application need to connect to a global server in order to use a local connection? Perhaps there isn't even an Internet connection available. 
-Furthermore, given that the user is mobile, the server would need to know about {\sl every} temperature sensor. 
+Perhaps this could be achieved otherwise, if the server had known about the temperature sensor, however why should the application need to connect to a global server in order to use local data? Perhaps there isn't even an Internet connection available. 
+Furthermore, given that the user is mobile, the server would need to know about {\sl every} temperature sensor {\sl everywhere}. 
 Local data sources allow applications to use a dynamic set of data sources, more related to their environment. 
 
 % context
@@ -323,10 +328,10 @@ Applications will be able to search by the format of the data they use, connecti
 
 % How applications will cope with unexpected data format - must be done at system level
 SBUS endpoints can currently only communicate if they share a common message type. 
-This ensures that endpoints only ever receive messages matching that type, so values can be extracted from the message through a known path. 
+This ensures that endpoints only ever receive messages matching that type, from which values can be easily extracted since the structure of the message is known.
 When searching for components by data, an application may be connected to some endpoint which contains the required message type, nested somewhere within a larger type.
 % TODO: example
-This means that an application may not know where a particular value is located within a message, so would have to perform some complex parsing to find the value. 
+This means that an application may not know the structure of the message, so cannot locate a particular value within it. The application would have to perform some complex parsing of the message in order to extract the value. 
 This is obviously undesirable since each environment might use a slightly different message type.
 To avoid each application implementing such a parser, these differences will be handled at the system level, before the application receives the message. 
 The system will reformat any incoming message to match the application message type, meaning an application will never face uncertainity in a the structure of a message. 
@@ -776,13 +781,13 @@ This section evaluates the performance of using SBUS on a phone in comparison to
 \begin{tabular}{c c c c}
 \hline\hline
 
-Consumer & Producer & Mean \begin{math} (\mu s) \end{math} & Standard Deviation  \begin{math} (\mu s) \end{math} \\
+Consumer & Producer & Mean (ms) & Standard Deviation (ms) \\
 \hline
 
-Laptop	&	Laptop	& \begin{math} 0.7979\times10^4	\end{math} & \begin{math} 0.9787\times10^4 \end{math} \\
-Laptop	&	Phone	& \begin{math} 2.0824\times10^4	\end{math} & \begin{math} 2.0064\times10^4 \end{math} \\
-Phone	&	Laptop	& \begin{math} 2.1834\times10^4	\end{math} & \begin{math} 1.5705\times10^4 \end{math} \\
-Phone	& Phone	& \begin{math} 1.0933\times10^4	\end{math} & \begin{math} 0.2810\times10^4 \end{math} \\
+Laptop	&	Laptop	& 7.979 	& 9.787 \\
+Laptop	&	Phone	& 20.824 	& 20.064 \\
+Phone	&	Laptop	& 21.834	& 15.705 \\
+Phone	& 	Phone	& 10.933	& 2.810 \\
 \hline
 \end{tabular}
 
