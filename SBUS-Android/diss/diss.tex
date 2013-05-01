@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 8137\footnotemark[1] \\
+Word Count:         & \bf 8147\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -487,11 +487,14 @@ Query & Match \\
 \end{table}
 
 % how the parser build up the nested structure of constraints to match
-A parser was already implemented for reading constraints from a string, so these new constraint types were added to that same parser. 
-When one of this constraints was encountered, an item was added to the current list of schema constraints, containing the field name, whether this is an exact match or a type match, and a pointer to a list of child constraints. 
-Upon reading an opening bracket, the current list being added to was added to a stack, and the previous item's list became the main list which constraints were added to. 
-When reading a closing bracket, the previous list was popped off the stack, and new constraints are added to that.
-%TODO: psuedocode?
+The existing parser was extended to allow these new constraint types. 
+Upon encountering a {\sl has} or {\sl similar} constraint, the field name, type of match and pointer to another list are added to a schema constraint list. 
+A stack is used to handle nested constraints. 
+If the schema constraint list is not empty, then an opening bracket causes it to be pushed to the stack, otherwise the bracket is ignored. 
+Subsequent constraints are then added to the list pointed to by the last item in the list at the top of the stack, so that each constraint holds a list of constraints nested within it. 
+A closing bracket pops the list off the top of the stack, which new constraints are then added to. 
+
+%TODO: psuedocode or diagram?
 
 \section{Android Port}
 
