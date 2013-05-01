@@ -3,10 +3,10 @@ delimiter = '\n';
 range1 = [0 0 99 0];
 range2 = [100 0 199 0];
 
-laptop_laptop = dlmread('spoke-map.txt', delimiter, range1);
-laptop_phone = dlmread('spoke-map.txt', delimiter, range2);
-phone_laptop = dlmread('spoke-map-phone.txt', delimiter, range1);
-phone_phone = dlmread('spoke-map-phone.txt', delimiter, range2);
+laptop_laptop = dlmread('spoke-map.txt', delimiter, range1) / 1000;
+laptop_phone = dlmread('spoke-map.txt', delimiter, range2) / 1000;
+phone_laptop = dlmread('spoke-map-phone.txt', delimiter, range1) / 1000;
+phone_phone = dlmread('spoke-map-phone.txt', delimiter, range2) / 1000;
 
 disp('laptop_laptop mean = ')
 disp(mean(laptop_laptop))
@@ -40,7 +40,7 @@ errorbar(3, mean(phone_laptop), std(phone_laptop), '-*');
 errorbar(4, mean(phone_phone), std(phone_phone), '-X');
 
 xlabel('Consumer-Producer');
-ylabel('Time (\mus)');
+ylabel('Time (ms)');
 title('Connection Times Between Producers and Consumers on a Laptop and Phone');
 set(gca, 'XTick', [1 2 3 4]);
 set(gca, 'XTickLabel', {'Laptop-Laptop', 'Laptop-Phone', 'Phone-Laptop', 'Phone-Phone'});
