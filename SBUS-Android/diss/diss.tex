@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 8203\footnotemark[1] \\
+Word Count:         & \bf 8287\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -185,15 +185,20 @@ However, the developer can specify how the application should behave in differen
 
 Schilit et al \cite{schilit1994context}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
 This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment. 
-Pascoe \cite{pascoe1998adding} lists four context-aware capabilites, two of which occur in this reconfiguration. 
-Contextual resource discovery is used to discover data sources available within the current context, and contextual adaptation allows applications to adapt to different data schemas in order to use the sources. 
+Pascoe \cite{pascoe1998adding} lists four context-aware capabilites. 
+{\sl Contextual sensing} is simply detecting environmental state and presenting it to the user. 
+{\sl Contextual adaptation} is where applications leverage this knowledge by adapting their behaviour to integrate with the user's environment. 
+{\sl Contextual resource discovery} allows applications to discover and exploit resources which exist in the same context as themselves. 
+{\sl Contextual augmentation} augments reality with digital data. 
+This system uses contextual resource discovery to discover potential peers available within the current context, and contextual adaptation to allow  applications to adapt to different data formats in order to communicate with these peers.
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
 M\"{u}hl defines three kinds of events which can be used to detect a change in context: physical events, timer events, and a state change in the system \cite[page 11]{muhl2006distributed}, all of which may warrant some kind of reconfiguration. 
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (a fall), in which case the application may need to send data to an emergency response team.
 A timer event indicates the progression of real time, which advertisers could use to connect to advertisements for nearby restaurants at lunch time. 
 Finally, there are state changes in the system, such as a change in network connection or location. 
-This project focuses on these state changes, particularly using a change in network connection to indicate a change in context. 
+Composite events might also be considered, which require the detection of several different events, or one or more occurrences of a single event \cite{chakravarthy1994composite}. 
+This project primarly focuses on state changes events, particularly using a change in network connection to indicate a change in context, though in practice any event might be used.  
 
 % policy engine
 Applications control how their connections should be reconfigured through policies. 
