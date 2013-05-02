@@ -71,7 +71,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 8297\footnotemark[1] \\
+Word Count:         & \bf 8663\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -382,6 +382,8 @@ Finally, this is all brought together with the Phone Manager which is responsibl
 
 \section{Flexible Schema Matching}
 
+Flexible schema matching refers to components finding other components based on aspects of their schema, and how these components can communicate if their schemas are not identical. 
+
 \begin{itemize}
 
 \item Syntax: +H, +S, what they mean. Nested searches +S[+H]
@@ -412,7 +414,7 @@ A component can only know about its own schema in advance, therefore these queri
 Two new query parameters have been introduced to allow this functionality. 
 An exact match is specified by {\tt +H}, representing a schema {\sl has} something, and a type match is specified by {\tt +S}, representing a schema has something {\sl similar}.
 Each of these is used with the name of a single item in the component's schema.
-If this item is a single field, it refers only to that field, whereas if it is a structure, the query applies recursively to the entire structure. 
+If this item is a single field, it refers only to that field, whereas if it is a composite item consisting of multiple fields, the query applies recursively to the entire item. 
 Any item which does not exist in the schema is ignored. 
 Table \ref{tab:example_schema_syntax} demonstrates some possible queries based on the schema in Figure \ref{fig:locationschema}.
 
@@ -444,13 +446,13 @@ Query & Match \\
 {\tt +Scity}		& {\tt city} field type ({\tt txt}) \\
 {\tt +Hlongitude}	& {\tt longitude} field exactly \\
 
-{\tt +Sgps}			& {\tt gps} structure type \\
-{\tt +Hgps}			& {\tt gps} structure exactly \\
+{\tt +Sgps}			& {\tt gps} item type \\
+{\tt +Hgps}			& {\tt gps} item exactly \\
 
 {\tt +Hcountry}		& {\tt <ignored>} \\
 {\tt +Hlocation}	& Entire {\tt location} schema exactly \\
 
-{\tt +Sgps+Hlongitude}	& {\tt gps} structure type AND {\tt longitude} field exactly \\
+{\tt +Sgps+Hlongitude}	& {\tt gps} item type AND {\tt longitude} field exactly \\
 
 \hline
 \end{tabular}
@@ -461,9 +463,9 @@ Query & Match \\
 
 % nested syntax
 The final entry in Table \ref{tab:example_schema_syntax}, {\tt +Sgps+Hlongitude} bears an interesting case. 
-This currently specifies that the schema must contain a structure matching the type of {\tt gps} and must also contain the field {\tt longitude} {\sl anywhere} in the schema. 
-An alternative use might be considered where the user wishes to specify that the schema must contain a structure matching the type of {\tt gps}, and must also contain the field {\tt longitude} {\sl within that structure}. 
-This would allow a query to be specified that would match a structure which renames {\tt altitude} as {\tt height}, but not one which renames {\tt longitude} as {\tt long}. 
+This currently specifies that the schema must contain an item matching the type of {\tt gps} and must also contain the field {\tt longitude} {\sl anywhere} in the schema. 
+An alternative use might be considered where the user wishes to specify that the schema must contain a item matching the type of {\tt gps}, and must also contain the field {\tt longitude} {\sl within that structure}. 
+This would allow a query to be specified that would match a item which renames {\tt altitude} as {\tt height}, but not one which renames {\tt longitude} as {\tt long}. 
 The latter could be matched in the current case, if the {\tt longitude} field existed elsewhere in that schema. 
 
 This usage is implemented through a nested syntax, where constraints can have child constraints attached. 
@@ -480,16 +482,16 @@ In this situation, the nested constraint is simply ignored.
 Query & Match \\
 \hline
 
-{\tt +Sgps}							& {\tt gps} structure type \\
-{\tt +Sgps[+Hlongitude]}			& {\tt gps} structure type containing {\tt longitude} field exactly \\
-{\tt +Sgps[+Hlongitude+Hlatitude]}	& {\tt gps} structure type containing {\tt longitude} and {\tt latitude} fields exactly \\
+{\tt +Sgps}							& {\tt gps} item type \\
+{\tt +Sgps[+Hlongitude]}			& {\tt gps} item type containing {\tt longitude} field exactly \\
+{\tt +Sgps[+Hlongitude+Hlatitude]}	& {\tt gps} item type containing {\tt longitude} and {\tt latitude} fields exactly \\
 
-{\tt +Sgps[+Hcountry]}				& {\tt gps} structure type \\
+{\tt +Sgps[+Hcountry]}				& {\tt gps} item type \\
 
-{\tt +Sgps[+Hlongitude]+Hcity}		& ({\tt gps} structure type containing {\tt longitude} field exactly) AND {\tt city} field exactly \\
+{\tt +Sgps[+Hlongitude]+Hcity}		& ({\tt gps} item type containing {\tt longitude} field exactly) AND {\tt city} field exactly \\
 
-{\tt +Sgps[+Slongitude]}			& {\tt gps} structure type \\
-{\tt +Hgps[+Slongitude]}			& {\tt gps} structure exactly \\
+{\tt +Sgps[+Slongitude]}			& {\tt gps} item type \\
+{\tt +Hgps[+Slongitude]}			& {\tt gps} item exactly \\
 
 \hline
 \end{tabular}
@@ -499,7 +501,7 @@ Query & Match \\
 \end{table}
 
 % how the parser build up the nested structure of constraints to match
-The existing parser was extended to allow these new constraint types. 
+The existing parser for RDC queries was extended to allow these new constraint types. 
 Upon encountering a {\sl has} or {\sl similar} constraint, the field name, type of match and pointer to another list are added to a schema constraint list. 
 A stack is used to handle nested constraints. 
 If the schema constraint list is not empty, then an opening bracket causes it to be pushed to the stack, otherwise the bracket is ignored. 
@@ -507,6 +509,51 @@ Subsequent constraints are then added to the list pointed to by the last item in
 A closing bracket pops the list off the top of the stack, which new constraints are then added to. 
 
 %TODO: psuedocode or diagram?
+
+% hashes - overview
+Each SBUS endpoint currently has an associated {\sl message hash} of the canonical representation of its schema. 
+This hash is computed when the endpoint is created, and determines whether endpoints are able to communicate. 
+To create the hash, the schema is read by a top-down parser, which generates tokens representing different items in the schema. 
+This parser operates recursively on composite items within the schema, and each token is added to a single buffer. 
+Once the parser returns, this buffer contains a canonical representation of the schema, from which a hash can be computed. 
+
+% hashes for subschemas.
+These hashes can be used to compare entire schemas, and indeed this takes place when two endpoints attempt to connect. 
+To compare parts of a schema, the schema must be represented not by a single hash, but by a collection of hashes. 
+This collection of hashes can also be built when parsing the schema. 
+When parsing each individual item, where an item is either a single field or a composite item consisting of multiple fields, a new buffer is used. 
+Before the parser returns, a hash is computed of the schema contained in that buffer, which is the hash of that individual item. 
+Furthermore, an exact hash is computed using both the names and types, and a type hash is computed using only types. 
+This is acheived by using two buffers, with no names being appended to one of them. 
+These hashes can then be added to the collection, and the contents of the buffers appended to the parent buffers. 
+Using this method, a collection of hashes is built containing the hash of each item within the overall schema. 
+
+This collection is in fact built using lists, where each composite item contains both its hashes and a pointer to a list of its childrens' hashes.
+This representation retains the overall structure of the schema, which will be used for nested searches. 
+Figure \ref{fig:locationhashes} shows an XML representation of the hash collection which is generated for the schema in Figure \ref{fig:locationschema}.
+
+\begin{figure}[tbh]
+\begin{lstlisting}
+<location has="9791265A42AB" similar="882A3A2DA208">
+	<gps has="55E21713DEAA" similar="931DEF188280">
+		<longitude
+			has="BE25D0A889CA" 
+			similar="00000019316C" />
+		<latitude
+			has="87AC6D018868" 
+			similar="00000019316C" />
+		<altitude
+			has="B3ACB8255B56" 
+			similar="0000001A7774" />
+	</gps>
+	<city
+		has="D3C74C7A7AB4"
+		similar="0000001D3C74" />
+</location>
+\end{lstlisting}
+\caption{Hash Structure Generated For Location Schema}
+\label{fig:locationhashes}
+\end{figure}
 
 \section{Android Port}
 
