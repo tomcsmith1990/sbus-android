@@ -7,7 +7,7 @@
 \usepackage{listings}
 \usepackage{siunitx}
 \usepackage{hyperref}
-\usepackage{algorithm}
+\usepackage[chapter]{algorithm}
 \usepackage{algpseudocode}
 
 % create extra algorithm commands
@@ -80,7 +80,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 8663\footnotemark[1] \\
+Word Count:         & \bf 8959\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -611,34 +611,35 @@ This list can then be sent to the RDC, which uses it to search for matching comp
 % how RDC searches.
 The RDC has the schema of each endpoint on each registered component, therefore has the hash collection of each endpoint. 
 This hash collection is only computed once. 
-The RDC returns all matching endpoints, not just the first match, so compares the query with each endpoint. 
+The RDC returns all matching endpoints, not just the first match, so compares the query with each endpoint schema. 
 
 \begin{algorithm}
-\caption{Pseudocode to Compare Schemas}
-\label{alg:compare_schema}
+\algnotext{EndIf}
 \begin{algorithmic}[1]
 \Function{CompareSchema}{$constraints$, $schema$}
 	\ForAll{$constraint \in constraints$}
-		\State $exact\gets constraint.exact$
-		\If{$constraint.hash \equiv schema.hash(exact)$}
-			\If{$exact$}
+		\If{$constraint.hash \equiv schema.hash(constraint.exact)$}
+			\If{$constraint.exact$}
 				\Continue \Comment match, check next constraint
 			\ElsIf{$constraint.children \equiv null$}
 				\Continue \Comment match, check next constraint
-			\Else
+			\Else \label{alg:line:nested_start}
 				\ForAll{$nested \in constraint.children$}
 					\State $match\gets false$
 					\ForAll{$child \in schema.children$}
 						\State $match\gets \Call{CompareSchema}{nested, child}$
 						\If{$match$}
-				\Continue \Comment match, check next nested constraint
+							\Continue \Comment match, check next nested constraint
 						\EndIf
 					\EndFor
 					\If{$match \neq true$}
 						\Break \Comment no match, skip other nested constraints
 					\EndIf
 				\EndFor
-			\EndIf
+				\If{$match$}
+					\Continue \Comment match, check next constraint
+				\EndIf
+			\EndIf \label{alg:line:nested_end}
 		\Else
 			\State $match\gets false$
 			\ForAll{$child \in schema.children$}
@@ -655,7 +656,20 @@ The RDC returns all matching endpoints, not just the first match, so compares th
 	\State \Return $true$
 \EndFunction 
 \end{algorithmic}
+\caption{Pseudocode to Compare Schemas}
+\label{alg:compare_schema}
 \end{algorithm}
+
+Algorithm \ref{alg:compare_schema} shows how the RDC checks whether a schema satisfies a set of constraints. 
+Ignoring lines \ref{alg:line:nested_start}--\ref{alg:line:nested_end}, which check child constraints, the algorithm is simply a depth-first search. 
+Each constraint is checked against the schema. 
+If the constraint hash matches the appropriate schema hash, then the next constraint is checked, or the algorithm returns {\tt true} if there are no more constraints. 
+If the hashes do not match, then the algorithm recursively calls itself using each of the schema's children as the new schema to compare against, until a match is found. 
+If no match is found, then the algorithm returns {\tt false}. 
+Lines \ref{alg:line:nested_start}--\ref{alg:line:nested_end} match nested constraints very similarly to the entire algorithm as described above. 
+However, because these constraints specify fields which must be nested, then cannot be compared to the current item being matched. 
+Therefore, the comparison must be conducted against each of the schema's children. 
+Once a match is found the next constraint is tested, and if all nested constraints are matched, then the parent constraint is considered matched.
 
 \section{Android Port}
 
