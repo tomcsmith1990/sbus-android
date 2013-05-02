@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 9063\footnotemark[1] \\
+Word Count:         & \bf 9391\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -685,9 +685,40 @@ During the connection setup, some schema negotiation must occur, so that two com
 This work occurs almost entirely on the component which initiated the query, so as not to hinder the target component. 
 The component first requests the target's schema. 
 Upon receiving this schema, the component checks it against the original query, building a lookup table, while also ensuring that it does in fact match, and the RDC has not been replaced by some malicious process. 
-This lookup table consists of a section containing names from the target schema, indexed by names from this schema, and a section containing names from this schema indexed by the target schema. 
+This lookup table consists of a section containing names from the target schema, indexed by names from this schema, and a section containing names from this schema indexed by the target schema, and is used to repackage messages according to this component's schema. 
 These entries are added every time a successful match occurs in Algorithm \ref{alg:compare_schema}. 
-Additionally, entries can be inserted for the children of a successful match, since the structure of the schemas must be the same. 
+Additionally, entries can be inserted for all descendants of a successful match, since the structure of the schemas must be the same. 
+Once this basic lookup table has been created, corresponding fields within the two schemas can be located, which allows a correspondence between outer structures to be inferred, as shown in Algorithm \ref{alg:construct_lookup_outer}. 
+The first loop works upwards from a corresponding field in the schema and target schema. 
+Given that these fields match, their ancestors must also match. 
+This loop will end once one of the schemas has no parent. 
+Only one schema can have remaining ancestors, however if the top level of both schemas has been reached, no further action is taken
+If the target schema has remaining ancestors, these represent layers which surround the message the component will use. 
+These are stored so that a message can be extracted from within these layers. 
+If the component schema has remaining ancestors, these represent layers will are missing from the message. 
+These are stored so that the message can be wrapped in them. 
+
+\begin{algorithm}
+\algnewcommand\And{\textbf{ and }}
+\algnotext{EndWhile}
+\begin{algorithmic}
+\While{$current \neq null \And target \neq null$}
+	\State \Call{InsertLookup}{$current.name$, $target.name$}
+	\State $current\gets current.parent$
+	\State $target\gets target.parent$
+\EndWhile
+\While{$target \neq null$}
+	\State \Call{AddExtra}{$target$}
+	\State $target\gets target.parent$
+\EndWhile
+\While{$current \neq null$}
+	\State \Call{AddMissing}{$current$}
+	\State $current\gets current.parent$
+\EndWhile
+\end{algorithmic}
+\caption{Lookup Table Inference for Outer Structures}
+\label{alg:construct_lookup_outer}
+\end{algorithm} 
 
 \section{Android Port}
 
