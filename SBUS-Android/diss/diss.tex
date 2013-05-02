@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 9391\footnotemark[1] \\
+Word Count:         & \bf 9386\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -398,8 +398,6 @@ Flexible schema matching refers to components finding other components based on 
 
 \begin{itemize}
 
-\item Constructing looking table from these.
-
 \item Repacking messages from lookup table.
 
 \item Updating subscription from lookup table.
@@ -677,7 +675,7 @@ Queries are then reordered to place either exact constraints first, constraints 
 This orders constraints such that those which are more difficult to match are checked first, causing the algorithm to fail earlier rather than later, thereby wasting less time. 
 The result of these optimisations is explored in the Evaluation. 
 
-%TODO: other ways the search could be optimised - hash table to linked lists, search tree
+%TODO: other ways the search could be optimised - hash table to linked lists, search tree. Potential performance increases + how results might vary.
 
 % construct lookup
 Once the RDC returns a list of matches, the component connects to one of the targets. 
@@ -697,6 +695,10 @@ If the target schema has remaining ancestors, these represent layers which surro
 These are stored so that a message can be extracted from within these layers. 
 If the component schema has remaining ancestors, these represent layers will are missing from the message. 
 These are stored so that the message can be wrapped in them. 
+
+%TODO: repackage messages
+
+%TODO: updating subscriptions
 
 \begin{algorithm}
 \algnewcommand\And{\textbf{ and }}
