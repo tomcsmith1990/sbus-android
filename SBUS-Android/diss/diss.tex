@@ -7,6 +7,15 @@
 \usepackage{listings}
 \usepackage{siunitx}
 \usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% create extra algorithm commands
+\algnewcommand\algorithmiccontinue{\textbf{continue}}
+\algnewcommand\Continue{\State\algorithmiccontinue}
+
+\algnewcommand\algorithmicbreak{\textbf{break}}
+\algnewcommand\Break{\State\algorithmicbreak}
 
 \hypersetup{
     colorlinks=false,
@@ -77,7 +86,7 @@ Supervisor:         & Dr Jatinder Singh		\\
 \end{tabular}
 }
 
-\footnotetext[1]{This word count was computed by {\tt detex -e `appendix,figure' diss.tex | tr -cd `0-9A-Za-z $\tt\backslash$n' | wc -w}}
+\footnotetext[1]{This word count was computed by {\tt detex -e `appendix,figure,algorithm' diss.tex | tr -cd `0-9A-Za-z $\tt\backslash$n' | wc -w}}
 \stepcounter{footnote}
 
 
@@ -507,8 +516,27 @@ A stack is used to handle nested constraints.
 If the schema constraint list is not empty, then an opening bracket causes it to be pushed to the stack, otherwise the bracket is ignored. 
 Subsequent constraints are then added to the list pointed to by the last item in the list at the top of the stack, so that each constraint holds a list of constraints nested within it. 
 A closing bracket pops the list off the top of the stack, which new constraints are then added to. 
+Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would be represented.  
 
 %TODO: psuedocode or diagram?
+
+% nested query representation
+\begin{figure}[tbh]
+\begin{lstlisting}
+<constraint>
+	<name>"gps"</name>
+	<exact>false</exact>
+	<children>
+		<constraint>
+			<name>"longitude"</name>
+			<exact>true</exact>
+		</constraint>
+	</children>
+</constraint>
+\end{lstlisting}
+\caption{Nested Query Representation}
+\label{fig:nested_query}
+\end{figure}
 
 % hashes - overview
 Each SBUS endpoint currently has an associated {\sl message hash} of the canonical representation of its schema. 
@@ -554,6 +582,80 @@ Figure \ref{fig:locationhashes} shows an XML representation of the hash collecti
 \caption{Hash Structure Generated For Location Schema}
 \label{fig:locationhashes}
 \end{figure}
+
+% how to query RDC.
+To construct a schema query for the RDC, each item in the constraint list is looked up in the hash collection and the appropriate hash is added to the item, depending on whether the item states an exact or type match. 
+Figure \ref{fig:nested_query_hash} shows the query in Figure \ref{fig:nested_query} with these hashes. 
+This list can then be sent to the RDC, which uses it to search for matching components. 
+
+% nested query hashes representation
+\begin{figure}[tbh]
+\begin{lstlisting}
+<constraint>
+	<name>"gps"</name>
+	<exact>false</exact>
+	<hash>"931DEF188280"</hash>
+	<children>
+		<constraint>
+			<name>"longitude"</name>
+			<exact>true</exact>
+			<hash>"BE25D0A889CA"</hash>
+		</constraint>
+	</children>
+</constraint>
+\end{lstlisting}
+\caption{Nested Query Representation with Hashes}
+\label{fig:nested_query_hash}
+\end{figure}
+
+% how RDC searches.
+The RDC has the schema of each endpoint on each registered component, therefore has the hash collection of each endpoint. 
+This hash collection is only computed once. 
+The RDC returns all matching endpoints, not just the first match, so compares the query with each endpoint. 
+
+\begin{algorithm}
+\caption{Pseudocode to Compare Schemas}
+\label{alg:compare_schema}
+\begin{algorithmic}[1]
+\Function{CompareSchema}{$constraints$, $schema$}
+	\ForAll{$constraint \in constraints$}
+		\State $exact\gets constraint.exact$
+		\If{$constraint.hash \equiv schema.hash(exact)$}
+			\If{$exact$}
+				\Continue \Comment match, check next constraint
+			\ElsIf{$constraint.children \equiv null$}
+				\Continue \Comment match, check next constraint
+			\Else
+				\ForAll{$nested \in constraint.children$}
+					\State $match\gets false$
+					\ForAll{$child \in schema.children$}
+						\State $match\gets \Call{CompareSchema}{nested, child}$
+						\If{$match$}
+				\Continue \Comment match, check next nested constraint
+						\EndIf
+					\EndFor
+					\If{$match \neq true$}
+						\Break \Comment no match, skip other nested constraints
+					\EndIf
+				\EndFor
+			\EndIf
+		\Else
+			\State $match\gets false$
+			\ForAll{$child \in schema.children$}
+				\State $match\gets \Call{CompareSchema}{constraint, child}$
+				\If{$match$}
+					\Continue \Comment match, check next constraint
+				\EndIf
+			\EndFor
+			\If{$match \neq true$}
+				\State \Return $false$
+			\EndIf
+		\EndIf
+	\EndFor
+	\State \Return $true$
+\EndFunction 
+\end{algorithmic}
+\end{algorithm}
 
 \section{Android Port}
 
