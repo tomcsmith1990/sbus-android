@@ -679,6 +679,16 @@ The result of these optimisations is explored in the Evaluation.
 
 %TODO: other ways the search could be optimised - hash table to linked lists, search tree
 
+% construct lookup
+Once the RDC returns a list of matches, the component connects to one of the targets. 
+During the connection setup, some schema negotiation must occur, so that two components can communicate coherently. 
+This work occurs almost entirely on the component which initiated the query, so as not to hinder the target component. 
+The component first requests the target's schema. 
+Upon receiving this schema, the component checks it against the original query, building a lookup table, while also ensuring that it does in fact match, and the RDC has not been replaced by some malicious process. 
+This lookup table consists of a section containing names from the target schema, indexed by names from this schema, and a section containing names from this schema indexed by the target schema. 
+These entries are added every time a successful match occurs in Algorithm \ref{alg:compare_schema}. 
+Additionally, entries can be inserted for the children of a successful match, since the structure of the schemas must be the same. 
+
 \section{Android Port}
 
 The Android NDK was used to compile SBUS to support Android, and embed the native machine code into applications. 
