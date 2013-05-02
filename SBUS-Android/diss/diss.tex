@@ -80,7 +80,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 8959\footnotemark[1] \\
+Word Count:         & \bf 9063\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -395,21 +395,16 @@ Flexible schema matching refers to components finding other components based on 
 
 \begin{itemize}
 
-\item Syntax: +H, +S, what they mean. Nested searches +S[+H]
-
-\item How system handles these - hashes. 
-
 \item Constructing looking table from these.
 
 \item Repacking messages from lookup table.
 
 \item Updating subscription from lookup table.
 
-\item How RDC searches for matching schemas. Alternative search methods, e.g. hash table of linked lists or search tree. What performance increases they may offer, and how the results would vary (i.e. a breadth first search would return the schema which matches the constraints at the highest level).
+\item Alternative search methods, e.g. hash table of linked lists or search tree. What performance increases they may offer, and how the results would vary (i.e. a breadth first search would return the schema which matches the constraints at the highest level).
 
-\item Optimisations - reordering constraints - also don't repeat constraints.
-
-\item How accurate is the lookup table? 
+\item How accurate is the lookup table?
+ 
 \item Are any fields repackaged as ``empty'' when we could have filled them with something else? Fairly qualitative, perhaps a discussion about how the constraints are used to create this lookup table, and how multiple constraints may be fulfilled by a single field.
 
 \item Should multiple constraints (e.g. must have two int fields) be allowed to match to the same field?
@@ -619,7 +614,7 @@ The RDC returns all matching endpoints, not just the first match, so compares th
 \Function{CompareSchema}{$constraints$, $schema$}
 	\ForAll{$constraint \in constraints$}
 		\If{$constraint.hash \equiv schema.hash(constraint.exact)$}
-			\If{$constraint.exact$}
+			\If{$constraint.exact$} \label{alg:line:constraint_exact}
 				\Continue \Comment match, check next constraint
 			\ElsIf{$constraint.children \equiv null$}
 				\Continue \Comment match, check next constraint
@@ -669,7 +664,17 @@ If no match is found, then the algorithm returns {\tt false}.
 Lines \ref{alg:line:nested_start}--\ref{alg:line:nested_end} match nested constraints very similarly to the entire algorithm as described above. 
 However, because these constraints specify fields which must be nested, then cannot be compared to the current item being matched. 
 Therefore, the comparison must be conducted against each of the schema's children. 
-Once a match is found the next constraint is tested, and if all nested constraints are matched, then the parent constraint is considered matched.
+Once a match is found the next constraint is tested, and if all nested constraints are matched, then the parent constraint is considered matched. 
+Line \ref{alg:line:constraint_exact} checks whether a constraint is exact before its children are considered, since the children must match by definition, if it is an exact match. 
+
+% optimisations to search
+Queries are automatically optimised by components before being sent to the RDC, to increase performance of the algorithm. This allows the RDC to process the query as quickly as possible, preventing it from becoming a bottleneck in the system. 
+Any duplicate constraints are first removed, for obvious reasons. 
+Queries are then reordered to place either exact constraints first, constraints on composite items first, or a combination of these. 
+This orders constraints such that those which are more difficult to match are checked first, causing the algorithm to fail earlier rather than later, thereby wasting less time. 
+The result of these optimisations is explored in the Evaluation. 
+
+%TODO: other ways the search could be optimised - hash table to linked lists, search tree
 
 \section{Android Port}
 
