@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 9627\footnotemark[1] \\
+Word Count:         & \bf 9698\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -598,10 +598,10 @@ The RDC returns all matching endpoints, not just the first match, so compares th
 \begin{algorithmic}[1]
 \Function{CompareSchema}{$constraints$, $schema$}
 	\ForAll{$constraint \in constraints$}
-		\If{$constraint.hash \equiv schema.hash(constraint.exact)$}
+		\If{$constraint.hash = schema.hash(constraint.exact)$}
 			\If{$constraint.exact$} \label{alg:line:constraint_exact}
 				\Continue \Comment match, check next constraint
-			\ElsIf{$constraint.children \equiv null$}
+			\ElsIf{$constraint.children = null$}
 				\Continue \Comment match, check next constraint
 			\Else \label{alg:line:nested_start}
 				\ForAll{$nested \in constraint.children$}
@@ -756,6 +756,7 @@ This converted filter will be applied in the final stage of the connection setup
 
 % repackage messages
 Finally, this lookup table will be used to repackage each message. 
+Algorithm \ref{alg:repack_message} shows how each message is repackaged. 
 Suppose the component receives the message in Figure \ref{fig:locationmessage}. 
 
 \begin{figure}[tbh]
@@ -775,10 +776,15 @@ Suppose the component receives the message in Figure \ref{fig:locationmessage}.
 \label{fig:locationmessage}
 \end{figure}
 
-The first stage is to extract the top level of the desired message, in this case {\tt place/coordinates}. 
-This message is then repackaged, using the lookup table to pack messages under the component's schema field names and inserting empty values for any missing fields. 
-Based on the structure of the desired message, and the values in the lookup table, empty values can be inserted at the appropriate places in the message. 
-Finally, if the component schema had additional layers rather than the peer schema, the message would be wrapped in these layers, with any other values which are missing being inserted. 
+The first stage is to extract the desired message from any additional layers, in this case {\tt place/coordinates}. 
+This message is then repackaged under the names defined by this component's schema using Algorithm \ref{alg:repack_message_overall}.
+Lines \ref{alg:line:lookup_name_start}--\ref{alg:line:lookup_name_end} find the correct name from the lookup table, returning {\tt null} if it does not exist in the table. 
+Lines \ref{alg:line:check_children_start}--\ref{alg:line:check_children_end} then either pack the message content under the new name, if it is a single field, or start a composite item otherwise. 
+The loop spanning lines \ref{alg:line:repack_children_start}--\ref{alg:line:repack_children_end} then iterates over each item in the message. 
+The name of each item can be used to check if any items are missing from the message, and add them between their siblings. 
+The message is otherwise repackaged in the same way, and added to the composite item if it should appear. 
+Any other siblings missing from the message can be added at the end. 
+Finally, if the component schema had additional layers rather than the peer schema, the message would be wrapped in these missing layers. 
 This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{fig:locationmessagerepack}, which can then be used by the component.  
 
 \begin{figure}[tbh]
@@ -795,6 +801,59 @@ This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{f
 \caption{Repackaged Location Message}
 \label{fig:locationmessagerepack}
 \end{figure}
+
+\begin{algorithm}
+\begin{algorithmic}[1]
+\Function{Repack}{$message$}
+	\If{message has additional layers}
+		\State \Call{UnpackLayers}{$message$}
+	\EndIf
+	
+	\State \Call{RepackageMessage}{$message$}
+	
+	\If{message is missing layers}
+		\State \Call{WrapMessage}{$message$}
+	\EndIf
+\EndFunction 
+\end{algorithmic}
+\caption{Pseudocode to Repackage Message}
+\label{alg:repack_message_overall}
+\end{algorithm}
+
+\begin{algorithm}
+\algnotext{EndIf}
+\begin{algorithmic}[1]
+\Function{RepackageMessage}{$message$}
+	\If{$message.name \in lookup\_table$} \label{alg:line:lookup_name_start}
+		\State $name\gets \Call{Lookup}{message.name}$
+	\Else
+		\State \Return $null$
+	\EndIf \label{alg:line:lookup_name_end}
+	
+	\If{$message.children = null$} \label{alg:line:check_children_start}
+		\State \Return \Call{Pack}{$message, name$}
+	\Else
+		\State $composite\gets \Call{CreateStructure}{name}$
+	\EndIf \label{alg:line:check_children_end}
+		
+	\ForAll{$child \in message.children$} \label{alg:line:repack_children_start}
+		\State \Call{AddMissingChildren}{$composite$}
+		
+		\State $node \gets \Call{RepackageMessage}{child}$
+		\If{$node \neq null$}
+			\State \Call{AddNode}{$composite, node$}
+		\EndIf
+	\EndFor \label{alg:line:repack_children_end}
+	
+	\State \Call{AddMissingChildren}{$composite$}
+
+	\State \Return $composite$
+	
+\EndFunction
+\end{algorithmic}
+\caption{Pseudocode to Repackage Message}
+\label{alg:repack_message}
+\end{algorithm}
 
 \section{Android Port}
 
