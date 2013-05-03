@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 9698\footnotemark[1] \\
+Word Count:         & \bf 9884\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -787,21 +787,6 @@ Any other siblings missing from the message can be added at the end.
 Finally, if the component schema had additional layers rather than the peer schema, the message would be wrapped in these missing layers. 
 This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{fig:locationmessagerepack}, which can then be used by the component.  
 
-\begin{figure}[tbh]
-\begin{lstlisting}
-<location>
-	<gps>
-		<longitude>0.091732</longitude>
-		<latitude>52.210891</latitude>
-		<altitude>19</altitude>
-	</gps>
-	<city>""</city>
-</location>
-\end{lstlisting}
-\caption{Repackaged Location Message}
-\label{fig:locationmessagerepack}
-\end{figure}
-
 \begin{algorithm}
 \begin{algorithmic}[1]
 \Function{Repack}{$message$}
@@ -854,6 +839,21 @@ This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{f
 \caption{Pseudocode to Repackage Message}
 \label{alg:repack_message}
 \end{algorithm}
+
+\begin{figure}[tbh]
+\begin{lstlisting}
+<location>
+	<gps>
+		<longitude>0.091732</longitude>
+		<latitude>52.210891</latitude>
+		<altitude>19</altitude>
+	</gps>
+	<city>""</city>
+</location>
+\end{lstlisting}
+\caption{Repackaged Location Message}
+\label{fig:locationmessagerepack}
+\end{figure}
 
 \section{Android Port}
 
@@ -938,7 +938,26 @@ These classes are exported as a JAR file, which applications can then simply imp
 
 \end{itemize}
 
-The Phone Manager is an Android application which detects changes in context and reconfigures other applications' connections. 
+The Phone Manager (PM) is an Android application which is responsible for detecting changes in context and reconfigures other applications' connections. 
+
+%TODO: detecting context - AIRS
+The Phone Manager uses the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} to detect changes in context. 
+An AIRS-SBUS gateway application has been created which acts as a remote server for sensor readings from AIRS, outputting them as events on an SBUS endpoint. 
+This server was based on the AIRS code\footnote{\url{https://github.com/dirktrossen/AIRS}}, and then packaging any sensor readings as SBUS events and publishing them on the endpoint. 
+The PM connects to this endpoint, thus can receive events for any sensor readings. 
+However, AIRS only outputs sensor readings for a given sensor if a subscription has been enabled for that sensor. 
+The PM must first subscribe to the appropriate sensors, via a ``control'' endpoint, in order to receive these readings. 
+Conceptually this AIRS-SBUS gateway could also act as a composite event detector. 
+It could collate multiple sensor readings and if these readings indicated a context change, output a single event. 
+The PM provides the infrastructure to respond to any kind of event. 
+Additionally, the PM can act as a receiver for system intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html
+}}. 
+In particular, the action {\tt NETWORK\_STATE\_CHANGED\_ACTION} can be used to detect a Wi-Fi change. 
+
+%TODO: registering components + setting policies
+
+%TODO: context change, inform about RDC + apply policies. 
+
 
 \cleardoublepage
 
