@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 9486\footnotemark[1] \\
+Word Count:         & \bf 9477\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -394,14 +394,14 @@ Finally, this is all brought together with the Phone Manager which is responsibl
 
 \section{Flexible Schema Matching}
 
-Flexible schema matching refers to components finding other components based on aspects of their schema, and how these components can communicate if their schemas are not identical. 
+Flexible schema matching refers to components finding peers based on aspects of their schema, and how they can communicate with these peers if their schemas are not identical. 
 
 % syntax
 The most natural way for a component to query an RDC with data constraints seemed to be to extend the current query mechanism. 
-In this search a component may be interested in an exact match, where both names and types match, or a weaker match where only types must match. 
-A component can only know about its own schema in advance, therefore these queries must be specified in terms of the component's own schema.
+When searching, a component may be interested in an exact match, where both names and types match, or a weaker match where only types must match. 
+Since a component only knows about its own schema in advance, these queries must be specified in terms of its own schema.
 Two new query parameters have been introduced to allow this functionality. 
-An exact match is specified by {\tt +H}, representing a schema {\sl has} something, and a type match is specified by {\tt +S}, representing a schema has something {\sl similar}.
+An exact match is specified by {\tt +H}, representing a schema {\sl has} an item, and a type match is specified by {\tt +S}, representing a schema has a {\sl similar} item.
 Each of these is used with the name of a single item in the component's schema.
 If this item is a single field, it refers only to that field, whereas if it is a composite item consisting of multiple fields, the query applies recursively to the entire item. 
 Any item which does not exist in the schema is ignored. 
@@ -439,7 +439,7 @@ Query & Match \\
 {\tt +Hgps}			& {\tt gps} item exactly \\
 
 {\tt +Hcountry}		& {\tt <ignored>} \\
-{\tt +Hlocation}	& Entire {\tt location} schema exactly \\
+{\tt +Hlocation}	& {\tt location} schema exactly \\
 
 {\tt +Sgps+Hlongitude}	& {\tt gps} item type AND {\tt longitude} field exactly \\
 
@@ -452,10 +452,10 @@ Query & Match \\
 
 % nested syntax
 The final entry in Table \ref{tab:example_schema_syntax}, {\tt +Sgps+Hlongitude} bears an interesting case. 
-This currently specifies that the schema must contain an item matching the type of {\tt gps} and must also contain the field {\tt longitude} {\sl anywhere} in the schema. 
+This currently specifies that a schema must contain an item matching the type of {\tt gps} and must also contain the field {\tt longitude} {\sl anywhere} in the schema. 
 An alternative use might be considered where the user wishes to specify that the schema must contain a item matching the type of {\tt gps}, and must also contain the field {\tt longitude} {\sl within that structure}. 
 This would allow a query to be specified that would match a item which renames {\tt altitude} as {\tt height}, but not one which renames {\tt longitude} as {\tt long}. 
-The latter could be matched in the current case, if the {\tt longitude} field existed elsewhere in that schema. 
+The latter could still be matched in the current case, if the {\tt longitude} field existed elsewhere in that schema. 
 
 This usage is implemented through a nested syntax, where constraints can have child constraints attached. 
 Again, any items which do not exist in the schema are simply ignored. 
@@ -527,10 +527,10 @@ Once the parser returns, this buffer contains a canonical representation of the 
 
 % hashes for subschemas.
 These hashes can be used to compare entire schemas, and indeed this takes place when two endpoints attempt to connect. 
-To compare parts of a schema, the schema must be represented not by a single hash, but by a collection of hashes. 
+However, to compare {\sl parts} of a schema, the schema must be represented not by a single hash, but by a collection of hashes. 
 This collection of hashes can also be built when parsing the schema. 
 When parsing each individual item, where an item is either a single field or a composite item consisting of multiple fields, a new buffer is used. 
-Before the parser returns, a hash is computed of the schema contained in that buffer, which is the hash of that individual item. 
+Before the parser returns, a hash is computed of the item contained in that buffer. 
 Furthermore, an exact hash is computed using both the names and types, and a type hash is computed using only types. 
 This is acheived by using two buffers, with no names being appended to one of them. 
 These hashes can then be added to the collection, and the contents of the buffers appended to the parent buffers. 
@@ -664,7 +664,7 @@ The result of these optimisations is explored in the Evaluation.
 
 % construct lookup
 Once the RDC returns a list of matches, the component connects to one of the targets. 
-During the connection setup, some schema negotiation must occur, so that two components can communicate coherently. 
+During the connection setup, some schema negotiation must occur, so that the components can communicate coherently. 
 This work occurs almost entirely on the component which initiated the query, so as not to hinder the target component. 
 The component first requests the target's schema. 
 Upon receiving this schema, the component checks it against the original query, building a lookup table, while also ensuring that it does in fact match, and the RDC has not been replaced by some malicious process. 
@@ -718,7 +718,7 @@ Once this basic lookup table has been created, corresponding fields within the t
 The first loop works upwards from a corresponding field in the schema and target schema. 
 Given that these fields match, their ancestors must also match. 
 This loop will end once one of the schemas has no parent, adding ({\tt location}, {\tt coordinates}) to the lookup table in this case. 
-Only one schema can have remaining ancestors, however if the top level of both schemas has been reached, no further action is taken. 
+Only one schema will have remaining ancestors, however if the top level of both schemas has been reached, no further action is taken. 
 If the target schema has remaining ancestors, these represent layers which surround the message the component will use. 
 These are stored so that a message can be extracted from within these layers. 
 Here, {\tt place} is the only extra layer. 
@@ -748,10 +748,10 @@ These are stored so that the message can be wrapped in them.
 \end{algorithm} 
 
 %TODO: updating subscriptions
-After the lookup table has been created, any predefined subscription filter can be sent to the peer. 
+After the lookup table has been created, any predefined subscription filter can be applied to the peer. 
 These filters are specified in terms of field names, for example the filter {\tt location/gps/latitude > 0.0} specifies the northern hemisphere. 
-If the component schema has additional ancestors, then these are removed from the filter, while if the target schema has additional ancestors, the filter is prepended with these, to make the filter {\tt place/location/gps/latitude > 0.0}.
-All other field names are then replaced with their corresponding entry in the lookup table, creating a filter which when applied to the target schema, has the expected effect, namely {\tt place/coordinates/position/latitude > 0.0}.
+If the component schema has additional ancestors, then these are removed from the filter, while if the target schema has additional ancestors, the filter is prepended with these, making the filter {\tt place/location/gps/latitude > 0.0}.
+Other field names are then replaced with their corresponding entry in the lookup table, creating a filter which when applied to the target schema, has the expected effect, namely {\tt place/coordinates/position/latitude > 0.0}.
 Any filters on fields which do not exist in the target schema are applied as specified, so developers must ensure that fields which they intend to filter on are included within their schema query. 
 This converted filter will be applied in the final stage of the connection setup, and of course can be updated at any later time. 
 
