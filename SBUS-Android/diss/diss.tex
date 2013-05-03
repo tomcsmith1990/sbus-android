@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10485\footnotemark[1] \\
+Word Count:         & \bf 10483\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -865,22 +865,21 @@ In setting up the toolchain, the architecture of the device and the Android nati
 ARM-based devices, and Android platform 9 where chosen here, since these corresponded to the available device. 
 The standalone toolchain is still in beta which meant there were several problems compiling SBUS directly, typically due to missing libraries. 
 Some SBUS code had to be rewritten to account for this, in many cases using {\tt \#ifdef} statements to substitute blocks of code specific to Android. 
-The toolchain setup did include a bug\footnote{\url{https://code.google.com/p/android/issues/detail?id=35279}} which meant some include paths were missing. 
-In this case, {\tt <limits>} could not be referenced. 
+The toolchain setup did include a bug\footnote{\url{https://code.google.com/p/android/issues/detail?id=35279}} which meant some include paths were missing, in particular {\tt <limits>} could not be referenced. 
 The workaround for this was to fix the directory structure.
 
 The Android version of {\tt pwd.h} which defines {\tt struct passwd} contains no member {\tt pw\_gecos}. 
 This contains the user's full name, which is used by SBUS to set the {\tt creator} field in a component's metadata, allowing components to query an RDC by creator. 
 To remedy this, the creator was simply replaced by the string `Android'. 
 In principle, the user's full name or username could be found in Java using the AccountManager class\footnote{\url{http://developer.android.com/reference/android/accounts/AccountManager.html}}, which could then be passed as a parameter to the component via JNI. 
-This would allow the creator to be set more accurately, however it was deemed to be unimportant to the project. 
+This would allow the creator to be set more accurately, however it was deemed unimportant to the project. 
 
 % IP address.
 One of the greatest problems was that {\tt <sys/sockio.h>} was missing from Android.
-SBUS uses this as part of determining the IP address which a component is running on, which is then used during connection setup. 
+SBUS uses this as part of determining the IP address a component is running on, which is then used during connection setup. 
 This meant that the entire method to determine the IP address had to be rewritten to work on Android. 
-This was achieved by passing an {\tt ifconf} structure to {\tt ioctl()}, which populates the structure with a list of network interfaces and their IP addresses. 
-The list can then be searched for the appropriate interface and the IP address returned. 
+This was achieved by passing an {\tt ifconf} structure to the {\tt ioctl()} system call.
+This populates the structure with a list of network interfaces and their IP addresses, which can then be searched for the appropriate interface to find the IP address. 
 In this case, the {\tt eth0} interface for Wi-Fi was prioritised over the 3G interface.
 
 % Android FS.
@@ -893,6 +892,7 @@ The Android SDK provides the Android Debug Bridge ({\tt adb}) which can be used 
 When using the Android emulator, {\tt /system} can be remounted as writable\footnote{using {\tt mount -o rw,remount -t yaffs2 /dev/block/mtd3 /system }}, allowing {\tt sbuswrapper} to be pushed to {\tt /system/bin/sbuswrapper}. 
 However, on a device without root access, {\tt /system/bin} cannot be remounted in this way, thus cannot be written to. 
 Therefore, some other writable directory was needed, and {\tt sbuswrapper} would have to be invoked using the full path. 
+
 The SD card ({\tt /mnt/sdcard}) is writable so was considered, however is mounted with the option {\tt noexec}, which means that although a file can be pushed to it, it cannot be executed. 
 The best approach to use was to include {\tt sbuswrapper} as an asset to an application, and copy it to the application's filespace.
 
@@ -925,7 +925,7 @@ These classes are exported as a JAR file, which applications can then simply imp
 The Phone Manager (PM) is an Android application which is responsible for detecting changes in context and reconfiguring other applications' connections. 
 
 % detecting context
-The Phone Manager uses the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android system intents \footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} to detect changes in context. 
+The Phone Manager uses the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android system intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} to detect changes in context. 
 These intents are broadcast across the system on specific events, and by implementing a receiver, an action can be taken upon the event. 
 In particular, the action {\tt NETWORK\_STATE\_CHANGED\_ACTION} can be used to detect a Wi-Fi change, allowing the Phone Manager to reconfigure connections based on a change in network. 
 
