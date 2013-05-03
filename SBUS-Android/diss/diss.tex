@@ -791,7 +791,7 @@ This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{f
 \begin{algorithmic}[1]
 \Function{Repack}{$message$}
 	\If{message has additional layers}
-		\State \Call{UnpackLayers}{$message$}
+		\State \Call{UnwrapMessage}{$message$}
 	\EndIf
 	
 	\State \Call{RepackageMessage}{$message$}
