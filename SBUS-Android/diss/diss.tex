@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 9477\footnotemark[1] \\
+Word Count:         & \bf 9627\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -683,7 +683,6 @@ This lookup table consists of a section containing names from the target schema,
 			int height
 		}
 	}
-	txt city
 	txt country
 }
 \end{lstlisting}
@@ -721,7 +720,7 @@ This loop will end once one of the schemas has no parent, adding ({\tt location}
 Only one schema will have remaining ancestors, however if the top level of both schemas has been reached, no further action is taken. 
 If the target schema has remaining ancestors, these represent layers which surround the message the component will use. 
 These are stored so that a message can be extracted from within these layers. 
-Here, {\tt place} is the only extra layer. 
+Here, {\tt place} is the only extra layer and {\tt place/coordinates} is the root of the message the component wants. 
 If the component schema has remaining ancestors, these represent layers will are missing from the message. 
 These are stored so that the message can be wrapped in them. 
 
@@ -747,15 +746,55 @@ These are stored so that the message can be wrapped in them.
 \label{alg:construct_lookup_outer}
 \end{algorithm} 
 
-%TODO: updating subscriptions
+% updating subscriptions
 After the lookup table has been created, any predefined subscription filter can be applied to the peer. 
 These filters are specified in terms of field names, for example the filter {\tt location/gps/latitude > 0.0} specifies the northern hemisphere. 
-If the component schema has additional ancestors, then these are removed from the filter, while if the target schema has additional ancestors, the filter is prepended with these, making the filter {\tt place/location/gps/latitude > 0.0}.
+If the component schema has additional ancestors, then these are removed from the filter, while if the target schema has additional ancestors, the filter is prepended with these plus the root node, making the filter {\tt place/coordinates/gps/latitude > 0.0}.
 Other field names are then replaced with their corresponding entry in the lookup table, creating a filter which when applied to the target schema, has the expected effect, namely {\tt place/coordinates/position/latitude > 0.0}.
 Any filters on fields which do not exist in the target schema are applied as specified, so developers must ensure that fields which they intend to filter on are included within their schema query. 
 This converted filter will be applied in the final stage of the connection setup, and of course can be updated at any later time. 
 
-%TODO: repackage messages
+% repackage messages
+Finally, this lookup table will be used to repackage each message. 
+Suppose the component receives the message in Figure \ref{fig:locationmessage}. 
+
+\begin{figure}[tbh]
+\begin{lstlisting}
+<place>
+	<coordinates>
+		<position>
+			<longitude>0.091732</longitude>
+			<latitude>52.210891</latitude>
+			<height>19</height>
+		</position>
+	</coordinates>
+	<country>"UK"</country>
+</place>
+\end{lstlisting}
+\caption{Example Location Message}
+\label{fig:locationmessage}
+\end{figure}
+
+The first stage is to extract the top level of the desired message, in this case {\tt place/coordinates}. 
+This message is then repackaged, using the lookup table to pack messages under the component's schema field names and inserting empty values for any missing fields. 
+Based on the structure of the desired message, and the values in the lookup table, empty values can be inserted at the appropriate places in the message. 
+Finally, if the component schema had additional layers rather than the peer schema, the message would be wrapped in these layers, with any other values which are missing being inserted. 
+This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{fig:locationmessagerepack}, which can then be used by the component.  
+
+\begin{figure}[tbh]
+\begin{lstlisting}
+<location>
+	<gps>
+		<longitude>0.091732</longitude>
+		<latitude>52.210891</latitude>
+		<altitude>19</altitude>
+	</gps>
+	<city>""</city>
+</location>
+\end{lstlisting}
+\caption{Repackaged Location Message}
+\label{fig:locationmessagerepack}
+\end{figure}
 
 \section{Android Port}
 
