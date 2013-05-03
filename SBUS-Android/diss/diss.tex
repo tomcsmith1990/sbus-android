@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10056\footnotemark[1] \\
+Word Count:         & \bf 10485\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -922,41 +922,59 @@ These classes are exported as a JAR file, which applications can then simply imp
 
 \section{Phone Manager}
 
-The Phone Manager (PM) is an Android application which is responsible for detecting changes in context and reconfigures other applications' connections. 
+The Phone Manager (PM) is an Android application which is responsible for detecting changes in context and reconfiguring other applications' connections. 
 
-%TODO: detecting context - AIRS
-The Phone Manager uses the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} to detect changes in context. 
-An AIRS-SBUS gateway application has been created which acts as a remote server for sensor readings from AIRS, outputting them as events on an SBUS endpoint. 
-This server was based on the AIRS code\footnote{\url{https://github.com/dirktrossen/AIRS}}, and then packaging any sensor readings as SBUS events and publishing them on the endpoint. 
-The PM connects to this endpoint, thus can receive events for any sensor readings. 
-However, AIRS only outputs sensor readings for a given sensor if a subscription has been enabled for that sensor. 
-The PM must first subscribe to the appropriate sensors, via a ``control'' endpoint, in order to receive these readings. 
-Conceptually this AIRS-SBUS gateway could also act as a composite event detector. 
-It could collate multiple sensor readings and if these readings indicated a context change, output a single event. 
-The PM provides the infrastructure to respond to any kind of event. 
-Additionally, the PM can act as a receiver for system intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html
-}}. 
-In particular, the action {\tt NETWORK\_STATE\_CHANGED\_ACTION} can be used to detect a Wi-Fi change. 
+% detecting context
+The Phone Manager uses the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android system intents \footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} to detect changes in context. 
+These intents are broadcast across the system on specific events, and by implementing a receiver, an action can be taken upon the event. 
+In particular, the action {\tt NETWORK\_STATE\_CHANGED\_ACTION} can be used to detect a Wi-Fi change, allowing the Phone Manager to reconfigure connections based on a change in network. 
 
-%TODO: registering components + setting policies
-In order to have their connections automatically reconfigured, applications need to register with the Phone Manager. 
-They register in exactly the same way as they would with an RDC. 
-In this sense, the PM is a lightweight RDC which does not offer search functionality. 
-Once an application has registered with the PM, it can set {\sl map policies}. 
-These policies determine how applications will have their connections reconfigured. 
-A policy can either contain an IP address, or an RDC query. 
-The PM will apply these policies to applications exactly as specified, which will either map them to an IP address, or cause them to perform an RDC query, and map to one of the results. 
+% AIRS
+An AIRS-SBUS gateway application has been created which acts as a remote server for sensor readings from AIRS. 
+AIRS sends sensor readings to this server, which outputs them as events on an SBUS endpoint. 
+The server is based on the AIRS code\footnote{\url{https://github.com/dirktrossen/AIRS}}. 
+After working out how readings are transmitted to a server, code was written to package sensor readings as SBUS events. 
+AIRS can be ran in remote mode, to connect to the gateway, and each sensor reading is then packaged and published on an SBUS endpoint. 
+The PM can then connect to this endpoint in order to receive an event every time a measurement is taken, harnessing any of the sensors on the device. 
+When AIRS runs in remote mode, it only outputs sensor readings for a given sensor if a subscription has been enabled for that sensor. 
+The Phone Manager must first subscribe to sensors it is interested in via a ``control'' endpoint. 
+These subscriptions mean that the Phone Manager will only receive relevant events, and not be overrun with messages from all sensors.
 
-%TODO: RDC updates 
-In some context changes, the available RDCs may change. 
-The Phone Manager currently informs applications of available RDCs on every change, via a builtin endpoint. 
-Upon receiving an event on this endpoint, applications can either automatically accept the change, adding or removing the RDC, or perform a callback method, perhaps prompting the user to make a decision. 
+% composite event detector
+Conceptually this AIRS-SBUS gateway could act as a composite event detector. 
+By collating multiple sensor readings, a context change could be defined by multiple different readings satisying some conditions, or by multiple occurrences of an event.
+Upon detecting a context change, the gateway would then publish a single event to the Phone Manager. 
+The Phone Manager provides all of the infrastructure required to support this, and can respond to any kind of event. 
 
-%TODO: where to get RDC address from
+% registering components + setting policies
+In order to have their connections automatically reconfigured, applications must register with the Phone Manager. 
+This registration occurs in exactly the same way as with an RDC; the Phone Manager is essentially a lightweight RDC which does not offer search functionality. 
+Once an application has registered, it can set {\sl map policies}, which determine how its connection will be reconfigured. 
+A policy contains the application endpoint name, a peer endpoint name, and a peer address in the form of an IP address or an RDC query which will be resolved to an address. 
+The Phone Manager will apply these policies exactly as specified, either instructing an application endpoint to map to another endpoint at some IP address, or to first resolve an RDC query, then map to the endpoint. 
 
-%TODO: apply map policies
-Once the PM has sent the RDC update to every registered application, it can apply applications' map policies. 
-It simply send applications a message containing the parameters of the policy on another builtin endpoint, and applications then map according to this policy. 
+% RDC updates 
+Some context changes may mean that the available RDCs change, for example joining or leaving a network. 
+The Phone Manager informs applications of RDC changes on every context change, publishing an event containing the RDC address, and whether it has became available or unavailable. 
+Currently an RDC change only indicates an RDC becoming unavailable if the context change is leaving a Wi-Fi network. 
+This event is published to each registered application via another builtin endpoint. 
+Upon receiving the event, applications can either automatically accept the change, registering with or deregistering from RDC address, or perform a callback method, perhaps prompting the user to make a decision. 
+
+% where to get RDC address from
+This RDC address is currently set by the user in the Phone Manager, however many other ways exist which could be used to get the RDC in an environment. 
+Prompting the user may be sufficient when on a home network, and additionally this allows the user to choose not to trust an IP address. 
+Alternatively, the address could be coded in a QR code or RFID tag. 
+The user could scan one of these, for example when making a purchase in a coffee shop, and the Phone Manager would automatically send an RDC update based on the encoded address. 
+This approach retains some level of privacy and security, because the user explicitly chooses to scan the QR code or RFID tag. 
+An even more automated approach might be to include the RDC address as part of DHCP configuration when connecting to a Wi-Fi network, or to broadcast the address on the network. 
+All of these methods must of course be considered from security point of view. 
+
+% apply map policies
+After the Phone Manager sends an RDC update to registered applications, it can apply applications' map policies. 
+To do this, it simply issues a map events to application endpoints, containing the peer address and peer endpoint name specified in their policies. 
+If the peer address specifies an IP address, then the endpoint can map directly to the peer endpoint. 
+However, if the peer address is an RDC query, then the application must first resolve the query, which can be done against a new RDC specified in the update. 
+This allows the query to be resolved in the new environment, allowing endpoints to map to peers in that environment. 
 
 \cleardoublepage
 
