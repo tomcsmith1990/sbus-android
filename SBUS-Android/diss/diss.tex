@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 9884\footnotemark[1] \\
+Word Count:         & \bf 10056\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -922,22 +922,6 @@ These classes are exported as a JAR file, which applications can then simply imp
 
 \section{Phone Manager}
 
-\begin{itemize}
-
-\item Policy engine - mini-RDC for phone
-
-\item AIRS-SBUS gateway - events as context change
-
-\item Dynamically add/remove RDC (rdc\_update endpoint). Callback method for find out about RDC
-
-\item Ideas for where to get this RDC from (currently set by user)
-
-\item How applications set policies.
-
-\item Applying policies.
-
-\end{itemize}
-
 The Phone Manager (PM) is an Android application which is responsible for detecting changes in context and reconfigures other applications' connections. 
 
 %TODO: detecting context - AIRS
@@ -955,9 +939,24 @@ Additionally, the PM can act as a receiver for system intents\footnote{\url{http
 In particular, the action {\tt NETWORK\_STATE\_CHANGED\_ACTION} can be used to detect a Wi-Fi change. 
 
 %TODO: registering components + setting policies
+In order to have their connections automatically reconfigured, applications need to register with the Phone Manager. 
+They register in exactly the same way as they would with an RDC. 
+In this sense, the PM is a lightweight RDC which does not offer search functionality. 
+Once an application has registered with the PM, it can set {\sl map policies}. 
+These policies determine how applications will have their connections reconfigured. 
+A policy can either contain an IP address, or an RDC query. 
+The PM will apply these policies to applications exactly as specified, which will either map them to an IP address, or cause them to perform an RDC query, and map to one of the results. 
 
-%TODO: context change, inform about RDC + apply policies. 
+%TODO: RDC updates 
+In some context changes, the available RDCs may change. 
+The Phone Manager currently informs applications of available RDCs on every change, via a builtin endpoint. 
+Upon receiving an event on this endpoint, applications can either automatically accept the change, adding or removing the RDC, or perform a callback method, perhaps prompting the user to make a decision. 
 
+%TODO: where to get RDC address from
+
+%TODO: apply map policies
+Once the PM has sent the RDC update to every registered application, it can apply applications' map policies. 
+It simply send applications a message containing the parameters of the policy on another builtin endpoint, and applications then map according to this policy. 
 
 \cleardoublepage
 
