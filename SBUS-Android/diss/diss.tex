@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10565\footnotemark[1] \\
+Word Count:         & \bf 10729\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -971,7 +971,7 @@ This repository is searched upon receiving a message, which will return the endp
 Conceptually this AIRS-SBUS gateway could act as a composite event detector. 
 By collating multiple sensor readings, a context change could be defined by multiple different readings satisying some conditions, or by multiple occurrences of an event.
 Upon detecting a context change, the gateway would then publish a single event to the Phone Manager. 
-The Phone Manager provides all of the infrastructure required to support this, and can respond to any kind of event. 
+The Phone Manager can respond to any kind of event, so already provides all of the infrastructure required to support this.
 
 % registering components + setting policies
 In order to have their connections automatically reconfigured, applications must register with the Phone Manager. 
@@ -983,13 +983,13 @@ The Phone Manager will apply these policies exactly as specified, either instruc
 % RDC updates 
 Some context changes may mean that the available RDCs change, for example joining or leaving a network. 
 The Phone Manager informs applications of RDC changes on every context change, publishing an event containing the RDC address, and whether it has became available or unavailable. 
-Currently an RDC change only indicates an RDC becoming unavailable if the context change is leaving a Wi-Fi network. 
+Currently an RDC is only assumed to become unavailable if the context change is leaving a Wi-Fi network. 
 This event is published to each registered application via another builtin endpoint. 
 Upon receiving the event, applications can either automatically accept the change, registering with or deregistering from RDC address, or perform a callback method, perhaps prompting the user to make a decision. 
 
 % where to get RDC address from
-This RDC address is currently set by the user in the Phone Manager, however many other ways exist which could be used to get the RDC in an environment. 
-Prompting the user may be sufficient when on a home network, and additionally this allows the user to choose not to trust an IP address. 
+This RDC address is currently set by the user in the Phone Manager, however many other ways exist which could be used to find an RDC in the environment. 
+Prompting the user may be sufficient on a home network, and additionally this allows the user to choose not to trust an IP address. 
 Alternatively, the address could be coded in a QR code or RFID tag. 
 The user could scan one of these, for example when making a purchase in a coffee shop, and the Phone Manager would automatically send an RDC update based on the encoded address. 
 This approach retains some level of privacy and security, because the user explicitly chooses to scan the QR code or RFID tag. 
@@ -1000,7 +1000,7 @@ All of these methods must of course be considered from security point of view.
 After the Phone Manager sends an RDC update to registered applications, it can apply applications' map policies. 
 To do this, it simply issues a map events to application endpoints, containing the peer address and peer endpoint name specified in their policies. 
 If the peer address specifies an IP address, then the endpoint can map directly to the peer endpoint. 
-However, if the peer address is an RDC query, then the application must first resolve the query, which can be done against a new RDC specified in the update. 
+However, if the peer address is an RDC query, then the application must first resolve the query, which may be done against a new RDC which has been specified in the update. 
 This allows the query to be resolved in the new environment, allowing endpoints to map to peers in that environment. 
 
 \cleardoublepage
@@ -1257,7 +1257,7 @@ Provided an application is calling SBUS functions less frequently than this dela
 
 % summarise
 The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources or the format of their data, decoupling applications from their data sources. 
-The system supports the goals of pervasive computing, achieving scalability by allowing applications to use any relevant data source, and allowing applications to adapt to use heterogeneous content, all while being invisible to the user.
+The system supports the goals of pervasive computing, achieving scalability by allowing applications to use any relevant data source, and allowing applications to adapt to use heterogeneous content, all while being invisible to both the user and developer.
 
 A policy engine monitors the environment for events which the system or user believe to represent a change in context.
 Upon detection of an event, the policy engine applies applications' policies, reconfiguring their connections as appropriate. 
@@ -1288,8 +1288,8 @@ The network connection drops causing the system to reconfigure connections, whic
 However, the network connection is almost immediately re-established causing the system to reconfigure connections again, possibly connecting applications to these same peers. 
 If this reconnection occurs before disconnection has completed, the application believes itself to still be connected to the peer, thus will not create a new connection.
 
-A solution to this problem might be to implement constraints which must be satisfied before reconfiguration occurs. 
-In a Wi-Fi network, there may be a constraint that the network signal must be greater than a given threshold, meaning no reconfiguration would occur until the user moves firmly into the network. 
+A solution to this problem might be to implement conditions which must be satisfied before reconfiguration occurs. 
+In a Wi-Fi network, there may be a condition that the network signal must be greater than a given threshold, meaning no reconfiguration would occur until the user moves firmly into the network. 
 Alternatively, conditions on multiple context changes might be required before performing reconfiguration.  
 For an accelerometer context change, a high accelerometer message followed by a message indicating little movement might be used to detect a fall.
 
@@ -1302,25 +1302,23 @@ For an accelerometer context change, a high accelerometer message followed by a 
 % other stuff that could be done
 
 % alternate events for change in context - AIRS
-Applications cannot currently specify which changes in context they are interested in. 
-The policy engine will trigger all policies upon detecting a change.
-Applications could specify the type of context change within their policy, giving them the ability to specify different policies for different context changes. 
-This moves the system to an event driven architecture, where context changes are represented as events. 
-Upon receiving an event, the policy engine would check whether the event satisfies the conditions of a policy, only applying the policy when it does. 
-This allows applications to specify policies for simple events, such as a Wi-Fi change event, to more complex events, such as a high accelerometer reading followed by no movement to represent a fall. 
+Applications cannot currently specify {\sl which} changes in context they are interested in, the policy engine triggers {\sl all} policies upon detecting a change.
+The system could easily be extended to allow applications to include a type of context change in a policy, allowing them to specify different policies for different context changes. 
+Upon receiving an event, the policy engine would then check whether the event satisfies the conditions of each policy, only applying the policy when it does. 
+This would allow applications to specify policies for simple events, such as a Wi-Fi change event, or more complex events, such as a high accelerometer reading followed by no movement to represent a fall. 
 
 As well as applications specifying policies, users could also specify policies for different applications. 
 This moves the system further towards the pervasive vision. 
 Applications would take sensible actions for different changes in context, however the user could refine how applications should react to changes in context, causing them to behave in a way more suited to the user's needs.
 
-The user may have the ability to specify which types of events can be used. 
-This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed.
+The user may have the ability to specify which types of events can be used by the system. 
+This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed, for example blocking the accelerometer.
 
 % qualify names if multiple fields in sensor have same name
-The constraints applications specify about the schema of data sources they may be connected to are currently specified using the field names of their own schema.
-While this works provided there are no repeated fields names within the schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema}. 
-A solution to this would be to qualify all names specified in the constraints in a similar way to subscriptions. 
-We could specify a constraint for {\tt sensor}, meaning the entire structure, or {\tt sensor/sensor}, meaning the text field.
+Applications currently specify RDC schema queries in terms of field names of their own schema.
+While this works provided there are no repeated fields names within the schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema} due to {\tt sensor} being repeated. 
+A solution to this would be to force field names to be fully qualified in a query. 
+A query using {\tt sensor} would mean the entire structure, while {\tt sensor/sensor} would mean the text field.
 
 \begin{figure}[tbh]
 \begin{lstlisting}
