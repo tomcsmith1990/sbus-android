@@ -938,23 +938,34 @@ These classes are exported as a JAR file, which applications can then simply imp
 
 \section{Phone Manager}
 
-The Phone Manager (PM) is an Android application which is responsible for detecting changes in context and reconfiguring other applications' connections. 
+The Phone Manager is an Android application which is responsible for detecting changes in context and reconfiguring other applications' connections. 
 
 % detecting context
 The Phone Manager uses the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android system intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} to detect changes in context. 
-These intents are broadcast across the system on specific events, and by implementing a receiver, an action can be taken upon the event. 
-In particular, the action {\tt NETWORK\_STATE\_CHANGED\_ACTION} can be used to detect a Wi-Fi change, allowing the Phone Manager to reconfigure connections based on a change in network. 
+These intents are broadcast across the system upon specific events. 
+By implementing a receiver, these intents can be captured and an action can be taken upon the event. 
+In particular, an intent with the action {\tt NETWORK\_STATE\_CHANGED\_ACTION} is broadcast upon a Wi-Fi change.
+This allows the Phone Manager to register a receiver for these intents, which can then reconfigure connections after a change in network. 
 
 % AIRS
-An AIRS-SBUS gateway application has been created which acts as a remote server for sensor readings from AIRS. 
-AIRS sends sensor readings to this server, which outputs them as events on an SBUS endpoint. 
-The server is based on the AIRS code\footnote{\url{https://github.com/dirktrossen/AIRS}}. 
-After working out how readings are transmitted to a server, code was written to package sensor readings as SBUS events. 
-AIRS can be ran in remote mode, to connect to the gateway, and each sensor reading is then packaged and published on an SBUS endpoint. 
-The PM can then connect to this endpoint in order to receive an event every time a measurement is taken, harnessing any of the sensors on the device. 
-When AIRS runs in remote mode, it only outputs sensor readings for a given sensor if a subscription has been enabled for that sensor. 
-The Phone Manager must first subscribe to sensors it is interested in via a ``control'' endpoint. 
-These subscriptions mean that the Phone Manager will only receive relevant events, and not be overrun with messages from all sensors.
+An application has been created to act as a AIRS-SBUS gateway between AIRS and the Phone Manager. 
+This gateway acts as a remote server for sensor readings from AIRS. 
+Once AIRS start in remote mode, sensors must be subscribed to before AIRS will output any readings. 
+AIRS firsts connects to the gateway, so that it has somewhere to send messages. 
+The Phone Manager can then connect to the gateway via an SBUS endpoint, and subscribe to sensors through another ``control endpoint'' on the gateway. 
+Upon receiving a subscription, the gateway relays this subscription to AIRS in the appropriate format. 
+AIRS can then send sensor readings to the gateway, which will convert them to SBUS events and send them to the Phone Manager. 
+This allows the Phone Manager to use any sensor on the device which is exposed by AIRS, yet ensures that the Phone Manager only receives readings from the sensors it is interested in. 
+ 
+ % AIRS-SBUS gateway
+This gateway is based on the AIRS code\footnote{\url{https://github.com/dirktrossen/AIRS}}. 
+AIRS exposes upwards of 50 sensors, which is being continually expanded, making it infeasible to predefine an endpoint for each sensor. 
+This is handled by dynamically creating an endpoint for a sensor whenever the first reading from that sensor is received, meaning that endpoints will only ever be created as needed. 
+The user is presented with a list of sensors in the gateway, which is populated from a message AIRS sends to announce the available sensors, upon connecting to the remote server. 
+After the user selects a sensor, that sensor is subscribed to, and the endpoint will be created once a reading is received from that sensor. 
+Additionally, the endpoint is automatically mapped to the Phone Manager and can start publishing events to it immediately. 
+Each sensor runs in a different thread, so these endpoints are maintained in a thread-safe repository. 
+This repository is searched upon receiving a message, which will return the endpoint if it already exists, ensuring that multiple endpoints are not defined for the same sensor. 
 
 % composite event detector
 Conceptually this AIRS-SBUS gateway could act as a composite event detector. 
