@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10729\footnotemark[1] \\
+Word Count:         & \bf 10669\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -256,7 +256,10 @@ This chapter first outlines the requirements of the system, going on to summaris
 The following use cases outline the functional requirements of the system, describing how the system will operate in different circumstances.
 
 % use cases - functional requirements
-John lives in a retirement village. He has a heart condition and as such he regularly suffers from falls. He uses a heart monitor connected to an application on his phone which displays the heart monitor readings. Upon a fall, John wishes for his heart monitor readings to be sent the retirement village nurse. The nurse can then determine if John is in any immediate danger, and take appropriate action.
+John uses a National Heritage application which can provide information about exhibits in a museum, or nearby landmarks in a city. 
+While in a museum, John's phone is connected to the Wi-Fi network, and the application receives data from a source on the network, which provides a guided tour of the museum. 
+When leaving the museum, John's phone disconnects from the Wi-Fi network. 
+The system detects this, and connects the application to a global source via 3G, which uses his GPS co-ordinates to provide the application with information about nearby landmarks.
 
 \begin{itemize}
 
@@ -264,13 +267,11 @@ John lives in a retirement village. He has a heart condition and as such he regu
 
 \begin{enumerate}
 
-\item John has his phone in his pocket when he falls over in his home.
+\item John uses the application to view information about each exhibit while walking around the museum.
 
-\item The system detects that John has fallen over, representing a change in his context.
+\item Upon leaving the museum, his phone disconnects from the Wi-Fi network.
 
-\item The system reacts to this change in context and connects John's heart monitor readings to the nurse's office over the local network.
-
-\item The nurse checks John's heart monitor readings, and dispatches an ambulance if necessary.
+\item The system detects that John has left, so connects the application to a global source, which then sends information about nearby landmarks so that John can decide where to go next.
 
 \end{enumerate}
 
@@ -278,15 +279,11 @@ John lives in a retirement village. He has a heart condition and as such he regu
 
 \begin{enumerate}
 
-\item John enjoys visiting the local library, however is concerned that he may suffer a fall which will go unnoticed, since the library is large and often empty.
+\item John chooses to visit a nearby art gallery, and upon entering the gallery, John connects his phone to the Wi-Fi network.
 
-\item John visits the library and connects his phone to the library's Wi-Fi network.
+\item The system has detected this change, and searches for a source providing ``museum data''.
 
-\item John finds the book he wants, but falls while reaching for it on a high shelf.
-
-\item The system detects this fall but cannot connect John's heart monitor to the nurse's office. It searches for some application on the Wi-Fi network which accepts heart rate readings, and upon finding the librarian running such an application, connects John's heart monitor to the application.
-
-\item The librarian sees that some kind of accident has happened, and can search for John or call an ambulance.
+\item Once the system finds a source, it connects the application to it, allowing John to use the application for a guided tour of the art gallery. 
 
 \end{enumerate}
 
@@ -294,11 +291,11 @@ John lives in a retirement village. He has a heart condition and as such he regu
 
 \begin{enumerate}
 
-\item John uses a high end heart monitor which not only monitors his heart rate, but also his blood pressure.
+\item The art gallery is trialling a new system which includes relevant links in the data for each exhibit.  
 
-\item The retirement village supports this system so can use John's heart rate and blood pressure, however the librarian runs an outdated system which only supports heart rate.
+\item John's application does not support this extra field, making the source incompatible with the application.
 
-\item The system converts John's sensor readings to match the library's system, making the two systems compatible, allowing the librarian to receive John's readings.
+\item The system converts these art gallery messages to match the application data format, making the data compatible with John's application. 
 
 \end{enumerate}
 
