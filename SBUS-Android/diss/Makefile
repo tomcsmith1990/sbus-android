@@ -5,6 +5,7 @@
 # and that TAB is used after ':' and before unix commands.
 
 DISS = diss.tex refs.bib propbody.tex
+FIGS = $(shell ls figs/*.pdf)
 
 "":
 	make figures
@@ -44,10 +45,8 @@ count:
 all:	proposal.dvi diss.ps
 
 figures:
-	pdfcrop -margins 10 figs/*.pdf
-	pdftops -eps figs/*-crop.pdf
-	rm figs/*-crop.pdf
-	rename -f 's/\-crop.eps/.eps/' figs/*.eps
+	$(foreach FIGURE, $(FIGS), pdfcrop -margins 10 $(FIGURE) $(FIGURE);)
+	$(foreach FIGURE, $(FIGS), pdftops -eps $(FIGURE);)
 
 clean:
 	rm -f diss.ps *.dvi *.aux *.log *.err
