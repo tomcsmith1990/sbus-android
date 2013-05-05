@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10829\footnotemark[1] \\
+Word Count:         & \bf 10896\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -166,7 +166,11 @@ This allows applications to be more adaptable to their environment, and therefor
 Current applications tend to be inflexible in data sources they use, often selecting from some hardcoded list of possibilities, regardless of the environment. 
 While some localisation might be achieved by including parameters during connection, such as sending GPS co-ordinates, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
 The format of the data which is being exchanged has also been fixed, restricting applications even further.
-By connecting to local data sources, applications can gain more releveant data due to the fact that the data sources reside within the same environment.
+
+This is not in line with the pervasive computing vision \cite{weiser1991computer}, primarily because applications do not use their current environment. 
+The systems are not scalable, because applications are using global servers, and they offer no heterogeneity\cite{saha2003pervasive} in the data they use, since both application and server both use an exact format.
+
+Applications can gain main relevant data by connection to local data source, due to the fact that these data sources reside within the same environment.
 Given an application which requires the current temperature, a global server may use current GPS co-ordinates to determine the nearest weather station and return its most recent reading. 
 Yet if the application were being used indoors, a value from a local temperature sensor might not only suffice, but be more appropriate. 
 Perhaps this could be achieved otherwise, if the server had known about the temperature sensor, however why should the application need to connect to a global server in order to use local data? Perhaps there isn't even an Internet connection available. 
@@ -193,7 +197,7 @@ While both offer similar data to a large extent, fields are named differently, a
 Alternatively, the application might be used abroad, for example in a French coach station. The data will still be very similar, but fields names may be in French (Figure \ref{fig:french-coach-schema}).
 
 An application developer may be able to account for some of these differences, though given the sheer volume of potential sources, the developer cannot hope to account for every possibility, meaning that the application cannot be truly adaptable. 
-Even if the developer could, these sources are liable to change over time. 
+Even if the developer could cover every existing source, these sources are liable to change over time. 
 New sources may become available and old sources may become unavailable, or sources might change how they present their data. 
 A developer simply cannot cover every current and future possibility, meaning an application cannot truly adapt to any environment. 
 However, by specifying how an application should react to changes in context, the application becomes decoupled from the environment, making it more robust to changes in the environment. 
@@ -204,19 +208,20 @@ However, by specifying how an application should react to changes in context, th
 Schilit et al \cite{schilit1994context}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
 This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment. 
 Pascoe \cite{pascoe1998adding} lists four context-aware capabilites. 
-{\sl Contextual sensing} is simply detecting environmental state and presenting it to the user. 
-{\sl Contextual adaptation} is where applications leverage this knowledge by adapting their behaviour to integrate with the user's environment. 
+{\sl Contextual sensing} presents environmental state to the user, while {\sl contextual adaptation} allows applications to use this knowledge to adapt their behaviour to integrate with the user's environment.
 {\sl Contextual resource discovery} allows applications to discover and exploit resources which exist in the same context as themselves. 
 {\sl Contextual augmentation} augments reality with digital data. 
 This system uses contextual resource discovery to discover potential peers available within the current context, and contextual adaptation to allow  applications to adapt to different data formats in order to communicate with these peers.
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
-M\"{u}hl defines three kinds of events which can be used to detect a change in context: physical events, timer events, and a state change in the system \cite[page 11]{muhl2006distributed}, all of which may warrant some kind of reconfiguration. 
+M\"{u}hl represents changes in context using events, where each context change causes an event to be raised \cite[page 11]{muhl2006distributed}.
+Three kinds of events are defined: physical events, timer events, and a state change in the system, all of which may warrant some kind of reconfiguration. 
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (a fall), in which case the application may need to send data to an emergency response team.
 A timer event indicates the progression of real time, which advertisers could use to connect to advertisements for nearby restaurants at lunch time. 
 Finally, there are state changes in the system, such as a change in network connection or location. 
-Composite events might also be considered, which require the detection of several different events, or one or more occurrences of a single event \cite{chakravarthy1994composite}. 
 This project primarly focuses on state changes events, particularly using a change in network connection to indicate a change in context, though in practice any event might be used.  
+Composite events might even be considered to represent a context change. 
+These require the detection of several different events, or one or more occurrences of a single event \cite{chakravarthy1994composite}. 
 
 % policy engine
 Applications control how their connections should be reconfigured through policies. 
@@ -324,9 +329,9 @@ An endpoint may specify a subscription filter on events it wishes to receive, in
 These connections and subscriptions are dynamically reconfigurable and may be modified by any other component, allowing third party remapping to occur, subject to security policies. 
 A component may issue a message to some other component, instructing it to map or unmap its endpoints, or to update its subscription filters.
 
-The only central point of the system is a resource discovery component (RDC). 
-The RDC itself is a component, and acts as a name service. 
-Components may query the RDC for other components within the system, using parameters including component name, connected peers, or public key. 
+Resource discovery components (RDCs) are components which act as a name service. 
+An environment may contain several RDCs, or no RDCs, though typically only one exists in each environment.
+Components may query an RDC for other components within the environment, using parameters including component name, connected peers, or public key. 
 The RDC will return IP addresses of matching components, allowing the component to establish a direct connection to a match.
 
 \section{System Design}
