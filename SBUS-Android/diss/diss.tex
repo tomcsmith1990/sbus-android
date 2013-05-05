@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10668\footnotemark[1] \\
+Word Count:         & \bf 10695\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -392,10 +392,10 @@ A secure version of SBUS which uses OpenSSL to encrypt communications between co
 % ~ 4000 words
 \chapter{Implementation}
 
-This chapter consists of three main parts. 
-The first shows how applications can find peers which offer the data they require, and how they can communicate with these peers despite differences in schemas. 
-The second part explains how the SBUS library was ported to Android, and how it can be used by application developers. 
-Finally, this is all brought together with the Phone Manager which is responsible for detecting changes in context and reconfiguring applications' connections upon a change.
+The implementation consists of three main parts. 
+This chapter first shows how applications can find peers which offer the data they require, and how they can communicate with these peers despite differences in schemas. 
+It goes on to explain how the SBUS library was ported to Android, and how it can be used by application developers, before bringing everything together with the Phone Manager, which is responsible for detecting changes in context and reconfiguring applications' connections upon a change.
+Finally, this chapter explains some remaining issues in the system, which have not been resolved due to time constraints. 
 
 \section{Flexible Schema Matching}
 
@@ -1008,6 +1008,38 @@ If the peer address specifies an IP address, then the endpoint can map directly 
 However, if the peer address is an RDC query, then the application must first resolve the query, which may be done against a new RDC which has been specified in the update. 
 This allows the query to be resolved in the new environment, allowing endpoints to map to peers in that environment. 
 
+
+\section{Issues}
+% remaining problems
+The system currently faces issues when context is rapidly changing, for example, moving in and out of range of a Wi-Fi network. 
+The network connection drops causing the Phone Manager to reconfigure connections, which may disconnect applications from their peers.
+However, the network connection is almost immediately re-established causing the Phone Manager to reconfigure connections again, possibly connecting applications to these same peers. 
+If this reconnection occurs before disconnection has completed, an application believes itself to still be connected to the peer, thus will not create a new connection.
+
+A solution to this problem might be to implement conditions which must be satisfied by an event before reconfiguration occurs. 
+In a Wi-Fi network, the network signal may be required to be greater than a given threshold, meaning reconfiguration would not occur until the user moves firmly into the network. 
+Alternatively, a composite event detector could trigger events after multiple occurrences of a single event, so that reconfiguration is not performed as frequently. 
+For example, a single event could be triggered after three consecutive Wi-Fi events have occurred with increasing signal strength. 
+
+% qualify names if multiple fields in sensor have same name
+Components specify RDC schema queries in terms of field names of their own schema.
+While this works provided there are no repeated fields names within the schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema} due to {\tt sensor} being repeated. 
+A solution to this would be to force field names to be fully qualified in a query. 
+A query using {\tt sensor} would mean the entire structure, while {\tt sensor/sensor} would mean the text field.
+
+\begin{figure}[tbh]
+\begin{lstlisting}
+@sensor
+{
+	txt sensor
+	int value
+}
+\end{lstlisting}
+\caption[Schema with repeated name]{A schema with a structure named {\tt sensor} and a text field also named {\tt sensor}. A constraint specified on {\tt sensor} would be ambiguous without fully qualified names}
+\label{fig:repeatednameschema}
+\end{figure}
+
+
 \cleardoublepage
 
 
@@ -1277,17 +1309,6 @@ The system repackages messages so that applications will only ever be presented 
 Furthermore, applications may specify subscription filters in terms of their own schemas, placing restrictions on which messages they will be sent, without requiring knowledge of peers' schemas.
 When reconfiguring a connection, the system translates these filters to match the peer's schema and applies them to the peer, filtering messages as dictated by the application.
 
-\section{Issues}
-% remaining problems
-The system currently faces issues when context is rapidly changing, for example, moving in and out of range of a Wi-Fi network. 
-The network connection drops causing the system to reconfigure connections, which may disconnect applications from their peers.
-However, the network connection is almost immediately re-established causing the system to reconfigure connections again, possibly connecting applications to these same peers. 
-If this reconnection occurs before disconnection has completed, the application believes itself to still be connected to the peer, thus will not create a new connection.
-
-A solution to this problem might be to implement conditions which must be satisfied before reconfiguration occurs. 
-In a Wi-Fi network, there may be a condition that the network signal must be greater than a given threshold, meaning no reconfiguration would occur until the user moves firmly into the network. 
-Alternatively, conditions on multiple context changes might be required before performing reconfiguration.  
-For an accelerometer context change, a high accelerometer message followed by a message indicating little movement might be used to detect a fall.
 
 \section{Changes}
 %TODO: what I'd have done differently
@@ -1309,24 +1330,6 @@ Applications would take sensible actions for different changes in context, howev
 
 The user may have the ability to specify which types of events can be used by the system. 
 This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed, for example blocking the accelerometer.
-
-% qualify names if multiple fields in sensor have same name
-Applications currently specify RDC schema queries in terms of field names of their own schema.
-While this works provided there are no repeated fields names within the schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema} due to {\tt sensor} being repeated. 
-A solution to this would be to force field names to be fully qualified in a query. 
-A query using {\tt sensor} would mean the entire structure, while {\tt sensor/sensor} would mean the text field.
-
-\begin{figure}[tbh]
-\begin{lstlisting}
-@sensor
-{
-	txt sensor
-	int value
-}
-\end{lstlisting}
-\caption[Schema with repeated name]{A schema with a structure named {\tt sensor} and a text field also named {\tt sensor}. A constraint specified on {\tt sensor} would be ambiguous without fully qualified names}
-\label{fig:repeatednameschema}
-\end{figure}
 
 \cleardoublepage
 
