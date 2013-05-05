@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10669\footnotemark[1] \\
+Word Count:         & \bf 10829\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -154,8 +154,10 @@ I give permission for my dissertation to be made available in the archive area o
 % summarise
 While many applications exist for mobile devices, few applications themselves are truly mobile. 
 The user may happen to be mobile, however applications do not adapt to different environments. 
+Applications may typically use data from predetermined central servers, failing to exploit local data which may be available in the environment. 
 This project addresses the issues faced in creating applications which can change to suit different environments. 
-I show how applications can find relevant data sources in a new environment, and how they can achieve some flexibility in the data that they use. 
+The project demonstrates how applications can perceive an environmental change, how they can find relevant local data in the environment, and how they can achieve some flexibility in the data which they use. 
+This allows applications to be more adaptable to their environment, and therefore offer a more relevant experience to the user. 
 
 \section{Problem}
 % what's the problem
@@ -176,22 +178,25 @@ Furthermore, applications need not predefine a list of data sources to use.
 Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{muhl2006distributed}. 
 Mobile devices constantly operate in different contexts, which dictate how the devices can interact with the environment. 
 Upon a change in context, an application may move out of scope of a given data source, or the data it is providing may no longer be relevant. 
-In this situation, an alternative data source must be found.
+In this situation, the application must find an alternative data source which can provide similar data, or one which provides data which is more relevant to the new context. 
 
 Once this alternate data source has been located, the application must still determine whether it provides useful data. 
 Some data may be fundamental to the operation of the application, while other parts may be desired, but not crucial.  
-Even once a data source is deemed useful, the application may still face the difficulty of the data being presented in an unexpected format. 
-Fields may be missing, there may be additional fields, and fields may have different names. 
-The application may also wish to specify a subscription filter about the messages it should receive, yet without knowledge of the data format, it cannot specify filters on different fields.
+Even once a data source is deemed useful, the application may still face the difficulty of data being presented in an unexpected format, simply because of the geographical scale and market which the application might be used in. 
+Different manufacturers might present data in slightly different formats, or different countries may present data using their own language. 
+These factors mean that when comparing similar pieces of data, some may be missing fields, some may contain additional fields, or fields may use different names. 
+An application may also wish to specify a subscription filter about the messages it should receive, yet without knowledge of the data format, it cannot specify filters on different fields.
 
 % example
 For example, a transport application may face differences in the data format for coaches (Figure \ref{fig:coach-schema}) and for trains (Figure \ref{fig:train-schema}). 
 While both offer similar data to a large extent, fields are named differently, and the train schema additionally offers a menu for an on-board shop.
 Alternatively, the application might be used abroad, for example in a French coach station. The data will still be very similar, but fields names may be in French (Figure \ref{fig:french-coach-schema}).
 
-While these differences may be important when the user is idly waiting in a station, they become less important when the user is running late and simply requires the departure time and location.
-Given the amount of uncertainty about what data will be available, a developer creating this application cannot hope to account for all possibilities. 
-However, the developer can specify how the application should behave in different contexts.
+An application developer may be able to account for some of these differences, though given the sheer volume of potential sources, the developer cannot hope to account for every possibility, meaning that the application cannot be truly adaptable. 
+Even if the developer could, these sources are liable to change over time. 
+New sources may become available and old sources may become unavailable, or sources might change how they present their data. 
+A developer simply cannot cover every current and future possibility, meaning an application cannot truly adapt to any environment. 
+However, by specifying how an application should react to changes in context, the application becomes decoupled from the environment, making it more robust to changes in the environment. 
 
 \section{Project}
 % what I've done
