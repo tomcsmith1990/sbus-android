@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10907\footnotemark[1] \\
+Word Count:         & \bf 10933\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -206,12 +206,12 @@ However, by specifying how an application should react to changes in context, th
 % what I've done
 
 Schilit et al \cite{schilit1994context}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
-This project creates such a system, which performs automatic contextual reconfiguration for applications whenever there is a change in the environment. 
+This project investigates how automatic contextual reconfiguration can be performed for applications whenever there is a change in the environment. 
 Pascoe \cite{pascoe1998adding} lists four context-aware capabilites. 
 {\sl Contextual sensing} presents environmental state to the user, while {\sl contextual adaptation} allows applications to use this knowledge to adapt their behaviour to integrate with the user's environment.
 {\sl Contextual resource discovery} allows applications to discover and exploit resources which exist in the same context as themselves. 
 {\sl Contextual augmentation} augments reality with digital data. 
-This system uses contextual resource discovery to discover potential peers available within the current context, and contextual adaptation to allow  applications to adapt to different data formats in order to communicate with these peers.
+Contextual resource discovery discovers potential peers available within the current context, and contextual adaptation allows applications to adapt to different data formats in order to communicate with these peers.
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
 M\"{u}hl represents changes in context using events, where each context change causes an event to be raised \cite[page 11]{muhl2006distributed}.
@@ -225,15 +225,15 @@ These require the detection of several different events, or one or more occurren
 
 % policy engine
 Applications control how their connections should be reconfigured through policies. 
-A policy engine monitors the environment and upon detecting a change in context applies these policies, reconfiguring applications' connections to connect them to different peers, where appropriate.
+An application monitors the environment and upon detecting a change in context applies these policies, reconfiguring applications' connections to connect them to different peers, where appropriate.
 These policies may specify the name of peers, or be more complex rules regarding the structure of peers' data. 
 Alternatively, applications may opt to be notified of a change in context, rather than have their connection reconfigured, allowing them to perform callback methods upon the change.
 
 % repackaging
 Depending on its policy, an application may be connected to a peer which provides data in a format which differs from its own.
-The system handles this by modifying the data representation to match the expected format. 
+This can be handled by modifying the data representation to match the expected format. 
 Any extraneous fields are removed, any absent fields are filled with ``empty'' values, and the policy is used to infer relationships between fields with different names. 
-The system then passes this modified data to the application, allowing the application to continue as if the data received has conformed to its own format. 
+This modified data can then be passed to the application, allowing the application to continue as if the data received has conformed to its own format. 
 % subscription
 Additionally, any subscription filter which an application has placed on data, in terms of its own format, are converted to match the peer's data format, so that the application can be connected with a working subscription in place. 
 
@@ -247,8 +247,9 @@ The policy engine can perceive context, and use these perceptions in an intellig
 While all of this is invisible to the user, applications can be configured by the user through the use of policies \cite{saha2003pervasive}.
 
 % summarise
-The system automatically reconfigures applications' connections and repackages messages to fit their schemas, granting applications flexibility in the peers which they connect to.
-Local peers can provide data relevant to the environment, and by repackaging this data applications are no longer bound to exact schemas. 
+Applications' connections are automatically reconfigured upon a change in context, and data is automatically repackaged to comply with the format which an application expects. 
+Local peers can provide data relevant to the environment, and by repackaging this data applications are no longer bound to exact data formats. 
+This grants applications flexibility in the peers which they connect to, making them more adaptable to the environment. 
 Applications control how they interact with an environment through policies, while still seamlessly communicating within that environment.
 
 \cleardoublepage
@@ -371,16 +372,16 @@ In order for the system to remap applications, it will first need to know about 
 An RDC is well suited for this, because it maintains a list of registered components, which can then be searched when a component queries the RDC. 
 This list can also serve as a list of components which the system can remap.
 
-These two aspects of detecting context change and acting as an RDC can be combined into a Phone Manager (PM) application. 
-The PM will act similarly to an RDC, allowing applications on the device to register with it. 
+These two aspects of detecting context change and acting as an RDC can be combined into a Phone Manager application. 
+The Phone Manager will act similarly to an RDC, allowing applications on the device to register with it. 
 It will detect context changes and upon a change will issue messages to registered components to instruct them to remap to other components.
 
 % How the Phone Manager knows what to reconfigure to (policies)
-The PM will remap applications upon a change in context, but must remap them to appropriate places. 
-The PM cannot decide what constitutes ``appropriate'' for any given application, as such, the application must decide for itself. 
-Applications will register {\sl policies} with the PM which dictate how they should be remapped upon a context change. 
+The Phone Manager will remap applications upon a change in context, but must remap them to appropriate places. 
+The Phone Manager cannot decide what constitutes ``appropriate'' for any given application, as such, the application must decide for itself. 
+Applications will register {\sl policies} with the Phone Manager which dictate how they should be remapped upon a context change. 
 This policy might be an IP address to map to, or a query which can be performed against an RDC in the environment, which will then return matching components. 
-The PM will simply remap applications as specified by their policies.
+The Phone Manager will simply remap applications as specified by their policies.
 
 % Security
 This project will not focus on security. 
@@ -399,7 +400,7 @@ Finally, this is all brought together with the Phone Manager which is responsibl
 
 \section{Flexible Schema Matching}
 
-Flexible schema matching refers to components finding peers based on aspects of their schema, and how they can communicate with these peers if their schemas are not identical. 
+Flexible schema matching refers to components finding peers based on aspects of their schema, specifically whether or not their schema contains certain fields, and how components can communicate with these peers if their schemas are not identical. 
 
 % syntax
 The most natural way for a component to query an RDC with data constraints seemed to be to extend the current query mechanism. 
