@@ -78,12 +78,12 @@ Sidney Sussex College \\
 \chapter*{Proforma}
 
 {\large
-\begin{tabular}{ll}
+\begin{tabular}{l p{9.5cm}}
 Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
-Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
+Project Title:      & \bf Automatic Configuration in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10933\footnotemark[1] \\
+Word Count:         & \bf 10892\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -202,6 +202,7 @@ New peers may become available and old peers may become unavailable, or peers mi
 A developer simply cannot cover every current and future possibility, meaning an application cannot truly adapt to any environment. 
 However, by specifying how an application should react to changes in context, the application becomes decoupled from the environment, making it more robust to changes in the environment. 
 
+
 \section{Project}
 % what I've done
 
@@ -211,7 +212,13 @@ Pascoe \cite{pascoe1998adding} lists four context-aware capabilites.
 {\sl Contextual sensing} presents environmental state to the user, while {\sl contextual adaptation} allows applications to use this knowledge to adapt their behaviour to integrate with the user's environment.
 {\sl Contextual resource discovery} allows applications to discover and exploit resources which exist in the same context as themselves. 
 {\sl Contextual augmentation} augments reality with digital data. 
-Contextual resource discovery discovers potential peers available within the current context, and contextual adaptation allows applications to adapt to different data formats in order to communicate with these peers.
+Contextual resource discovery discovers potential peers available within the current context, and contextual adaptation allows applications to adapt to different data formats in order to communicate with these peers. 
+
+% pervasive computing
+Use of local peers ensures that the approach is scalable. 
+Connections are created on an ad-hoc basis, based entirely upon which peers are available within the environment at that time. 
+Adaptation to different data formats masks heterogeneity in the data \cite{saha2003pervasive} from users, and indeed the application developers. 
+These factors are important because uniformity and compatibility in every environment cannot be assumed, and therefore must be considered by any system which aims to be in line with the goals of the pervasive computing vision \cite{weiser1991computer}.
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
 M\"{u}hl represents changes in context using events, where each context change causes an event to be raised \cite[page 11]{muhl2006distributed}.
@@ -237,14 +244,6 @@ This modified data can then be passed to the application, allowing the applicati
 % subscription
 Additionally, any subscription filter which an application has placed on data, in terms of its own format, are converted to match the peer's data format, so that the application can be connected with a working subscription in place. 
 
-% pervasive computing
-The system supports many of the goals of the pervasive computing vision \cite{weiser1991computer}.
-Use of local peers allows the system to be scalable. 
-Connections are created on an ad-hoc basis, based entirely upon what data sources are available within the environment. 
-Repackaging messages allows applications to adapt to heterogeneous content and devices, allowing applications to operate in a multitude of environments. 
-Different peers may represent data in different formats, though application policies allow the system to interpret this data in a meaningful way. 
-The policy engine can perceive context, and use these perceptions in an intelligent way, by reconfiguring applications' connections according to their policies. 
-While all of this is invisible to the user, applications can be configured by the user through the use of policies \cite{saha2003pervasive}.
 
 % summarise
 Applications' connections are automatically reconfigured upon a change in context, and data is automatically repackaged to comply with the format which an application expects. 
