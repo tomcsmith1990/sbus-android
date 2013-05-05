@@ -5,7 +5,7 @@
 # and that TAB is used after ':' and before unix commands.
 
 DISS = diss.tex refs.bib propbody.tex
-FIGS = $(shell ls figs/*.pdf)
+FIGURES = android_stack overview
 
 "":
 	make diss.pdf
@@ -44,8 +44,9 @@ count:
 all:	proposal.dvi diss.ps
 
 figures:
-	$(foreach FIGURE, $(FIGS), pdfcrop -margins 10 $(FIGURE) $(FIGURE);)
-	$(foreach FIGURE, $(FIGS), pdftops -eps $(FIGURE);)
+	$(foreach FIGURE, $(FIGURES), pdfcrop -margins 10 figs/$(FIGURE).pdf figs/$(FIGURE)-crop.pdf;)
+	$(foreach FIGURE, $(FIGURES), pdftops -eps figs/$(FIGURE)-crop.pdf figs/$(FIGURE).eps;)
+	rm figs/*-crop.pdf
 
 clean:
 	rm -f diss.ps *.dvi *.aux *.log *.err
