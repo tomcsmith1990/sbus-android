@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10878\footnotemark[1] \\
+Word Count:         & \bf 10941\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -1189,9 +1189,11 @@ In either case, the lookup table is constructed once per connection taking only 
 \end{figure}
 
 Figure \ref{fig:repack_message} shows the time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers. 
-This repackaging happens once per message, thus causes a delay on every single message received. 
+This repackaging happens once per message, thus will cause a delay on every single message received. 
+Should this delay be too large, then messages may contain stale data by the time they have been repackaged. 
 The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected because more fields are being repackaged under the appropriate names. 
-As with constructing the lookup table, messages are repackaged within microseconds, meaning that any message should still be relevant after the time taken for repackaging, for any realistic use of the system. 
+As with constructing the lookup table, messages are repackaged within microseconds, which is an insignificant overhead. 
+In general, messages should still be relevant after the time taken for repackaging, for any realistic use of the system.
 
 Both Figure \ref{fig:construct_lookup} and Figure \ref{fig:repack_message} use a schema constraint which matches the type of the smallest schema, to ensure that a match is made in every case. 
 
@@ -1247,7 +1249,7 @@ Overall, an application written in Java running a phone would see very similar n
 
 Figure \ref{fig:jni_times} shows the breakdown of time taken to perform an SBUS function call via Java compared to C++. 
 In this case, the function call is to emit a message. 
-This clearly shows that using JNI to call a native method from Java introduces a delay, almost five milliseconds here. 
+This shows that the function call in C++ takes slightly over one millisecond, while using Java to call the native method via JNI takes almost six milliseconds, almost a five millisecond delay. 
 Each call to an SBUS function via Java will incur some delay, meaning that applications written in Java for a phone will never operate as quickly as those written in C++.
 Application developers can expect this delay, which is likely to show less variance than any network delay, and can build their applications to take account of it. 
 Provided an application is calling SBUS functions less frequently than this delay, such as a emitting a message less than once every ten milliseconds, it is unlikely to cause any problems.
