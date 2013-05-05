@@ -8,7 +8,6 @@ DISS = diss.tex refs.bib propbody.tex
 FIGS = $(shell ls figs/*.pdf)
 
 "":
-	make figures
 	make diss.pdf
 	make clean
 	
