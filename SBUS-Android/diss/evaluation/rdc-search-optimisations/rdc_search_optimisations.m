@@ -45,9 +45,9 @@ h3 = plot(components, ef/1000, '-*');
 h4 = plot(components, sef/1000, '-x');
 
 legend([h1 h2 h3 h4], 'No optimisation', 'Structures first', 'Exacts first', 'Structures-Exacts first', 'Location', 'Best');
-title('RDC Schema search for query +Ssomeval+Hn+Smore+Hnum');
-xlabel('Number of other components registered on RDC');
-ylabel('Time to search through components (milliseconds)');
+title('RDC Schema search for query +Ssomeval+Hn+Smore+Hnum', 'FontSize', 12);
+xlabel('Number of other components registered on RDC', 'FontSize', 12);
+ylabel('Time to search through components (milliseconds)', 'FontSize', 12);
 
 print -depsc 'rdc_search_optimisations.eps';
 

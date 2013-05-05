@@ -39,9 +39,9 @@ errorbar(2, mean(laptop_phone), std(laptop_phone), '-+');
 errorbar(3, mean(phone_laptop), std(phone_laptop), '-*');
 errorbar(4, mean(phone_phone), std(phone_phone), '-X');
 
-xlabel('Consumer-Producer');
-ylabel('Time (ms)');
-title('Connection Times Between Producers and Consumers on a Laptop and Phone');
+xlabel('Consumer-Producer', 'FontSize', 12);
+ylabel('Time (ms)', 'FontSize', 12);
+title('Connection Times Between Producers and Consumers on a Laptop and Phone', 'FontSize', 12);
 set(gca, 'XTick', [1 2 3 4]);
 set(gca, 'XTickLabel', {'Laptop-Laptop', 'Laptop-Phone', 'Phone-Laptop', 'Phone-Phone'});
 
