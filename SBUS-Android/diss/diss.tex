@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10892\footnotemark[1] \\
+Word Count:         & \bf 10668\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -163,7 +163,7 @@ This allows applications to be more adaptable to their environment, and therefor
 % what's the problem
 
 % describe current approach
-Current applications tend to be inflexible in data sources they use, often selecting from some hardcoded list of possibilities, regardless of the environment. 
+Current applications tend to be inflexible in where the data they use comes from, often selecting from some hardcoded list of IP addresses, regardless of the environment. 
 While some localisation might be achieved by including parameters during connection, such as sending GPS co-ordinates, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
 The format of the data which is being exchanged has also been fixed, restricting applications even further.
 
@@ -343,7 +343,7 @@ SBUS will need to be ported for use on Android.
 The Android Native Development Kit\footnote{\url{http://developer.android.com/tools/sdk/ndk/index.html}} (NDK) will be used to compile SBUS for Android, and the Java Native Interface (JNI) framework will be used to allow applications to use this library. 
 Since the NDK offers fairly obscure documentation with little more than trivial examples, some time will be required to understand how the build process works. 
 
-% How applications will find data sources relevant to them (constraints in terms of schema)
+% How applications will find peers relevant to them (constraints in terms of schema)
 When components query the RDC they generally know something about the metadata of components they want, such as names, connected peers, or public keys. 
 In a mobile system, applications are unlikely to have this information available in every case, simply because there are too many possible environments. 
 To allow applications to find relevant components in any environment, the system will be extended to allow RDC queries centred around data.
@@ -393,7 +393,7 @@ A secure version of SBUS which uses OpenSSL to encrypt communications between co
 \chapter{Implementation}
 
 This chapter consists of three main parts. 
-The first shows how applications can find data sources which offer the data they require, and how they can use these sources despite differences in schemas. 
+The first shows how applications can find peers which offer the data they require, and how they can communicate with these peers despite differences in schemas. 
 The second part explains how the SBUS library was ported to Android, and how it can be used by application developers. 
 Finally, this is all brought together with the Phone Manager which is responsible for detecting changes in context and reconfiguring applications' connections upon a change.
 
@@ -1014,9 +1014,10 @@ This allows the query to be resolved in the new environment, allowing endpoints 
 % ~ Eval + Conclusion ~ 2000 words
 \chapter{Evaluation}
 
-The project set out to create a system which would allow applications to automatically reconnect to different sources upon a change in context, where these sources may not necessarily present data in the format expected. 
-The project has been successful in this respect. Sensor readings from the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android intents are used to detect a change in context. 
-Once a change is detected, applications will be connected to sources which satisfy the constraints they have specified and messages will automatically be converted to applications' expected format, allowing operation of the application to continue without interruption.
+The project set out to create a system which would allow applications to automatically connect to different peers upon a change in context, where these peers may not necessarily present data in the format expected. 
+The project has been successful in this respect. 
+Sensor readings from the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android intents are used to detect a change in context. 
+Once a change is detected, applications will be connected to peers which satisfy the constraints they have specified and messages will automatically be converted to applications' expected format, allowing operation of the application to continue without interruption.
 
 \section{System Overview}
 
@@ -1264,30 +1265,17 @@ Provided an application is calling SBUS functions less frequently than this dela
 \chapter{Conclusion}
 
 % summarise
-The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of data sources or the format of their data, decoupling applications from their data sources. 
-The system supports the goals of pervasive computing, achieving scalability by allowing applications to use any relevant data source, and allowing applications to adapt to use heterogeneous content, all while being invisible to both the user and developer.
+The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of the peers which the application will use, or the format that these peers will present data in, decoupling applications from their specific peers. 
+This supports the goals of pervasive computing, achieving scalability by allowing applications to use any relevant peer, and allowing applications to adapt to use heterogeneous content, all while being invisible to both the user and developer.
 
 A policy engine monitors the environment for events which the system or user believe to represent a change in context.
 Upon detection of an event, the policy engine applies applications' policies, reconfiguring their connections as appropriate. 
-Through these policies, applications may control which data sources they should be connected to, without requiring applications to find data sources themselves.
-Policies may be simple, such as the name of a data source, or more complex, specifying how fields in a data source's schema must match their own. 
+Through these policies, applications may control which peers they should be connected to, without requiring applications to find the peers themselves.
+Policies may be simple, such as the name of a peer, or more complex, specifying how fields in a peer's schema must match their own. 
 
 The system repackages messages so that applications will only ever be presented with data conforming to their own schema, removing uncertainty about the format of the data.
 Furthermore, applications may specify subscription filters in terms of their own schemas, placing restrictions on which messages they will be sent, without requiring knowledge of peers' schemas.
 When reconfiguring a connection, the system translates these filters to match the peer's schema and applies them to the peer, filtering messages as dictated by the application.
-
-% example
-Referring back to the transport example from the Introduction, there may be a transport application based on the coach schema (Figure \ref{fig:coach-schema}) which requires data sources to offer a structure matching the type of the {\tt coach} structure. 
-At a coach station, all data sources match this schema exactly, so the application can connect to any one of them. 
-The user may then travel to a larger station, offering train and coach services. 
-Although train data sources use a different schema (Figure \ref{fig:train-schema}) to the application, their schema contains a structure matching the required {\tt coach} structure.
-Upon arrival at the station, the user connects to the Wi-Fi network. The policy engine detects this change in context and connects the application to a train data source. 
-Messages will be repackaged to match the application schema, meaning that the same code handles messages for coaches or trains.
-The user might have subscribed to only receive data for which the departure time is after midday. 
-Since this subscription is specified in terms of the coach schema, it cannot be applied directly to the train schema. 
-In this case, the system reformats the subscription to match the train schema and applies it when connecting the application to the data source, ensuring the user's subscription filter is met.
-
-The application might equally have used the train schema, yet only required the {\tt info} structure, allowing it to use coach data sources.
 
 \section{Issues}
 % remaining problems
