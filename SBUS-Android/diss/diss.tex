@@ -83,7 +83,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf Automatic Configuration \\ &\bf in Mobile Environments	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10941\footnotemark[1] \\
+Word Count:         & \bf 10907\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -234,10 +234,8 @@ Depending on its policy, an application may be connected to a peer which provide
 The system handles this by modifying the data representation to match the expected format. 
 Any extraneous fields are removed, any absent fields are filled with ``empty'' values, and the policy is used to infer relationships between fields with different names. 
 The system then passes this modified data to the application, allowing the application to continue as if the data received has conformed to its own format. 
-
 % subscription
-The system allows an application to specify subscription filters in terms of its own schema. 
-As part of the reconfiguration process the system converts this subscription to match the peer's schema, connecting the application with a working subscription in place.
+Additionally, any subscription filter which an application has placed on data, in terms of its own format, are converted to match the peer's data format, so that the application can be connected with a working subscription in place. 
 
 % pervasive computing
 The system supports many of the goals of the pervasive computing vision \cite{weiser1991computer}.
@@ -344,10 +342,9 @@ Applications will implement an SBUS component, sending and receiving messages on
 SBUS will need to be ported for use on Android. 
 The Android Native Development Kit\footnote{\url{http://developer.android.com/tools/sdk/ndk/index.html}} (NDK) will be used to compile SBUS for Android, and the Java Native Interface (JNI) framework will be used to allow applications to use this library. 
 Since the NDK offers fairly obscure documentation with little more than trivial examples, some time will be required to understand how the build process works. 
-This presents the largest unknown factor in the system, so will be the first work undertaken, to allow for modification to the project should it take more or less time than expected.
 
 % How applications will find data sources relevant to them (constraints in terms of schema)
-When components query the RDC they generally know something about the metadata of the component they want, such as its name or connected peers. 
+When components query the RDC they generally know something about the metadata of components they want, such as names, connected peers, or public keys. 
 In a mobile system, applications are unlikely to have this information available in every case, simply because there are too many possible environments. 
 To allow applications to find relevant components in any environment, the system will be extended to allow RDC queries centred around data.
 Applications will be able to search by the format of the data they use, connecting to any component which supports that format, without any other prior knowledge of that component.
