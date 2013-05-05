@@ -1173,11 +1173,12 @@ However, even in the worst case the RDC can perform the search with 100 other co
 \end{figure}
 
 Figure \ref{fig:construct_lookup} shows the time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers. 
-The lookup table is created before any messages can be exchanged between different schemas, therefore could cause messages to become stale if the process takes too long.
+The lookup table is created before any messages can be exchanged between peers with different schemas. 
+If this were to take too long, important messages be missed, or messages could become stale, no longer containing correct data.
 The general increase in time from left to right shows that more time is taken to construct a lookup table as the size of the producer schema increases, as expected, since there are more fields. 
 The greater values in the upper right half of the graph show a disparity with the smaller values in the lower left half of the graph. 
 This shows that the time taken to construct a lookup table is greater when the producer's schema is larger than the consumer's schema, corresponding to searching in the larger producer schema for the smaller consumer schema to be matched, as opposed to identifying the missing outer structures if the consumer schema were larger.
-In either case, the lookup table is constructed once per connection, and takes microseconds.
+In either case, the lookup table is constructed once per connection taking only microseconds, so is not a significant overhead. 
 
 % repack message
 \begin{figure}[tbh]
@@ -1192,7 +1193,7 @@ This repackaging happens once per message, thus causes a delay on every single m
 The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected because more fields are being repackaged under the appropriate names. 
 As with constructing the lookup table, messages are repackaged within microseconds, meaning that any message should still be relevant after the time taken for repackaging, for any realistic use of the system. 
 
-Figures \ref{fig:construct_lookup} and \ref{fig:repack_message} both use a schema constraint which matches the type of the smallest schema.
+Both Figure \ref{fig:construct_lookup} and Figure \ref{fig:repack_message} use a schema constraint which matches the type of the smallest schema, to ensure that a match is made in every case. 
 
 \section{Android Port}
 

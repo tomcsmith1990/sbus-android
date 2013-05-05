@@ -26,10 +26,10 @@ lookup(4,4) = mean(dlmread(strcat(file, '-GiantConsumer-GiantSensor.txt'), delim
 colormap(winter(ceil(max(max(lookup)))));
 image(lookup);
 c = colorbar;
-ylabel(c, 'Time (\mus)');
-title('Time taken to construct a lookup table for various producer and consumer sizes');
-ylabel('Consumer');
-xlabel('Producer');
+ylabel(c, 'Time (\mus)', 'FontSize', 12);
+title('Time taken to construct a lookup table for various producer and consumer sizes', 'FontSize', 12);
+ylabel('Consumer', 'FontSize', 12);
+xlabel('Producer', 'FontSize', 12);
 
 sizes = ['Tiny ' ; 'Small' ; 'Big  ' ; 'Giant'];
 set(gca, 'XTickLabel', sizes);
@@ -38,6 +38,6 @@ set(gca, 'YTick', [1 2 3 4]);
 set(gca, 'XTick', [1 2 3 4]);
 
 [x,y] = meshgrid(1:4, 1:4);
-text(x(:),y(:),num2str(lookup(:), '%.2f'), 'HorizontalAlignment', 'center');
+text(x(:),y(:),num2str(lookup(:), '%.2f'), 'HorizontalAlignment', 'center', 'FontSize', 12);
 
 print -depsc 'construct_lookup.eps'
