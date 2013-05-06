@@ -18,7 +18,7 @@
 % Flexibile Data Streams in Mobile Environments
 % Automatic Data Stream Configuration in Mobile Environments
 
-\newcommand{\wordcount}{10897}
+\newcommand{\wordcount}{10895}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -48,7 +48,7 @@
 \addtolength{\oddsidemargin}{6mm}       % adjust margins
 \addtolength{\evensidemargin}{-8mm}
 
-\renewcommand{\baselinestretch}{1.1}    % adjust line spacing to make
+\renewcommand{\baselinestretch}{1.2}    % adjust line spacing to make
                                         % more readable
 
 \begin{document}
@@ -188,7 +188,7 @@ Local peers are more related to applications' environments.
 Furthermore, applications need not predefine a list of peers to use.
 
 % context
-Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{muhl2006distributed}. 
+Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[p11]{muhl2006distributed}. 
 Mobile devices constantly operate in different contexts, which dictate how the devices can interact with the environment. 
 Upon a change in context, an application may move out of scope of a given peer, or the data it is providing may no longer be relevant. 
 In this situation, the application must find an alternative peer which can provide similar data, or which provides data which is more relevant to the new context. 
@@ -230,7 +230,7 @@ Adaptation to different data formats masks heterogeneity in the data \cite{saha2
 These factors are important because uniformity and compatibility in every environment cannot be assumed, and therefore must be considered by any system which aims to be in line with the goals of the pervasive computing vision \cite{weiser1991computer}.
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
-M\"{u}hl represents changes in context using events, where each context change causes an event to be raised \cite[page 11]{muhl2006distributed}.
+M\"{u}hl represents changes in context using events, where each context change causes an event to be raised \cite[p11]{muhl2006distributed}.
 Three kinds of events are defined: physical events, timer events, and a state change in the system, all of which may warrant some kind of reconfiguration. 
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (a fall), in which case the application may need to send data to an emergency response team.
 A timer event indicates the progression of real time, which advertisers could use to connect to advertisements for nearby restaurants at lunch time. 
@@ -363,9 +363,9 @@ Furthermore, these environments are not all controlled by a single company and t
 
 % How applications will cope with unexpected data format - must be done at system level
 SBUS endpoints can currently only communicate if they share a common schema. 
-This ensures that endpoints only ever receive messages matching that schema, from which values can be easily extracted since the structure of the message is known. 
+This ensures that endpoints only ever receive messages matching their own schema, from which values can be easily extracted since the structure of the message is known. 
 Different components in different environments may offer similar data, but they may have schema differences, perhaps due to the company providing the component, or the country which the component is located in. 
-When searching for components by data, an application may discover some component which provides the required data, but nested somewhere within a schema larger than its own. 
+When searching for components by data, an application may discover some component which provides the required data, but nested within a larger schema, or using different field names. 
 In the current SBUS implementation, the application would not be able to communicate with this component. 
 % TODO: example
 Even if it were able to, the application will not know the structure of the message, so cannot locate a particular value within it without performing some complex parsing. 
@@ -426,7 +426,7 @@ If this item is a single field, it refers only to that field, whereas if it is a
 Any item which does not exist in the schema is ignored. 
 Table \ref{tab:example_schema_syntax} demonstrates some possible queries based on the schema in Figure \ref{fig:locationschema}.
 
-\begin{figure}[tbh]
+\begin{figure}
 \begin{lstlisting}
 @location
 {
@@ -443,7 +443,7 @@ Table \ref{tab:example_schema_syntax} demonstrates some possible queries based o
 \label{fig:locationschema}
 \end{figure}
 
-\begin{table}[tbh]
+\begin{table}
 \centering
 
 \begin{tabular}{l l}
@@ -482,7 +482,7 @@ Table \ref{tab:nested_schema_syntax} demonstrates some possible nested queries b
 Clearly in the last two cases, the nested constraint is irrelevant, because they offer no stronger match criteria than their parent. 
 In this situation, the nested constraint is simply ignored.
 
-\begin{table}[tbh]
+\begin{table}
 \centering
 
 \begin{tabular}{l p{8cm}}
@@ -508,17 +508,6 @@ Query & Match \\
 \label{tab:nested_schema_syntax}
 \end{table}
 
-% how the parser build up the nested structure of constraints to match
-The existing parser for RDC queries was extended to allow these new constraint types. 
-Upon encountering a {\sl has} or {\sl similar} constraint, the field name, type of match and pointer to a list of children are added to a list. 
-Algorithm \ref{alg:parse_nested} shows how a stack is used to handle nested constraints. 
-An opening bracket causes the list of constraints to be pushed to the stack.
-Subsquent constraints are then added to the child constraints of the last item in that list. 
-A closing bracket pops the list off the stack, and constraints are appended to this list again. 
-Some error checks also exist to ensure that additional opening brackets are ignored if the list is empty, since they have no meaning, and that closing brackets are ignored if there are too many, since there may not be a list on the stack. 
-The checks would reduce {\tt [+Sgps[[+Hlongitude]]]]} to {\tt +Sgps[+Hlongitude]}.
-Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would be represented. 
-
 \begin{algorithm}
 \begin{algorithmic}[1]
 \While{$token \neq null$}
@@ -539,8 +528,19 @@ Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would
 \label{alg:parse_nested}
 \end{algorithm} 
 
+% how the parser build up the nested structure of constraints to match
+The existing parser for RDC queries was extended to allow these new constraint types. 
+Upon encountering a {\sl has} or {\sl similar} constraint, the field name, type of match and pointer to a list of children are added to a list. 
+Algorithm \ref{alg:parse_nested} shows how a stack is used to handle nested constraints. 
+An opening bracket causes the list of constraints to be pushed to the stack.
+Subsquent constraints are then added to the child constraints of the last item in that list. 
+A closing bracket pops the list off the stack, and constraints are appended to this list again. 
+Some error checks also exist to ensure that additional opening brackets are ignored if the list is empty, since they have no meaning, and that closing brackets are ignored if there are too many, since there may not be a list on the stack. 
+The checks would reduce {\tt [+Sgps[[+Hlongitude]]]]} to {\tt +Sgps[+Hlongitude]}.
+Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would be represented.
+
 % nested query representation
-\begin{figure}[tbh]
+\begin{figure}
 \begin{lstlisting}
 <constraint>
 	<name>"gps"</name>
@@ -556,7 +556,7 @@ Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would
 \end{lstlisting}
 \caption{Nested Query Representation}
 \label{fig:nested_query}
-\end{figure}
+\end{figure} 
 
 % hashes - overview
 Each SBUS endpoint currently has an associated {\sl message hash} of the canonical representation of its schema. 
@@ -576,11 +576,7 @@ This is acheived by using two buffers, with no names being appended to one of th
 These hashes can then be added to the collection, and the contents of the buffers appended to the parent buffers. 
 Using this method, a collection of hashes is built containing the hash of each item within the overall schema. 
 
-This collection is in fact built using lists, where each composite item contains both its hashes and a pointer to a list of its childrens' hashes.
-This representation retains the overall structure of the schema, which will be used for nested searches. 
-Figure \ref{fig:locationhashes} shows an XML representation of the hash collection which is generated for the schema in Figure \ref{fig:locationschema}.
-
-\begin{figure}[tbh]
+\begin{figure}
 \begin{lstlisting}
 <location has="9791265A42AB" similar="882A3A2DA208">
 	<gps has="55E21713DEAA" similar="931DEF188280">
@@ -603,13 +599,19 @@ Figure \ref{fig:locationhashes} shows an XML representation of the hash collecti
 \label{fig:locationhashes}
 \end{figure}
 
+
+This collection is in fact built using lists, where each composite item contains both its hashes and a pointer to a list of its childrens' hashes.
+This representation retains the overall structure of the schema, which will be used for nested searches. 
+Figure \ref{fig:locationhashes} shows an XML representation of the hash collection which is generated for the schema in Figure \ref{fig:locationschema}.
+
+
 % how to query RDC.
 To construct a schema query for the RDC, each item in the constraint list is looked up in the hash collection and the appropriate hash is added to the item, depending on whether the item states an exact or type match. 
 Figure \ref{fig:nested_query_hash} shows the query in Figure \ref{fig:nested_query} with these hashes. 
 This list can then be sent to the RDC, which uses it to search for matching components. 
 
 % nested query hashes representation
-\begin{figure}[tbh]
+\begin{figure}
 \begin{lstlisting}
 <constraint>
 	<name>"gps"</name>
@@ -711,7 +713,7 @@ The component first requests the target's schema.
 Upon receiving this schema, the component checks it against the original query, building a lookup table, while also ensuring that it does in fact match, and the RDC has not been replaced by some malicious process. 
 This lookup table consists of a section containing names from the target schema, indexed by names from this schema, and a section containing names from this schema indexed by the target schema, and is used to repackage messages according to this component's schema. 
 
-\begin{figure}[tbh]
+\begin{figure}
 \begin{lstlisting}
 @place
 {
@@ -730,12 +732,8 @@ This lookup table consists of a section containing names from the target schema,
 \caption{Complex Location Schema}
 \label{fig:complexlocationschema}
 \end{figure}
- 
-These entries are added every time a successful match occurs in Algorithm \ref{alg:compare_schema}. 
-Additionally, entries can be inserted for all descendants of a successful match, since the structure of the schemas must be the same. 
-An endpoint using the schema in Figure \ref{fig:locationschema} would create the lookup table in Table \ref{tab:lookup_table} for the schema in Figure \ref{fig:complexlocationschema} based on the query {\tt +Sgps[+Hlongitude]}.
 
-\begin{table}[tbh]
+\begin{table}[b]
 \centering
 
 \begin{tabular}{c c}
@@ -753,6 +751,10 @@ Current & Target \\
 \caption{Lookup Table}
 \label{tab:lookup_table}
 \end{table}
+ 
+These entries are added every time a successful match occurs in Algorithm \ref{alg:compare_schema}. 
+Additionally, entries can be inserted for all descendants of a successful match, since the structure of the schemas must be the same. 
+An endpoint using the schema in Figure \ref{fig:locationschema} would create the lookup table in Table \ref{tab:lookup_table} for the schema in Figure \ref{fig:complexlocationschema} based on the query {\tt +Sgps[+Hlongitude]}.
 
 Once this basic lookup table has been created, corresponding fields within the two schemas can be located, which allows a correspondence between outer structures to be inferred, as shown in Algorithm \ref{alg:construct_lookup_outer}. 
 The first loop works upwards from a corresponding field in the schema and target schema. 
@@ -795,39 +797,6 @@ Other field names are then replaced with their corresponding entry in the lookup
 Any filters on fields which do not exist in the target schema are applied as specified, so developers must ensure that fields which they intend to filter on are included within their schema query. 
 This converted filter will be applied in the final stage of the connection setup, and of course can be updated at any later time. 
 
-% repackage messages
-
-\begin{figure}[tbh]
-\begin{lstlisting}
-<place>
-	<coordinates>
-		<position>
-			<longitude>0.091732</longitude>
-			<latitude>52.210891</latitude>
-			<height>19</height>
-		</position>
-	</coordinates>
-	<country>"UK"</country>
-</place>
-\end{lstlisting}
-\caption{Example Location Message}
-\label{fig:locationmessage}
-\end{figure}
-
-Finally, this lookup table will be used to repackage each message. 
-Algorithm \ref{alg:repack_message_overall} shows how each message is repackaged. 
-Suppose the component receives the message in Figure \ref{fig:locationmessage}. 
-The first stage is to extract the desired message from any additional layers, in this case {\tt place/coordinates}. 
-This message is then repackaged under the names defined by this component's schema using Algorithm \ref{alg:repack_message}.
-Lines \ref{alg:line:lookup_name_start}--\ref{alg:line:lookup_name_end} find the correct name from the lookup table, returning {\tt null} if it does not exist in the table. 
-Lines \ref{alg:line:check_children_start}--\ref{alg:line:check_children_end} then either pack the message content under the new name, if it is a single field, or start a composite item otherwise. 
-The loop spanning lines \ref{alg:line:repack_children_start}--\ref{alg:line:repack_children_end} then iterates over each item in the message. 
-The name of each item can be used to check if any items are missing from the message, and add them between their siblings. 
-The message is otherwise repackaged in the same way, and added to the composite item if it should appear. 
-Any other siblings missing from the message can be added at the end. 
-Finally, if the component schema had additional layers rather than the peer schema, the message would be wrapped in these missing layers. 
-This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{fig:locationmessagerepack}, which can then be used by the component.  
-
 \begin{algorithm}
 \begin{algorithmic}[1]
 \Function{Repack}{$message$}
@@ -846,6 +815,11 @@ This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{f
 \label{alg:repack_message_overall}
 \end{algorithm}
 
+Finally, this lookup table will be used to repackage each message. 
+Algorithm \ref{alg:repack_message_overall} shows how each message is repackaged. 
+Suppose the component receives the message in Figure \ref{fig:locationmessage}. 
+The first stage is to extract the desired message from any additional layers, in this case {\tt place/coordinates}. 
+This message is then repackaged under the names defined by this component's schema using Algorithm \ref{alg:repack_message}. 
 \begin{algorithm}
 \algnotext{EndIf}
 \begin{algorithmic}[1]
@@ -880,8 +854,34 @@ This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{f
 \caption{Pseudocode to Repackage Message}
 \label{alg:repack_message}
 \end{algorithm}
+Lines \ref{alg:line:lookup_name_start}--\ref{alg:line:lookup_name_end} find the correct name from the lookup table, returning {\tt null} if it does not exist in the table. 
+Lines \ref{alg:line:check_children_start}--\ref{alg:line:check_children_end} then either pack the message content under the new name, if it is a single field, or start a composite item otherwise. 
+The loop spanning lines \ref{alg:line:repack_children_start}--\ref{alg:line:repack_children_end} then iterates over each item in the message. 
+The name of each item can be used to check if any items are missing from the message, and add them between their siblings. 
+The message is otherwise repackaged in the same way, and added to the composite item if it should appear. 
+Any other siblings missing from the message can be added at the end. 
+Finally, if the component schema had additional layers rather than the peer schema, the message would be wrapped in these missing layers. 
+This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{fig:locationmessagerepack}, which can then be used by the component.  
 
-\begin{figure}[tbh]
+% repackage messages
+\begin{figure}
+\begin{lstlisting}
+<place>
+	<coordinates>
+		<position>
+			<longitude>0.091732</longitude>
+			<latitude>52.210891</latitude>
+			<height>19</height>
+		</position>
+	</coordinates>
+	<country>"UK"</country>
+</place>
+\end{lstlisting}
+\caption{Example Location Message}
+\label{fig:locationmessage}
+\end{figure}
+
+\begin{figure}
 \begin{lstlisting}
 <location>
 	<gps>
@@ -955,21 +955,21 @@ This involved writing Java classes for components, endpoints and messages, as we
 The SBUS library is linked via an {\tt Android.mk} file, which {\tt ndk-build} then uses to copy the shared library into the application's root project directory. 
 The application can then be built to generate a package file including SBUS which can run on an Android device. 
  
-% how Android works
-Figure \ref{fig:android_stack} gives an overview of how an application works. 
-Applications are built using the Application Framework. 
-Every Android application runs in its own process, with its own instance of the Dalvik virtual machine\footnote{\url{http://developer.android.com/about/versions/index.html\#os_architecture}}, which executes Java bytecode. 
-When an SBUS call is made, Dalvik invokes a call to the native JNI code, passing in a {\tt JNIEnv} pointer containing an interface to the Dalvik VM, as well as any other parameters. 
-The JNI methods can then invoke their respective SBUS methods. 
-
-% overview of Android architecture
-\begin{figure}[tbh]
+ % overview of Android architecture
+\begin{figure}[h]
 %set the image x size to the width of the page
 \epsfxsize=8cm
 \centerline{\epsfbox{figs/android_stack.eps}}
 \caption[Android System Architecture]{A brief overview of the Android system architecture, based on the image at \url{http://developer.android.com/images/system-architecture.jpg}}
 \label{fig:android_stack}
 \end{figure}
+
+% how Android works
+Figure \ref{fig:android_stack} gives an overview of how an application works. 
+Applications are built using the Application Framework. 
+Every Android application runs in its own process, with its own instance of the Dalvik virtual machine\footnote{\url{http://developer.android.com/about/versions/index.html\#os_architecture}}, which executes Java bytecode. 
+When an SBUS call is made, Dalvik invokes a call to the native JNI code, passing in a {\tt JNIEnv} pointer containing an interface to the Dalvik VM, as well as any other parameters. 
+The JNI methods can then invoke their respective SBUS methods. 
 
 Each Java object has a one-to-one correspondence with a native object. 
 Native methods which create an object return a pointer to that object, cast as an integer. 
@@ -1063,7 +1063,7 @@ While this is sufficient if there are no repeated fields names within the schema
 A solution to this would be to force field names to be fully qualified in a query. 
 A query using {\tt sensor} would refer to the entire structure, while {\tt sensor/sensor} would refer to the text field.
 
-\begin{figure}[tbh]
+\begin{figure}[h]
 \begin{lstlisting}
 @sensor
 {
@@ -1071,7 +1071,7 @@ A query using {\tt sensor} would refer to the entire structure, while {\tt senso
 	int value
 }
 \end{lstlisting}
-\caption[Schema with repeated name]{A schema with a structure named {\tt sensor} and a text field also named {\tt sensor}. A constraint specified on {\tt sensor} would be ambiguous without fully qualified names}
+\caption[Ambiguously Named Schema]{A schema with a structure named {\tt sensor} and a text field also named {\tt sensor}. A constraint specified on {\tt sensor} would be ambiguous without fully qualified names}
 \label{fig:repeatednameschema}
 \end{figure}
 
@@ -1091,7 +1091,7 @@ This chapter examines the performance of the system.
 \section{System Overview}
 
 % overview of system image
-\begin{figure}[tbh]
+\begin{figure}[t]
 %set the image x size to the width of the page
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/overview.eps}}
@@ -1137,7 +1137,7 @@ Some applications might choose to implement broadcast receivers themselves, in o
 However, the Phone Manager would still be useful because it would provide this service for any application to use, mapping them as per their policies and reducing complexity in the applications themselves.
 
 % table of example policies
-\begin{table}[tbh]
+\begin{table}
 \centering
 
 \begin{tabular}{c c c c}
@@ -1166,8 +1166,11 @@ However the real flexibility of the system lies in the queries.
 These will be resolved by some RDC, ensuring components are mapped only to other components satisfying their queries. 
 In the second row, the transport application sets a policy for any component named ``Stagecoach'' which has an endpoint named ``Coach'', while in the third row it sets a policy for any endpoint which has a structure matching the type of {\tt coach}. 
 
+% event-condition-action through specifying AIRS sensor + condition
+The system is in line with an event-condition-action model, where events are the sensor readings and actions are mapping applications according to their policies. 
+The system could easily be extended to allow applications to specify which sensors to use as events, and conditions those events should fulfill for the Phone Manager to apply a mapping policy. 
 % table of example policies with events and conditions
-\begin{table}[tbh]
+\begin{table}
 \centering
 
 \begin{tabular}{c c c c}
@@ -1186,10 +1189,7 @@ GPS & \begin{math} location(val) = France \end{math} & Transport & +Scoach \\
 \caption{Phone Manager Example Policies using Event-Condition-Action Model}
 \label{tab:event_condition_action}
 \end{table}
-
-% event-condition-action through specifying AIRS sensor + condition
-The system is in line with an event-condition-action model, where events are the sensor readings and actions are mapping applications according to their policies. 
-The system could easily be extended to allow applications to specify which sensors to use as events, and conditions those events should fulfill for the Phone Manager to apply a mapping policy. 
+% end table
 As shown in Table \ref{tab:event_condition_action}, applications would not only specify the action they wish to take through their map constraints, but also the events and conditions in which they wish to take that action.
 The healthcare system could specify that it only wishes for heart rate data to be connected to the IP address if a high accelerometer value was measured, because the reading may indicate that a fall has occurred. 
 The transport application can set different policies for different events. If a Wi-Fi connection is established, the application wants to connect specifically to Stagecoach components, however if a GPS event indicates that the user were in France, the application is more lenient and willing to accept any component offering a structure matching the type of {\tt coach}. 
@@ -1218,7 +1218,7 @@ This schema conversion can only be useful if it can be done in a reasonable time
 These tests show the kind of performance which can be expected from the system. 
 
 % rdc search optimisation
-\begin{figure}[tbh]
+\begin{figure}[t]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/rdc_search_optimisations.eps}}
 \caption{RDC Search Optimisations}
@@ -1233,7 +1233,7 @@ These optimisations play a greater role as the number of components increases, b
 However, even in the worst case the RDC can perform the search with 100 other components registered in just over 40 milliseconds, so should not pose a problem given expected usage.
 
 % construct lookup
-\begin{figure}[tbh]
+\begin{figure}[t]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/construct_lookup.eps}}
 \caption[Construct Lookup Times]{Time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers}
@@ -1249,7 +1249,7 @@ This shows that the time taken to construct a lookup table is greater when the p
 In either case, the lookup table is constructed once per connection taking only microseconds, so is not a significant overhead. 
 
 % repack message
-\begin{figure}[tbh]
+\begin{figure}[t]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/repack_message.eps}}
 \caption[Repackage Message]{Time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers}
@@ -1270,7 +1270,7 @@ Both Figure \ref{fig:construct_lookup} and Figure \ref{fig:repack_message} use a
 This section evaluates the performance of using SBUS on a phone in comparison to using SBUS on a laptop, investigating whether any significant gains or losses occur as a result of the port.
 
 % table showing map times
-\begin{table}[tbh]
+\begin{table}[h]
 \centering
 
 \begin{tabular}{c c c c}
@@ -1291,7 +1291,7 @@ Phone	& 	Phone	& 10.933	& 2.810 \\
 \end{table}
 
 % figure showing map times
-\begin{figure}[tbh]
+\begin{figure}[t]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/map.eps}}
 \caption{Connection Times Between Components on Different Devices}
@@ -1308,7 +1308,7 @@ The mean time taken is slightly greater when both the producer and consumer are 
 Overall, an application written in Java running a phone would see very similar network delays to that of a program written in C++ running on any other machine.
 
 % figure showing jni times
-\begin{figure}[tbh]
+\begin{figure}[t]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/jni.eps}}
 \caption{Function Call via JNI Timing Breakdown}
