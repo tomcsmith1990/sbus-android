@@ -18,7 +18,7 @@
 % Flexibile Data Streams in Mobile Environments
 % Automatic Data Stream Configuration in Mobile Environments
 
-\newcommand{\wordcount}{10700}
+\newcommand{\wordcount}{10771}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -502,14 +502,34 @@ Query & Match \\
 
 % how the parser build up the nested structure of constraints to match
 The existing parser for RDC queries was extended to allow these new constraint types. 
-Upon encountering a {\sl has} or {\sl similar} constraint, the field name, type of match and pointer to another list are added to a schema constraint list. 
-A stack is used to handle nested constraints. 
-If the schema constraint list is not empty, then an opening bracket causes it to be pushed to the stack, otherwise the bracket is ignored. 
-Subsequent constraints are then added to the list pointed to by the last item in the list at the top of the stack, so that each constraint holds a list of constraints nested within it. 
-A closing bracket pops the list off the top of the stack, which new constraints are then added to. 
-Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would be represented.  
+Upon encountering a {\sl has} or {\sl similar} constraint, the field name, type of match and pointer to a list of children are added to a list. 
+Algorithm \ref{alg:parse_nested} shows how a stack is used to handle nested constraints. 
+An opening bracket causes the list of constraints to be pushed to the stack.
+Subsquent constraints are then added to the child constraints of the last item in that list. 
+A closing bracket pops the list off the stack, and constraints are appended to this list again. 
+Some error checks also exist to ensure that additional opening brackets are ignored if the list is empty, since they have no meaning, and that closing brackets are ignored if there are too many, since there may not be a list on the stack. 
+The checks would reduce {\tt [+Sgps[[+Hlongitude]]]]} to {\tt +Sgps[+Hlongitude]}.
+Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would be represented. 
 
-%TODO: psuedocode or diagram?
+\begin{algorithm}
+\begin{algorithmic}[1]
+\While{$token \neq null$}
+	\If{token is a constraint}
+		\State $\Call{list.add}{constraint}$
+		\State $list.last \gets constraint$
+	\Else
+		\If{token is open bracket}
+			\State $\Call{stack.push}{list}$
+			\State $list \gets list.last.children$
+		\ElsIf{token is close bracket}
+			\State $list \gets \Call{stack.pop}$
+		\EndIf
+	\EndIf
+\EndWhile
+\end{algorithmic}
+\caption{Parse Nested Constraints Using a Stack}
+\label{alg:parse_nested}
+\end{algorithm} 
 
 % nested query representation
 \begin{figure}[tbh]
@@ -914,6 +934,8 @@ This is enforced by assigning each application a unique user ID, and setting the
 Since {\tt sbuswrapper} is approximately \SI{1}{MB}, compared to approximately \SI{30}{MB} available internal memory on the device, it was infeasible to include a copy with every application. 
 Therefore, one copy was included with the Phone Manager, which then modified the permissions to make {\tt sbuswrapper} world executable, so that every application could use this instance. 
 An additional directory was created and made world writable, where SBUS can write log files for all applications. 
+If memory was not an issue on the device, each application could store its own copy of {\tt sbuswrapper} in its filespace, and log to its own filespace. 
+The path to this filespace can be obtained using an Android library call, which could be used as a parameter to a JNI method to set the location of {\tt sbuswrapper}, avoiding hardcoding any paths. 
 
 Although the device could have been rooted, allowing a much cleaner solution of storing {\tt sbuswrapper} at {\tt /system/bin/sbuswrapper}, it would have devalued the project, because it would only then work on rooted devices.
 
@@ -1320,7 +1342,7 @@ When reconfiguring a connection, the system translates these filters to match th
 
 \section{Changes}
 %TODO: what I'd have done differently
-{\sl I think this section might be more obvious after writing in the Preparation chapter about how the project was planned. }
+{\sl Is this needed? Not really got any changes. }
 
 
 \section{Future Work}
