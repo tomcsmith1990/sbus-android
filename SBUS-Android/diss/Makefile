@@ -8,6 +8,7 @@ DISS = diss.tex refs.bib propbody.tex
 FIGURES = android_stack overview
 
 "":
+	make figures
 	make diss.pdf
 	make clean
 	
