@@ -11,6 +11,14 @@
 \usepackage{algpseudocode}
 
 \newcommand{\disstitle}{Automatic Configuration in Mobile Environments}
+% POTENTIAL TITLES:
+% Automatic Configuration in Mobile Environments
+% Automatic Communication Configuration in Mobile Environments
+% Data Stream Connection and Message Negotiation
+% Flexibile Data Streams in Mobile Environments
+% Automatic Data Stream Configuration in Mobile Environments
+
+\newcommand{\wordcount}{10700}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -85,7 +93,7 @@ Name:               & \bf Thomas Smith	\\
 College:            & \bf Sidney Sussex College	\\
 Project Title:      & \bf \disstitle	\\
 Examination:        & \bf Computer Science Tripos Part II, 2013 	\\
-Word Count:         & \bf 10690\footnotemark[1] \\
+Word Count:         & \bf\wordcount\footnotemark[1] \\
 Project Originator: & Dr Jatinder Singh		\\
 Supervisor:         & Dr Jatinder Singh		\\ 
 \end{tabular}
@@ -157,15 +165,14 @@ I give permission for my dissertation to be made available in the archive area o
 While many applications exist for mobile devices, few applications themselves are truly mobile. 
 The user may happen to be mobile, however applications do not adapt to different environments. 
 Applications may typically use data from predetermined central servers, failing to exploit local data which may be available in the environment. 
-This project addresses the issues faced in creating applications which can change to suit different environments. 
-The project demonstrates how applications can perceive an environmental change, how they can find relevant, local data, and how they can achieve some flexibility in the data which they use. 
+This project addresses the issues faced in creating applications which can change to suit different environments, demonstrating how applications can perceive an environmental change, how they can find relevant, local data, and how they can achieve some flexibility in the data which they use. 
 This allows applications to be more adaptable to their environment, and therefore offer a more relevant experience to the user. 
 
 \section{Problem}
 % what's the problem
 
 % describe current approach
-Current applications tend to be inflexible in where the data they use comes from, often selecting from some hardcoded list of IP addresses, regardless of the environment. 
+Current applications tend to be inflexible in where the data they use comes from, often selecting from some hardcoded list of IP addresses regardless of the environment. 
 While some localisation might be achieved by including parameters during connection, such as sending GPS co-ordinates, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
 The format of the data which is being exchanged has also been fixed, restricting applications even further.
 
@@ -177,21 +184,21 @@ Given an application which requires the current temperature, a global server may
 Yet if the application were being used indoors, a value from a local temperature sensor might not only suffice, but be more appropriate. 
 Perhaps this could be achieved otherwise, if the server had known about the temperature sensor, however why should the application need to connect to a global server in order to use local data? Perhaps there isn't even an Internet connection available. 
 Furthermore, given that the user is mobile, the server would need to know about {\sl every} temperature sensor {\sl everywhere}. 
-Local peers allow applications to use a dynamic set of peers which are more related to their environment. 
+Local peers are more related to applications' environments. 
 Furthermore, applications need not predefine a list of peers to use.
 
 % context
 Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[page 11]{muhl2006distributed}. 
 Mobile devices constantly operate in different contexts, which dictate how the devices can interact with the environment. 
 Upon a change in context, an application may move out of scope of a given peer, or the data it is providing may no longer be relevant. 
-In this situation, the application must find an alternative peer which can provide similar data, or one which provides data which is more relevant to the new context. 
+In this situation, the application must find an alternative peer which can provide similar data, or which provides data which is more relevant to the new context. 
 
 Once this alternate peer has been located, the application must still determine whether it provides useful data. 
 Some data may be fundamental to the operation of the application, while other parts may be desired, but not crucial.  
 Even once the data is deemed useful, the application may still face the difficulty of data being presented in an unexpected format, simply because of the geographical scale and market which the application might be used in. 
-Different manufacturers might present data in slightly different formats, or different countries may present data using their own language. 
-These factors mean that when comparing similar pieces of data, some may be missing fields, some may contain additional fields, or fields may use different names. 
-An application may also wish to specify a subscription filter about the messages it should receive, yet without knowledge of the data format, it cannot specify filters on different fields.
+Different manufacturers might present data in slightly different formats, or data may be presented in different languages in different countries. 
+These factors mean that when comparing similar pieces of data, there may be missing fields, there may be additional fields, or fields may use different names. 
+An application may also wish to specify a subscription filter about the data it should receive, yet without knowledge of the data format, it cannot specify filters on different fields.
 
 % example
 For example, a transport application may face differences in the data format for coaches (Figure \ref{fig:coach-schema}) and for trains (Figure \ref{fig:train-schema}). 
@@ -201,7 +208,7 @@ Alternatively, the application might be used abroad, for example in a French coa
 An application developer may be able to account for some of these differences, though given the sheer volume of potential peers, the developer cannot hope to account for every possibility, meaning that the application cannot be truly adaptable. 
 Even if the developer could cover every existing peer, these peers are liable to change over time. 
 New peers may become available and old peers may become unavailable, or peers might change how they present their data. 
-A developer simply cannot cover every current and future possibility, meaning an application cannot truly adapt to any environment. 
+A developer simply cannot cover every current and future possibility, meaning an application cannot truly adapt to {\sl any} environment. 
 However, by specifying how an application should react to changes in context, the application becomes decoupled from the environment, making it more robust to changes in the environment. 
 
 
@@ -219,7 +226,7 @@ Contextual resource discovery discovers potential peers available within the cur
 % pervasive computing
 Use of local peers ensures that the approach is scalable. 
 Connections are created on an ad-hoc basis, based entirely upon which peers are available within the environment at that time. 
-Adaptation to different data formats masks heterogeneity in the data \cite{saha2003pervasive} from users, and indeed the application developers. 
+Adaptation to different data formats masks heterogeneity in the data \cite{saha2003pervasive} from users, and indeed from the application developers. 
 These factors are important because uniformity and compatibility in every environment cannot be assumed, and therefore must be considered by any system which aims to be in line with the goals of the pervasive computing vision \cite{weiser1991computer}.
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
@@ -240,9 +247,9 @@ Alternatively, applications may opt to be notified of a change in context, rathe
 
 % repackaging
 Depending on its policy, an application may be connected to a peer which provides data in a format which differs from its own.
-This can be handled by modifying the data representation to match the expected format. 
+This can be handled by reformatting the data to match the expected format. 
 Any extraneous fields are removed, any absent fields are filled with ``empty'' values, and the policy is used to infer relationships between fields with different names. 
-This modified data can then be passed to the application, allowing the application to continue as if the data received has conformed to its own format. 
+This reformatted data can then be passed to the application, allowing the application to continue as if the data received has conformed to its own data format. 
 % subscription
 Additionally, any subscription filter which an application has placed on data, in terms of its own format, are converted to match the peer's data format, so that the application can be connected with a working subscription in place. 
 
@@ -258,19 +265,17 @@ Applications control how they interact with an environment through policies, whi
  
 \chapter{Preparation}
 
-This chapter first outlines the requirements of the system, going on to summarise related work which the project will build upon, namely the SBUS middleware \cite{ingram2009reconfigurable}, and finally describing how the system will be implemented to meet these requirements.
+This chapter first outlines the requirements of a context-aware system, going on to summarise related work which the project will build upon, namely the SBUS middleware \cite{ingram2009reconfigurable}, and finally describing how such a system will be implemented to meet these requirements.
 
 %TODO: Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
 
 \section{Requirements Analysis}
 
-The following use cases outline the functional requirements of the system, describing how the system will operate in different circumstances.
+The following use cases outline the functional requirements of the system, describing how the system should operate in different circumstances.
 
 % use cases - functional requirements
 John uses a National Heritage application which can provide information about exhibits in a museum, or nearby landmarks in a city. 
 While in a museum, John's phone is connected to the Wi-Fi network, and the application receives data from a source on the network, which provides a guided tour of the museum. 
-When leaving the museum, John's phone disconnects from the Wi-Fi network. 
-The system detects this, and connects the application to a global source via 3G, which uses his GPS co-ordinates to provide the application with information about nearby landmarks.
 
 \begin{itemize}
 
@@ -282,7 +287,7 @@ The system detects this, and connects the application to a global source via 3G,
 
 \item Upon leaving the museum, his phone disconnects from the Wi-Fi network.
 
-\item The system detects that John has left, so connects the application to a global source, which then sends information about nearby landmarks so that John can decide where to go next.
+\item The system detects that John has left, so connects the application to a global source via 3G, which uses his GPS co-ordinates to provide the application with information about nearby landmarks, so that John can decide where to go next. 
 
 \end{enumerate}
 
@@ -290,9 +295,9 @@ The system detects this, and connects the application to a global source via 3G,
 
 \begin{enumerate}
 
-\item John chooses to visit a nearby art gallery, and upon entering the gallery, John connects his phone to the Wi-Fi network.
+\item John chooses to visit a nearby art gallery, and upon entering the gallery connects his phone to the Wi-Fi network.
 
-\item The system has detected this change, and searches for a source providing ``museum data''.
+\item The system detects this change, and searches for a source providing ``museum data''.
 
 \item Once the system finds a source, it connects the application to it, allowing John to use the application for a guided tour of the art gallery. 
 
@@ -331,7 +336,7 @@ These connections and subscriptions are dynamically reconfigurable and may be mo
 A component may issue a message to some other component, instructing it to map or unmap its endpoints, or to update its subscription filters.
 
 Resource discovery components (RDCs) are components which act as a name service. 
-An environment may contain several RDCs, or no RDCs, though typically only one exists in each environment.
+An environment may contain several RDCs, or no RDCs, though typically one RDC exists in each environment.
 Components may query an RDC for other components within the environment, using parameters including component name, connected peers, or public key. 
 The RDC will return IP addresses of matching components, allowing the component to establish a direct connection to a match.
 
@@ -394,14 +399,13 @@ A secure version of SBUS which uses OpenSSL to encrypt communications between co
 % ~ 4000 words
 \chapter{Implementation}
 
-The implementation consists of three main parts. 
 This chapter first shows how applications can find peers which offer the data they require, and how they can communicate with these peers despite differences in schemas. 
 It goes on to explain how the SBUS library was ported to Android, and how it can be used by application developers, before bringing everything together with the Phone Manager, which is responsible for detecting changes in context and reconfiguring applications' connections upon a change.
-Finally, this chapter explains some remaining issues in the system, which have not been resolved due to time constraints. 
+Finally, this chapter examines some remaining issues in the system and potential solutions, which have not been implemented due to time constraints. 
 
 \section{Flexible Schema Matching}
 
-Flexible schema matching refers to components finding peers based on aspects of their schema, specifically whether or not their schema contains certain fields, and how components can communicate with these peers if their schemas are not identical. 
+Flexible schema matching refers to components matching peers based on aspects of their schema, specifically whether or not their schema contains certain fields, and how components can communicate with these peers if their schemas are not identical. 
 
 % syntax
 The most natural way for a component to query an RDC with data constraints seemed to be to extend the current query mechanism. 
@@ -460,7 +464,7 @@ Query & Match \\
 % nested syntax
 The final entry in Table \ref{tab:example_schema_syntax}, {\tt +Sgps+Hlongitude} bears an interesting case. 
 This currently specifies that a schema must contain an item matching the type of {\tt gps} and must also contain the field {\tt longitude} {\sl anywhere} in the schema. 
-An alternative use might be considered where the user wishes to specify that the schema must contain a item matching the type of {\tt gps}, and must also contain the field {\tt longitude} {\sl within that structure}. 
+An alternative use might be considered where the user wishes to specify that the schema must contain a item matching the type of {\tt gps}, and must also contain the field {\tt longitude} {\sl within that item}. 
 This would allow a query to be specified that would match a item which renames {\tt altitude} as {\tt height}, but not one which renames {\tt longitude} as {\tt long}. 
 The latter could still be matched in the current case, if the {\tt longitude} field existed elsewhere in that schema. 
 
@@ -517,6 +521,7 @@ Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would
 		<constraint>
 			<name>"longitude"</name>
 			<exact>true</exact>
+			<children></children>
 		</constraint>
 	</children>
 </constraint>
@@ -587,6 +592,7 @@ This list can then be sent to the RDC, which uses it to search for matching comp
 			<name>"longitude"</name>
 			<exact>true</exact>
 			<hash>"BE25D0A889CA"</hash>
+			<children></children>
 		</constraint>
 	</children>
 </constraint>
@@ -657,7 +663,7 @@ Lines \ref{alg:line:nested_start}--\ref{alg:line:nested_end} match nested constr
 However, because these constraints specify fields which must be nested, then cannot be compared to the current item being matched. 
 Therefore, the comparison must be conducted against each of the schema's children. 
 Once a match is found the next constraint is tested, and if all nested constraints are matched, then the parent constraint is considered matched. 
-Line \ref{alg:line:constraint_exact} checks whether a constraint is exact before its children are considered, since the children must match by definition, if it is an exact match. 
+Line \ref{alg:line:constraint_exact} checks whether a constraint is exact before its children are considered, since if it is an exact match, the children must match by definition. 
 
 % optimisations to search
 Queries are automatically optimised by components before being sent to the RDC, to increase performance of the algorithm. This allows the RDC to process the query as quickly as possible, preventing it from becoming a bottleneck in the system. 
@@ -670,9 +676,9 @@ The result of these optimisations is explored in the Evaluation.
 
 
 % construct lookup
-Once the RDC returns a list of matches, the component connects to one of the targets. 
+Once the RDC returns a list of matches, the component connects to one of these matches. 
 During the connection setup, some schema negotiation must occur, so that the components can communicate coherently. 
-This work occurs almost entirely on the component which initiated the query, so as not to hinder the target component. 
+This work occurs almost entirely on the component which initiated the query, so as not to hinder the target peer. 
 The component first requests the target's schema. 
 Upon receiving this schema, the component checks it against the original query, building a lookup table, while also ensuring that it does in fact match, and the RDC has not been replaced by some malicious process. 
 This lookup table consists of a section containing names from the target schema, indexed by names from this schema, and a section containing names from this schema indexed by the target schema, and is used to repackage messages according to this component's schema. 
@@ -728,13 +734,13 @@ Only one schema will have remaining ancestors, however if the top level of both 
 If the target schema has remaining ancestors, these represent layers which surround the message the component will use. 
 These are stored so that a message can be extracted from within these layers. 
 Here, {\tt place} is the only extra layer and {\tt place/coordinates} is the root of the message the component wants. 
-If the component schema has remaining ancestors, these represent layers will are missing from the message. 
+If the component schema has remaining ancestors, these represent layers which are missing from the message. 
 These are stored so that the message can be wrapped in them. 
 
 \begin{algorithm}
 \algnewcommand\And{\textbf{ and }}
 \algnotext{EndWhile}
-\begin{algorithmic}
+\begin{algorithmic}[1]
 \While{$current \neq null \And target \neq null$}
 	\State \Call{InsertLookup}{$current.name$, $target.name$}
 	\State $current\gets current.parent$
@@ -756,15 +762,12 @@ These are stored so that the message can be wrapped in them.
 % updating subscriptions
 After the lookup table has been created, any predefined subscription filter can be applied to the peer. 
 These filters are specified in terms of field names, for example the filter {\tt location/gps/latitude > 0.0} specifies the northern hemisphere. 
-If the component schema has additional ancestors, then these are removed from the filter, while if the target schema has additional ancestors, the filter is prepended with these plus the root node, making the filter {\tt place/coordinates/gps/latitude > 0.0}.
+If the component schema has additional ancestors, then these are removed from the filter, while if the target schema has additional ancestors, the filter is prepended with these, replacing the top level node to make the filter {\tt place/coordinates/gps/latitude > 0.0}.
 Other field names are then replaced with their corresponding entry in the lookup table, creating a filter which when applied to the target schema, has the expected effect, namely {\tt place/coordinates/position/latitude > 0.0}.
 Any filters on fields which do not exist in the target schema are applied as specified, so developers must ensure that fields which they intend to filter on are included within their schema query. 
 This converted filter will be applied in the final stage of the connection setup, and of course can be updated at any later time. 
 
 % repackage messages
-Finally, this lookup table will be used to repackage each message. 
-Algorithm \ref{alg:repack_message} shows how each message is repackaged. 
-Suppose the component receives the message in Figure \ref{fig:locationmessage}. 
 
 \begin{figure}[tbh]
 \begin{lstlisting}
@@ -783,8 +786,11 @@ Suppose the component receives the message in Figure \ref{fig:locationmessage}.
 \label{fig:locationmessage}
 \end{figure}
 
+Finally, this lookup table will be used to repackage each message. 
+Algorithm \ref{alg:repack_message_overall} shows how each message is repackaged. 
+Suppose the component receives the message in Figure \ref{fig:locationmessage}. 
 The first stage is to extract the desired message from any additional layers, in this case {\tt place/coordinates}. 
-This message is then repackaged under the names defined by this component's schema using Algorithm \ref{alg:repack_message_overall}.
+This message is then repackaged under the names defined by this component's schema using Algorithm \ref{alg:repack_message}.
 Lines \ref{alg:line:lookup_name_start}--\ref{alg:line:lookup_name_end} find the correct name from the lookup table, returning {\tt null} if it does not exist in the table. 
 Lines \ref{alg:line:check_children_start}--\ref{alg:line:check_children_end} then either pack the message content under the new name, if it is a single field, or start a composite item otherwise. 
 The loop spanning lines \ref{alg:line:repack_children_start}--\ref{alg:line:repack_children_end} then iterates over each item in the message. 
@@ -872,14 +878,14 @@ In setting up the toolchain, the architecture of the device and the Android nati
 ARM-based devices, and Android platform 9 where chosen here, since these corresponded to the available device. 
 The standalone toolchain is still in beta which meant there were several problems compiling SBUS directly, typically due to missing libraries. 
 Some SBUS code had to be rewritten to account for this, in many cases using {\tt \#ifdef} statements to substitute blocks of code specific to Android. 
-The toolchain setup did include a bug\footnote{\url{https://code.google.com/p/android/issues/detail?id=35279}} which meant some include paths were missing, in particular {\tt <limits>} could not be referenced. 
-The workaround for this was to fix the directory structure.
+The toolchain setup contained a bug\footnote{\url{https://code.google.com/p/android/issues/detail?id=35279}} which meant some include paths were missing, in particular {\tt <limits>} could not be referenced. 
+The workaround for this was fixing the directory structure of the toolchain so that the paths were correct. 
 
 The Android version of {\tt pwd.h} which defines {\tt struct passwd} contains no member {\tt pw\_gecos}. 
 This contains the user's full name, which is used by SBUS to set the {\tt creator} field in a component's metadata, allowing components to query an RDC by creator. 
 To remedy this, the creator was simply replaced by the string `Android'. 
 In principle, the user's full name or username could be found in Java using the AccountManager class\footnote{\url{http://developer.android.com/reference/android/accounts/AccountManager.html}}, which could then be passed as a parameter to the component via JNI. 
-This would allow the creator to be set more accurately, however it was deemed unimportant to the project. 
+This would allow the creator to be set correctly, however it was deemed unimportant to the project. 
 
 % IP address.
 One of the greatest problems was that {\tt <sys/sockio.h>} was missing from Android.
@@ -901,17 +907,30 @@ However, on a device without root access, {\tt /system/bin} cannot be remounted 
 Therefore, some other writable directory was needed, and {\tt sbuswrapper} would have to be invoked using the full path. 
 
 The SD card ({\tt /mnt/sdcard}) is writable so was considered, however is mounted with the option {\tt noexec}, which means that although a file can be pushed to it, it cannot be executed. 
-The best approach to use was to include {\tt sbuswrapper} as an asset to an application, and copy it to the application's filespace.
+The best approach to use was to include {\tt sbuswrapper} as an asset to an application, and copy it to the application's filespace, invoking it from this filespace for every application. 
 
 Android uses a sandbox concept for security, where each application has access only to its own resources on the device. 
 This is enforced by assigning each application a unique user ID, and setting the appropriate permissions. 
 Since {\tt sbuswrapper} is approximately \SI{1}{MB}, compared to approximately \SI{30}{MB} available internal memory on the device, it was infeasible to include a copy with every application. 
-Therefore, one copy was included with the Phone Manager, which then modified the permissions to make {\tt sbuswrapper} world executable. 
-An additional directory was created and made world writable, which is where SBUS stores log files. 
+Therefore, one copy was included with the Phone Manager, which then modified the permissions to make {\tt sbuswrapper} world executable, so that every application could use this instance. 
+An additional directory was created and made world writable, where SBUS can write log files for all applications. 
 
-Although the device simply could have been rooted, allowing a much cleaner solution of storing {\tt sbuswrapper} at {\tt /system/bin/sbuswrapper}, it would have devalued the project, since it would only then work on rooted devices.
+Although the device could have been rooted, allowing a much cleaner solution of storing {\tt sbuswrapper} at {\tt /system/bin/sbuswrapper}, it would have devalued the project, because it would only then work on rooted devices.
 
 %TODO: write about closing sockets and all those FIN_WAIT2? Nothing actually changed now, but it was a pain.
+
+% JNI.
+The Android NDK was finally used in conjunction with Java Native Interface (JNI) to allow applications to call SBUS functions via Java. 
+This involved writing Java classes for components, endpoints and messages, as well as some helper classes. 
+The SBUS library is linked via an {\tt Android.mk} file, which {\tt ndk-build} then uses to copy the shared library into the application's root project directory. 
+The application can then be built to generate a package file including SBUS which can run on an Android device. 
+ 
+% how Android works
+Figure \ref{fig:android_stack} gives an overview of how an application works. 
+Applications are built using the Application Framework. 
+Every Android application runs in its own process, with its own instance of the Dalvik virtual machine\footnote{\url{http://developer.android.com/about/versions/index.html\#os_architecture}}, which executes Java bytecode. 
+When an SBUS call is made, Dalvik invokes a call to the native JNI code, passing in a {\tt JNIEnv} pointer containing an interface to the Dalvik VM, as well as any other parameters. 
+The JNI methods can then invoke their respective SBUS methods. 
 
 % overview of Android architecture
 \begin{figure}[tbh]
@@ -922,23 +941,10 @@ Although the device simply could have been rooted, allowing a much cleaner solut
 \label{fig:android_stack}
 \end{figure}
 
-% JNI.
-The Android NDK was finally used in conjunction with Java Native Interface (JNI) to allow applications to call SBUS functions via Java. 
-This involved writing Java classes for components, endpoints and messages, as well as some helper classes. 
-The SBUS library is linked via the {\tt Android.mk} file, which {\tt ndk-build} then uses to copy the shared library into the application's root project directory. 
-The application can then be built to generate a package file which can run on an Android device. 
-% how Android works
-Figure \ref{fig:android_stack} gives an overview of how an application works. 
-Applications are built using the Application Framework
-Every Android application runs in its own process, with its own instance of the Dalvik virtual machine\footnote{\url{http://developer.android.com/about/versions/index.html\#os_architecture}}, which executes the Java bytecode. 
-When an SBUS call is made, Dalvik invokes a call to the native JNI code, passing in a {\tt JNIEnv} pointer containing an interface to the Dalvik VM, as well as any other parameters. 
-The JNI methods can then invoke their respective SBUS methods. 
-
-
 Each Java object has a one-to-one correspondence with a native object. 
-Native methods which create an object return a pointer to that object, cast to an integer. 
-The pointer is passed to the constructor of the Java object representing the native object.
-When a method is invoked on the Java object, the pointer is passed back to the native method, which then casts it to a pointer to the native object.
+Native methods which create an object return a pointer to that object, cast as an integer. 
+The pointer is passed to the constructor of the Java object representing the native object, to be stored in the object. 
+When a method is invoked on the Java object, the pointer is passed into the native method, which then casts it to a pointer to the native object, to operate on the object. 
 The Java classes hide this complexity from the user, simply providing methods with parameters and return values in terms of these other Java classes.
 
 These classes are exported as a JAR file, which applications can then simply import to use the Java SBUS library.
@@ -949,36 +955,34 @@ The Phone Manager is an Android application which is responsible for detecting c
 
 % detecting context
 The Phone Manager uses the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android system intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} to detect changes in context. 
-These intents are broadcast across the system upon specific events. 
-By implementing a receiver, these intents can be captured and an action can be taken upon the event. 
+These intents are broadcast across the system upon specific events, and by implementing a receiver, these intents can be captured and an action can be taken. 
 In particular, an intent with the action {\tt NETWORK\_STATE\_CHANGED\_ACTION} is broadcast upon a Wi-Fi change.
-This allows the Phone Manager to register a receiver for these intents, which can then reconfigure connections after a change in network. 
+This allows the Phone Manager to register a receiver for these intents, allowing it to reconfigure connections after a change in network. 
 
 % AIRS
 An application has been created to act as a AIRS-SBUS gateway between AIRS and the Phone Manager. 
-This gateway acts as a remote server for sensor readings from AIRS. 
-Once AIRS start in remote mode, sensors must be subscribed to before AIRS will output any readings. 
-AIRS firsts connects to the gateway, so that it has somewhere to send messages. 
-The Phone Manager can then connect to the gateway via an SBUS endpoint, and subscribe to sensors through another ``control endpoint'' on the gateway. 
+This gateway acts as a remote server for sensor readings from AIRS, to which AIRS sends all sensor readings. 
+Once AIRS starts and connects to a remove server, sensors must be subscribed to before AIRS will output any readings. 
+AIRS connects to the gateway, and the Phone Manager can then connect to the gateway via an SBUS endpoint, and subscribe to sensors through another ``control endpoint'' on the gateway. 
 Upon receiving a subscription, the gateway relays this subscription to AIRS in the appropriate format. 
 AIRS can then send sensor readings to the gateway, which will convert them to SBUS events and send them to the Phone Manager. 
-This allows the Phone Manager to use any sensor on the device which is exposed by AIRS, yet ensures that the Phone Manager only receives readings from the sensors it is interested in. 
+This allows the Phone Manager to use any sensor on the device which is exposed by AIRS, yet ensures that the Phone Manager only receives readings from sensors that it is interested in. 
  
  % AIRS-SBUS gateway
-This gateway is based on the AIRS code\footnote{\url{https://github.com/dirktrossen/AIRS}}. 
+This gateway is based on Dirk Trossen's AIRS code\footnote{\url{https://github.com/dirktrossen/AIRS}}. 
 AIRS exposes upwards of 50 sensors, which is being continually expanded, making it infeasible to predefine an endpoint for each sensor. 
-This is handled by dynamically creating an endpoint for a sensor whenever the first reading from that sensor is received, meaning that endpoints will only ever be created as needed. 
-The user is presented with a list of sensors in the gateway, which is populated from a message AIRS sends to announce the available sensors, upon connecting to the remote server. 
-After the user selects a sensor, that sensor is subscribed to, and the endpoint will be created once a reading is received from that sensor. 
-Additionally, the endpoint is automatically mapped to the Phone Manager and can start publishing events to it immediately. 
+This is handled by dynamically creating an endpoint for each sensor whenever the first reading from that sensor is received, meaning that endpoints will only ever be created as needed. 
+The gateway presents the suer with a list of sensors, which is populated from a message AIRS announcing the available sensors upon connecting to the remote server. 
+When the user selects a sensor, that sensor is subscribed to, and the endpoint will be created once a reading is received from that sensor. 
+Additionally, the endpoint is automatically mapped to the Phone Manager so can start publishing events to it immediately. 
 Each sensor runs in a different thread, so these endpoints are maintained in a thread-safe repository. 
-This repository is searched upon receiving a message, which will return the endpoint if it already exists, ensuring that multiple endpoints are not defined for the same sensor. 
+This repository is searched upon receiving a message, returning the endpoint if it already exists, ensuring that multiple endpoints are not defined for the same sensor. 
 
 % composite event detector
 Conceptually this AIRS-SBUS gateway could act as a composite event detector. 
 By collating multiple sensor readings, a context change could be defined by multiple different readings satisying some conditions, or by multiple occurrences of an event.
 Upon detecting a context change, the gateway would then publish a single event to the Phone Manager. 
-The Phone Manager can respond to any kind of event, so already provides all of the infrastructure required to support this.
+The Phone Manager can respond to any kind of event, so already provides the infrastructure required to support this.
 
 % registering components + setting policies
 In order to have their connections automatically reconfigured, applications must register with the Phone Manager. 
@@ -991,24 +995,24 @@ The Phone Manager will apply these policies exactly as specified, either instruc
 Some context changes may mean that the available RDCs change, for example joining or leaving a network. 
 The Phone Manager informs applications of RDC changes on every context change, publishing an event containing the RDC address, and whether it has became available or unavailable. 
 Currently an RDC is only assumed to become unavailable if the context change is leaving a Wi-Fi network. 
-This event is published to each registered application via another builtin endpoint. 
-Upon receiving the event, applications can either automatically accept the change, registering with or deregistering from RDC address, or perform a callback method, perhaps prompting the user to make a decision. 
+The RDC change event is published to each registered application via a builtin endpoint. 
+Upon receiving the event, applications can either automatically accept the change, registering with or deregistering from the RDC address, or perform a callback method, perhaps prompting the user to make a decision. 
 
 % where to get RDC address from
 This RDC address is currently set by the user in the Phone Manager, however many other ways exist which could be used to find an RDC in the environment. 
 Prompting the user may be sufficient on a home network, and additionally this allows the user to choose not to trust an IP address. 
 Alternatively, the address could be coded in a QR code or RFID tag. 
 The user could scan one of these, for example when making a purchase in a coffee shop, and the Phone Manager would automatically send an RDC update based on the encoded address. 
-This approach retains some level of privacy and security, because the user explicitly chooses to scan the QR code or RFID tag. 
+This approach retains some level of privacy and security because the user explicitly chooses to scan the QR code or RFID tag. 
 An even more automated approach might be to include the RDC address as part of DHCP configuration when connecting to a Wi-Fi network, or to broadcast the address on the network. 
 All of these methods must of course be considered from security point of view. 
 
 % apply map policies
 After the Phone Manager sends an RDC update to registered applications, it can apply applications' map policies. 
-To do this, it simply issues a map events to application endpoints, containing the peer address and peer endpoint name specified in their policies. 
+To do this, it simply issues map events to application endpoints, containing the peer address and peer endpoint name specified in their policies. 
 If the peer address specifies an IP address, then the endpoint can map directly to the peer endpoint. 
-However, if the peer address is an RDC query, then the application must first resolve the query, which may be done against a new RDC which has been specified in the update. 
-This allows the query to be resolved in the new environment, allowing endpoints to map to peers in that environment. 
+If the peer address is an RDC query, then the application must first resolve the query, which may be done against a new RDC which has been specified in the update. 
+This allows the query to be resolved in the new environment, allowing endpoints to map to peers within that environment. 
 
 
 \section{Issues}
@@ -1025,9 +1029,9 @@ For example, a single event could be triggered after three consecutive Wi-Fi eve
 
 % qualify names if multiple fields in sensor have same name
 Components specify RDC schema queries in terms of field names of their own schema.
-While this works provided there are no repeated fields names within the schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema} due to {\tt sensor} being repeated. 
+While this is sufficient if there are no repeated fields names within the schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema} due to {\tt sensor} being repeated. 
 A solution to this would be to force field names to be fully qualified in a query. 
-A query using {\tt sensor} would mean the entire structure, while {\tt sensor/sensor} would mean the text field.
+A query using {\tt sensor} would refer to the entire structure, while {\tt sensor/sensor} would refer to the text field.
 
 \begin{figure}[tbh]
 \begin{lstlisting}
@@ -1048,10 +1052,11 @@ A query using {\tt sensor} would mean the entire structure, while {\tt sensor/se
 % ~ Eval + Conclusion ~ 2000 words
 \chapter{Evaluation}
 
-The project set out to create a system which would allow applications to automatically connect to different peers upon a change in context, where these peers may not necessarily present data in the format expected. 
-The project has been successful in this respect. 
+The project set out to investigate how applications could automatically connect to different peers upon a change in context, where these peers may not necessarily present data in the format expected. 
+The project has been successful in this respect, implementing a system which gives applications these capabilities.  
 Sensor readings from the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android intents are used to detect a change in context. 
-Once a change is detected, applications will be connected to peers which satisfy the constraints they have specified and messages will automatically be converted to applications' expected format, allowing operation of the application to continue without interruption.
+Once a change is detected, applications will be connected to peers which satisfy the constraints they have specified and messages will automatically be converted to applications' expected format, allowing operation of the application to continue without interruption. 
+This chapter examines the performance of the system. 
 
 \section{System Overview}
 
@@ -1070,15 +1075,15 @@ Figure \ref{fig:system_overview} shows the interactions that occur within the sy
 
 \item After the transport application has registered with the Phone Manager, it can send policies to the Phone Manager which specify how its endpoints should be reconfigured upon a change in context. For instance, the application may wish to be connected to any components which offer a structure matching the type of {\tt coach}. In another case, it may simply give an IP address it should be connected to.
 
-\item The AIRS-SBUS gateway acts as a server for sensor readings from AIRS, which then emits the readings as SBUS events, which are consumed by the Phone Manager. The Phone Manager also receives other intents from Android, signalling a change in Wi-Fi network.
+\item The AIRS-SBUS gateway acts as a server for sensor readings from AIRS, which then emits the readings as SBUS events, which are consumed by the Phone Manager. The Phone Manager also receives intents from Android, signalling a change in Wi-Fi network.
 
 \item The Phone Manager processes these events to determine whether a change in context has occurred. Once a change happens, the Phone Manager will inform the transport application about the change by sending it details of whether an RDC should be added or removed. 
 
 \item The transport application receives this message about the RDC change and will either automatically accept this change, registering or deregistering with the RDC, or perform some callback method, perhaps prompting the user to make a decision. The transport application may have chosen to automatically accept the change, but display a message to the user to indicate that the context has changed.
 
-\item The Phone Manager applies all of the policies within its policy table, sending messages to application endpoints, instructing them to connect to different components. The transport application will be sent whatever it has set in its policy.
+\item The Phone Manager applies all of the policies within its policy table, sending messages to application endpoints, instructing them to connect to different components. The transport application will be sent whatever parameters it set in its policy.
 
-\item If the transport application has specified an IP address in its policy, the endpoint will receive this IP address and can connect directly to it to start receiving messages. However, if the policy specified that a component must have a structure matching the type of {\tt coach}, the endpoint will query the RDC with this constraint to find matching components.
+\item If the transport application specified an IP address in its policy, the endpoint will receive this IP address and can connect directly to it to start receiving messages. However, if the policy specified that a component must contain a structure matching the type of {\tt coach}, the endpoint will query the RDC with this constraint to find matching components.
 
 \item The RDC searches components registered with it for those matching the constraints. In this case, it might find only a component sending coach data, while in other cases it may find components offering train data. In both cases, these components contain a structure matching the type of {\tt coach}, so the RDC returns the IP addresses to the application.
 
@@ -1096,7 +1101,8 @@ Other messaging systems:
 \end{itemize}
 
 AWARE\footnote{\url{http://www.awareframework.com/home/}} is a new ``Android framework dedicated to instrument, infer, log and share mobile context information for application developers'' which could be used in place of AIRS to detect a change in context.
-AWARE uses broadcasts to notify applications of the current context, and these broadcasts can be captured by Android BroadcastReceivers\footnote{\url{http://developer.android.com/reference/android/content/BroadcastReceiver.html}}. This allows the Phone Manager, or indeed any application, to implement broadcast receivers to be notified of changes in context, rather than using AIRS and the AIRS-SBUS gateway. 
+AWARE broadcasts intents to notify applications of the current context, and these broadcasts can be captured by Android BroadcastReceivers\footnote{\url{http://developer.android.com/reference/android/content/BroadcastReceiver.html}} in the same way that other intents are already captured. 
+This allows the Phone Manager, or indeed any application, to implement broadcast receivers to be notified of changes in context, rather than using AIRS and the AIRS-SBUS gateway. 
 Some applications might choose to implement broadcast receivers themselves, in order to use this framework in place of the Phone Manager to detect context changes.
 However, the Phone Manager would still be useful because it would provide this service for any application to use, mapping them as per their policies and reducing complexity in the applications themselves.
 
@@ -1122,7 +1128,7 @@ Transport & Departures & +Scoach & NULL \\
 
 % about example policies
 Table \ref{tab:example_policies} shows example policies which components might set with the Phone Manager. 
-Both the local component and local endpoint are implicitly set as whichever endpoint sent the policy. 
+Both the local component and local endpoint are implicitly set to whichever endpoint sent the policy. 
 The remote address may be an IP address or a query to be resolved by an RDC. 
 An IP address may be useful when the application should always be mapped to the same IP address. 
 In the first example, a healthcare system has registered to have heart rate readings mapped directly to an endpoint at a known IP address, perhaps a relative or emergency response team. 
@@ -1190,7 +1196,7 @@ These tests show the kind of performance which can be expected from the system.
 \end{figure}
 
 Figure \ref{fig:rdc_search_optimisations} shows the time taken for an RDC to search through all registered components to find those matching schema constraints, for different numbers of registered components and with different optimisations applied. 
-In a real environment, RDCs are likely to have many components registered, so one search cannot impact the performance of any other component too greatly.
+In a real environment, RDCs are likely to have many components registered, so one search must not impact the performance of any other component too greatly.
 As expected, the time taken to search increases linearly with the number of components registered. 
 The structures first optimisation narrowly beats the exact first and exact structures optimisations, all of which peform more efficiently than searching without optimisation. 
 These optimisations play a greater role as the number of components increases, becoming more important in order to prevent a bottleneck in the system. 
@@ -1267,7 +1273,7 @@ Each consumer first queries an RDC on a remote machine by the producer name, to 
 Once the consumer receives the IP of the producer from the RDC, it then establishes the connection with it, hence two connections occur within each mapping. 
 No schema conversion occurs as part of this map. 
 These figures show that a greater time is required when the producer and consumer are on different devices than when they are on the same device. 
-This bears no surprise since the local connections are faster than the network connections. 
+This bears no surprise that local connections are faster than network connections. 
 The mean time taken is slightly greater when both the producer and consumer are on the phone rather than both on the laptop, though the standard deviation is less. 
 Overall, an application written in Java running a phone would see very similar network delays to that of a program written in C++ running on any other machine.
 
@@ -1302,14 +1308,14 @@ Provided an application is calling SBUS functions less frequently than this dela
 The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of the peers which the application will use, or the format that these peers will present data in, decoupling applications from their specific peers. 
 This supports the goals of pervasive computing, achieving scalability by allowing applications to use any relevant peer, and allowing applications to adapt to use heterogeneous content, all while being invisible to both the user and developer.
 
-A policy engine monitors the environment for events which the system or user believe to represent a change in context.
-Upon detection of an event, the policy engine applies applications' policies, reconfiguring their connections as appropriate. 
-Through these policies, applications may control which peers they should be connected to, without requiring applications to find the peers themselves.
+An application monitors the environment for events which the system or user believe to represent a change in context.
+Upon detection of an event, this application applies other applications' reconfiguration policies to connect them to different peers. 
+Through these policies, applications can control which peers they should be connected to, without requiring the applications to find the peers themselves.
 Policies may be simple, such as the name of a peer, or more complex, specifying how fields in a peer's schema must match their own. 
 
-The system repackages messages so that applications will only ever be presented with data conforming to their own schema, removing uncertainty about the format of the data.
-Furthermore, applications may specify subscription filters in terms of their own schemas, placing restrictions on which messages they will be sent, without requiring knowledge of peers' schemas.
-When reconfiguring a connection, the system translates these filters to match the peer's schema and applies them to the peer, filtering messages as dictated by the application.
+The system reformats data so that applications will only ever be presented with data conforming to their own format, removing uncertainty about the data representation. 
+Furthermore, applications may specify subscription filters in terms of their own data format, placing restrictions on the data they will be sent, without requiring knowledge of peers' data format.
+When reconfiguring a connection, the system translates these filters to match the peer's data format and applies them to the peer, filtering data as dictated by the application.
 
 
 \section{Changes}
@@ -1321,17 +1327,17 @@ When reconfiguring a connection, the system translates these filters to match th
 % other stuff that could be done
 
 % alternate events for change in context - AIRS
-Applications cannot currently specify {\sl which} changes in context they are interested in, the policy engine triggers {\sl all} policies upon detecting a change.
+Applications cannot currently specify {\sl which} changes in context they are interested in, so {\sl all} policies are triggered upon detecting a change.
 The system could easily be extended to allow applications to include a type of context change in a policy, allowing them to specify different policies for different context changes. 
-Upon receiving an event, the policy engine would then check whether the event satisfies the conditions of each policy, only applying the policy when it does. 
+Upon receiving an event, each policy would only be applied if the event satisfies the conditions of the policy. 
 This would allow applications to specify policies for simple events, such as a Wi-Fi change event, or more complex events, such as a high accelerometer reading followed by no movement to represent a fall. 
 
-As well as applications specifying policies, users could also specify policies for different applications. 
+As well as applications specifying policies, users could also specify custom policies for applications. 
 This moves the system further towards the pervasive vision. 
 Applications would take sensible actions for different changes in context, however the user could refine how applications should react to changes in context, causing them to behave in a way more suited to the user's needs.
 
-The user may have the ability to specify which types of events can be used by the system. 
-This offers some privacy to the user by allowing them to block applications from knowing if some part of their context has changed, for example blocking the accelerometer.
+The user may be given the ability to specify which types of events can be used by the system. 
+This offers some privacy to the user by allowing them to block applications from using some part of their context, for example blocking the system from using accelerometer to detect a change in context.
 
 \cleardoublepage
 
@@ -1347,17 +1353,6 @@ This offers some privacy to the user by allowing them to block applications from
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the appendices
 \begin{appendix}
-
-\chapter{Possible Titles}
-
-\begin{itemize}
-\item Automatic Communication Configuration in Mobile Environments
-\item Data Stream Connection and Message Negotiation
-\item Flexibile Data Streams in Mobile Environments
-\item Automatic Data Stream Configuration in Mobile Environments
-\end{itemize}
-
-\cleardoublepage
 
 \chapter{Example Schemas}
 
