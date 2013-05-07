@@ -18,7 +18,7 @@
 % Flexibile Data Streams in Mobile Environments
 % Automatic Data Stream Configuration in Mobile Environments
 
-\newcommand{\wordcount}{10895}
+\newcommand{\wordcount}{11047}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1121,20 +1121,23 @@ Figure \ref{fig:system_overview} shows the interactions that occur within the sy
 
 \end{enumerate}
 
-%TODO: Other approaches.
-Other messaging systems:
-\begin{itemize}
-
-\item RabbitMQ based on AMQP (uses a central broker)
-\item ActiveMQ
-\item Java Messaging System
-\end{itemize}
-
+% other ways to do context
 AWARE\footnote{\url{http://www.awareframework.com/home/}} is a new ``Android framework dedicated to instrument, infer, log and share mobile context information for application developers'' which could be used in place of AIRS to detect a change in context.
 AWARE broadcasts intents to notify applications of the current context, and these broadcasts can be captured by Android BroadcastReceivers\footnote{\url{http://developer.android.com/reference/android/content/BroadcastReceiver.html}} in the same way that other intents are already captured. 
 This allows the Phone Manager, or indeed any application, to implement broadcast receivers to be notified of changes in context, rather than using AIRS and the AIRS-SBUS gateway. 
 Some applications might choose to implement broadcast receivers themselves, in order to use this framework in place of the Phone Manager to detect context changes.
 However, the Phone Manager would still be useful because it would provide this service for any application to use, mapping them as per their policies and reducing complexity in the applications themselves.
+
+% other messaging middlewares
+Mascolo et al. give an overview of other middlewares for mobile computing \cite{mascolo2002mobile} which the project might have used. 
+SBUS is in line with many of their guidelines for a middleware, thus proves an ideal candidate for the project. 
+Direct communication between components means that the middleware supports devices connecting to the network for short periods of time just as well as those which are permanently part of the network. 
+Components are written in C++ and already run on most machines, and can now run on any Android phone too, allowing for heterogeneity in an environment. 
+Communication is not only independent of the device and platform, but also the network connectivity. 
+Components communicate using TCP, which means that the middleware will work over Wi-Fi, 3G, Bluetooth, and any other protocol supporting TCP. 
+Resource discovery is already implemented through the RDCs, and has been extended to support the needs of mobile computing. 
+Finally, SBUS can use SSL to encrypt data, allowing applications to communicate securely if they so desire. 
+
 
 % table of example policies
 \begin{table}
