@@ -1,0 +1,26 @@
+<component-metadata>
+	<name>speek</name>
+	<description>Queries components for metadata and status</description>
+	<keywords></keywords>
+	<designer>David Ingram</designer>
+	<endpoints>
+		<endpoint>
+			<name>get_metadata</name>
+			<type>#client</type>
+			<message>"0"</message>
+			<response>
+				@"cpt_metadata.idl"					
+				@^component-metadata -
+			</response>
+		</endpoint>
+		<endpoint>
+			<name>get_status</name>
+			<type>#client</type>
+			<message>"0"</message>
+			<response>
+				@"cpt_status.idl"					
+				@^component-state -
+			</response>
+		</endpoint>
+	</endpoints>
+</component-metadata>

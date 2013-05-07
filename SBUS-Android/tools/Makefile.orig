@@ -1,0 +1,109 @@
+TARGETS = democpt democlient speek spoke sbus broker \
+	trafficgen multitraffic slowcar universalsink spersist rdc universalsource
+
+all: ${TARGETS}
+
+install:
+	@ ../scripts/checkenv
+	@ ../scripts/doinst bin ${TARGETS}
+
+# Defines to use the installed (as root) version of the library:
+#
+# SBUS_INCLUDE=
+# SBUS_WRAPINC=
+# SBUS_LIBRARY=-lsbus
+# SBUS_LIBFILE=/usr/local/lib/libsbus.a
+# SBUS_WRAPPER=-lsbuswrap
+# SBUS_WRAPFILE=/usr/local/lib/libsbuswrap.a
+
+# Defines to use the installed (as user) version of the library:
+#
+# SBUS_INCLUDE=-I${HOME}/include
+# SBUS_WRAPINC=
+# SBUS_LIBRARY=-L${HOME}/lib -lsbus
+# SBUS_LIBFILE=${HOME}/lib/libsbus.a
+# SBUS_WRAPPER=-L${HOME}/lib -lsbuswrap
+# SBUS_WRAPFILE=${HOME}/lib/libsbuswrap.a
+
+# Defines to refer directly to the built (not installed) library:
+#
+SBUS_INCLUDE=-I../library
+SBUS_WRAPINC=-I../wrapper
+SBUS_LIBRARY=-L../library -lsbus
+SBUS_LIBFILE=../library/libsbus.a
+SBUS_WRAPPER=-L../wrapper -lsbuswrap
+SBUS_WRAPFILE=../wrapper/libsbuswrap.a
+
+SBUS_HEADERS = ../library/error.h ../library/datatype.h \
+	../library/dimension.h ../library/hash.h ../library/builder.h \
+	../library/component.h ../library/net.h ../library/multiplex.h
+
+WRAP_HEADERS = ../wrapper/litmus.h ../wrapper/marshall.h \
+	../wrapper/unmarshall.h ../wrapper/express.h \
+	../wrapper/validate.h
+
+# Component targets using wrapper utility library:
+
+rdc: rdc.o persist.o rdc.h ${SBUS_LIBFILE} ${SBUS_WRAPFILE}
+	g++ -g -Wall -o rdc -lpthread rdc.o persist.o ${SBUS_LIBRARY} ${SBUS_WRAPPER}
+
+rdc.o: rdc.cpp ${SBUS_HEADERS} ${WRAP_HEADERS}
+	g++ -g -Wall ${SBUS_INCLUDE} ${SBUS_WRAPINC} -c rdc.cpp
+
+rdcacl: rdcacl.o persistacl.o rdcacl.h ${SBUS_LIBFILE} ${SBUS_WRAPFILE}
+	g++ -g -Wall -o rdcacl -lpthread rdcacl.o persistacl.o ${SBUS_LIBRARY} ${SBUS_WRAPPER}
+
+rdcacl.o: rdcacl.cpp ${SBUS_HEADERS} ${WRAP_HEADERS}
+        g++ -g -Wall ${SBUS_INCLUDE} ${SBUS_WRAPINC} -c rdcacl.cpp
+
+speek: speek.o ${SBUS_LIBFILE} ${SBUS_WRAPFILE}
+	g++ -g -Wall -o speek speek.o ${SBUS_LIBRARY} ${SBUS_WRAPPER}
+
+speek.o: speek.cpp ${SBUS_HEADERS} ${WRAP_HEADERS}
+	g++ -g -Wall ${SBUS_INCLUDE} ${SBUS_WRAPINC} -c speek.cpp
+
+persist.o: persist.cpp ${SBUS_HEADERS} ${WRAP_HEADERS}
+	g++ -g -Wall ${SBUS_INCLUDE} ${SBUS_WRAPINC} -c persist.cpp
+
+# Normal component targets:
+
+broker: broker.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o broker broker.o ${SBUS_LIBRARY}
+
+sbus: sbus.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o sbus sbus.o ${SBUS_LIBRARY}
+
+democpt: democpt.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o democpt democpt.o ${SBUS_LIBRARY}
+
+universalsource: universalsource.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o universalsource universalsource.o ${SBUS_LIBRARY}
+
+democlient: democlient.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o democlient democlient.o ${SBUS_LIBRARY}
+
+trafficgen: trafficgen.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o trafficgen trafficgen.o ${SBUS_LIBRARY}
+
+multitraffic: multitraffic.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o multitraffic -lpthread multitraffic.o ${SBUS_LIBRARY}
+
+slowcar: slowcar.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o slowcar slowcar.o ${SBUS_LIBRARY}
+
+universalsink: universalsink.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o universalsink universalsink.o ${SBUS_LIBRARY}
+
+spersist: spersist.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o spersist spersist.o -lsqlite3 ${SBUS_LIBRARY}
+
+spoke: spoke.o ${SBUS_LIBFILE}
+	g++ -g -Wall -o spoke spoke.o ${SBUS_LIBRARY}
+
+# Objects:
+
+%.o: %.cpp ${SBUS_HEADERS}
+	g++ -g -Wall ${SBUS_INCLUDE} -c $<
+
+clean:
+	rm -f ${TARGETS} *.o
