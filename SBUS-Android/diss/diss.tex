@@ -18,7 +18,7 @@
 % Flexibile Data Streams in Mobile Environments
 % Automatic Data Stream Configuration in Mobile Environments
 
-\newcommand{\wordcount}{11047}
+\newcommand{\wordcount}{11038}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -123,7 +123,7 @@ Upon detection of a change in context, this application informs other applicatio
 
 The main difficulty in the project came from porting the messaging middleware to Android. The Android NDK\footnote{\url{http://developer.android.com/tools/sdk/ndk/index.html}} toolkit was used in order to compile the C++ library for use on Android, however missing standard libraries and poor documentation made this task more difficult than expected.
  
-\newpage
+%\newpage
 \section*{Declaration}
 
 I Thomas Smith of Sidney Sussex College, being a candidate for Part II of the Computer
@@ -1350,11 +1350,8 @@ The system reformats data so that applications will only ever be presented with 
 Furthermore, applications may specify subscription filters in terms of their own data format, placing restrictions on the data they will be sent, without requiring knowledge of peers' data format.
 When reconfiguring a connection, the system translates these filters to match the peer's data format and applies them to the peer, filtering data as dictated by the application.
 
-
-\section{Changes}
-%TODO: what I'd have done differently
-{\sl Is this needed? Not really got any changes. }
-
+%\section{Changes}
+%TODO: changes
 
 \section{Future Work}
 % other stuff that could be done
