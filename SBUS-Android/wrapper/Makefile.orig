@@ -1,0 +1,78 @@
+all: wrapper libsbuswrap.a
+
+# Library:
+
+libsbuswrap.a: express.o litmus.o marshall.o unmarshall.o validate.o \
+peernet.o permission.o
+	rm -f libsbuswrap.a
+	ar rs libsbuswrap.a express.o litmus.o marshall.o unmarshall.o validate.o \
+		peernet.o permission.o
+
+# Library objects:
+
+litmus.o : litmus.cpp ../library/error.h ../library/datatype.h \
+../library/hash.h litmus.h
+	g++ -g -Wall -fPIC -c litmus.cpp
+
+marshall.o : marshall.cpp ../library/datatype.h ../library/dimension.h \
+../library/builder.h ../library/error.h ../library/hash.h \
+litmus.h marshall.h
+	g++ -g -Wall -fPIC -c marshall.cpp
+
+validate.o : validate.cpp ../library/datatype.h ../library/dimension.h \
+../library/builder.h ../library/error.h ../library/hash.h \
+litmus.h validate.h
+	g++ -g -Wall -fPIC -c validate.cpp
+
+unmarshall.o : unmarshall.cpp unmarshall.h litmus.h marshall.h \
+../library/datatype.h ../library/dimension.h ../library/builder.h \
+../library/error.h ../library/hash.h
+	g++ -g -Wall -fPIC -c unmarshall.cpp
+
+peernet.o : peernet.cpp ../library/error.h ../library/datatype.h \
+../library/dimension.h ../library/multiplex.h ../library/builder.h \
+../library/hash.h ../library/component.h ../library/lowlevel.h \
+../library/net.h peernet.h
+	g++ -g -Wall -fPIC -c peernet.cpp
+
+express.o : express.cpp ../library/error.h ../library/datatype.h \
+../library/dimension.h ../library/builder.h express.h
+	g++ -g -Wall -fPIC -c express.cpp
+	
+permission.o : permission.cpp ../library/error.h ../library/datatype.h \
+../library/hash.h permission.h
+	g++ -g -Wall -fPIC -c permission.cpp
+
+# Binaries:
+
+wrapper: wrapper.o libsbuswrap.a ../library/libsbus.a
+	g++ -g -o wrapper wrapper.o -L../library -L. -lsbus -lsbuswrap
+
+wrapper.o: wrapper.cpp ../library/error.h ../library/datatype.h \
+../library/dimension.h ../library/multiplex.h ../library/builder.h \
+../library/hash.h ../library/component.h ../library/net.h \
+express.h litmus.h marshall.h unmarshall.h validate.h wrapper.h
+	g++ -g -Wall -c wrapper.cpp
+
+# Installation:
+
+install: install-binaries install-libs install-headers
+
+install-binaries:
+	@ ../scripts/checkenv
+	@ cp wrapper sbuswrapper
+	@ ../scripts/doinst bin sbuswrapper
+	@ rm sbuswrapper
+
+install-headers:
+	@ ../scripts/checkenv
+	@ ../scripts/doinst include/sbus *.h
+
+install-libs:
+	@ ../scripts/checkenv
+	@ ../scripts/doinst lib libsbuswrap.a
+
+# Misc targets:
+
+clean:
+	rm -f wrapper *.o *.a *.so

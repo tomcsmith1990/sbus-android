@@ -1,0 +1,62 @@
+# Top-level targets: all, clean, install, userinstall
+
+all: libsbus.a
+
+# Building library:
+
+libsbus.a: component.o net.o lowlevel.o error.o datatype.o hash.o builder.o \
+		multiplex.o dimension.o xml.o
+	rm -f libsbus.a
+	ar rs libsbus.a component.o net.o lowlevel.o error.o datatype.o hash.o \
+		builder.o multiplex.o dimension.o xml.o
+
+# Library objects:
+
+hash.o : hash.cpp datatype.h error.h hash.h
+	g++ -g -Wall -fPIC -c hash.cpp
+
+net.o : net.cpp error.h datatype.h dimension.h hash.h builder.h \
+		component.h lowlevel.h net.h multiplex.h
+	g++ -g -Wall -fPIC -c net.cpp
+
+lowlevel.o : lowlevel.cpp error.h net.h
+	g++ -g -Wall -fPIC -c lowlevel.cpp
+
+multiplex.o : multiplex.cpp multiplex.h
+	g++ -g -Wall -fPIC -c multiplex.cpp
+
+component.o: component.cpp error.h datatype.h dimension.h hash.h builder.h \
+		component.h lowlevel.h net.h multiplex.h
+	g++ -g -Wall -fPIC -c component.cpp
+
+error.o : error.cpp datatype.h error.h
+	g++ -g -Wall -fPIC -c error.cpp
+
+builder.o : builder.cpp datatype.h dimension.h builder.h error.h
+	g++ -g -Wall -fPIC -c builder.cpp
+
+xml.o : xml.cpp datatype.h dimension.h builder.h error.h
+	g++ -g -Wall -fPIC -c xml.cpp
+
+dimension.o : dimension.cpp datatype.h dimension.h error.h
+	g++ -g -Wall -fPIC -c dimension.cpp
+
+datatype.o : datatype.cpp datatype.h error.h hash.h
+	g++ -g -Wall -fPIC -c datatype.cpp
+
+# Installation:
+
+install: install-libs install-headers
+
+install-headers:
+	@ ../scripts/checkenv
+	@ ../scripts/doinst include/sbus *.h
+
+install-libs:
+	@ ../scripts/checkenv
+	@ ../scripts/doinst lib libsbus.a
+
+# Misc targets:
+
+clean:
+	rm -f *.o *.a *.so
