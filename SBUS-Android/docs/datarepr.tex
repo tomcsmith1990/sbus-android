@@ -1,0 +1,947 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr,graphicx,latexsym}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+% \newcommand{\spc}{\hspace{0.5mm}$\sqcup$\hspace{0.6mm}}
+\newcommand{\spc}{\hspace{0.5mm}$\Box$\hspace{0.5mm}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{PIRATES Data Representation}
+\fancyfoot{}
+\pagestyle{empty}
+
+\input{macros}
+\begin{document}
+
+% \sfseries
+\centerline{\textbf{\LARGE PIRATES Data Representation}}
+\begin{center} \large
+David Ingram\\
+TIME-EACM Project\\
+University of Cambridge Computer Lab\\
+13th August 2009\\
+\end{center}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+\pagestyle{fancy}
+
+\section{LITMUS schemas}
+
+PIRATES message schemas describe the structure and types of permitted messages.
+Each endpoint has a schema. The schemas are written in a language called
+LITMUS (Language of Interface Types for Messages in Underlying Streams).
+
+The messages themselves (which conform to a LITMUS schema) may be encoded
+either in XML or a compact binary form for transmission. Neither of these
+include type information because that is contained in the schema, however each
+message header incorporates a value called the \textit{LITMUS code}, which is
+a hash of the schema used for checking purposes. This makes messages
+self-identifying but not self-descriptive (the schema has to be looked up from
+elsewhere). Messages encoded as XML obviously also include some redundant field
+name information, since this is used to name the tags which wrap data.
+
+%For interoperability purposes there is also a mapping between LITMUS
+%and the RELAX-NG schema language. There is no reverse mapping from RELAX-NG
+%to LITMUS because RELAX-NG is too general and permits structures which
+%do not make sense to PIRATES.
+
+\subsection{LITMUS tests}
+
+The hash value of the schema is the LITMUS code. The check that this matches
+the expected schema's code is the LITMUS test. Note that schemas are normalised
+before the LITMUS number is calculated, so that whitespace will not be
+included. Importantly, the names of fields are included though.
+
+\subsection{Primitive types}
+
+\begin{tabular}{ll}
+\texttt{int name} & Integer\\
+\texttt{dbl name} & Double-precision floating point\\
+\texttt{flg name} & Flag (boolean)\\
+\texttt{txt name} & Text string\\
+\texttt{bin name} & Binary data\\
+\texttt{clk name} & Date and time (clock)\\
+\texttt{loc name} & Location\\
+\end{tabular}
+
+\verb^name^ stands for an arbitrary word used as a label.
+LITMUS understands both \verb^type name^ (C style syntax, as
+shown above), and also the reverse, \verb^name type^.
+
+\subsection{Composite types}
+
+This section defines the syntax for each composite type, and then
+gives specific examples of each. An occurrence of \verb^elt^ can be replaced
+with any of the primitive or composite types, giving rise to
+arbitrarily nested content. Many of the constructions here are
+stated as \verb^name composite-type^; in these cases LITMUS also accepts
+\verb^composite-type name^.
+
+\begin{description}
+\item[Structures:]
+	\verb^name { elt1 elt2 ... eltN }^\\
+   \verb^car^\\
+   \verb^{^\\
+   \verb^   loc pos^\\
+   \verb^   dbl speed^\\
+   \verb^   int passengers^\\
+   \verb^}^\\
+	\\
+   \verb^journey^\\
+   \verb^{^\\
+   \verb^   loc from^\\
+   \verb^   loc to^\\
+   \verb^   stats^\\
+   \verb^   {^\\
+   \verb^      clk elapsed^\\
+   \verb^      int max_speed^\\
+	\verb^      flg delayed^\\
+   \verb^   }^\\
+   \verb^}^\\
+\item[Lists:]~\\
+	\begin{tabular}{ll}
+	\verb^name ( elt )^ & -- List, zero or more occurrences of \verb^elt^\\
+	\verb^name (+ elt )^ & -- List, one or more occurrences of \verb^elt^\\
+	\verb^name (N elt )^ & -- Array, N occurrences of \verb^elt^\\
+	\\
+	\end{tabular}\\
+   \verb^crew^\\
+   \verb^(2^\\
+   \verb^   person^\\
+   \verb^   {^\\
+   \verb^      txt name^\\
+   \verb^      int age^\\
+   \verb^   }^\\
+   \verb^)^\\
+	\\
+   \verb^sightings^\\
+   \verb^(^\\
+   \verb^   clk when^\\
+   \verb^)^\\
+\item[Optional parts:]
+	\verb^[ elt ]^\\
+	\verb^[ int height_limit ]^
+\item[Choices:]
+	\verb^< elt1 elt2 ... eltN >^\\
+   \verb^<^\\
+   \verb^   txt address^\\
+   \verb^   loc gps^\\
+   \verb^   int zip_code^\\
+   \verb^>^\\
+	There is one important restriction to note: options \textbf{may not}
+	appear directly within a choice, or vice versa.
+\item[Enumerations:]
+	\verb^name < #value1 #value2 ... #valueN >^\\
+	\verb^transport < #land #sea #air >^
+\item[Type definition:]
+	\verb^@elt^\\
+   \verb^@circle^\\
+   \verb^{^\\
+   \verb^   loc centre^\\
+   \verb^   dbl radius^\\
+   \verb^}^\\
+	\\
+	The top-level name inside \verb^elt^ becomes the type's label.\\
+	Type definitions must occur in the global scope.
+	You must not define a type with top-level optional or choice
+	content (i.e. \verb^@[^ and \verb^@<^ are illegal)\\
+	Note: when creating types which are aliases for a primitive type,
+	you may find that the \verb^name int^ form is more natural than
+	\verb^int name^, e.g. \verb^@weight int^\\
+	Type definitions may occur in any order and you may reference a
+	type before its definition, as long as it is defined eventually.\\
+	There is one important exception to this freedom to reorder things;
+	the main top-level type defined by the schema \textit{must} be the
+	first one in the file (since that is the only way the parser can
+	reliably tell it apart from any other type definitions).
+\item[Type reference:]
+	\verb&^label name&\\
+	\verb&^circle boundary&\\
+	\verb&^circle -&\\
+\item[Imports:]
+	\verb^@"filename"^\\
+	\verb^@"cpt_status.idl"^\\
+	\\
+	Imports all type definitions (user-defined types and the top-level one)
+	from the file specified. All the types imported can then be used via
+	type references. The file imported must contain only a LITMUS schema
+	(directly importing from schemas embedded within component metadata
+	\verb^.cpt^ files is not supported).\\
+	Import statements may occur anywhere in the file, including above
+	the main type definition, and take effect globally (i.e. you can
+	refer to types from the imported file before the import statement,
+	if you wish).
+\end{description}
+
+\subsection{Syntax}
+
+\subsubsection*{Names}
+
+Names may contain the characters \verb^a..z^, \verb^A..Z^,
+\verb^0..9^ as well as hyphen and underscore. They must start
+with one of the characters \verb^a..z^ or \verb^A..Z^.
+
+\subsubsection*{Unnamed elements}
+
+Anywhere that a \verb^name^ is required, you can substitute the special
+name `\verb^-^'. The element name will then be set to
+the name of its type instead. This is mainly useful when a structure
+contains only a single reference to a type (making this a unique name
+within that scope), particularly a
+user-defined type which has a suitably descriptive name itself.
+Composite type names are \verb^struct^, \verb^list^ and \verb^array^.
+
+\subsubsection*{Whitespace}
+
+Whitespace is used to separate words, but otherwise ignored.
+Newlines are whitespace but have no further meaning, apart from
+terminating comments.
+No commas, semi-colons or other separators are used.
+
+\subsubsection*{Comments}
+
+A comment is introduced with the asterisk character, and extends
+to the end of the line (other candidates were \verb^/, %, #^).
+
+\subsubsection*{Multiple declarations}
+
+Plus signs can be used to declare several elements of the same
+type without repeating the type specifier. For example:\\
+\\
+\verb^flg priority + secret^\\
+\\
+\verb^pilot + copilot^\\
+\verb^{^\\
+\verb^   txt name^\\
+\verb^   bin photo^\\
+\verb^}^\\
+\\
+Plus signs are just a shorthand for the same element repeated with
+different names (e.g. \verb^flg priority flg secret^) and do not
+automatically create a structure, so they must be used inside another
+structure (delimited by braces) to be correct syntax.
+
+\subsection{Special schemas}
+
+There are several special schemas, listed in the table below.
+Instead of following the normal LITMUS rules for schemas, these
+are all written with just a single special character. They also
+have a specially defined corresponding message hash code
+(since hashing a one-character schema in the normal way would
+not lead to a particularly suitable code).
+
+\begin{center}
+\begin{tabular}{|lll|}
+\hline
+Type & Schema text string & Hash code \rule[-2mm]{0mm}{6.5mm}\\
+\hline
+Empty message & \verb^0^ & \verb^000000000000^ \rule[0mm]{0mm}{4.5mm}\\
+No message    & \verb^!^ & \verb^EEEEEEEEEEEE^\\
+Polymorphic   & \verb^*^ & \verb^FFFFFFFFFFFF^ \rule[-2mm]{0mm}{2mm}\\
+\hline
+\end{tabular}
+\end{center}
+
+The first represents messages which are always empty.
+This is most often useful as the message schema for an RPC which
+takes no arguments (hence the reply type will be specified by a normal
+schema, but query messages will be empty). Note that the schema
+for an empty message must be quoted (e.g. \verb^"0"^) in XML-formatted
+component metadata (otherwise it will be interpreted as an integer,
+rather than a string containing just the zero digit).
+
+The second special schema represents no message at all. It is used
+as the reply type for endpoints which do not have replies, i.e.
+sources and sinks. It may seem strange to have a hash code for a
+message type which will never be sent, but doing so keeps the
+framework uniform and avoids some special case logic. Notice the
+distinction between not sending a message, and sending an empty
+message as in the previous case (an empty message serves the purpose
+of indicating that something has happened, or that a reply is
+needed).
+
+The third special schema matches any kind of message. For example
+it is used by the standard event broker component, so that it can
+send and receive messages of any type.
+
+\newpage
+\section{XML message encoding}
+
+The XML encoding is designed so that the type of all the primitive fields
+can be inferred automatically, even without a schema. Of course it is
+not possible to distinguish some of the complex types, such as a
+structure from a list, without the schema though.
+
+\subsection{Primitive types}
+
+These examples show how the primitive types are represented
+in the XML encoding:
+
+\begin{tabular}{l|l}
+\verb^int name^ & \verb^<name>123</name>^\\
+\verb^dbl name^ & \verb^<name>4.56</name>^, \verb^<name>3e-10</name>^\\
+\verb^flg name^ & \verb^<name>true</name>^, \verb^<name>false</name>^\\
+\verb^txt name^ & \verb^<name>Foo bar</name>^, \verb^<name>"123 bar"</name>^\\
+\verb^bin name^ & \verb^<name>0x01AB89EF 0x23CD45</name>^\\
+\end{tabular}
+
+Notice that all content is named. Under the PIRATES XML encoding,
+raw data cannot occur after an end tag (this is of course
+possible in XML in general) because all primitive types must
+be named and hence wrapped inside a tag. The PIRATES XML parser
+will reject anything which does not follow this rule,
+even if it valid XML.
+
+Text strings \textit{must} be quoted if: a) they start with
+a digit, a minus sign, a hash or whitespace, b) they
+consist of the strings \verb^true^ or \verb^false^,
+c) they end in whitespace, or d) they have zero length.
+Otherwise, quoting text strings is optional (the
+export function only quotes strings where required).
+
+The quotes are removed from strings by the import function.
+Inside a quoted string, or at the beginning of a string,
+quotation marks themselves are
+encoded as \verb^\"^. Inside unquoted strings, opening
+angle brackets are encoded as \verb^\<^ to avoid clashing
+with the start of the next tag. On import, the sequences
+\verb^\"^, \verb^\<^ and \verb^\\^ are reduced accordingly.
+
+Floating point numbers must contain a decimal point
+or an exponent. If a floating point is integral then the
+suffix \verb^.0^ must be added.
+
+Binary data may be broken into any number of segments
+(separated by whitespace) but each segment must begin with
+\verb^0x^ and contain an even number of hexadecimal digits.
+
+\subsubsection*{Text formats for \texttt{clk}}
+
+The timezone is assumed to be fixed (local time or GMT depending on
+the scope of the system).
+
+\begin{verbatim}
+time ::= HH:MM:SS[.MMM[UUU]]
+day ::= DD/MM/YYYY
+datetime ::= time | day | time,day | day,time
+\end{verbatim}
+
+\subsubsection*{Text formats for \texttt{loc}}
+
+\begin{verbatim}
+location ::= lat,lon | lat,lon,elev
+lat ::= [-]DDD.FFFF[FFF]
+lon ::= [-]DDD.FFFF[FFF]
+elev ::= [-]MMMMM.CCM
+\end{verbatim}
+
+\subsection{Composite types}
+
+\begin{tabular}{l|l}
+\verb^name { elt1 elt2... eltN }^ & \verb^<name>elt1... eltN</name>^\\
+\verb^name ( elt )^ & \verb^<name>elt elt...</name>^\\
+\verb^name (+ elt )^ & \verb^<name>elt elt...</name>^\\
+\verb^name (N elt )^ & \verb^<name>elt elt...</name>^\\
+\verb^[ elt ]^ & \verb^elt^ or \verb^<name>-</name>^, where \verb^name^ is
+	\verb^elt^'s top-level name\\
+\verb^< elt1 elt2... eltN >^ & \verb^elt1^ or \verb^elt2^ ... or \verb^eltN^\\
+\verb^name < #val1 #val2... #valN >^ &
+	\verb^<name>#val1</name>^ or similar for the other values\\
+\verb^@elt^ & (definitions do not need to be serialised)\\
+\verb~^label name~ & (expanded before serialisation)\\
+\verb~@"filename"~ & (expanded before serialisation)\\
+\end{tabular}
+
+\subsection{Empty elements}
+
+Empty elements are supported, and may be written equivalently as either
+\verb^<name></name>^ or \verb^<name/>^, in the usual way.
+An empty element always signifies an empty list.
+
+N.B. Do not mistake this for an empty string, which is represented by
+\verb^<name>""</name>^, or a missing optional element, which is represented
+by \verb^<name>-</name>^.
+
+\subsection{XML conformance}
+
+The XML format used by PIRATES does not utilise all of the features in
+standard XML. The particular aspects left out are as follows:
+
+\begin{bulletlist}
+\item XML attributes are never used by the encoding! This is
+	a simplification following the observation that they are
+	functionally identical to sub-elements of primitive type
+	specified in a certain order.
+\item There are no processing instructions (those which start with
+   ``\verb^<?^'').
+\item There are no comments.
+\item The document prolog is omitted;
+	A consequence of this is that the XML declaration at the
+	start of each message itself (such as \verb^<?xml version="1.0"?>^)
+	must be omitted (the format is implicit from the PIRATES protocol
+	version number anyway).
+	Another consequence is that there are no references to
+	document type definitions (DTD's).
+\item There are no entity declarations or entity references.
+\item There are no CDATA sections.
+\item There are no namespaces.
+\end{bulletlist}
+
+Whitespace around tags is stripped.
+
+Each message always consists of a \textit{single} XML document.
+
+\newpage
+\section{Component metadata format}
+
+The metadata is split into static (class properties) and dynamic
+(instance properties). Only the status of one instantiation is
+accessible by contacting a component itself, whereas the RDC
+collates status information on all instances of a component.
+
+%Authorised modifications (which require the private key used at
+%time of original component definition) to the metadata may add new SAP's or
+%new versions of existing SAP's API, or change the administrative fields.
+
+\subsection{Static metadata}
+\label{metadata}
+
+\begin{verbatim}
+@component-metadata
+{
+   txt name
+   txt description
+   keywords ( txt keyword )
+   txt designer
+   txt pubkey
+   managed-roles ( ^role-defn - )
+   remap-permission ( ^role - )
+   eps
+   (
+      endpoint
+      {
+         txt name
+         ^endpoint-type type
+         ^api -
+         alternate ( ^api - )
+         obsolete ( ^api - )
+      }
+   )
+}
+
+@api
+{
+   access-control ( ^role - )
+   ^idl message + response
+}
+
+@role
+{
+   txt name
+   txt issuer
+   txt pubkey
+}
+
+@role-defn
+{
+   txt name
+   ^idl request
+}
+
+@idl txt
+@endpoint-type < #client #server #source #sink >
+\end{verbatim}
+
+\subsubsection{Administrative fields}
+
+\begin{bulletlist}
+\item \verb^name^ -- Component name.
+\item \verb^description^ -- Explanation of what the component does, for
+		human consumption.
+\item \verb^keywords^ -- Keywords which can be used when searching for
+		components.
+\item \verb^designer^ -- Name of the person who created the component metadata.
+\end{bulletlist}
+
+\subsubsection{Endpoint fields}
+
+\begin{bulletlist}
+\item \verb^endpoint^ -- Describes one endpoint. Note that clones
+		are not part of the static metadata.
+\item \verb^api^ -- The primary API for this endpoint.
+\item \verb^alternate^ and \verb^obsolete^ -- Alternative API's provided
+		for the same endpoint. Those in the alternate list can be used
+		instead of the primary one, for example by older clients.
+		The obsolete list contains previous API's which are no longer
+		supported, and acts as a historic reference for the schema evolution.
+		Note: neither of these fields are used at present.
+\item \verb^idl^ -- An alias for a text field, when it is used to
+		store LITMUS IDL text.
+\item \verb^message^ and \verb^response^ -- Describes the format of
+		messages sent to and from this endpoint.
+		Sink and source endpoints have no response (schema \verb^"!"^).
+		Some RPCs may have an empty payload for either message or response
+		(schema \verb^"0"^).
+\end{bulletlist}
+
+\subsubsection{Access control fields}
+
+\textbf{Note:} access control is unimplemented, so all of the fields in this
+section are currently unused (but must still be present).
+
+\begin{bulletlist}
+\item \verb^pubkey^ -- Public key for authentication of component implementors.
+%\item \verb^signature^ -- fingerprint of rest of a message
+%		signed with private key; used for update messages (not stored in RDC).
+\item \verb^managed-roles^ -- Defines roles managed by this component,
+		and provides standard access points to request certificates for each one.
+\item \verb^remap-permission^ -- Lists the roles needed to dynamically remap
+		connections to a running instance of this component.
+\item \verb^access-control^ -- A list of roles required to connect to this
+		endpoint.
+\item \verb^issuer^ -- The name of the component which manages this role.
+\item \verb^request^ -- A built-in access point used to request
+		that a role managed by this component be granted to the client,
+		based on evidence presented in the message. This access point always
+		has an access type of RPC.
+\end{bulletlist}
+
+\newpage
+\subsection{Dynamic metadata}
+\label{status}
+
+\begin{verbatim}
+@component-state
+{
+   txt address
+   txt instance
+   txt creator
+   txt cmdline
+   load { int cpu + buffers }
+   ^endpoints -
+   [ ^freshness - ]
+}
+
+@endpoints
+(
+   endpoint
+   {
+      txt name
+      int processed + dropped * Message counts
+      [ txt subscription ] [ txt topic ]
+      peers ( ^peer - )
+   }
+)
+
+@peer
+{
+   txt cpt_name
+   txt instance
+   txt endpoint
+   txt address * Host and port
+   [ txt subscription ] [ txt topic ]
+   int lastseq
+   int latency
+}
+
+@freshness
+{
+   int last_ping_secs
+   int latency
+}
+\end{verbatim}
+
+\newpage
+\subsubsection{Dynamic fields}
+
+\begin{bulletlist}
+%\item \verb^current^ -- This group contains status blocks
+%      for all the instantiations of the component which are believed
+%      to be currently alive (i.e. responded to their last ping).
+%		There will be more than one of these if the component is
+%		replicated.
+%\item \verb^recent^ -- This section describes previous instantiations.
+\item \verb^address^ -- Host IP / DNS name, and port number (separated by
+		a colon).
+\item \verb^instance^ -- Instance name of this component instantiation.
+\item \verb^creator^ -- The person running this instance (and possibly
+		responsible if it needs restarting...)
+\item \verb^cmdline^ -- Command line by which the component was invoked.
+\item \verb^cpu^ --
+	current total CPU usage on the machine, as a percentage from 0 to 100.
+\item \verb^buffers^ -- how much memory (in KB) is being used for
+	buffering messages that are awaiting flow control to clear.
+\item \verb^name^ -- The endpoint name.
+		Cloned endpoints are identified as
+		\verb^epname#clone^, where \verb^epname^ is the endpoint
+		name and \verb^clone^ is the clone number.
+\item \verb^processed^ -- contains a count of all messages
+	processed by the endpoint.
+\item \verb^dropped^ -- counts all the messages which have been dropped
+	by the component for flow control reasons.
+\item \verb^peers^ --  Other components mapped to this one.
+		\verb^lastseq^ is the maximum sequence number used.
+      Indirect data sources can be inferred by chasing through the
+		\verb^peers^ of different components at run-time
+		(limited to a list of length 100, using breadth-first search,
+		in order to conserve RDC CPU).
+		\verb^latency^ is the most recently measured latency for this endpoint
+\item \verb^last_ping_secs^ -- The time the component was last pinged by a RDC.
+\item \verb^latency^ -- The currently estimated round-trip time for this
+	component's \verb^get_status()^ endpoint, in microseconds.
+\end{bulletlist}
+
+\newpage
+\section{Built-in endpoints}
+\label{builtin}
+
+All components implement these. This is done for you by the wrapper.
+Components which are pure client still support all these,
+although some of the information is not relevant.
+This allows administration tools to crawl the graph of components and
+clients, even without any widespread use of shared brokers. This graph
+is a generalisation of the component list functionality possible in
+SCOP and other centralised systems.
+
+\begin{itemize}
+
+\item \verb^get_metadata()^
+
+Returns a \verb^component-metadata^ object (see the data representation
+document for the corresponding IDL). This is useful for components
+which are not registered with a RDC (if they are, this information
+is also available from the component definition in the RDC).
+
+\item \verb^get_status()^
+
+Returns a \verb^component-state^ object (see the data representation
+document for the corresponding IDL. The \verb^freshness^
+fields are ignored). The RDC calls this
+method periodically, and also uses the response time to
+measure latency.
+
+\item \verb^lookup_schema(txt hashcode)^
+
+Returns the schema (as a plain text field)
+corresponding to the given hashcode. This is useful for polymorphic
+components which send messages with different types from any of
+those defined in the component metadata itself. The schemas of
+such messages are held in a cache by the component.
+
+\item \verb^map(txt endpoint, txt peer_address, txt peer_endpoint, txt certificate)^
+
+Tries to map the specified endpoints to a given peer. This mapping
+is in addition to any already set up.
+
+\item \verb^unmap(txt endpoint, txt certificate)^
+
+Unmaps all peers from the specified endpoint.
+
+\item \verb^subscribe(txt endpoint, txt peer, txt subscription, txt topic)^
+
+This changes the default subscription for new maps if \verb^peer^ is
+NULL, or the current subscription for a specific peer (component or
+instance name), or the current subscription for all presently mapped
+peers (if \verb^peer^ is \verb^*^).
+
+\item \verb^divert(txt endpoint, txt new_address, txt new_endpoint, txt certificate)^
+
+This causes divert messages to be sent to all peers currently
+connected to the endpoint, requesting them to remap to the
+named target instead of the endpoint in question.
+
+If all goes well then some time after the divert request there will be no
+peers mapped to the endpoint, except for any new arrivals after
+the divert was called.
+
+\item \verb^terminate()^
+
+Instructs the component to shut down.
+
+% Called by the RDC or other component with sufficient authority.
+% The RDC uses it when a new instance of a component which is
+% supposed to be unique is created, and it has requested that
+% the older instance be overridden.
+
+\item \verb^set_log_level(int log_level, int echo_level)^
+
+Changes the log levels for the component. The levels are a sum of
+1 for errors, 2 for warnings, 4 for messages and 8 for debugging.
+
+% Errors = 1, Load statistics = 2, Connections = 4, Actions = 8.
+
+\end{itemize}
+
+% \subsubsection*{Expected future endpoints}
+% 
+% \begin{itemize}
+% 
+% \item \verb^ping()^
+%
+% Called by the RDC periodically. Returns an empty acknowledgement
+% immediately and is used to measure round-trip times.
+%
+% \item \verb^migrate(txt new_address)^
+% 
+% A request to initiate component migration.
+% 
+% \end{itemize}
+
+\newpage
+\section{Subscription language}
+
+\textbf{Note:} \textit{Not all aspects of the subscription language are
+implemented at present (in particular wildcards, built-in variables and
+time/place comparisons are not functional).}
+
+Source endpoints allow topic and content-based subscriptions
+(or both). These facilities are used heavily by the optional broker
+component, but any component may enable subscriptions in order to
+filter stream output. The subscription is specified by the sink,
+and sent across the network so that filtering can be done on a
+per-connection basis at source.
+
+Topic-based subscription consists of a simple match on topic name.
+Content-based subscriptions are described by a match string, such as this:
+
+\begin{verbatim}
+vehicle/owner? & vehicle/position.lon < -1.5 &
+vehicle/timestamp > '1/6/2006' & vehicle/timestamp < '16/6/2006' &
+((vehicle/occupants.items = 2 & vehicle/occupants/#1 = 'fred bloggs') |
+(vehicle/description/colour = '*green' & vehicle/speed > 50 &
+vehicle/type ~ 'car'))
+\end{verbatim}
+% vehicle:type ~ 'car'))
+
+This matches events for which there exists a \verb^vehicle/owner^ tag, observed
+west of -1.5 degrees longitude in the first half of June, in which either Fred
+is the passenger or the vehicle is green (including dark green, olive green,
+etc), not a car and travelling faster than 50mph.
+
+The basic syntax to describe a tag is a slash-separated path from
+the XML root. This may contain simple wildcards: \verb^*^ matches
+any name and \verb^**^ also matches \verb^/^ characters. Tag paths
+evaluate to the
+content of the tag. If the tag does not exist or does not have a
+primitive data type (i.e. it contains other tags)
+the whole match fails immediately. Path elements may be element names,
+or the index within a structure or array specified as a \verb^#^ sign
+followed by an integer.
+The special sequence of a path followed by \verb^.items^ evaluates
+to the number of child elements of that node (or -1 if it doesn't exist).
+
+%The expression
+%\texttt{tag/tag/tag:attr-name} returns the value of the named
+%attribute rather than the content of the tag (and fails the match
+%if there is no attribute with that name).
+
+Single quotes specify a value, which may begin or end with an asterisk
+wildcard.
+The comparison operators are
+\texttt{=}, \verb^~^, \texttt{<} and \texttt{>}. The tilde
+means ``not equal''. The comparison is data-type aware and works
+with the schema datatypes \texttt{int} (numeric),
+\texttt{dbl} (decimal), \texttt{txt} (a string in single quotes),
+\texttt{flg} (\verb^0^ or \verb^1^) and
+\texttt{clk} (an appropriately formatted timestamp string in single quotes).
+For non-numeric types \texttt{<} and \texttt{>} implement
+lexicographic comparison (forbidden if one of the operands is
+wildcarded).
+
+Tests are combined with the \verb^&^ and \verb^|^ operators (and, or)
+and grouped with parentheses as required. In the absence of parentheses
+expressions are parsed from left to right (there is no precedence
+for operators). The special test \verb=path/name?= succeeds if
+the tag or attribute mentioned exists. Negation can be performed
+with the \texttt{!} operator, for example \verb^! foo/bar < 'value'^
+or \verb^! (some grouped tests...)^.
+
+It is legitimate to compare two fields within the same message
+rather than a field with a fixed value, hence you can say things like
+\verb^alpha/beta/gamma > foo/bar^.
+
+There are special values
+\verb^$srccpt^, \verb^$srcinst^, \verb^$srcep^, \verb^$destep^ and
+\verb^$sequenceid^ which contain the details of
+the message origin and destination, and can be compared like any
+other value, e.g.\\
+\verb^$srccpt ~ 'bogus-component-*'^.
+
+There is a special syntax for the data types \verb^clk^ and
+\verb^loc^ which allow you to break out the day, time-of-day, latitude
+and longitude as separate numeric fields for comparison:
+\verb^foo/bar.day^, \verb^foo/bar.month^,
+\verb^foo/bar.year^, \verb^foo/bar.hour^, \verb^foo/bar.min^,
+\verb^foo/bar.sec^, \verb^foo/bar.micros^, \verb^moo/baa.lat^,
+\verb^moo/baa.lon^, \verb^moo/baa.elev^.
+
+\newpage
+\section{RDC endpoints}
+
+\begin{bulletlist}
+
+\item \verb~register(^event)~
+
+\begin{verbatim}
+@event
+{
+   txt address
+   flg arrived
+}
+\end{verbatim}
+
+Deregistration is achieved by setting the \verb^arrived^ flag to
+false, indicating that the component is departing.
+
+\item \verb~lost(^event)~
+
+The \verb^arrived^ flag is ignored by this call, and should be set to zero.
+
+\item \verb~lookup(^criteria) : @results ( txt address )~
+
+\begin{verbatim}
+@criteria
+{
+   ^map-constraints -
+   ^interface -
+}              
+@map-constraints
+{
+   [ txt cpt_name ]
+   [ txt instance_name ]
+   [ txt creator ]
+   [ txt pub_key ]
+   keywords ( txt keyword )
+   parents ( txt cpt )
+   ancestors ( txt cpt )
+   flg match-endpoint-names
+}
+@interface
+(
+   endpoint
+   {
+      [ txt name ]
+      ^endpoint-type type
+      txt msg-hash + reply-hash
+   }
+)
+\end{verbatim}
+
+\item \verb~list() : ^cpt-list~
+
+\begin{verbatim}
+@cpt-list
+(
+   component
+   {
+      txt address
+      txt cpt-name
+      [ txt instance ]
+   }
+)
+\end{verbatim}
+
+\item \verb~cached_metadata(@txt address) : ^component-metadata~
+
+\item \verb~cached_status(@txt address) : ^component-state~
+
+\item \verb~dump() : ^rdc-dump~
+
+\begin{verbatim}
+@rdc-dump
+(
+   component
+   {
+      txt address
+      ^component-metadata metadata
+      ^component-state state
+   }
+)
+\end{verbatim}
+
+Use of this endpoint is discouraged because it will amount to a lot of
+data; it is usually better to be selective and use a couple of
+RPC's to enquire about a specific component.
+
+The \verb^dump()^ call is provided anyway so that RDC's can
+synchronise after restarting; in this case they do need to know
+everything, and packaging it as a single RPC is more efficient
+than a large number of calls to fetch the information about
+every component.
+
+\item \texttt{events} -- source
+
+\begin{verbatim}
+@event
+{
+   txt address
+   flg arrived
+}
+\end{verbatim}
+
+A stream of events which signify when new components
+connect, components migrate, and old components disconnect.
+Replication of RDCs works by connecting the \verb^events^ stream
+of each to the \verb^register^ sink on the others.
+
+%\item \texttt{metadata\_events} \textit{source}
+%
+%A stream of events containing all changes to the
+%components' metadata, and new component definition.
+%
+%\item \verb=create_component(^component-metadata -)=
+%\textit{sink}
+%
+%\item \verb=update_metadata(txt cpt_name, ^component-metadata data,=\\
+%\verb=private_key(cpt_name, data))=
+%\textit{sink}
+	
+\end{bulletlist}
+
+\appendix
+\newpage
+\section{LITMUS quick reference}
+
+\begin{tabular}{ll}
+\verb^int name^                    & Integer\\
+\verb^dbl name^                    & Double-precision floating point\\
+\verb^flg name^                    & Flag (boolean)\\
+\verb^txt name^                    & Text string\\
+\verb^bin name^                    & Binary data\\
+\verb^clk name^                    & Date and time (clock)\\
+\verb^loc name^                    & Location\\
+\verb^name { elt1 elt2... eltN }^  & Structure\\
+\verb^name ( elt )^                & List, zero or more occurrences of \verb^elt^\\
+\verb^name (+ elt )^               & List, one or more occurrences of \verb^elt^\\
+\verb^name (N elt )^               & Array, N occurrences of \verb^elt^\\
+\verb^[ elt ]^                     & Optional\\
+\verb^< elt1 elt2... eltN >^       & Choice\\
+\verb^name < #val1 #val2... #valN >^ & Enumeration\\
+\verb^@elt^                        & Type definition (top-level name becomes type's label)\\
+\verb~^label name~                 & Type reference\\
+\verb^name1 + name2... + nameN^    & Multiple declaration\\
+\verb^-^                           & Unnamed element\\
+\verb^* Foo bar^                   & Comment\\
+\verb^@"filename"^                 & Import types from a file\\
+\end{tabular}
+
+\end{document}

@@ -1,0 +1,43 @@
+all: overview.ps userguide.ps c.ps java.ps datarepr.ps \
+protocol.ps
+
+pdf: overview.pdf userguide.pdf c.pdf java.pdf datarepr.pdf \
+protocol.pdf
+
+f: force
+
+install:
+	@ ../scripts/checkenv
+	@ ../scripts/doinst doc/sbus *.pdf Changelog
+
+force:
+	latex overview.tex
+	latex userguide.tex
+	latex c.tex
+	latex java.tex
+	latex datarepr.tex
+	latex protocol.tex
+	dvips -t a4 -o overview.ps overview.dvi
+	dvips -t a4 -o userguide.ps userguide.dvi
+	dvips -t a4 -o c.ps c.dvi
+	dvips -t a4 -o java.ps java.dvi
+	dvips -t a4 -o datarepr.ps datarepr.dvi
+	dvips -t a4 -o protocol.ps protocol.dvi
+
+#%.ps: %.txt
+#	a2ps --version-control=off --highlight-level none -M a4 -1 -T3 -o $@ $<
+
+%.pdf: %.ps
+	ps2pdf $<
+
+%.ps: %.dvi
+	dvips -t a4 -o $@ $<
+
+%.dvi: %.tex
+	latex $<
+
+clean:
+	rm -f *.aux *.dvi *.log *.toc *.ps
+	
+reallyclean: clean
+	rm -f *.pdf

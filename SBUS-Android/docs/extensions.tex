@@ -1,0 +1,231 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr,graphicx,latexsym}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+% \newcommand{\spc}{\hspace{0.5mm}$\sqcup$\hspace{0.6mm}}
+\newcommand{\spc}{\hspace{0.5mm}$\Box$\hspace{0.5mm}}
+\newcommand{\todo}[1]{\textbf{TODO: #1}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{SBUS Extensions}
+\fancyfoot{}
+\pagestyle{empty}
+
+\input{macros}
+\begin{document}
+
+% \sfseries
+\centerline{\textbf{\LARGE SBUS Extensions}}
+\begin{center} \large
+David Ingram\\
+TIME-EACM Project\\
+University of Cambridge Computer Lab\\
+26th September 2007\\
+\end{center}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+\pagestyle{fancy}
+
+\vspace{1cm}
+The following extensions to the system are planned, but not yet implemented.
+See also the SBUS Prebuilt Components document, for features which can
+be provided as components (without changing the library or wrapper).
+
+\section{Partial message matching}
+
+This is a new feature of the wrapper. It allows
+components to specify that an endpoint matches any type whose tree
+\textit{covers} the specified schema. Any node in the tree may have
+additional branches, but the required schema must be there as a minimum
+and based at the root. This will eventually become the default
+schema matching rule (the present one will have to be selected
+explicitly as ``exact matches only''). The purpose of this is to enable
+automatic support for nondestructive schema evolution, in which new
+fields are added to existing message types without breaking the
+old clients or sinks.
+
+See the sub-tree matching feature below for details of the implementation.
+
+\section{Sub-tree message matching}
+
+This is another new feature of the wrapper. It allows components to specify
+that an endpoint matches any schema type which contains a required sub-tree.
+This is useful for writing more generic components which can process
+any message containing a certain specific piece of information, such
+as a timestamp, location, or well-known type.
+
+On receiving a previously unseen
+message hash code, the \verb^lookup_schema^ endpoint of the peer component
+is used to retrieve the full schema for that code.
+The schema is parsed and the tree is
+searched for the sub-tree required. The result (either failure,
+or the position of the sub-tree) is then cached for that message
+hash code.
+
+When messages arrive, the requested sub-tree extracted and
+returned to the client, but the rest of the message is retained
+for later reintegration (for example if the component wishes to
+change the sub-tree but then retransmit the whole message somewhere
+else).
+
+\section{Access control}
+
+An access control handshake occurs when a new TCP connection is
+opened to a connection, before any data messages are sent.
+This establishes which roles the client holds. For example,
+they may only possess the roles required for some subset of the endpoints
+available.
+Access control is possible even if the connection is unsecured (no
+SSL link).
+
+Roles are controlled by components.
+The certificate format is standardised as follows:
+
+\begin{verbatim}
+@certificate
+{
+   txt client
+   txt issuer
+   txt role-name
+   ^access-type -
+   clk expiry
+   txt signature
+}
+
+@access-type < #private #redistributable #republishable >
+\end{verbatim}
+
+The \verb^signature^ is a digital signature of the remainder of the
+structure. \verb^issuer^ is the name of the component which issued
+this certificate. (\verb^issuer^, \verb^role-name^) is unique
+up to multiple components with the same name (the signature
+proves the intended issuer was used).
+
+Clients must possess all of the roles required by a given stream.
+Normally (but not always) when multiple streams are combined by one
+component, any stream it republishes should require the combination
+of the requisite roles.
+
+Role membership has an associate flag with three states:
+\begin{bulletlist}
+\item \texttt{private:} must not disclose stream data in any form
+\item \texttt{redistributable:} may redistribute stream providing the same
+	roles are checked
+\item \texttt{republishable:} may republish data derived from the stream
+	and allow weaker sets of roles to view this
+\end{bulletlist}
+
+\subsection*{Access control for remapping}
+
+Third parties must possess the roles in the \verb^remap_permission^
+element of the component metadata.
+
+\section{Potential components}
+
+Potential components do not exist until required, at which point
+they are dynamically created. This conserves server resources.
+They can be instantiated based on remote requests.
+
+Stateless components can be destroyed and then
+recreated on demand.
+
+Potential components are particularly useful for output filters,
+such as a component which emits events when a data value changes
+more than some delta, which need to exist close to the
+source component in order to effectively quench messages and
+save network bandwidth.
+
+There are likely to be a very large number of possible potential
+components based on the combinations of filters and so on.
+It is therefore too expensive to keep them all running all the
+time as ordinary components.
+
+\section{Restarting processes}
+
+This is related to potential components.
+SBUS does not automatically restart crashed/killed processes for you.
+It is possible to use boot scripts and \texttt{cron} for this, of course.
+
+Consider adding automatic restarting via ssh, new \texttt{exe\_path} metadata,
+and activation mode = Manual $|$ Always $|$ OnDemand.
+
+\section{Security}
+
+Build OpenSSL into the standard implementation.
+
+Either protocol negotiation and/or metadata flags needs to specify
+or negotiate whether SSL is to be used (at a performance cost)
+or not.
+
+Support session resumption for higher performance, especially for
+server pings.
+
+If SSL isn't being used for confidentiality we still need
+authorisation for access control, by encrypting a certificate or
+password using SSL or a payload encryption library.
+
+External data sinks consist of an ordinary stream sink + demux
+component at open firewall port + encryption. Of course, some internal
+client machines may need these security features anyway.
+
+\section{Option blocks}
+
+This is a new LITMUS schema syntax:
+
+\begin{verbatim}
+name
+{?
+   contents
+   etc...
+}
+\end{verbatim}
+
+An option block is the same as a structure, but begins with
+\verb^{?^ instead of \verb^{^. The difference is that all
+elements of the structure are optional. The effect is the
+same as writing the following:
+
+\begin{verbatim}
+name
+{
+   [ contents ]
+   [ etc... ]
+}
+\end{verbatim}
+
+\section{Component creation tool}
+
+Component metadata must be created and uploaded to a running RDC (in most
+cases) or stored in a file (for overlay networks etc) before you can
+instantiate a component for the first time.
+
+The \texttt{cptedit} tool can help you do this, or you can enter a complete
+XML component description with any text editor.
+
+\texttt{cptedit} facilities (not implemented yet!):
+\begin{bulletlist}
+\item Fields to edit metadata
+\item Ability to create new components
+\item Displays endpoint fields
+\end{bulletlist}
+
+\end{document}
