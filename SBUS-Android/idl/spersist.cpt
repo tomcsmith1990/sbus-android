@@ -1,0 +1,14 @@
+<component-metadata>
+	<name>spersist</name>
+	<description>Generic stream persistence component</description>
+	<keywords></keywords>
+	<designer>David Ingram</designer>
+	<endpoints>
+		<endpoint>
+			<name>sink</name>
+			<type>#sink</type>
+			<message>*</message>
+			<response>!</response>
+		</endpoint>
+	</endpoints>
+</component-metadata>
