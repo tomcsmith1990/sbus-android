@@ -1,0 +1,74 @@
+INSTALL_TARGETS = checkschema checkimport checkmetadata checkvalidate \
+	litmuscode analysecpt archive extract
+OTHER_TARGETS = misctest nettest
+TARGETS = ${OTHER_TARGETS} ${INSTALL_TARGETS}
+
+all: ${TARGETS}
+
+install:
+	@ ../scripts/checkenv
+	@ ../scripts/doinst bin ${INSTALL_TARGETS}
+
+# Defines to use the installed (as root) version of the library:
+#
+# SBUS_INCLUDE=
+# SBUS_LIBRARY=-lsbus -lsbuswrap
+# SBUS_LIBFILE=/usr/local/lib/libsbus.a /usr/local/lib/libsbuswrap.a
+
+# Defines to use the installed (as user) version of the library:
+#
+# SBUS_INCLUDE=-I${HOME}/include
+# SBUS_LIBRARY=-L${HOME}/lib -lsbus -lsbuswrap
+# SBUS_LIBFILE=${HOME}/lib/libsbus.a ${HOME}/lib/libsbuswrap.a
+
+# Defines to refer directly to the built (not installed) library:
+#
+SBUS_INCLUDE=-I../library -I../wrapper
+SBUS_LIBRARY=-L../library -L../wrapper -lsbus -lsbuswrap
+SBUS_LIBFILE=../library/libsbus.a ../wrapper/libsbuswrap.a
+
+SBUS_HEADERS = ../library/error.h ../library/datatype.h \
+	../library/dimension.h ../library/hash.h ../library/builder.h \
+	../library/component.h ../library/net.h ../library/multiplex.h \
+	../wrapper/litmus.h ../wrapper/marshall.h ../wrapper/unmarshall.h \
+	../wrapper/express.h ../wrapper/validate.h
+
+# Targets:
+
+misctest: misctest.o ${SBUS_LIBFILE}
+	g++ -Wall -o misctest misctest.o ${SBUS_LIBRARY}
+
+nettest: nettest.o ${SBUS_LIBFILE}
+	g++ -Wall -o nettest nettest.o ${SBUS_LIBRARY}
+
+checkschema: checkschema.o ${SBUS_LIBFILE}
+	g++ -Wall -o checkschema checkschema.o ${SBUS_LIBRARY}
+
+checkimport: checkimport.o ${SBUS_LIBFILE}
+	g++ -Wall -o checkimport checkimport.o ${SBUS_LIBRARY}
+
+checkvalidate: checkvalidate.o ${SBUS_LIBFILE}
+	g++ -Wall -o checkvalidate checkvalidate.o ${SBUS_LIBRARY}
+
+checkmetadata: checkmetadata.o ${SBUS_LIBFILE}
+	g++ -Wall -o checkmetadata checkmetadata.o ${SBUS_LIBRARY}
+
+analysecpt: analysecpt.o ${SBUS_LIBFILE}
+	g++ -Wall -o analysecpt analysecpt.o ${SBUS_LIBRARY}
+
+litmuscode: litmuscode.o ${SBUS_LIBFILE}
+	g++ -Wall -o litmuscode litmuscode.o ${SBUS_LIBRARY}
+
+archive: archive.o ${SBUS_LIBFILE}
+	g++ -Wall -o archive archive.o ${SBUS_LIBRARY}
+
+extract: extract.o ${SBUS_LIBFILE}
+	g++ -Wall -o extract extract.o ${SBUS_LIBRARY}
+
+# Objects:
+
+%.o: %.cpp ${SBUS_HEADERS}
+	g++ -Wall ${SBUS_INCLUDE} -c $<
+
+clean:
+	rm -f ${TARGETS} *.o
