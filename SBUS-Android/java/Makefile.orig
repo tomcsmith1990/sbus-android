@@ -1,0 +1,5 @@
+all:
+	javac -d classes *.java
+
+clean:
+	rm -f classes/*.class
