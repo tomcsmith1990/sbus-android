@@ -1,0 +1,201 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr,graphicx,latexsym}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+% \newcommand{\spc}{\hspace{0.5mm}$\sqcup$\hspace{0.6mm}}
+\newcommand{\spc}{\hspace{0.5mm}$\Box$\hspace{0.5mm}}
+\newcommand{\todo}[1]{\textbf{TODO: #1}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{SBUS Hackers Guide}
+\fancyfoot{}
+\pagestyle{empty}
+
+\input{macros}
+\begin{document}
+
+% \sfseries
+\centerline{\textbf{\LARGE SBUS Hackers Guide}}
+\begin{center} \large
+David Ingram\\
+TIME-EACM Project\\
+University of Cambridge Computer Lab\\
+20th February 2008\\
+\end{center}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+\pagestyle{fancy}
+
+\vspace{5mm}
+This documents some of the SBUS internals for hackers.
+Ordinary developers who wish to create application components
+shouldn't need this -- only people who wish to port the library
+to another language binding, or to modify the middleware itself.
+
+\section{Directory structure familiarisation}
+
+The SBUS archive includes subdirectories called \verb^library/^,
+\verb^wrapper/^, \verb^tools/^, \verb^utils/^,
+\verb^docs/^, \verb^idl/^ and \verb^examples/^. The \verb^library/^
+subdirectory contains the source code for the library,
+\verb^wrapper/^ contains the wrapper program and an additional library
+with functionality such as schema parsing nor needed by the component
+library, the \verb^tools/^ subdirectory contains pre-built components
+including the RDC, event broker and demo programs, and \verb^utils/^
+contains utilities for testing the system and analysing component
+metadata.
+
+Documentation can be found in \verb^docs/^.
+An general description of the SBUS system is in \verb^docs/overview.ps^,
+and it is recommended to read the overview document first.
+Changes since the last release are in \verb^docs/Changelog^.
+
+The \verb^idl/^ directory contains component metadata (\verb^.cpt^ files) and
+some important individual schemas (\verb^.idl^ files). Metadata for the sample
+component is in \verb^demo.cpt^ and the master schema in
+\verb^cpt_metadata.idl^. The master schema is a LITMUS schema which describes
+the component metadata format itself.
+
+The \verb^examples/^ directory contains
+some sample schemas in separate files, together with typical
+messages adhering to those schemas in the XML encoding.
+There is also one example of a series of messages stored in
+the persistent data file format, in \verb^bus_stream.xml^.
+
+\section{Tests}
+
+The \verb^utils/^ directory contains a number of test programs,
+including:
+\begin{bulletlist}
+\item \verb^checkimport^ -- tests the XML import and export function
+\item \verb^checkvalidate^ -- validates an XML message against a schema
+\end{bulletlist}
+If run with no arguments they all print their usage information.
+There are also two scripts, called \verb^runtests^ and \verb^regress^.
+The former runs the various test programs on data from the
+\verb^examples/^ directory. The \verb^regress^ script automates
+this further by calling \verb^runtests^ for you and comparing the
+output with that in the file \verb^correct_output^.
+
+\section{Changing IDL for built-ins}
+
+\section{Major classes}
+
+\section{Protocol message to net class mapping}
+
+% \section{Wrapper implementation}
+% 
+% The library called by the component has no threads.
+% It talks to the wrapper synchronously via one pipe per endpoint.
+% Wrappers talk to other wrappers via one TCP connection per endpoint
+% (in the future all links between the same pair of components may
+% share one connection).
+% 
+% \section{Creating a pure-client component}
+% 
+% Even applications which act only as SBUS clients and sinks need an
+% \verb^scomponent^ object. They merely do not provide any services.
+% 
+% Strictly speaking a pure-client component need not be \textit{registered}
+% with a RDC as most components are; however RDC addresses are specified
+% in order to look up other components anyway, so the client component
+% usually does get registered somewhere.
+% The client component must of course still supply a
+% name of some sort for itself, which is useful to improve the clarity of the
+% monitoring utilities when labelling connections.
+
+\section{Sequence of data transformation operations}
+
+The following sequences are illustrative of the typical data
+transformations performed by SBUS. Most of these are done for
+you by the library routines in practice. For each step the types of
+the input data and the result are given.
+
+\subsection*{Message composition and send/receive sequence:}
+
+\begin{tabular}{l|l|l|l}
+Stage & Inputs & Outputs & Function\\
+\hline
+1. Schema parse: & LITMUS text & \verb^Schema *^ & \verb^Schema::load()^\\
+2. Pack:         & native types & \verb^snode *^ & \verb^pack()^\\
+3. Marshall:     & \verb^snode *, Schema *^ & binary data & \verb^marshall()^\\
+4. Transmit      & binary data & binary data & \verb^sendpoint::*()^\\
+5. Unmarshall:   & binary data, \verb^Schema *^ & \verb^snode *^ (or error) &
+\verb^unmarshall()^\\
+6. Extract:      & \verb^snode *^ & native types & \verb^snode::extract()^\\
+\end{tabular}
+
+\subsection*{Message import, send/receive and export sequence:}
+
+\begin{tabular}{l|l|l|l}
+Stage & Inputs & Outputs & Function\\
+\hline
+1. Schema parse: & LITMUS text & \verb^Schema *^ & \verb^Schema::load()^\\
+2. Import:       & XML text & \verb^snode *^ & \verb^snode::import()^\\
+3. Marshall:     & \verb^snode *, Schema *^ & binary data & \verb^marshall()^\\
+4. Transmit      & binary data & binary data & \verb^sendpoint::*()^\\
+5. Unmarshall:   & binary data, \verb^Schema *^ & \verb^snode *^ (or error) &
+\verb^unmarshall()^\\
+6. Export:       & \verb^snode *^ & XML text & \verb^snode::toxml()^\\
+\end{tabular}
+
+\subsection*{Message import and usage sequence:}
+
+\begin{tabular}{l|l|l|l}
+Stage & Inputs & Outputs & Function\\
+\hline
+1. Schema parse: & LITMUS text & \verb^Schema *^ & \verb^Schema::load()^\\
+2. Import:       & XML text & \verb^snode *^ & \verb^snode::import()^\\
+3. Validate:     & \verb^snode *, Schema *^ & \verb^bool^
+      (+ disambiguates) & \verb^validate()^\\
+4. Extract:      & \verb^snode *^ & native types & \verb^snode::extract()^\\
+\end{tabular}
+
+\subsection*{Other operations:}
+
+\begin{tabular}{l|l|l|l}
+Operation & Inputs & Outputs & Function\\
+\hline
+Express: & \verb^const char *subs^ & \verb^subscription *^ &
+\verb^new subscription^\\
+Match: & \verb^snode *, subscription *^ & \verb^bool^ &
+\verb^subscription::match()^\\
+Translate: & \verb^Schema *^ & RELAXNG & \textbf{TODO}\\
+\end{tabular}
+
+\subsection*{Marshalling functions}
+
+\verb^snode^s are converted to and from a serialised binary
+representation suitable for sending over the wire as follows:
+
+\begin{verbatim}
+unsigned char *buf = marshall(snode *s, Schema *schema, int *length,
+   const char **err);
+snode *s = unmarshall(const unsigned char *buf, int length, Schema *schema,
+   const char **err);
+\end{verbatim}
+
+\verb^marshall^ returns binary data. The number of bytes generated is
+returned in \verb^length^. Both functions return NULL in case of error,
+and place an error message into \verb^err^.
+
+\end{document}

@@ -1,0 +1,848 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr,graphicx,latexsym}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+% \newcommand{\spc}{\hspace{0.5mm}$\sqcup$\hspace{0.6mm}}
+\newcommand{\spc}{\hspace{0.5mm}$\Box$\hspace{0.5mm}}
+\newcommand{\todo}[1]{\textbf{TODO: #1}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{PIRATES C++ Binding}
+\fancyfoot{}
+\pagestyle{empty}
+
+\input{macros}
+\begin{document}
+
+% \sfseries
+\centerline{\textbf{\LARGE PIRATES C++ Binding}}
+\begin{center} \large
+David Ingram\\
+TIME-EACM Project\\
+University of Cambridge Computer Lab\\
+8th November 2008\\
+\end{center}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+\pagestyle{fancy}
+
+\section{General}
+
+The \verb^snode^ object is the in-memory representation
+for all PIRATES message content (an \verb^smessage^ includes
+an \verb^snode^ and some metadata, such as the message source).
+
+\verb^snode^s are obtained in one of three ways: by using a
+set of ``packing'' functions to convert data from your programming
+language's native types, by importing from some XML text, or by receiving
+them from PIRATES across the network.
+
+Given an \verb^snode^, you can use a set of ``extraction''
+functions to convert to your programming language's natively
+typed variables, or export it to an XML string, or send it
+across the network using PIRATES.
+
+The packing and extracting operations are
+performed manually using C++ functions. The recommended approach is to
+consolidate these calls into specific marshalling methods you define
+for your application's objects. It would also be possible to write
+a stub generator to automatically create the packing and extracting
+code, but such a thing is not shipped with PIRATES.
+
+It is only permissable to extract data from an \verb^snode^ which has
+been \textit{validated}. This is the process of having it checked
+against a schema written in the LITMUS language, which describes
+the valid message types.
+As well as ensuring the message conforms to the schema, the validation
+procedure performs the additional function of establishing the exact
+types for the data, for example deciding whether a C++
+\verb^int^ represents an integer or a boolean, and whether a string
+is really a string or actually should be interpreted as a timestamp.
+Finally it sets up some state for efficient extraction.
+
+Validation is normally done for you, whenever you use PIRATES to send an
+\verb^snode^ across the network. In fact PIRATES will validate the
+message once at the sender before transmitting it, and again at the
+receiver before handing it over to the other application.
+
+Internally the validated \verb^snode^ is marshalled to a binary
+representation for transmission across the network, and then
+unmarshalled back to an \verb^snode^ at the other end.
+The schema is essential at the unmarshalling stage in order to
+make sense of the message sent over the wire, since the default
+binary encoding does not transmit verbose type information.
+
+In a few special cases (for example if you import an XML message
+from a file, and then wish to inspect it locally with the extraction
+functions), an application might wish to validate a message itself.
+This service is only available to C++ programs; see Section \ref{schemas}
+on schemas for details.
+
+\subsection{Memory management}
+
+The C++ API adopts a convention for memory management, as follows.
+
+Buffers and objects passed \textit{to} PIRATES functions must be allocated and
+deallocated by the caller. The caller may deallocate them immediately
+after making the call, because the API takes copies of all arguments.
+
+Buffers and objects returned by PIRATES functions are
+allocated by PIRATES, but must be deallocated using the \verb^delete^
+operator by the caller when they are no longer required.
+
+There are currently a small number of exceptions to the memory
+management rule for efficiency reasons (subject to review), as follows:
+
+\begin{bulletlist}
+\item Element names returned to you by \verb^snode::get_name()^
+      are shallow copies; do not delete them.
+\item The \verb^snode^ functions \verb^extract_txt()^, \verb^extract_bin()^
+      and \verb^extract_value()^ return shallow copies. Do not delete
+		the data returned.
+\end{bulletlist}
+
+\section{Packing and extracting}
+
+\subsection{Packing functions}
+
+The packing functions are used to programmatically build messages as
+\verb^snode^s in memory. The first set of pack functions simply wrap primitive
+types with an \verb^snode^. The second set pack multiple existing
+\verb^snode^s into compound data structures. You must pack fields
+in the same order they are specified in the schema.
+
+The packing functions allow you to optionally specify element
+names, if you wish to make your code clearer and introduce additional
+field name checks. It is also acceptable to omit them (NULL is passed
+instead by the default arguments). If you do pass element names
+you must not delete these strings whilst the \verb^snode^ is in use,
+because shallow copies are taken for speed. Generally this isn't
+a problem as the element names you specify are usually string constants
+in your program.
+
+To simplify memory management, when you delete an \verb^snode^ containing
+references to other subnodes (inside structures, lists, arrays etc)
+the destructor also recursively destroys those. This means that you must
+not manually delete intermediate \verb^snode^s created during the
+packing process. The benefit is that you do not have to name or
+keep track of them, so pack functions can be chained, for example:
+\verb^sn = pack(pack(5), pack("foo"));^
+
+\begin{verbatim}
+snode *pack(int n, const char *name = NULL); // int
+snode *pack_bool(int n, const char *name = NULL); // flg
+snode *pack(const char *s, const char *name = NULL); // txt, value
+snode *pack(const char *data, int len, const char *name = NULL); // bin
+snode *pack(double x, const char *name = NULL);
+snode *pack(sdatetime *time, const char *name = NULL);
+snode *pack(slocation *loc, const char *name = NULL);
+snode *pack(SNull, const char *name = NULL);
+
+int select = get_id(const char *value);
+
+// Struct, List, Seq, Array:
+snode *mklist(const char * name = NULL);
+snode *snode::append(snode *n);
+snode *pack(snode **array, int n, const char *name = NULL);
+snode *pack(snode *n1, ..., snode *n6, const char *name = NULL);
+// Variations of the above for from 2 to 6 nodes
+\end{verbatim}
+
+\verb^SNull^ is a predefined constant of type \verb^const char *^ which
+has the value \verb^NULL^. It must be used to pack
+optional elements when they are not present in this particular message.
+(Consequently optional strings can be packed directly, if you use
+\verb^NULL^ to indicate the default value).
+
+Some of the packing functions are used for more than one datatype,
+e.g. the first is used for integers and booleans
+since these are both represented by \verb^int^s in C++. This isn't
+a problem because at validation time the schema will differentiate
+between them and assign the more specific correct type.
+
+There is no explicit mention of choice elements in the
+packing functions; the user simply packs the alternative they have chosen for
+this particular message. PIRATES tries to decide which alternative of a choice
+you are using by looking at the types of the elements. It is
+simplistic and does not look ahead at the types of further elements when it
+does so, hence it can fail in cases where a human examining the whole message
+could differentiate. If there is an ambiguity it can't resolve then
+element names must be provided for those elements (this is the only
+case where element names are not optional).
+
+\subsection{Extraction functions}
+
+The extraction functions are the logical counterpart of the packing
+functions. The programmer is assumed to know what types to expect
+(they are working from the same schema, after all). There are
+extract functions for each primitive type to unwrap an \verb^snode^,
+converting its contents back to a native value.
+
+If the \verb^snode^ you hold is a compound type, you have three options for
+extracting its contents. Firstly, you can call \verb^extract_item()^ specifying
+either the index or field name of the child member required. This returns
+another \verb^snode^ which can then itself be extracted. Secondly, if the
+primitive field you wish to retrieve is only nested inside one level, you can
+access it directly by specifying an optional \verb^item^ index to the relevant
+typed extraction function (e.g. \verb^sn->extract_dbl(3)^ means extract the
+floating point value which is the fourth sub-element inside the structure or
+list \verb^sn^). Finally, if the \verb^snode^ is a structure rather than
+a list, you can do the same but specify the child by name
+instead (there is a separate set of extraction functions which accept a string
+argument for this purpose).
+
+\verb^class snode^\\
+\verb^{^\\
+\verb^   int count(); // Returns number of children, if a compound type^\\
+\verb^   snode *extract_item(int item);^\\
+\verb^   snode *extract_item(const char *name);^\\
+\verb^   snode **extract_array();^\\
+\verb^   const char *get_name(); // Shallow copy^\\
+\verb^   const char *get_name(int item); // Shallow copy^\\
+\verb^   ^\\
+\verb^   int extract_int(^\textit{args}\verb^);^\\
+\verb^   int extract_flg(^\textit{args}\verb^);^\\
+\verb^   double extract_dbl(^\textit{args}\verb^);^\\
+\verb^   const char *extract_txt(^\textit{args}\verb^); // Shallow copy^\\
+\verb^   void *extract_bin(^\textit{args}\verb^); // Shallow copy^\\
+\verb^   int num_bytes(^\textit{args}\verb^);^\\
+\verb^   sdatetime *extract_clk(^\textit{args}\verb^);^\\
+\verb^   slocation *extract_loc(^\textit{args}\verb^);^\\
+\verb^   const char *extract_value(^\textit{args}\verb^); // Shallow copy^\\
+\verb^   int extract_enum(^\textit{args}
+	\verb^); // Only defined on values which have been validated^\\
+\verb^}^\\
+
+\textit{args} may be (i) nothing, (ii) \verb^int item^, or (iii)
+\verb^const char *name^.\\
+For example, you may call:\\
+\verb^extract_int()^, \verb^extract_int(int item)^,
+or \verb^extract_int(const char *name)^.\\
+The value \verb^item^ specifies the child index -- 0, 1, 2 etc.
+
+\section{Component initialisation}
+
+\verb^scomponent^ represents one component (with a connection to the component
+metadata description normally via the RDC, or from a local file).
+
+The following sections deal with the API calls in roughly the order
+they are likely to be used within a program.
+
+\subsection{Establishing a component instance}
+
+\begin{verbatim}
+scomponent *com;
+
+com = new scomponent(const char *cpt_name, const char *instance_name =
+      NULL, CptUniqueness unique = UniqueMultiple);
+
+enum CptUniqueness { UniqueMultiple, UniqueSingle, UniqueReplace };
+\end{verbatim}
+
+Creating the component object also starts the wrapper process running.
+The component is not active, however -- the wrapper waits for further
+configuration.
+
+The \verb^instance_name^ may be omitted, in which case it is set to
+the same as \verb^cpt_name^. Instance names are passed to the RDC
+and can be used to specify individual replicas of a component for
+mapping.
+
+Note: The uniqueness flag is not implemented at present.
+
+\subsection{Adding endpoints}
+
+\begin{verbatim}
+sendpoint *ep;
+
+ep  = com->add_endpoint(const char *name, EndpointType type,
+      const char *msg_hash, const char *reply_hash = NULL);
+
+enum EndpointType
+{ EndpointServer, EndpointClient, EndpointSource, EndpointSink };
+\end{verbatim}
+
+LITMUS hash codes such as \verb^msg_hash^ and \verb^reply_hash^
+represent the schema for a message or endpoint.
+They are passed to the API as strings containing a 12 digit
+hexadecimal number, e.g. ``\verb^AABBCCDDEEFF^''.
+
+There is another version of \verb^add_endpoint()^ which accepts
+\verb^HashCode^ objects instead of hex strings, which is sometimes
+more convenient:
+
+\begin{verbatim}
+ep  = com->add_endpoint(const char *name, EndpointType type,
+      HashCode *msg_hc, HashCode *reply_hc = NULL);
+\end{verbatim}
+
+Repeat calls to \verb^add_endpoint()^ as many times as necessary
+to declare all the endpoints supported by the component.
+You may call \verb^add_endpoint()^ before or after starting the
+component.
+Starting a component serves the dual purpose of attaching it to
+its component metadata and starting the wrapper.
+The endpoints added before the \verb^start()^ call
+are checked against those listed in the component metadata,
+those added afterwards are not.
+
+\subsection{Adding RDCs}
+
+\begin{verbatim}
+com->add_rdc(const char *address);
+com->add_rdc(const char *address);
+...
+\end{verbatim}
+
+The RDCs you add are used to register the component with, and also to
+lookup other components for mapping. These are in addition to those
+set by the \verb^SBUS_RDC_PATH^ environment variable and to the
+default location on the localhost.
+
+Lookups will try all the RDCs sequentially until one succeeds.
+The component will try to register itself with \textit{all}
+the RDCs you have added (some may not exist, which is not an error).
+The exception is addresses which begin with an exclaimation mark '!'
+as a special flag, which indicates that they are for lookup only,
+not registration.
+In all cases the default RDC port number is used if none is supplied.
+
+\subsection{Logging}
+
+There are four types of log output: errors, warnings, messages and
+debugging. Errors are only generated in fatal situations (the
+component always shuts down after emitting an error). Each of
+these four types of logging may be directed to the component's
+log file and/or to stdout. This is controlled by the log levels:
+0 = nothing, 1 = errors, 2 = warnings, 4 = messages, 8 = debugging.
+You can add these values together to select a mixture of message types.
+The initial log level for the log file is read from the environment
+variable \verb^SBUS_LOG_LEVEL^, and for stdout from \verb^SBUS_ECHO_LEVEL^.
+If these are not set then everything is logged to file, and everything apart
+from debugging is sent to stdout (so the default is highly verbose).
+A component may change its own log levels, by calling the following
+static API function:
+
+\begin{verbatim}
+scomponent::set_log_level(int log, int echo);
+\end{verbatim}
+
+\textbf{Note} that \verb^scomponent::set_log_level()^ must be called
+\textit{before} \verb^scomponent::start()^. The API does not currently
+provide a way to change log levels after that point.
+Also, if you wish to inhibit the initial message from the library saying
+that the wrapper has started, call \verb^set_log_level^ before
+\verb^new scomponent^ creates the component.
+Log levels \textit{can} be changed remotely at any time using the built-in
+endpoint for this purpose.
+
+Both \verb^log^ and \verb^echo^ are formed by adding together
+constants representing the desired types of information:
+\verb^LogErrors^, \verb^LogWarnings^, \verb^LogMessages^ and
+\verb^LogDebugging^.
+
+The log files are stored in a directory specified by the \verb^SBUS_DIR^
+environment variable: \verb^$SBUS_DIR/log/^.
+If this environment variable is not set then the
+directory \verb^$HOME/.sbus/log/^ is used by default.
+Log files are named \verb^cptname-instance-X.log^ or \verb^cptname-X.log^
+(the latter if no instance name is set).
+Here \verb^X^ stands for either \verb^W^ or \verb^L^, indicating whether
+the message arises from the wrapper or the library respectively.
+Component log files overwrite previous files with the same name.
+If you simultaneously run two components on the same machine with
+identical component and instance names, the contents of the log
+file are undefined.
+
+\subsection{Starting the component}
+
+\begin{verbatim}
+com->start(const char *metadata_filename, int port = -1);
+\end{verbatim}
+
+This instructs the wrapper to go ahead and validate the component's
+endpoints, and then (if the schemas match the metadata) to register
+with the RDCs if applicable and to begin listening for external
+connections from other components.
+
+The \verb^LITMUS_PATH^ environment variable is used to locate the
+metadata file.
+
+\subsection{\texttt{scomponent} method summary}
+
+\begin{verbatim}
+class scomponent
+{
+   scomponent(const char *cpt_name, const char *instance_name = NULL,
+         CptUniqueness unique = UniqueMultiple);
+   ~scomponent();
+      
+   sendpoint *add_endpoint(const char *name, EndpointType type,
+         const char *msg_hash, const char *reply_hash = NULL);
+   sendpoint *add_endpoint(const char *name, EndpointType type,
+         HashCode *msg_hc, HashCode *reply_hc = NULL);
+   void add_rdc(const char *address);   
+   void start(const char *metadata_filename, int port = -1);
+
+   int count_endpoints();
+   sendpoint *get_endpoint(int index);
+   sendpoint *get_endpoint(const char *name);  
+   sendpoint *fd_to_endpoint(int fd);
+}
+\end{verbatim}
+
+\subsection{Mapping an endpoint}
+
+Mapped \verb^sendpoint^s correspond with an open TCP-IP connection
+from the wrapper to another component's wrapper.
+
+An endpoint of type client may be mapped to at most one server.
+The \verb^map()^ call \textit{remaps} endpoints of type client
+if they are already mapped.
+An endpoint of type server may be mapped
+to any number of clients. Source endpoints may be mapped to any number
+of sink endpoints, and a sink endpoint may be mapped to any number of
+sources.
+
+It is also possible to use an \textit{unmapped} endpoint, and no
+errors result (obviously no data will be returned, and RPCs will
+block indefinitely).
+Many components are written to start running without specifying any
+maps; the user can then link them into the component graph using dynamic
+reconfiguration tools. This is generally more flexible than hardcoding
+\verb^map()^ calls into the application.
+
+It is recommended that all components should be capable of starting
+unmapped (perhaps based on a command-line option).
+Before you use \verb^map()^, consider whether it would be more
+powerful to leave mapping policy open to the RDCs remapping engine
+or other external agents.
+Nevertheless, there are times when a component needs to set
+up maps itself, and to do this they use the following API:
+
+\begin{verbatim}
+class sendpoint
+{
+   // Mapping: 
+   char *map(const char *address, const char *endpoint, int sflags = 0,
+           const char *pub_key = NULL);
+   // If endpoint is NULL, assumes same name as this end
+   // Caller must delete the string returned by map()
+   void unmap();
+   int ismapped();
+   ...
+}
+\end{verbatim}
+
+The \verb^map()^ function returns a string containing the address of the
+other component if successful, otherwise NULL. If non-NULL, this
+string must be deleted by the caller.
+
+The address string is formatted as described in the ``Component
+addresses'' section of the user guide. It can take one of two
+main forms.
+The first form specifies an explicit network address, and does not
+use a RDC.
+The address is then a string of the form \verb^hostname:port^
+(or just \verb^:port^, which is equivalent to \verb^localhost:port^).
+The \verb^hostname^ part may be a DNS name or an IP address in
+dotted decimal notation.
+% and an optional public key if
+% identity must be confirmed.
+
+The second, considerably more flexible form of mapping
+consults the RDC and tries to satisfy the map constraints
+specified by the address string.
+This is the normal approach, since usually the current network address
+of the component required is not known.
+See the user guide for the list of valid constraints (each of which
+begins with a plus sign in the string).
+
+The \verb^endpoint^ parameter may be NULL, in which case it is
+assumed that you wish to map to an endpoint on the target component
+with the same name as the local endpoint being mapped (it is common
+for client/server and source/sink pairs of endpoints which are
+intended to be connected to have the same name).
+
+Normally endpoints are mapped once and then only remapped occasionally,
+e.g. by external agencies to achieve migration. A P2P overlay network
+is an exception -- in this case remapping will be very frequent
+and would use the explicit address method rather than an RDC, since
+components may be randomly accessed potentially worldwide.
+
+\subsubsection{Mapping flags}
+
+Mapping flags are not implemented yet, so currently \verb^sflags^
+should be set to zero.
+
+% \begin{verbatim}
+% // Values for sflags:
+% const int UnavailableSilent = 1 << 0;
+% const int DisconnectSilent  = 1 << 1;
+% const int AttemptFailover   = 1 << 2;
+% const int AttemptReconnect  = 1 << 3;
+% const int AllowMigration    = 1 << 4;
+% const int AwaitTransfer     = 1 << 5;
+% \end{verbatim}
+
+\subsection{Subscriptions}
+
+To keep the interface straightforward, the \verb^map()^ call does not
+include parameters for subscriptions or topics; these are
+specified separately by the \verb^subscribe()^ function.
+
+You can change the subscription for currently mapped endpoints,
+or specify the subscription for new connections. If you are
+mapping an endpoint and need a subscription set up immediately
+(at connection time), you should call \verb^subscribe()^ first
+(with \verb^peer^ set to NULL), and then \verb^map()^.
+
+\begin{verbatim}
+class sendpoint
+{
+   ...
+   void subscribe(const char *topic, const char *subscription,
+      const char *peer);
+}
+\end{verbatim}
+
+In \verb^subscribe()^ calls, either \verb^topic^ or \verb^subscription^
+(or both) may be NULL. If both are NULL, then all messages from this
+endpoint will be returned. If neither are NULL, then both must match
+for an event to be delivered. The subscription is stated in the
+content-matching language also used by the prebuilt Broker component
+and described in the PIRATES Overview document.
+The topic is a straightforward comparison on the topic name used to emit
+events by the component. Content and topic based subscriptions are evaluated
+automatically for each message and each subscriber by the emitting
+component's wrapper process.
+
+The \verb^peer^ parameter may be the name (component or instance)
+of a currently mapped peer whose subscription should be altered.
+It may also be the special string \verb^"*"^, in which case
+the subscription in force for all currently mapped peers is changed.
+Finally, if \verb^peer^ is NULL then the default subscription
+used for future maps to this endpoint is altered.
+
+\section{Data transfer}
+
+\subsection{Data transfer methods}
+
+\begin{verbatim}
+class sendpoint
+{
+   int fd;
+   ...	
+   smessage *rcv();
+   void reply(smessage *query, snode *result, int exception = 0,
+      HashCode *hc = NULL);
+   void emit(snode *msg, const char *topic = NULL, HashCode *hc = NULL);
+   smessage *rpc(snode *query, HashCode *hc = NULL);
+}
+\end{verbatim}
+
+Client endpoints call \verb^rpc()^ and server endpoints
+call \verb^rcv()^ and \verb^reply()^.
+Source endpoints call \verb^emit()^ and sink endpoints call \verb^rcv()^.
+
+The optional \verb^HashCode^ arguments to \verb^emit()^, \verb^rpc()^
+and \verb^reply()^ are used by polymorphic endpoints to indicate the
+type of the message being sent. Normal, non-polymorphic endpoints
+should omit \verb^HashCode^, and the predefined type for the endpoint
+will be used instead.
+
+\verb^rpc()^ returns NULL if the endpoint is unmapped, or mapped to
+more than one peer, or if it becomes unmapped during the call due to
+the server disconnecting.
+
+If \verb^exception^ is \verb^1^ then the result contains error information
+and isn't a normally formatted \verb^snode^.
+
+Methods which return data to the caller, i.e. \verb^rcv()^, \verb^rpc()^,
+return an \verb^smessage^ structure, defined below. The payload
+is stored in the \verb^tree^ field; the other members are useful
+metadata. \verb^seq^ is used for matching up RPC replies.
+
+\begin{verbatim}
+class smessage
+{
+   char *source_cpt, *source_inst, *source_ep;
+   int source_clone;
+   int seq;
+   HashCode *hc;  
+   snode *tree;
+   void *state; // for conversations only
+   char *topic; // NULL if not applicable
+}
+\end{verbatim}
+
+\subsection{Handling client requests}
+
+The methods in \verb^sendpoint^ are called by the component's
+business logic.
+You are free to write single- or multi-threaded components.
+If a component is single-threaded and has multiple services it
+will be necessary to \verb^select()^ on the file descriptors
+for each one to see which to process next. The wrapper only
+delivers incoming messages once they have been completely
+received, so there is no need for
+a component to implement timeouts whilst reading a message.
+
+For sink endpoints, the component
+just has to call the \verb^rcv()^ method.
+This blocks until a message is available; if this is undesirable
+the component should \verb^select()^ on \verb^fd^ first.
+
+For an RPC the component must \verb^rcv()^ and then \verb^reply()^
+passing back the query so the result can be matched up with it.
+
+For source endpoints, the wrapper automatically tracks subscribers, so the
+component just has to call \verb^emit()^, optionally supplying a topic.
+
+For conversations, the component calls \verb^rcv()^, \verb^reply()^,
+\verb^rcv()^, \verb^reply()^ and so on.
+Replies also include the last message received.
+The state held by this side concerning the conversation can be saved
+in the \verb^smessage::state^ variable -- this value, if set, is
+returned by all subsequent \verb^rcv()^'s from the same conversation.
+
+All out-of-band messages such as connection closed and flow control
+are currently dealt with by the wrapper, and not passed up to the
+component through the \texttt{sendpoint} interface.
+
+\section{Other features of \texttt{scomponent}}
+
+\subsection{Declaring schemas}
+
+\begin{verbatim}
+class scomponent
+{
+   ...
+   HashCode *declare_schema(const char *schema);
+   HashCode *load_schema(const char *file);
+}
+\end{verbatim}
+%  void add_certificate(const char *cert);
+
+The \verb^declare_schema^ and \verb^load_schema^ functions add
+a new schema (read from a string or a file respectively) to the wrapper's
+schema cache whilst the component is running.
+This is useful in the special case of polymorphic
+source endpoints, since these may need to define new types
+before emitting them.
+Once declared, a schema is available to all
+endpoints.
+The HashCode returned by these functions must be deleted by the caller.
+
+It is not an error if the schema is already in the cache; in this
+case nothing happens, but the HashCode is still returned. This makes
+these functions a convenient way to look up HashCodes for schemas,
+without needing to link with \verb^libsbuswrap^ in order to parse the
+schema in the application process.
+
+\verb^load_schema^ uses the \verb^LITMUS_PATH^ environment variable
+to locate the file containing the schema.
+
+% The \verb^cert^ is a role certificate (there may be several)
+% which is later presented to the server. Currently certificates are
+% unimplemented.
+
+\subsection{Obtaining wrapper state}
+
+The following methods of \verb^scomponent^ are valid after
+\verb^start()^ has returned.
+
+\begin{verbatim}
+class scomponent
+{
+   ...
+   int count_builtins();
+   sbuiltin *get_builtin(int index); // No need to delete sbuiltin
+   int get_listen_port();
+   const char *get_address();        // No need to delete string
+   snode *get_status();              // Caller should delete snode after use
+   const char *get_schema(HashCode *hc); // Caller should delete string
+}
+
+struct sbuiltin
+{
+   char *name;
+   EndpointType type;
+   HashCode *msg_hc, *reply_hc;
+}
+\end{verbatim}
+
+\verb^get_address()^ returns the canonical address string for this
+component (formed from the IP address of the first non-loopback interface,
+together with the listening port).
+
+\verb^get_status()^ returns an \verb^snode^ containing the current
+component status structure (this is exactly the same thing as that
+returned to third parties by the builtin endpoint of the same name).
+
+\verb^get_schema()^ interrogates the wrapper's schema cache, and
+returns the full text for the schema represented by the supplied
+hash code. This is useful if a component has polymorphic sink
+endpoints and hence may receive messages it doesn't know the schema
+for. If the hash code presented does not appear in the schema
+cache, the string \verb^"?"^ is returned.
+
+\section{Shutting down}
+
+\subsection{Disconnecting from another component}
+
+This closes the TCP connection between the components.
+
+\begin{verbatim}
+ep->unmap();
+\end{verbatim}
+
+\subsection{Terminating your component}
+
+This is done by deleting the \verb^scomponent^ object:
+
+\begin{verbatim}
+delete com;
+\end{verbatim}
+
+This deregisters with the RDC, terminates the wrapper process and frees
+resources.
+
+\section{Thread safety}
+
+\textbf{Each endpoint must be accessed by only one thread}. Multiple threads
+are fine provided each is responsible for different endpoints.
+A single thread may use many endpoints, but it must do so exclusively.
+
+In a multi-threaded component, endpoints of type Server, Source or Sink
+can generally be handled conveniently by their own thread. Multiple
+threads often need to employ the same Client endpoint, however.
+To make this possible without breaking the rule of one thread per
+endpoint, a \verb^clone^ method is provided to duplicate endpoints.
+This is merely a convenience method which simply calls
+\verb^add_endpoint()^ for you to generate another endpoint of exactly
+the same type.
+
+\begin{verbatim}
+sendpoint *epc;
+
+epc = com->clone(ep);
+\end{verbatim}
+
+Only the thread which starts the component may safely call \verb^clone()^.
+
+\section{Import and Export}
+
+\begin{verbatim}
+snode *sn = snode::import(const char *s, const char **err);
+snode *sn = snode::import_file(const char *path, const char **err);
+
+char *s = sn->toxml(int pretty);
+\end{verbatim}
+
+The \verb^import()^ routines convert XML text in a string or from a file
+into a parsed \verb^snode^. In case of error they return NULL
+and place an explanation of the error in \verb^*err^.
+
+\verb^toxml()^ exports an \verb^snode^ as XML text. If \verb^pretty^ is
+\verb^1^ the output will contain newlines and indentation; if
+\verb^pretty^ is \verb^0^ it will all be on one line.
+
+\section{Schemas}
+\label{schemas}
+
+Schemas are not normally manipulated directly by applications; only
+the wrapper does this. C/C++ programs may however call schema functions
+if they wish (for example, clearly administrative programs such
+as \verb^analysecpt^ need to do this). This section describes the
+behind-the-scenes facilities available for such tools.
+
+Schemas are read and parsed like this:
+
+\begin{verbatim}
+schema = Schema::create(const char *s, const char **err);
+schema = Schema::load(const char *pathname, const char **err);
+\end{verbatim}
+
+The first form reads the schema text from a string in memory, the
+second form from a file on disk. If the schema is invalid (and also
+if the file can't be read, for \verb^load^), these functions return
+NULL and place an error message in \verb^err^.
+
+\textit{Technical note:} Schemas are pre-scanned, to build the tree and to extract
+element names into a symbol table. Symbol table indexes appear in
+\verb^snode^'s so that they can be looked up by element name if desired,
+without too much overhead if element names are not used.
+
+\subsection{Validation}
+
+\begin{verbatim}
+int validate(snode *node, Schema *schema, const char **err);
+\end{verbatim}
+
+\verb^validate()^ checks that an \verb^snode^ (typically just imported)
+conforms to a particular schema. It returns 1 if it is valid,
+otherwise it returns 0 and places a pointer to a string containing an
+error message into err. \verb^validate()^ also makes types more specific,
+suitable for unambiguous marshalling.
+
+\section{Simplified \texttt{select()} wrapper}
+
+This is an optional utility provided by the library. It wraps
+the system \verb^select()^ call in a nicer interface. You can use
+either \verb^multiplex^ or the native \verb^select()^ to manage
+your endpoint file descriptors in components.
+
+Adding an endpoint to the multiplex, e.g. \verb^multi->add(ep)^,
+is similar to\\
+\verb^multi->add(ep->fd, MULTI_READ)^, but also
+enables checking of the \verb^ep->message_waiting()^ method. This
+is necessary if your endpoint might receive a message whilst
+it is being mapped or unmapped (in such cases the message is
+automatically enqueued for later delivery, after the map call returns,
+but ordinary \verb^select()^ will not notice a message has arrived
+because it has been read from the file descriptor already).
+
+\begin{verbatim}
+class multiplex
+{
+   enum multi_mode { MULTI_READ, MULTI_WRITE };
+
+   multiplex();
+   ~multiplex();
+
+   void add(int fd, multi_mode mode = MULTI_READ);
+   void add(sendpoint *ep); // Also enables check for ep->message_waiting()
+   void remove(int fd, multi_mode mode = MULTI_READ);
+   void remove(sendpoint *ep, int silent = 0);
+   void clear();
+
+   // These functions return a FD, or -1 if none ready before timeout:
+   int poll();
+   int wait();
+   int pause(int us);
+
+   multi_mode last_mode();
+}
+\end{verbatim}
+
+\end{document}

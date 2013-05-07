@@ -1,0 +1,599 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr,graphicx,latexsym}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+% \newcommand{\spc}{\hspace{0.5mm}$\sqcup$\hspace{0.6mm}}
+\newcommand{\spc}{\hspace{0.5mm}$\Box$\hspace{0.5mm}}
+\newcommand{\todo}[1]{\textbf{TODO: #1}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{SBUS Component Metadata and the RDC}
+\fancyfoot{}
+\pagestyle{empty}
+
+\input{macros}
+\begin{document}
+
+% \sfseries
+\centerline{\textbf{\LARGE SBUS Component Metadata and the RDC}}
+\begin{center} \large
+David Ingram\\
+TIME-EACM Project\\
+University of Cambridge Computer Lab\\
+27th September 2008\\
+\end{center}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+\pagestyle{fancy}
+
+\section{Component metadata format}
+
+The metadata is split into static (class properties) and dynamic
+(instance properties). Only the status of one instantiation is
+accessible by contacting a component itself, whereas the RDC
+collates status information on all instances of a component.
+
+%Authorised modifications (which require the private key used at
+%time of original component definition) to the metadata may add new SAP's or
+%new versions of existing SAP's API, or change the administrative fields.
+
+\newpage
+\subsection{Static metadata}
+\label{metadata}
+
+\begin{verbatim}
+@component-metadata
+{
+   txt name
+   txt description
+   keywords ( txt keyword )
+   txt designer
+   txt pubkey
+   managed-roles ( ^role-defn - )
+   remap-permission ( ^role - )
+   eps
+   (
+      endpoint
+      {
+         txt name
+         ^endpoint-type type
+         ^api -
+         alternate ( ^api - )
+         obsolete ( ^api - )
+      }
+   )
+}
+
+@api
+{
+   access-control ( ^role - )
+   ^idl message + response
+}
+
+@role
+{
+   txt name
+   txt issuer
+   txt pubkey
+}
+
+@role-defn
+{
+   txt name
+   ^idl request
+}
+
+@idl txt
+@endpoint-type < #client #server #source #sink >
+\end{verbatim}
+
+\subsubsection{Administrative fields}
+
+\begin{bulletlist}
+\item \verb^name^ -- Component name.
+\item \verb^description^ -- Explanation of what the component does, for
+		human consumption.
+\item \verb^keywords^ -- Keywords which can be used when searching for
+		components.
+\item \verb^designer^ -- Name of the person who created the component metadata.
+\end{bulletlist}
+
+\subsubsection{Endpoint fields}
+
+\begin{bulletlist}
+\item \verb^endpoint^ -- Describes one endpoint. Note that clones
+		are not part of the static metadata.
+\item \verb^api^ -- The primary API for this endpoint.
+\item \verb^alternate^ and \verb^obsolete^ -- Alternative API's provided
+		for the same endpoint. Those in the alternate list can be used
+		instead of the primary one, for example by older clients.
+		The obsolete list contains previous API's which are no longer
+		supported, and acts as a historic reference for the schema evolution.
+		Note: neither of these fields are used at present.
+\item \verb^idl^ -- An alias for a text field, when it is used to
+		store LITMUS IDL text.
+\item \verb^message^ and \verb^response^ -- Describes the format of
+		messages sent to and from this endpoint.
+		Sink and source endpoints have no response (schema \verb^"!"^).
+		Some RPCs may have an empty payload for either message or response
+		(schema \verb^"0"^).
+\end{bulletlist}
+
+\subsubsection{Access control fields}
+
+\textbf{Note:} access control is unimplemented, so all of the fields in this
+section are currently unused (but must still be present).
+
+\begin{bulletlist}
+\item \verb^pubkey^ -- Public key for authentication of component implementors.
+%\item \verb^signature^ -- fingerprint of rest of a message
+%		signed with private key; used for update messages (not stored in RDC).
+\item \verb^managed-roles^ -- Defines roles managed by this component,
+		and provides standard access points to request certificates for each one.
+\item \verb^remap-permission^ -- Lists the roles needed to dynamically remap
+		connections to a running instance of this component.
+\item \verb^access-control^ -- A list of roles required to connect to this
+		endpoint.
+\item \verb^issuer^ -- The name of the component which manages this role.
+\item \verb^request^ -- A built-in access point used to request
+		that a role managed by this component be granted to the client,
+		based on evidence presented in the message. This access point always
+		has an access type of RPC.
+\end{bulletlist}
+
+\newpage
+\subsection{Dynamic metadata}
+\label{status}
+
+\begin{verbatim}
+@component-state
+{
+   txt address
+   txt instance
+   txt creator
+   txt cmdline
+   load { int cpu + buffers }
+   ^endpoints -
+   [ ^freshness - ]
+}
+
+@endpoints
+(
+   endpoint
+   {
+      txt name
+      int processed + dropped * Message counts
+      [ txt subscription ] [ txt topic ]
+      peers ( ^peer - )
+   }
+)
+
+@peer
+{
+   txt cpt_name
+   txt instance
+   txt endpoint
+   txt address * Host and port
+   [ txt subscription ] [ txt topic ]
+   int lastseq
+   int latency
+}
+
+@freshness
+{
+   int last_ping_secs
+   int latency
+}
+\end{verbatim}
+
+\newpage
+\subsubsection{Dynamic fields}
+
+\begin{bulletlist}
+%\item \verb^current^ -- This group contains status blocks
+%      for all the instantiations of the component which are believed
+%      to be currently alive (i.e. responded to their last ping).
+%		There will be more than one of these if the component is
+%		replicated.
+%\item \verb^recent^ -- This section describes previous instantiations.
+\item \verb^address^ -- Host IP / DNS name, and port number (separated by
+		a colon).
+\item \verb^instance^ -- Instance name of this component instantiation.
+\item \verb^creator^ -- The person running this instance (and possibly
+		responsible if it needs restarting...)
+\item \verb^cmdline^ -- Command line by which the component was invoked.
+\item \verb^cpu^ --
+	current total CPU usage on the machine, as a percentage from 0 to 100.
+\item \verb^buffers^ -- how much memory (in KB) is being used for
+	buffering messages that are awaiting flow control to clear.
+\item \verb^name^ -- The endpoint name.
+		Cloned endpoints are identified as
+		\verb^epname#clone^, where \verb^epname^ is the endpoint
+		name and \verb^clone^ is the clone number.
+\item \verb^processed^ -- contains a count of all messages
+	processed by the endpoint.
+\item \verb^dropped^ -- counts all the messages which have been dropped
+	by the component for flow control reasons.
+\item \verb^peers^ --  Other components mapped to this one.
+		\verb^lastseq^ is the maximum sequence number used.
+      Indirect data sources can be inferred by chasing through the
+		\verb^peers^ of different components at run-time
+		(limited to a list of length 100, using breadth-first search,
+		in order to conserve RDC CPU).
+		\verb^latency^ is the most recently measured latency for this endpoint
+\item \verb^last_ping_secs^ -- The time the component was last pinged by a RDC.
+\item \verb^latency^ -- The currently estimated round-trip time for this
+	component's \verb^get_status()^ endpoint, in microseconds.
+\end{bulletlist}
+
+\newpage
+\section{Built-in endpoints}
+\label{builtin}
+
+All components implement these. This is done for you by the wrapper.
+Components which are pure client still support all these,
+although some of the information is not relevant.
+This allows administration tools to crawl the graph of components and
+clients, even without any widespread use of shared brokers. This graph
+is a generalisation of the component list functionality possible in
+SCOP and other centralised systems.
+
+\begin{itemize}
+
+\item \verb^get_metadata()^
+
+Returns a \verb^component-metadata^ object (see Section \ref{metadata}
+for the corresponding IDL). This is useful for components
+which are not registered with a RDC (if they are, this information
+is also available from the component definition in the RDC).
+
+\item \verb^get_status()^
+
+Returns a \verb^component-state^ object (see Section \ref{status}
+for the corresponding IDL. The \verb^freshness^
+fields are ignored). The RDC calls this
+method periodically, and also uses the response time to
+measure latency.
+
+\item \verb^lookup_schema(txt hashcode)^
+
+Returns the schema (as a plain text field)
+corresponding to the given hashcode. This is useful for polymorphic
+components which send messages with different types from any of
+those defined in the component metadata itself. The schemas of
+such messages are held in a cache by the component.
+
+\item \verb^map(txt endpoint, txt peer_address, txt peer_endpoint, txt certificate)^
+
+Tries to map the specified endpoints to a given peer. This mapping
+is in addition to any already set up.
+
+\item \verb^unmap(txt endpoint, txt certificate)^
+
+Unmaps all peers from the specified endpoint.
+
+\item \verb^subscribe(txt endpoint, txt peer, txt subscription, txt topic)^
+
+This changes the default subscription for new maps if \verb^peer^ is
+NULL, or the current subscription for a specific peer (component or
+instance name), or the current subscription for all presently mapped
+peers (if \verb^peer^ is \verb^*^).
+
+\item \verb^divert(txt endpoint, txt new_address, txt new_endpoint, txt certificate)^
+
+This causes divert messages to be sent to all peers currently
+connected to the endpoint, requesting them to remap to the
+named target instead of the endpoint in question.
+
+If all goes well then some time after the divert request there will be no
+peers mapped to the endpoint, except for any new arrivals after
+the divert was called.
+
+\item \verb^terminate()^
+
+Instructs the component to shut down.
+
+% Called by the RDC or other component with sufficient authority.
+% The RDC uses it when a new instance of a component which is
+% supposed to be unique is created, and it has requested that
+% the older instance be overridden.
+
+\item \verb^set_log_level(int log_level, int echo_level)^
+
+Changes the log levels for the component. The levels are a sum of
+1 for errors, 2 for warnings, 4 for messages and 8 for debugging.
+
+% Errors = 1, Load statistics = 2, Connections = 4, Actions = 8.
+
+\end{itemize}
+
+% \subsubsection*{Expected future endpoints}
+% 
+% \begin{itemize}
+% 
+% \item \verb^ping()^
+%
+% Called by the RDC periodically. Returns an empty acknowledgement
+% immediately and is used to measure round-trip times.
+%
+% \item \verb^migrate(txt new_address)^
+% 
+% A request to initiate component migration.
+% 
+% \end{itemize}
+
+\newpage
+\section{Resource discovery component (RDC)}
+\label{rdc}
+
+\begin{bulletlist}
+\item Provides component discovery: listing components which exist,
+		retrieving and updating metadata \& addressing information
+\item Special service at a well known address
+\item Implemented as a component itself
+\item Security checks for adding completely new components very minimal
+	(anti-DOS only)
+\item Contact service to update location (e.g. when component port numbers
+	change)
+\end{bulletlist}
+
+\subsection{Synposis}
+
+\verb^rdc [ <option> ... ]^
+
+Options:
+
+\begin{tabular}{ll}
+\verb^-a^ & Use any port (rather than the default one)\\
+\verb^-p <port>^ & Try to use the supplied port number\\
+\verb^-j <address>^ & Join (replicate) another RDC\\
+\verb^-bg^ & Run in background\\
+\verb^-f <file>^ & Join all RDCs listed in file, one address per line\\
+\end{tabular}
+
+Note: you may include more than one \verb^-j^ option.
+Addresses of RDCs to replicate must be in one of the forms
+\verb^hostname:port^, \verb^IP-address:port^, \verb^:port^,
+\verb^hostname^ or \verb^IP-address^.
+If you specify an address without a port number then the default is used.
+If an RDC to join with is not running it is silently skipped
+(so it is safe to specify a file of many RDCs, some of which \textit{might}
+be running).
+
+\subsection{Status reporting -- tracking liveness}
+
+The RDC maintains information on the liveness of all components it
+knows about. Components are not required to keep a TCP connection to
+the RDC open for this purpose; instead the RDC pings them peridiocally.
+This conserves port resources on the RDC in large deployments, but
+limits the freshness of the liveness information.
+
+The status of each component is collated by the resource
+discovery component using the \verb^get_status()^ standard SAP.
+It then disconnects from the component immediately.
+
+Note that this only establishes network connectivity and proper
+functioning of the component wrapper and does not guarantee any data
+sources themselves are alive; however any internal failures are the
+component's responsibility.
+
+The RDC publishes a stream of updates to liveness information on its
+\verb^events^ endpoint.
+
+%If there are no currently live instantiations of a given component its
+%``last address known at'' is stored in the \verb^recent^ status
+%block in the metadata.
+
+\subsubsection*{Use of liveness for mutual exclusion (Unimplemented)}
+
+When a new component starts up and specifies the \verb^UNIQ_SINGLE^
+uniqueness flag, the RDC must establish whether any other instances
+are running at that moment. It does this by pinging any marked
+as currently live, to check they have not disappeared since the
+last ping time.
+
+\subsection{API}
+
+\begin{bulletlist}
+
+\item \verb~register(^event)~
+
+\begin{verbatim}
+@event
+{
+   txt address
+   flg arrived
+}
+\end{verbatim}
+
+Deregistration is achieved by setting the \verb^arrived^ flag to
+false, indicating that the component is departing.
+
+\item \verb~lost(^event)~
+
+The \verb^arrived^ flag is ignored by this call, and should be set to zero.
+
+\item \verb~lookup(^criteria) : @results ( txt address )~
+
+\begin{verbatim}
+@criteria
+{
+   ^map-constraints -
+   ^interface -
+}              
+@map-constraints
+{
+   [ txt cpt_name ]
+   [ txt instance_name ]
+   [ txt creator ]
+   [ txt pub_key ]
+   keywords ( txt keyword )
+   parents ( txt cpt )
+   ancestors ( txt cpt )
+   flg match-endpoint-names
+}
+@interface
+(
+   endpoint
+   {
+      [ txt name ]
+      ^endpoint-type type
+      txt msg-hash + reply-hash
+   }
+)
+\end{verbatim}
+
+\item \verb~list() : ^cpt-list~
+
+\begin{verbatim}
+@cpt-list
+(
+   component
+   {
+      txt address
+      txt cpt-name
+      [ txt instance ]
+   }
+)
+\end{verbatim}
+
+\item \verb~cached_metadata(@txt address) : ^component-metadata~
+
+\item \verb~cached_status(@txt address) : ^component-state~
+
+\item \verb~dump() : ^rdc-dump~
+
+\begin{verbatim}
+@rdc-dump
+(
+   component
+   {
+      txt address
+      ^component-metadata metadata
+      ^component-state state
+   }
+)
+\end{verbatim}
+
+Use of this endpoint is discouraged because it will amount to a lot of
+data; it is usually better to be selective and use a couple of
+RPC's to enquire about a specific component.
+
+The \verb^dump()^ call is provided anyway so that RDC's can
+synchronise after restarting; in this case they do need to know
+everything, and packaging it as a single RPC is more efficient
+than a large number of calls to fetch the information about
+every component.
+
+\item \texttt{events} -- source
+
+\begin{verbatim}
+@event
+{
+   txt address
+   flg arrived
+}
+\end{verbatim}
+
+A stream of events which signify when new components
+connect, components migrate, and old components disconnect.
+
+%\item \texttt{metadata\_events} \textit{source}
+%
+%A stream of events containing all changes to the
+%components' metadata, and new component definition.
+%
+%\item \verb=create_component(^component-metadata -)=
+%\textit{sink}
+%
+%\item \verb=update_metadata(txt cpt_name, ^component-metadata data,=\\
+%\verb=private_key(cpt_name, data))=
+%\textit{sink}
+	
+\end{bulletlist}
+
+\subsection{Replication of the RDC}
+
+The RDC is not on any component's data path, and hence the system can
+run for some time without it. It is however important for setting up
+new connections, and as such forms a single point of failure. The
+machine on which it is running may well be rebooted like any other, hence
+to avoid major denial of service it is necessary to replicate the RDC.
+RDCs never migrate, but additional replicas can be started and stopped.
+
+Each RDC has a list of other RDCs it knows about. Typically there
+will be two or three and they will form a group which know about each
+other, but in theory you can have any number. The other RDCs to join
+with are specified on the command line when the RDC is started.
+It is not currently possible to add a new entry to the known list
+for a currently running RDC. The RDC addresses given are only
+``possible'' locations, however (they are simply skipped if not
+running at the time), so it is safe to supply an overly-inclusive file
+listing all likely RDCs which you may wish to join.
+
+A group of RDCs attempt to mirror the information received by any of
+them as closely as possible. This is easy to do by listening to the
+\verb^events^ streams of all the
+other RDCs (hence there's no need for a special inter-RDC protocol).
+When a RDC restarts it calls the \verb^dump()^ method of the
+other RDCs it knows about, in order to update its stored data.
+
+\subsection{Persistence (Draft -- Not implemented yet)}
+
+RDCs commit changes to disc immediately on receipt. All data is stored
+in a single append-only logfile. Each change is a separate entry;
+complete snapshots are also written to the log periodically. The
+logfile does not have read or write permission for ordinary users. If
+the RDC is killed whilst writing to the log, there will be an
+incomplete entry at the end of the log. This will be detected and
+truncated next time it restarts.
+
+The log serves two purposes: reloading state after the RDC is stopped
+and restarted, and insurance against someone getting control of a RDC
+and deleting or modifying all the components. In the latter case after
+the problem is detected the original data could be reinstated by
+examining the log, since it is append-only (apart from truncation of
+partially-written entries).
+
+Each entry in the log is in the form of a complete XML message.
+Entries are separated by a blank line (two newlines in a row)
+for easy detection. When the RDC restarts it scans backwards for
+the most recent snapshot, loads that, then replays the updates
+added after the snapshot upto the end of the log. A special
+restart message is then logged to indicate the times at which
+the RDC was restarted. A complete snapshot is logged once per week
+(i.e. when 168 hours of real time have passed since the timestamp
+on the last snapshot).
+
+The types of entry are therefore snapshots, restart messages,
+and registration/deregistration events. All types are formatted
+in XML and have a timestamp.
+
+\subsection{Schema repository (Unimplemented)}
+
+The RDC also performs the function of persistently storing all
+schemas which it has seen in the past, together with their
+hash codes. It provides the same service as other components
+of returning the text of a schema given a hash code lookup.
+The difference with a RDC is that it stores them persistently.
+
+\end{document}

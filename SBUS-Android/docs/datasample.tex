@@ -1,0 +1,573 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr,graphicx,latexsym}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+% \newcommand{\spc}{\hspace{0.5mm}$\sqcup$\hspace{0.6mm}}
+\newcommand{\spc}{\hspace{0.5mm}$\Box$\hspace{0.5mm}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{SBUS Data Examples}
+\fancyfoot{}
+\pagestyle{empty}
+
+\input{macros}
+\begin{document}
+
+% \sfseries
+\centerline{\textbf{\LARGE SBUS Data Examples}}
+\begin{center} \large
+David Ingram\\
+TIME-EACM Project\\
+University of Cambridge Computer Lab\\
+7th May 2007\\
+\end{center}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+\pagestyle{fancy}
+
+\appendix
+\section{Example messages and schemas}
+
+\subsection{Traffic message}
+
+This example shows some typical complex structured data from a traffic
+monitoring application.
+
+\subsubsection*{LITMUS Schema:}
+
+\begin{verbatim}
+@event
+{
+   txt stream
+   vehicle
+   {
+      type < #car #bike #bus #lorry >
+      [ ^registration - ]
+   }
+   position
+   {
+      dbl longitude
+      dbl latitude
+   }
+   [ direction < #east #west #south #north > ]
+   [ dbl speed ]
+   clk time
+   data-providers (+ txt provider )
+   [ dbl probability ]
+}
+
+@registration txt
+\end{verbatim}
+
+\subsubsection*{XML Message encoding:}
+
+\begin{verbatim}
+<event>
+   <stream>alpha</stream>
+   <vehicle>
+      <type>#car</type>
+      <registration>AB06 CDE</registration>
+   </vehicle>
+   <position>
+      <longitude>0.123</longitude>
+      <latitude>52.34</latitude>
+   </position>
+   <direction>east</direction>
+   <time>01/04/2006, 07:37:33</time>
+   <data-providers>
+      <provider>ANPR</provider>
+      <provider>Irisys</provider>
+   </data-providers>
+   <probability>0.97</probability>
+</event>
+\end{verbatim}
+
+\subsubsection*{Binary message encoding:}
+
+\begin{tabular}{ll}
+Count & String length\\
+String & ``alpha''\\
+Count & 1 byte enumeration ID, value 0\\
+Byte & Optional case flag, value 1\\
+Count & String length\\
+String & ``AB06 CDE''\\
+8 bytes & Floating point, value 0.123\\
+8 bytes & Floating point, value 52.34\\
+Byte & Optional case flag, value 1\\
+Count & 1 byte enumeration ID, value 0\\
+Byte & Optional case flag, value 0\\
+8 bytes & Date and Time\\
+& \\
+Count & 1 byte list length, value 2\\
+Count & String length\\
+String & ``ANPR"\\
+Count & String length\\
+String & ``Irisys"\\
+& \\
+Byte & Optional case flag, value 1\\
+8 bytes & Floating point, value 0.97\\
+\end{tabular}
+
+\subsubsection*{RELAX-NG equivalent schema:}
+
+\begin{verbatim}
+<element name="event">
+   <element name="stream"><text/></element>
+   <element name="vehicle">
+      <element name="type">
+         <choice>
+            <value>car</value><value>bike></value>
+            <value>bus</value><value>lorry</value>
+         </choice>
+      </element>
+      <optional>
+         <element name="reg"><ref name="registration"></element>
+      </optional>
+   </element>
+   <element name="position">
+      <element name="longitude"><double/></element>
+      <element name="latitude"><double/></element>
+   </element>
+   <optional><element name="direction">
+      <choice>
+         <value>east</value><value>west</value>
+         <value>south</value><value>north</value>
+      </choice>
+   </element></optional>
+   <optional><element name="speed"><double/></element></optional>
+   <element name="time"><datetime/></element>
+   <element name="data-providers">
+      <oneOrMore><element name="provider"><text/></element></oneOrMore>
+   </element>
+   <optional><element name="probability"><double/></element></optional>
+</element>
+
+<define name="registration"><text/></define>
+\end{verbatim}
+
+\subsection{Simple RPC}
+
+This example represents the return value from an RPC such as the following:\\
+\verb^get_bus_posn(int fleet, int number)^\\
+\verb^   : (int x, int y, double elevation, int route)^
+
+\subsubsection*{LITMUS Schema:}
+
+\begin{verbatim}
+@bus-position
+{
+   clk timestamp
+   int x
+   int y
+   [ dbl elevation ]
+   int route
+}
+\end{verbatim}
+
+\subsubsection*{XML Message encoding:}
+
+\begin{verbatim}
+<bus-position>
+   <timestamp>2/9/2006, 14:34:27</timestamp>
+   <x>123</x>
+   <y>456</y>
+   <elevation>3.1</elevation>
+   <route>42</route>
+</bus-position>
+\end{verbatim}
+
+\subsubsection*{Binary message encoding:}
+
+\begin{tabular}{ll}
+8 bytes & Date and Time\\
+4 bytes & Integer, value 123\\
+4 bytes & Integer, value 456\\
+Byte & Optional case flag, value 1\\
+8 bytes & Floating point, value 3.1\\
+4 bytes & Integer, value 42\\
+\end{tabular}
+
+\subsubsection*{RELAX-NG equivalent schema:}
+
+\begin{verbatim}
+<element name="bus-position">
+   <element name="timestamp"><datetime/></element>
+   <element name="x"><integer/></element>
+   <element name="y"><integer/></element>
+   <optional>
+      <element name="elevation"><double/></element>
+   </optional>
+   <element name="route"><integer/"></element>
+</element>
+\end{verbatim}
+
+\subsection{Fixed-length list}
+
+This example illustrates an array, for example as the return value from
+the following RPC:
+\verb^get_monthly_sales() : int[12]^
+
+\subsubsection*{LITMUS Schema:}
+
+\begin{verbatim}
+@monthly-sales
+(12
+   int month
+)
+\end{verbatim}
+
+\subsubsection*{XML Message encoding:}
+
+\begin{verbatim}
+<monthly-sales>
+   <month>10</month>
+   <month>20</month>
+   ...
+   <month>120</month>
+</monthly-sales>
+\end{verbatim}
+
+\subsubsection*{Binary message encoding:}
+
+\begin{tabular}{ll}
+4 bytes & Integer, value 10\\
+4 bytes & Integer, value 20\\
+... & ...\\
+4 bytes & Integer, value 120\\
+\end{tabular}
+
+\subsubsection*{RELAX-NG equivalent schema:}
+
+\begin{verbatim}
+<element name="monthly-sales">
+   <repeat count="12">
+      <element name="month"><integer/></element>
+   </repeat>
+</element>
+\end{verbatim}
+
+\subsection{Variable-length list of structures}
+
+A passenger list is used to show a variable length data structure:\\
+\verb^get_passengers() : (firstname, surname)[]^
+
+\subsubsection*{LITMUS Schema:}
+
+\begin{verbatim}
+@passenger-list
+(
+   passenger
+   {
+      [ flg prebooked ]
+      txt firstname
+      txt surname
+   }
+)
+\end{verbatim}
+
+\subsubsection*{XML message encoding:}
+
+\begin{verbatim}
+<passenger-list>
+   <passenger>
+      <prebooked>false</prebooked>
+      <firstname>Fred</firstname>
+      <surname>Flintstone</surname>
+   </passenger>
+   <passenger>
+      <prebooked>true</prebooked>
+      <firstname>Barney</firstname>
+      <surname>Rubble</surname>
+   </passenger>
+</passenger-list>
+\end{verbatim}
+
+\subsubsection*{Binary message encoding:}
+
+\begin{tabular}{ll}
+Count & 1 byte list length, value 2\\
+Byte & Optional case flag, value 1\\
+Byte & Boolean, value 0\\
+Count & String length\\
+String & ``Fred''\\
+Count & String length\\
+String & ``Flintstone''\\
+Byte & Optional case flag, value 1\\
+Byte & Boolean, value 1\\
+Count & String length\\
+String & ``Barney''\\
+Count & String length\\
+String & ``Rubble''\\
+\end{tabular}
+
+\subsubsection*{RELAX-NG equivalent schema:}
+
+\begin{verbatim}
+<element name="passenger-list">
+   <zeroOrMore>
+      <element name="passenger">
+         <optional>
+            <element name="prebooked"><boolean/></element>
+         </optional>
+         <element name="firstname"><text/></element>
+         <element name="surname"><text/></element>
+      </element>
+   </zeroOrMore>
+</element>
+\end{verbatim}
+
+\subsection{Nested with options}
+
+This calendar has optional \verb^<image>^ and \verb^<advance-warning>^ tags:
+
+\subsubsection*{LITMUS Schema:}
+
+\begin{verbatim}
+@calendar
+(
+   holiday
+   {
+      type < #national #personal >
+      txt name
+      date
+      {
+         txt month
+         int day
+      }
+      [ bin image ]
+      [ int advance-warning ]
+   }
+)
+\end{verbatim}
+
+\subsubsection*{XML Message encoding:}
+
+\begin{verbatim}
+<calendar>
+   <holiday type="national">
+      <name>Christmas</name>
+      <date>
+         <month>December</month>
+         <day>25</day>
+      </date>
+      <image>
+         4D18C237
+         0A973B5C
+      </image>
+      <advance-warning>-</advance-warning>
+   </holiday>
+   <holiday type="personal">
+      <name>Amber's birthday</name>
+      <date>
+         <month>April</month>
+         <day>23</day>
+      </date>
+      <image>-</image>
+      <advance-warning>14</advance-warning>
+   </holiday>
+</calendar>
+\end{verbatim}
+
+\subsubsection*{Binary message encoding:}
+
+\begin{tabular}{ll}
+Count & 1 byte list length, value 2\\
+& \\
+Count & 1 byte enumeration ID, value 0\\
+Count & String length\\
+String & ``Christmas"\\
+Count & String length\\
+String & ``December"\\
+4 bytes & Integer, value 25\\
+Byte & Optional case flag, value 1\\
+Count & Number of bytes of data\\
+Data & Binary bytes\\
+Byte & Optional case flag, value 0\\
+& \\
+Count & 1 byte enumeration ID, value 1\\
+Count & String length\\
+String & ``Amber's birthday"\\
+Count & String length\\
+String & ``April"\\
+4 bytes & Integer, value 23\\
+Byte & Optional case flag, value 0\\
+Byte & Optional case flag, value 1\\
+4 bytes & integer, value 14\\
+\end{tabular}
+
+\subsubsection*{RELAX-NG equivalent schema:}
+
+\begin{verbatim}
+<element name="calendar">
+   <zeroOrMore>
+      <element name="holiday">
+         <element name="type">
+            <choice>
+               <value>national</value>
+               <value>personal</value>
+            </choice>
+         </element>
+         <element name="name"><text/></element>
+         <element name="date">
+            <element name="month"><text/></element>
+            <element name="day"><integer/></element>
+         </element>
+         <optional>
+            <element name="image"><binary/></element>
+         </optional>
+         <optional>
+            <element name="advance-warning"><integer/></element>
+         </optional>
+      </element>
+   </zeroOrMore>
+</element>
+\end{verbatim}
+
+\section{Mapping from LITMUS to RELAX-NG schema language}
+
+This mapping is provided for compatability with other tools only, and is
+not reversible (use LITMUS for your master schemas).
+
+\subsection{Primitive types}
+
+\begin{tabular}{l|l}
+\hline
+LITMUS \rule[-2mm]{0mm}{6.5mm} & RELAX-NG\\
+\hline
+\verb^int foo^ \rule[0mm]{0mm}{4.5mm} & \verb^<element name="foo"><integer/></element>^\\
+\verb^dbl foo^ & \verb^<element name="foo"><double/></element>^\\
+\verb^flg foo^ & \verb^<element name="foo"><boolean/></element>^\\
+\verb^txt foo^ & \verb^<element name="foo"><text/></element>^\\
+\verb^bin foo^ & \verb^<element name="foo"><binary/></element>^\\
+\verb^clk foo^ & \verb^<element name="foo"><datetime/></element>^\\
+\verb^loc foo^ \rule[-2mm]{0mm}{2mm} & \verb^<element name="foo"><location/></element>^\\
+\hline
+\end{tabular}
+
+\subsection{Composite types}
+
+\begin{tabular}{l|l}
+\hline
+LITMUS \rule[-2mm]{0mm}{6.5mm} & RELAX-NG\\
+\hline
+\verb^foo { elt1 elt2... eltN }^ \rule[0mm]{0mm}{4.5mm} &
+	\verb^<element name="foo">elt1... eltN</element>^\\
+\verb^( elt )^ & \verb^<zeroOrMore>elt</zeroOrMore>^\\
+\verb^(+ elt )^ & \verb^<oneOrMore>elt</oneOrMore>^\\
+\verb^(N elt )^ & \verb^<oneOrMore>elt</oneOrMore>^\\
+\verb^[ elt ]^ & \verb^<optional>elt</optional>^\\
+\verb^< elt1 elt2... eltN >^ & \verb^<choice>elt1 elt2... eltN</choice>^\\
+\verb^< #val1 #val2... #valN >^ &
+	\verb^<choice><value>val1</value>...</choice>^\\
+\verb^@elt^ & \verb^<define name="label">elt</define>^\\
+\verb~^label~ \rule[-2mm]{0mm}{2mm} & \verb^<ref name="label"/>^\\
+\hline
+\end{tabular}
+
+Note: structures, lists, enumerations and type references in
+LITMUS are all named, so the RELAX-NG equivalents given will
+also be wrapped by \verb^<element name="foo">...</element>^.
+
+\subsection{Differences from standard RELAX-NG}
+
+RELAX-NG doesn't define any built-in data types, except for
+\verb^<text/>^; conversely SBUS has built-in data types but
+doesn't allow access to external libraries of datatypes,
+such as XML Schema's via \verb^<data type="foo"/>^.
+
+RELAX-NG has no way to express fixed-length arrays\\
+(e.g. via some sort of \verb^<repeat count="n">^ tag).
+
+SBUS supports named patterns via \verb^<define>^ and \verb^<ref>^;
+however it does not use the \verb^<grammar>^ and \verb^<start>^ tags.
+Instead the \verb^<define>^s are based on the special
+\verb^<datatypes>^ section of the component description.
+SBUS does not allow recursive \verb^<ref>^s.
+
+\subsection{RELAX-NG features not used by the SBUS mapping}
+
+\begin{verbatim}
+<attribute name="foo">...</attribute>
+<interleave>
+<group>, <list> (whitespace separated tokens)
+<externalRef>, <parentRef>, the combine attribute, <notAllowed/> and <include>
+Namespaces, name classes and annotations
+\end{verbatim}
+
+In particular note that attributes are not needed, since they are no
+more expressive than elements defined inside the tag (a partial reverse
+mapping could also be achieved by promoting attributes to elements, and
+sending them before other content in a defined order).
+
+\subsection{Named type equivalents}
+
+\begin{tabular}{l|l|l}
+\hline
+RELAX-NG \rule[-2mm]{0mm}{6.5mm} & Type system & LITMUS\\
+\hline
+\verb^<element>^ \rule[0mm]{0mm}{4.5mm} & Struct, Tuple & \verb^{ }^\\
+\verb^<oneOrMore>^ & Sequence / List & \verb^(+ )^\\
+\verb^<zeroOrMore>^ & Sequence / List & \verb^( )^\\
+\verb^<repeat>^ & Array & \verb^(N )^\\
+\verb^<value>^ & Enumeration & \verb^< # # >^\\
+\verb^<choice>^ & Overloaded fn (top-level only) or Union & \verb^< >^\\
+\verb^<optional>^ & Default value & \verb^[ ]^\\
+\verb^<define>^ and \verb^<ref>^ \rule[-2mm]{0mm}{2mm} & Macros
+   & \verb^@^ and \verb~^~\\
+\hline
+\end{tabular}
+
+\section{LITMUS design notes}
+
+LITMUS is both more concise and more readable than schema languages such as
+RELAX-NG (and considerably more so than W3C XML Schemas). It shares RELAX-NG's
+ability to define inherently nested data structures with a natural nested
+syntax, rather than enforcing external references for all nested structures
+like XML DTD's or ICE's SLICE IDL.
+
+LITMUS does not require the canonical \verb^name="..."^ attributes on
+every element, which are tedious and detract from clarity. LITMUS does
+not even have separate concepts of element and attribute as most
+XML-based approaches do, since attributes in XML source data structures
+can always be promoted to elements.
+
+All well-formed schemas in LITMUS can be parsed unambiguously.
+For example, the following reasonable-looking XML fragment has no
+\verb^<element>^ wrappers around the \verb^<integer/>^ and
+\verb^<text/>^ tags. This makes it impossible to tell if a message such as\\
+\verb^<unparsable>123 Test</unparsable>^ is an integer
+followed by a string, or just a string.
+
+\begin{verbatim}
+<element name="unparsable">
+   <optional><integer/"></optional>
+   <text/>
+</element>
+\end{verbatim}
+
+All elements in a LITMUS schema are named.
+Note that choices (Unions) are not named themselves, since their child elements
+must be, so this would be redundant. By contrast the C language's native
+type system does name union members, which gives the
+illusion of an extra level of nesting when dereferenced using dot notation.
+
+\end{document}

@@ -1,0 +1,863 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr,graphicx,latexsym}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+% \newcommand{\spc}{\hspace{0.5mm}$\sqcup$\hspace{0.6mm}}
+\newcommand{\spc}{\hspace{0.5mm}$\Box$\hspace{0.5mm}}
+\newcommand{\todo}[1]{\textbf{TODO: #1}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{PIRATES Java Binding}
+\fancyfoot{}
+\pagestyle{empty}
+
+\input{macros}
+\begin{document}
+
+% \sfseries
+\centerline{\textbf{\LARGE PIRATES Java Binding}}
+\begin{center} \large
+David Ingram\\
+TIME-EACM Project\\
+University of Cambridge Computer Lab\\
+13th August 2009\\
+\end{center}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+\pagestyle{fancy}
+
+\section{Compilation}
+
+To use the Java language binding, first follow the instructions
+in the general User Guide for installing and configuring PIRATES.
+The Java library still needs the C++ wrapper program in order to run,
+and many of the useful tools (\verb^sbus^, \verb^speek^, \verb^spoke^ etc)
+require the C++ library. You will also want to run the RDC before
+starting your components.
+
+Next, run \verb^make^ in the
+\verb^java/^ subdirectory to compile the Java library.
+Then add the directory
+\verb^java/classes^ to your CLASSPATH. There is a Java version
+of the demo component in \verb^java/tools^.
+
+\section{Example usage}
+
+The following code does not represent a real component, but illustrates
+the general pattern of use for the API. See \verb^DemoCpt.java^
+for a specific working example.
+
+\begin{verbatim}
+Component com;
+Endpoint ep; // We will create just one endpoint, which will be a server
+ProtoMessage msg;
+Node response;
+int data;
+
+String msg_hash = "AABBCCDDEEFF", reply_hash = "FFEEDDCCBBAA";
+EndpointType type = EndpointType.Server;
+String cpt_name = "foo-cpt", instance_name = "instance1";
+String ep_name = "foo-ep", peer_ep_name = "bar-ep";
+int echo_level = Log.LogErrors + Log.LogWarnings + Log.LogMessages;
+int log_level = echo_level + Log.LogDebugging;
+String topic = "foo-topic", subscription = "foo/bar > 42";
+String rdc_address = "192.168.0.42";
+String peer_address = "+Nbarcpt +Iinstance42";
+
+com = new Component(cpt_name, instance_name);
+ep = com.add_endpoint(ep_name, type, msg_hash, reply_hash);
+// Optionally, com.add_rdc(rdc_address);
+// Optionally, Component.set_log_level(log_level, echo_level);
+com.start(cpt_name + ".cpt");
+// Optionally, ep.subscribe(topic, subscription, null);
+// Optionally, ep.map(peer_address, peer_ep_name);
+while(true)
+{
+   msg = ep.rcv();
+   data = msg.tree.extract_int("x");
+   response = Node.pack(Node.pack(x * x, "x-squared",
+      Node.pack(Math.sqrt(x), "root-x"), "math-results");
+   ep.reply(msg, response);
+}
+\end{verbatim}
+
+\section{Packing and extracting}
+
+The \verb^Node^ object is the in-memory representation
+for all PIRATES message content (a \verb^ProtoMessage^ includes
+a \verb^Node^ and some metadata, such as the message source).
+
+\verb^Node^s are obtained in one of three ways: by using a
+set of ``packing'' functions to convert data from your programming
+language's native types, by importing from some XML text, or by receiving
+them from PIRATES across the network.
+
+Given a \verb^Node^, you can use a set of ``extraction''
+functions to convert to your programming language's natively
+typed variables, or export it to an XML string, or send it
+across the network using PIRATES.
+
+The packing and extracting operations are
+performed manually using Java functions. The recommended approach is to
+consolidate these calls into specific marshalling methods you define
+for your application's objects. It would also be possible to write
+a stub generator to automatically create the packing and extracting
+code, but such a thing is not shipped with PIRATES.
+
+Internally the \verb^Node^ is converted to a binary
+representation for transmission across the network, and then
+converted back to a \verb^Node^ at the other end.
+The schema is essential at the unmarshalling stage in order to
+make sense of the message sent over the wire, since the default
+binary encoding does not transmit verbose type information.
+
+\subsection{Packing functions}
+
+The packing functions are used to programmatically build messages as
+\verb^Node^s in memory. The first set of pack functions simply wrap primitive
+types with a \verb^Node^. The second set pack multiple existing
+\verb^Node^s into compound data structures. You must pack fields
+in the same order they are specified in the schema.
+
+The packing functions allow you to specify element
+names, if you wish to make your code clearer and introduce additional
+field name checks. There are also versions of these functions
+which do not take the \verb^opt_name^ optional argument,
+indicated by square brackets here:
+
+\begin{verbatim}
+class Node
+{
+   static Node pack(int n          [, String opt_name])
+   static Node pack(boolean bool   [, String opt_name])
+   static Node pack(String s       [, String opt_name])
+   static Node pack(byte[] data    [, String opt_name])
+   static Node pack(double x       [, String opt_name])
+   static Node pack(Datetime time  [, String opt_name])
+   static Node pack(Location loc   [, String opt_name])
+   static Node pack_empty(         [String opt_name])
+   static Node pack_value(String s [, String opt_name])
+
+   // Struct, List, Seq, Array:
+   static Node mklist(                    [String opt_name])
+   Node append(Node n)
+   static Node pack(Node[] array          [, String opt_name])
+   static Node pack(Node n1, ..., Node n6 [, String opt_name])
+   // + Variations of the above for from 2 to 6 nodes
+   ...
+};
+\end{verbatim}
+
+\verb^pack_empty()^ is used to pack
+optional elements when they are not present in this particular message.
+
+There is no explicit mention of choice elements in the
+packing functions; the user simply packs the alternative they have chosen for
+this particular message. PIRATES tries to decide which alternative of a choice
+you are using by looking at the types of the elements. It is
+simplistic and does not look ahead at the types of further elements when it
+does so, hence it can fail in cases where a human examining the whole message
+could differentiate. If there is an ambiguity it can't resolve then
+element names must be provided for those elements (this is the only
+case where element names are not optional).
+
+\subsection{Extraction functions}
+
+The extraction functions are the logical counterpart of the packing
+functions. The programmer is assumed to know what types to expect
+(they are working from the same schema, after all). There are
+extract functions for each primitive type to unwrap a \verb^Node^,
+converting its contents back to a native value.
+
+If the \verb^Node^ you hold is a compound type, you have three options for
+extracting its contents. Firstly, you can call \verb^extract_item()^ specifying
+either the index or field name of the child member required. This returns
+another \verb^Node^ which can then itself be extracted. Secondly, if the
+primitive field you wish to retrieve is only nested inside one level, you can
+access it directly by specifying an optional \verb^item^ index to the relevant
+typed extraction function (e.g. \verb^node.extract_dbl(3)^ means extract the
+floating point value which is the fourth sub-element inside the structure or
+list \verb^node^). Finally, if the \verb^Node^ is a structure rather than
+a list, you can do the same but specify the child by name
+instead (there is a separate set of extraction functions which accept a string
+argument for this purpose).
+
+\verb^class Node^\\
+\verb^{^\\
+\verb^   ...^\\
+\verb^   int count()^\\
+\verb^   Node extract_item(int item)^\\
+\verb^   Node extract_item(String name)^\\
+\verb^   Node[] extract_array()^\\
+\verb^   String get_name(int opt_item)^\\
+\verb^   String get_name()^\\
+\verb^	^\\
+\verb^   int extract_int(^\textit{args}\verb^)^\\
+\verb^   boolean extract_flg(^\textit{args}\verb^)^\\
+\verb^   double extract_dbl(^\textit{args}\verb^)^\\
+\verb^   String extract_txt(^\textit{args}\verb^)^\\
+\verb^   byte[] extract_bin(^\textit{args}\verb^)^\\
+\verb^   int num_bytes(^\textit{args}\verb^)^\\
+\verb^   Datetime extract_clk(^\textit{args}\verb^)^\\
+\verb^   Location extract_loc(^\textit{args}\verb^)^\\
+\verb^   String extract_value(^\textit{args}\verb^)^\\
+\verb^   int extract_enum(^\textit{args}\verb^)^\\
+\verb^   ...^\\
+\verb^};^\\
+
+\textit{args} may be (i) nothing, (ii) \verb^int item^, or (iii)
+\verb^String name^.\\
+For example, you may call:\\
+\verb^extract_int()^, \verb^extract_int(int item)^,
+or \verb^extract_int(String name)^.\\
+The value \verb^item^ specifies the child index -- 0, 1, 2 etc.
+
+\section{Component initialisation}
+
+The \verb^Component^ class represents one component.
+The following sections deal with the API calls in roughly the order
+they are likely to be used within a program.
+
+\subsection{Establishing a component instance}
+
+\begin{verbatim}
+class Component
+{
+   Component(String cpt_name);
+   Component(String cpt_name, String instance_name);
+   ...
+};
+\end{verbatim}
+
+Creating the component object also starts the wrapper process running.
+The component is not active, however -- the wrapper waits for further
+configuration.
+
+The \verb^instance_name^ may be omitted, in which case it is set to
+the same as \verb^cpt_name^. Instance names are passed to the RDC
+and can be used to specify individual replicas of a component for
+mapping.
+
+\subsection{Adding endpoints}
+
+\begin{verbatim}
+class Component
+{
+   ...
+   Endpoint add_endpoint(String name, EndpointType type, String msg_hash);
+   // or, for client/server endpoints (RPCs):
+   Endpoint add_endpoint(String name, EndpointType type, String msg_hash,
+      String reply_hash);
+   ...
+};
+
+enum EndpointType { Server, Client, Source, Sink };
+\end{verbatim}
+
+LITMUS hash codes such as \verb^msg_hash^ and \verb^reply_hash^
+represent the schema for a message or endpoint.
+They are passed to the API as strings containing a 12 digit
+hexadecimal number, e.g. ``\verb^AABBCCDDEEFF^''.
+
+There are additional versions of \verb^add_endpoint()^ which accept
+\verb^HashCode^ objects instead of hex strings, which is sometimes
+more convenient:
+
+\begin{verbatim}
+class Component
+{
+   ...
+   Endpoint add_endpoint(String name, EndpointType type, HashCode msg_hc);
+   // or, for client/server endpoints (RPCs):
+   Endpoint add_endpoint(String name, EndpointType type, HashCode msg_hc,
+      HashCode reply_hc);
+   ...
+};
+\end{verbatim}
+
+Repeat calls to \verb^add_endpoint()^ as many times as necessary
+to declare all the endpoints supported by the component.
+You may call \verb^add_endpoint()^ before or after starting the
+component.
+Starting a component serves the dual purpose of attaching it to
+its component metadata and starting the wrapper.
+The endpoints added before the \verb^start()^ call
+are checked against those listed in the component metadata,
+those added afterwards are not.
+
+\subsection{Starting the component}
+
+\begin{verbatim}
+class Component
+{
+   ...
+   void start(String metadata_filename);
+   void start(String metadata_filename, int port);
+};
+\end{verbatim}
+
+This instructs the wrapper to go ahead and validate the component's
+endpoints, and then (if the schemas match the metadata) to register
+with the RDCs if applicable and to begin listening for external
+connections from other components.
+
+The \verb^LITMUS_PATH^ environment variable is used to locate the
+metadata file.
+
+\subsection{Mapping an endpoint}
+
+Mapped \verb^Endpoint^s correspond with an open TCP/IP connection
+from the wrapper to another component's wrapper.
+Newly created endpoints are unmapped.
+Unmapped endpoints can be used without error, although
+obviously no data will be returned, and RPCs will
+block indefinitely.
+
+Once a component is running its endpoints will normally be
+mapped by a third party mapping engine, by a script calling
+\verb^spoke map^, or with management reconfiguration tools.
+It is however possible to map endpoints programmatically within
+the component itself (for example, \verb^spoke^ itself needs
+to do this). Bear in mind that hardcoding
+\verb^map()^ calls into the application is a lot less flexible
+since users cannot easily change it,
+and should be avoided where possible. If your endpoints will
+be mapped by external agents, you can skip this section entirely.
+
+An endpoint of type client may be mapped to at most one server.
+The \verb^map()^ call \textit{remaps} endpoints of type client
+if they are already mapped.
+An endpoint of type server may be mapped
+to any number of clients. Source endpoints may be mapped to any number
+of sink endpoints, and a sink endpoint may be mapped to any number of
+sources.
+
+\begin{verbatim}
+class Endpoint
+{
+   // Mapping: 
+   String map(String address, String endpoint);
+   void unmap();
+   int ismapped();
+   ...
+};
+\end{verbatim}
+
+The \verb^map()^ function returns a string containing the address of the
+other component if successful, otherwise null.
+
+The address string is formatted as described in the ``Component
+addresses'' section of the user guide. It can take one of two
+main forms.
+The first form specifies an explicit network address, and does not
+use a RDC.
+The address is then a string of the form \verb^hostname:port^
+(or just \verb^:port^, which is equivalent to \verb^localhost:port^).
+The \verb^hostname^ part may be a DNS name or an IP address in
+dotted decimal notation.
+% and an optional public key if
+% identity must be confirmed.
+
+The second, considerably more flexible form of mapping
+consults the RDC and tries to satisfy the map constraints
+specified by the address string.
+This is the normal approach, since usually the current network address
+of the component required is not known.
+See the user guide for the list of valid constraints (each of which
+begins with a plus sign in the string).
+
+The \verb^Endpoint^ parameter may be null, in which case it is
+assumed that you wish to map to an endpoint on the target component
+with the same name as the local endpoint being mapped (it is common
+for client/server and source/sink pairs of endpoints which are
+intended to be connected to have the same name).
+
+Normally endpoints are mapped once and then only remapped occasionally,
+e.g. by external agencies to achieve migration. A P2P overlay network
+is an exception -- in this case remapping will be very frequent
+and would use the explicit address method rather than an RDC, since
+components may be randomly accessed potentially worldwide.
+
+% \subsubsection{Mapping flags}
+%
+% Mapping flags are not implemented yet, so currently \verb^sflags^
+% should be set to zero.
+%
+% \begin{verbatim}
+% // Values for sflags:
+% const int UnavailableSilent = 1 << 0;
+% const int DisconnectSilent  = 1 << 1;
+% const int AttemptFailover   = 1 << 2;
+% const int AttemptReconnect  = 1 << 3;
+% const int AllowMigration    = 1 << 4;
+% const int AwaitTransfer     = 1 << 5;
+% \end{verbatim}
+
+\subsection{Subscriptions}
+
+To keep the interface straightforward, the \verb^map()^ call does not
+include parameters for subscriptions or topics; these are
+specified separately by the \verb^subscribe()^ function.
+
+You can change the subscription for currently mapped endpoints,
+or specify the subscription for new connections. If you are
+mapping an endpoint and need a subscription set up immediately
+(at connection time), you should call \verb^subscribe()^ first
+(with \verb^peer^ set to null), and then \verb^map()^.
+
+\begin{verbatim}
+class Endpoint
+{
+   ...
+   void subscribe(String topic, String subs, String peer);
+   ...
+};
+\end{verbatim}
+
+In \verb^subscribe()^ calls, either \verb^topic^ or \verb^subs^
+(or both) may be null. If both are null, then all messages from this
+endpoint will be returned. If neither are null, then both must match
+for an event to be delivered. The subscription is stated in the
+content-matching language also used by the prebuilt Broker component
+and described in the PIRATES Overview document.
+The topic is a straightforward comparison on the topic name used to emit
+events by the component. Content and topic based subscriptions are evaluated
+automatically for each message and each subscriber by the emitting
+component's wrapper process.
+
+The \verb^peer^ parameter may be the name (component or instance)
+of a currently mapped peer whose subscription should be altered.
+It may also be the special string \verb^"*"^, in which case
+the subscription in force for all currently mapped peers is changed.
+Finally, if \verb^peer^ is null then the default subscription
+used for future maps to this endpoint is altered.
+
+\section{Data transfer}
+
+\subsection{Data transfer methods}
+
+\begin{verbatim}
+class Endpoint
+{
+   ...
+   SocketChannel sc;
+      
+   void emit(Node node);
+   void emit(Node node, String topic);
+   void emit(Node node, HashCode hc);
+   void emit(Node node, String topic, HashCode hc);
+   ProtoMessage rpc(Node query);
+   ProtoMessage rpc(Node query, HashCode hc);
+   ProtoMessage rcv();
+   void reply(ProtoMessage query, Node result);
+   void reply(ProtoMessage query, Node result, HashCode hc);
+   ...
+};
+\end{verbatim}
+
+For Source endpoints, the wrapper automatically tracks subscribers, so the
+component just has to call \verb^emit()^, optionally supplying a topic.
+
+Client endpoints use the \verb^rpc()^ call.
+
+For Server endpoints the component must call \verb^rcv()^ and then
+\verb^reply()^, passing back the query so the result can be matched up with it.
+
+For sink endpoints, the component just has to call the \verb^rcv()^ method.
+
+All out-of-band messages such as connection closed and flow control
+are currently dealt with by the wrapper, and not passed up to the
+component through the \texttt{Endpoint} interface.
+
+The optional \verb^HashCode^ arguments to \verb^emit()^, \verb^rpc()^
+and \verb^reply()^ are used by polymorphic endpoints to indicate the
+type of the message being sent. Normal, non-polymorphic endpoints
+should omit \verb^HashCode^, and the predefined type for the endpoint
+will be used instead.
+
+\verb^rpc()^ returns null if the endpoint is unmapped, or mapped to
+more than one peer, or if it becomes unmapped during the call due to
+the server disconnecting.
+
+%If \verb^exception^ is \verb^1^ then the result contains error information
+%and isn't a normally formatted \verb^snode^.
+
+Methods which return data to the caller, i.e. \verb^rcv()^ and \verb^rpc()^,
+return a \verb^ProtoMessage^ structure, defined below. The payload
+is stored in the \verb^tree^ field; the other members are useful
+metadata. \verb^seq^ is used for matching up RPC replies.
+
+\begin{verbatim}
+class ProtoMessage
+{
+   String source_cpt, source_inst, source_ep;
+   String topic; // null if not applicable
+   int seq;
+   HashCode hc;
+   Node tree;
+};
+\end{verbatim}
+%  Object state; // for conversations only 
+
+All the \verb^Endpoint^ data transfer methods are blocking calls.
+You are free to write single- or multi-threaded components.
+The endpoint's \verb^SocketChannel^ object, \verb^sc^, can be used with a
+\verb^Selector^ to wait for messages to arrive.
+If a component is single-threaded and has multiple services it
+will be necessary to do this to see which endpoint to process next.
+It is also possible
+to find out the endpoint associated with a particular \verb^SocketChannel^
+(or by name, etc):
+
+\begin{verbatim}
+class Component
+{
+   ...
+   Endpoint sc_to_endpoint(SocketChannel sc);
+   
+   int count_endpoints();
+   Endpoint get_endpoint(int index);
+   Endpoint get_endpoint(String name);
+   ...
+};
+\end{verbatim}
+
+The wrapper only delivers incoming messages once they have been completely
+received from the remote component, hence after a \verb^SocketChannel^
+becomes ready a \verb^rcv()^ call should acquire the message without any
+serious delay.
+
+%For conversations, the component calls \verb^rcv()^, \verb^reply()^,
+%\verb^rcv()^, \verb^reply()^ and so on.
+%Replies also include the last message received.
+%The state held by this side concerning the conversation can be saved
+%in the \verb^ProtoMessage.state^ variable -- this value, if set, is
+%returned by all subsequent \verb^rcv()^'s from the same conversation.
+
+\section{Shutting down}
+
+\subsection{Disconnecting from another component}
+
+This closes the TCP connection between the components.
+
+\begin{verbatim}
+class Endpoint
+{
+   ...
+   void unmap();
+};
+\end{verbatim}
+
+\subsection{Terminating your component}
+
+\begin{verbatim}
+class Component
+{
+   ...
+   void stop();
+};
+\end{verbatim}
+
+This deregisters with the RDC, terminates the wrapper process and frees
+resources.
+
+\section{Additional APIs}
+
+These calls are used less frequently than those discussed so far.
+
+\subsection{Adding RDCs}
+
+RDCs are used to register the component with, and also to
+lookup other components for mapping. Generally these are
+set by the \verb^SBUS_RDC_PATH^ environment variable (together
+with the default location on the localhost). In rare cases
+programs may wish to specify additional RDCs:
+
+\begin{verbatim}
+class Component
+{
+   ...
+   void add_rdc(String address);
+   ...
+};
+\end{verbatim}
+
+Note that this call must be made after the component object
+has been created, but \textit{before it is started}.
+Do not explicitly add the default RDC location on the local host,
+or your component will get duplicate registration errors when it runs.
+
+Lookups will try all the RDCs sequentially until one succeeds.
+The component will try to register itself with \textit{all}
+the RDCs you have added (some may not exist, which is not an error).
+The exception is addresses which begin with an exclaimation mark '!'
+as a special flag, which indicates that they are for lookup only,
+not registration.
+In all cases the default RDC port number is used if none is supplied.
+
+\subsection{Controlling logging}
+
+There are four types of log output: errors, warnings, messages and
+debugging. Errors are only generated in fatal situations (the
+component always shuts down after emitting an error). Each of
+these four types of logging may be directed to the component's
+log file and/or to stdout. This is controlled by the log levels:
+0 = nothing, 1 = errors, 2 = warnings, 4 = messages, 8 = debugging.
+You can add these values together to select a mixture of message types.
+The initial log level for the log file is read from the environment
+variable \verb^SBUS_LOG_LEVEL^, and for stdout from \verb^SBUS_ECHO_LEVEL^.
+If these are not set then everything is logged to file, and everything apart
+from debugging is sent to stdout (so the default is highly verbose).
+A component may change its own log levels, by calling the following
+static API function:
+
+\begin{verbatim}
+class Component
+{
+   ...
+   static void set_log_level(int log, int echo);
+   ...
+};
+\end{verbatim}
+
+\textbf{Note} that \verb^Component.set_log_level()^ must be called
+\textit{before} \verb^Component.start()^. The API does not currently
+provide a way to change log levels after that point.
+Also, if you wish to inhibit the initial message from the library saying
+that the wrapper has started, call the static \verb^set_log_level^ function
+before \verb^new Component^ creates the component.
+Log levels \textit{can} be changed remotely at any time using the built-in
+endpoint for this purpose.
+
+Both \verb^log^ and \verb^echo^ are formed by adding together
+constants representing the desired types of information:
+\verb^Log.LogErrors^, \verb^Log.LogWarnings^, \verb^Log.LogMessages^ and
+\verb^Log.LogDebugging^.
+
+The log files are stored in a directory specified by the \verb^SBUS_DIR^
+environment variable: \verb^$SBUS_DIR/log/^.
+If this environment variable is not set then the
+directory \verb^$HOME/.sbus/log/^ is used by default.
+Log files are named \verb^cptname-instance-X.log^ or \verb^cptname-X.log^
+(the latter if no instance name is set).
+Here \verb^X^ stands for either \verb^W^ or \verb^L^, indicating whether
+the message arises from the wrapper or the library respectively.
+Component log files overwrite previous files with the same name.
+If you simultaneously run two components on the same machine with
+identical component and instance names, the contents of the log
+file are undefined.
+
+\subsection{Declaring schemas}
+
+\begin{verbatim}
+class Component
+{
+   ...
+   HashCode declare_schema(String schema);
+   HashCode load_schema(String file);
+	...
+};
+\end{verbatim}
+%  void add_certificate(const char *cert);
+
+The \verb^declare_schema^ and \verb^load_schema^ functions add
+a new schema (read from a string or a file respectively) to the wrapper's
+schema cache whilst the component is running.
+This is useful in the special case of polymorphic
+source endpoints, since these may need to define new types
+before emitting them.
+Once declared, a schema is available to all endpoints.
+The HashCode returned by these functions must be deleted by the caller.
+
+It is not an error if the schema is already in the cache; in this
+case nothing happens, but the HashCode is still returned. This makes
+these functions a convenient way to look up HashCodes for schemas,
+without needing the C++ \verb^libsbuswrap^ library in order to parse the
+schema in the application process.
+
+\verb^load_schema^ uses the \verb^LITMUS_PATH^ environment variable
+to locate the file containing the schema.
+
+% The \verb^cert^ is a role certificate (there may be several)
+% which is later presented to the server. Currently certificates are
+% unimplemented.
+
+\subsection{Obtaining wrapper state}
+
+The following methods of \verb^Component^ are valid after
+\verb^start()^ has returned.
+
+\begin{verbatim}
+class Component
+{
+   ...
+   int count_builtins();
+   Builtin get_builtin(int index);
+   int get_listen_port();
+   String get_address();
+   Node get_status();
+   String get_schema(HashCode hc);
+   ...
+};
+
+class Builtin
+{
+   String name;
+   EndpointType type;
+   HashCode msg_hc, reply_hc;
+};
+\end{verbatim}
+
+\verb^get_address()^ returns the canonical address string for this
+component (formed from the IP address of the first non-loopback interface,
+together with the listening port).
+
+\verb^get_status()^ returns a \verb^Node^ containing the current
+component status structure (this is exactly the same thing as that
+returned to third parties by the built-in endpoint of the same name).
+
+\verb^get_schema()^ interrogates the wrapper's schema cache, and
+returns the full text for the schema represented by the supplied
+hash code. This is useful if a component has polymorphic sink
+endpoints and hence may receive messages it doesn't know the schema
+for. If the hash code presented does not appear in the schema
+cache, the string \verb^"?"^ is returned.
+
+\section{Thread safety}
+
+\textbf{Each endpoint must be accessed by only one thread}. Multiple threads
+are fine provided each is responsible for different endpoints.
+A single thread may use many endpoints, but it must do so exclusively.
+
+In a multi-threaded component, endpoints of type Server, Source or Sink
+can generally be handled conveniently by their own thread. Multiple
+threads often need to employ the same Client endpoint, however.
+To make this possible without breaking the rule of one thread per
+endpoint, a \verb^clone^ method is provided to duplicate endpoints.
+This is merely a convenience method which simply calls
+\verb^add_endpoint()^ for you to generate another endpoint of exactly
+the same type.
+
+\begin{verbatim}
+class Component
+{
+   ....
+   Endpoint com.clone(Endpoint ep);
+   ...
+};
+\end{verbatim}
+
+Only the thread which starts the component may safely call \verb^clone()^.
+
+\section{Import and Export}
+
+\begin{verbatim}
+class Node
+{
+   ...
+   static Node fromxml(String s) throws ImportException;
+   static Node fromxml_file(String path) throws ImportException;
+   static String toxml(Node node, boolean pretty);
+   ...
+};
+
+\end{verbatim}
+
+The \verb^fromxml()^ functions convert XML text in a string or from a file
+into a parsed \verb^Node^. In case of error they throw an
+\verb^ImportException^.
+
+\verb^toxml()^ exports a \verb^Node^ as XML text. If \verb^pretty^ is
+\verb^true^ the output will contain newlines and indentation; if
+\verb^pretty^ is \verb^false^ it will all be on one line.
+
+%\section{Simplified \texttt{select()} wrapper}
+%
+%This is an optional utility provided by the library. It wraps
+%the system \verb^select()^ call in a nicer interface. You can use
+%either \verb^multiplex^ or the native \verb^select()^ to manage
+%your endpoint file descriptors in components.
+%
+%Adding an endpoint to the multiplex, e.g. \verb^multi->add(ep)^,
+%is similar to\\
+%\verb^multi->add(ep->fd, MULTI_READ)^, but also
+%enables checking of the \verb^ep->message_waiting()^ method. This
+%is necessary if your endpoint might receive a message whilst
+%it is being mapped or unmapped (in such cases the message is
+%automatically enqueued for later delivery, after the map call returns,
+%but ordinary \verb^select()^ will not notice a message has arrived
+%because it has been read from the file descriptor already).
+%
+%\begin{verbatim}
+%class multiplex
+%{
+%   enum multi_mode { MULTI_READ, MULTI_WRITE };
+%
+%   multiplex();
+%   ~multiplex();
+%
+%   void add(int fd, multi_mode mode = MULTI_READ);
+%   void add(sendpoint *ep); // Also enables check for ep->message_waiting()
+%   void remove(int fd, multi_mode mode = MULTI_READ);
+%   void remove(sendpoint *ep, int silent = 0);
+%   void clear();
+%
+%   // These functions return a FD, or -1 if none ready before timeout:
+%   int poll();
+%   int wait();
+%   int pause(int us);
+%
+%   multi_mode last_mode();
+%}
+%\end{verbatim}
+
+%=========================
+
+% \section{Remote Wrappers}
+% 
+% The Java and Javascript bindings use a remote wrapper. The wrapper is
+% the standard C++ program, and runs on the server supplying the
+% webpage. This allows the Java library to make network connections to it.
+% The server machine runs a wrapper factory, which reuses wrappers from
+% a pool, and includes timeouts to prevent misuse.
+% 
+% The use of a remote wrapper allows Java components to be \textit{real
+% components}; i.e. they support all the standard SAP's and so on.
+% It makes Javascript bindings possible since the library which talks
+% to the wrapper does not need threads, and it keeps the language-specific
+% part thin for easy port maintainance.
+% 
+% One possible drawback of a remote wrapper is more independent failure
+% conditions for the wrapper and application. We can deal with this
+% easily by making either simply abort if the other goes away,
+% preserving the "neither or both" semantics which occur when both
+% run on the same machine (which may be rebooted, for example).
+% In fact this logic is necessary anyway, since we have to assume an
+% application might crash and the wrapper then needs to notice this
+% and terminate. Wrapper crashes independent of the application are
+% hopefully unlikely; if they occur the semantics should be that the
+% application terminates \textit{eventually}, that is to say it never
+% tries to restart the wrapper but it may continue running without
+% PIRATES services, for example to save work or continue with its other
+% functions if that is more important than restarting.
+
+\end{document}

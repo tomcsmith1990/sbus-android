@@ -1,0 +1,1574 @@
+SBUS Changelog
+==============
+
+23-09-2009: Released 0.95
+-------------------------
+
+There is now a Java version of the RDC.
+The Java binding has also been further tested and debugged.
+
+13-08-2009: Released 0.9
+------------------------
+
+API:
+
+- Ported the library to Java, so that PIRATES components can be
+  written in Java. This talks to the C++ wrapper as before.
+
+Bug fixes:
+
+- File descriptors are now correctly removed from the select() set in
+  certain connection closure situations (e.g. when a map request is
+  declined), fixing bad file descriptor errors.
+- Fixed two memory leaks in XML parser function recognise_tags():
+  StringBuf object not deleted, and XMLTag not deleted for empty tags.
+- Fixed a memory leak in XML parser function do_import():
+  snodestack object not deleted.
+- Fixed a memory leak in XML generator function toxml():
+  StringBuf object was not deleted for empty messages.
+- Fixed a memory leak in the RDC:
+  Return value from map() was not deleted.
+- Open file descriptors are now closed when the wrapper is forked
+  (except for stdio).
+- Duplicate RDCs are now ignored.
+
+18-11-2008: Released 0.85
+-------------------------
+
+Persistent links:
+
+API:
+
+- The new scomponent::get_status() method allows components to
+  obtain a copy of their wrapper's status structure whilst running.
+- Message topics are now included in the smessage structure
+  (previously they were only used for deciding who to send messages
+  to, like subscriptions; now they are also transmitted across the
+  network).
+- Changed the declare_schema() function from an sendpoint method
+  which communicates via endpoint connections, to an scomponent method
+  which communicates with the wrapper via the bootstrap pipe.
+  This provides less concurrency (only one application thread is allowed
+  to safely call methods which use the bootstrap pipe), but makes
+  more sense to the user, since declare_schema() affects the whole
+  component and hence is logically a component method, not an
+  endpoint one.
+- Added a new convenience method scomponent::load_schema(file).
+  This works like scomponent::declare_schema(string) but loads the
+  schema text from a file on disk, using LITMUS_PATH to find it.
+  This is to support dynamic creation of endpoints.
+- declare_schema() and load_schema() now return the computed hashcode
+  for the schema, after adding it to the schema cache. This is useful
+  because the library has no way of calculating the hashcode for
+  a new schema (that requires the canonical string for the schema,
+  which in turn requires schema parsing intelligence from the
+  Schema class, only available if you link with libsbuswrap as
+  well as libsbus).
+- Added an scomponent::get_schema(HashCode *) method, which
+  interrogates the wrapper's schema cache and returns the full text
+  for the schema represented by the supplied hash code. This is useful
+  if a component has polymorphic sink endpoints and hence may receive
+  messages it doesn't know the schema for (for example, a generic
+  storage component).
+- Added a convenience version of scomponent::add_endpoint(),
+  which specifies types using HashCode objects rather than
+  hexadecimal hash strings.
+
+Logging:
+
+- The message about the component's command line is now sent through
+  the logging system, so it can be turned off with set_log_level().
+- scomponent::set_log_level is now a static method, so it can be
+  called before "new scomponent", in order to inhibit the initial
+  message saying the wrapper has started.
+- All console output from log(), warning() and debug() is now sent
+  to stderr rather than stdout. This means that if you are piping
+  the output of a command to another process, the message about the
+  port number the component is listening on (and any other pieces
+  of log, warning or debug output) will not get mixed up with the
+  application's output. (Note: simply disabling all log messages
+  would not be desirable, e.g. the aforementioned listening port
+  message is essential if there is no RDC running, in order to
+  contact the component).
+- All the log files in ~/.sbus/log are now fflush()ed after every
+  message. This reduces performance but makes problems much easier
+  to fix (previously if a component ran into trouble before generating
+  4K or so of log output, the log files would be empty!)
+
+Command-line usage:
+
+- "speek schema <address> <endpoint>" returns the schema[s] for a
+  particular endpoint (a subset of the information returned by
+  speek -m).
+- "speek builtins" lists the names and types of the built-in endpoints.
+- "speek builtin <endpoint>" returns the schema[s] for the named
+  builtin endpoint.
+- Messages and RPCs can now be send from the command-line using spoke:
+  "spoke emit <address> <endpoint> <schema-file> [<XML>]"
+  "spoke rpc  <address> <endpoint> <schema-file> <schema-file> [<XML>]"
+  "spoke send <address> <endpoint> [<XML>]"
+  The first two refer to files containing the schema[s] to be used,
+  the third asks the target component what schemas to use (which is
+  more convenient but takes another message).
+  The message is entered as XML, either in a quoted string on the
+  command-line, or read from stdin afterwards if omitted.
+  If there is a reply it is printed to stdout in XML.
+- Added the ability to specify an instance name to universalsink.
+- Added "-x" option to universalsink, to output in XML.
+- Allowed universalsink to start unmapped, with a "-u" option.
+- Added new tool, universalsource. Synopsis:
+  "universalsource <schema-file> [<instance-name>]"
+  This accepts XML messages conforming to the schema from stdin.
+  Each complete message must be separated by a blank line.
+- Created a generic stream persistence component, spersist.
+  Currently this just puts data received in an SQLite database
+  and does not provide an endpoint for retrieving it remotely.
+  Synposis:
+  spersist <database-filename> <address> <endpoint>
+  The database created has the following SQL schema:
+  CREATE TABLE data(timestamp text, hash text, xml text);
+  CREATE TABLE types(hash text, schema text);
+
+Dynamic creation of endpoints:
+
+- scomponent::add_endpoint() can now be called any time after the
+  component has started, not just beforehand. New endpoints appear
+  at the end of the lists in component metadata and status, so the
+  original endpoints remain in fixed positions.
+- The RDC now calls get_metadata as well as get_status periodically,
+  in case the list of endpoints supported has changed.
+
+Clones:
+
+- Clone numbers have been replaced by "Endpoint IDs". These are simply
+  the sequence number of the endpoint within both the metadata and
+  status structures (0, 1, etc). All endpoints are listed in both (so
+  the metadata is no longer static when new endpoints are created,
+  although it is append-only). Endpoints can never be destroyed.
+- The clone number is no longer packed into the endpoint name string
+  as "name#n" when it appears in the component status structure,
+  since endpoint ID can be inferred from position in the list.
+- Reimplemented the scomponent::clone() API method as a wrapper
+  around add_endpoint() - clones are no longer special, they are
+  just dynamically created endpoints with the same type as an
+  existing one.
+
+Metadata:
+
+- Tidied up the component-metadata structure IDL by removing
+  all the features not planned for inclusion in 1.0 (primarily the
+  access control fields). This makes sense because the experience
+  gained from implementing these things is likely to ensure changes
+  are required to this part of the structure anyway, so there is no
+  point having these unused placeholder fields cluttering it now.
+  o Deleted pubkey
+  o Deleted managed-roles
+  o Deleted remap-permission
+  o Deleted role and role-defn
+  o Deleted access-control
+  o Deleted alternate
+  o Deleted obsolete
+  o Deleted API
+  o Renamed eps to endpoints
+  These changes have been made to all the .cpt files in the idl/
+  directory.
+  The LITMUS code for the metadata structure has been changed in
+  wrapper.cpp and rdc.cpp.
+  Structure element access has been updated in wrapper.cpp, rdc.cpp,
+  speek.cpp and analysecpt.cpp.
+  
+Schemas:
+
+- If the LITMUS_PATH environment variable is set, the system now
+  automatically appends the three default locations (the current
+  directory, $HOME/share/litmus, and /usr/local/share/litmus) to
+  the list of places checked for schemas and component metadata.
+  Thus it is no longer necessary to put those in LITMUS_PATH.
+
+Persistent components:
+
+- Added an endpoint "hup" to the RDC, which requests it to re-parse
+  the persistent components file (autorun).
+- "sbus hup" invokes the "hup" endpoint on an RDC from the command line.
+
+Remote start:
+
+- Added a "remote_start" sink endpoint to the RDC, which starts
+  components (in fact any process) on the local machine in response to
+  remote requests.
+- "sbus [-r <rdc_address>] start <command> <args...>" invokes the
+  remote_start endpoint, in order to instantiate components on other
+  machines from the command line.
+
+Subscriptions:
+
+- API: Added a "peer" parameter to the sendpoint::subscribe() call.
+  You have the option of changing the subscription for one
+  currently mapped peer (specified by component or instance name),
+  for all currently mapped peers (specified by "*"), or to
+  set the default subscription for all future maps (specified by NULL).
+  The third case replicates the previous behaviour of this call.
+  Previously it was not possible to change a subscription to an
+  already set up mapping.
+- Protocol: Added a corresponding "peer" field to the
+  MessageSubscribe message type, sent from the library to the wrapper.
+- Protocol: Added a new out-of-band message type sent between
+  components, MessageResubscribe.
+- Added a new builtin endpoint "subscribe", to allow control of
+  subscriptions by third party agents.
+- Subscriptions and topics can now be changed remotely using
+  "spoke subscribe <addr> <endpoint> <subs-expr> [<peer-cpt> | '*']"
+  "spoke topic  <address> <endpoint> <topic>     [<peer-cpt> | '*']"
+  Again, there is the option of changing it for a named, currently
+  mapped peer, for all currently mapped peers ('*') or as the
+  default for future maps (by omitting the final argument).
+- A list of the peers each endpoint is connected to, together with all
+  subscriptions and topics, can now be viewed with "speek -c <address>".
+
+Protocol:
+
+- Bumped version number to 8.
+
+Portability:
+
+- Now checks if the /proc filesystem is not available (e.g. on Macs),
+  and disables the part of the persistent component mechanism which
+  scans the list of running processes if so.
+  
+Bug fixes:
+
+- Now gives a helpful error message (rather than crashing badly) if
+  sbuswrapper cannot be found in the user's PATH.
+- Fixed memory leaks in net.cpp functions
+  sinternal::write(), sresub::write(), sdivert::write(), smessage::write(),
+  shook::write(), sgeneric::write(), sstopwrapper::write(), srunning::write(),
+  saddendpoint::write(), sstartwrapper::write(), scontrol::write()
+  and sreturncode::write().
+  (All due to not deallocating the result of a StringBuf::extract()!)
+  This fix also saves a memory copy on all messages sent from the
+  library to the wrapper.
+- Fixed memory leaks in XML function do_import() from xml.cpp:
+  several cases in which tag->data wasn't deleted, and one situation
+  in which it was deleted with delete instead of delete[].
+- To enable the above fix, deep copies are now made of element names
+  passed to pack() functions. This might reduce performance slightly,
+  but removes a source of bugs and is one fewer special case for the memory
+  management rule stated in the API document. All the snode constructors
+  (including static class functions which build new snodes, and various
+  friend functions in other sources files) have been changed to copy the
+  name argument, and the destructor now deallocates it.
+
+20-8-2008: Released 0.8
+-----------------------
+
+Persistent components:
+
+- The RDC now reads a file on startup to learn which components
+  should be kept running automatically on the local machine.
+  The file is $SBUS_DIR/autorun (or ~/.sbus/autorun if $SBUS_DIR
+  is not set).
+- The RDC checks which components are already running by consulting
+  the /proc filesystem. Components must be invoked with exactly
+  the same pathname and arguments as those given in the autorun file
+  so that they are recognised as the same thing.
+- If a required component is not running, the RDC starts it using
+  fork and exec. Currently these components are not fully detached
+  children of the RDC (so if the RDC terminates, so will they).
+- When a persistent component deregisters, the RDC restarts it
+- When a persistent component fails to respond to a ping, the RDC also
+  restarts it
+- Added a "lost" endpoint to the RDC. Reports of lost connection to
+  a component via this endpoint trigger the RDC to immediately ping
+  the component which is suspected to have failed
+- The wrapper now calls the "lost" endpoint on known RDCs whenever it
+  unexpectedly loses contact with another component (i.e., without
+  a goodbye message)
+- To summarise, persistent components are launched
+  a) when the RDC starts
+  b) when an existing one deregisters
+  c) when they fail to respond to a ping  
+  and indirectly (since this causes a ping):
+  d) when the RDC receives a lost event for them from a third party
+
+RDC:
+
+- In component lookups, the constraint which requests a component
+  with a given existing connection to a third party (data supplier, etc)
+  is now implemented. Thus you can request a foo component which is
+  connected to a bar source.
+  This used to be called a required "parent" component, and is now
+  more properly termed a required "peer" component.
+  You can use component names or instance names.
+  Only direct peers are checked, not indirect relations
+  via third party components. The algorithm currently makes
+  a linear search through the peers connected to each endpoint
+  of each possible component, so it's not terribly fast.
+
+Quality improvements:
+
+- Added an $SBUS_INTERFACE environment variable. This can be used on
+  hosts which have multiple network interfaces to specify the interface
+  whose IP address will be used as the unique name of that machine,
+  and via which SBUS components will be contacted (previously the first
+  interface discovered was always used).
+  Note: there still remains the unfortunate limitation that SBUS cannot
+  communicate via more than one network interface per machine, in order
+  to reach multiple separate networks not otherwise connected in some way
+  (such as a private network, and the Internet).
+- Improved the warning messages when components or wrappers terminate,
+  to make it clear what has initiated the shut down (including remote
+  requests by "spoke terminate").
+- Removed unnecessary maps from spoke.
+- scomponent::stop() now waits for the pipe to the wrapper to close
+  after sending it the stop packet, so that the caller can be sure
+  the wrapper really has stopped by the time the call returns.
+- The wrapper now checks if a certain map already exists, before
+  making it. Previously if it did already exist it would still try
+  to map it again, and crash. Apart from being less than foolproof
+  this would cause problems if multiple federated RDCs with remapping
+  engines all attempted to repair a given link, which is likely
+  to occur in practice.
+  The check works for programmed as well as third party map requests.
+- Code clean ups for visitor messages (RDC registration, resolving
+  map constraints, schema lookups and lost events).
+  Added many comments and some status enumeration variables to keep
+  track of which pieces of protocol-specific state are currently valid
+  for a given suspended message.
+  Cleaning up after successful or unsuccessful delivery of a message
+  is now handled consistently regardless of the stage at which failure
+  is detected (it could be while trying to connect, trying to send the
+  RPC, or trying to read the response), in an appropriate way depending
+  on the message purpose. This was very ad-hoc and incomplete before.
+
+Metadata:
+
+- Added a "cmdline" field to the component state structure, which
+  records the command line by which the component was invoked.
+  This changes the LITMUS code for the builtin get_status endpoint,
+  so don't forget to "make install" in the idl directory to update that.
+
+Non-blocking architecture:
+
+- Previously the wrapper placed all sockets into non-blocking mode
+  just *after* the connect() call, which meant that connect() could
+  block the wrapper. Worse, this happened under normal usage,
+  for example, if $SBUS_RDC_PATH lists any RDCs which aren't running
+  (which is encouraged, since the idea is to list the addresses of
+  quite a few RDCs that might be running, to improve the chances that
+  one of them can be contacted).
+  Worse still, the timeout could be minutes rather than seconds.
+  I have started to fix this problem by making sockets non-blocking before
+  the connect(), and keeping track of the suspended connections.
+  Currently the fix applies only to wrapper to wrapper messages, such as
+  RDC registration and schema lookups; endpoint mapping may still block
+  for a long time in connect() if the target address does not respond.
+- Slightly improved behaviour when looking up map constraints:
+  Previously each RDC would be contacted one at a time to ask for possible
+  targets, then the possibilities would be tried sequentially.
+  When one succeeded, the call would return.
+  Now the RDCs are contacted in parallel (and with non-blocking connects,
+  as described above).
+  Mapping is unfortuately still not possible until all the RDCs have
+  responded one way or the other (positively, or negatively due to a long
+  TCP connection timeout), though. The possible targets are also still
+  tried sequentially.
+- Deregistration now tries all RDCs in parallel, but exits the program
+  as soon as it has managed to deregister with one RDC - it doesn't
+  wait for them all (this behaviour may change again in future, so
+  don't depend upon it).
+
+Portability:
+
+- Applied some Makefile fixes to build correctly on Macs (courtesy
+  of David Evans).
+- Renamed libwrap to libsbuswrap, to avoid a clash with a library
+  of the same name on the Mac.
+
+Bug fixes:
+
+- The terminate endpoint (as called by "spoke terminate") did not
+  operate correctly if there were no RDCs running.
+- Fixed a bug in the multiplex select wrapper, and cleaned up the
+  behaviour in case of select errors.
+- Component lookup with multiple simultaneous constraints did not
+  work due to a bug in the parser for map constraint strings. Now OK.
+
+4-8-2008: Snapshot (interim) release: 0.78
+------------------------------------------
+
+Multi-threaded component support:
+
+- Added scomponent::clone() to the API
+  This allows copies of *client* or *source* endpoints (not server or sink)
+  to be made, so that different threads in a multithreaded component
+  may simultaneously access the same endpoint, by using different clones.
+  Note that there is no automatic disposal or recycling of clones;
+  applications must implement this themselves if they use a thread pool model
+
+Metadata:
+
+- The component status now lists seperate status for each cloned
+  endpoint. To avoid changing the status structure the names of cloned
+  endpoints (local or peer) are encoded as "<name>#<clone-number>"
+
+Tools:
+
+- Updated speek to correctly list cloned endpoints
+- Wrote a quick multithreaded test component using cloned source endpoints
+  (multitraffic.cpp) - not very useful at present since neither second
+  nor third parties are able to map cloned endpoints, only the creator
+
+RDC:
+
+- The RDC is now multithreaded, so stuck components cannot freeze it.
+  It makes use of the new clone() call in order to make concurrent
+  RPCS to the same endpoints in different threads.  
+
+Polymorphic source support:
+
+- Added an scomponent::declare_schema() method to the API. This is only
+  needed for polymorphic source endpoints which have to define new
+  schemas at run time before emitting them (otherwise the wrapper will
+  complain that the concrete type is not known to the schema cache)
+
+Protocol:
+  
+- Added MessageClone message type
+- Added clone numbers of requesting and target endpoints to MessageHello
+- Added instance name to MessageRcv and MessageResponse
+- Added clone number to MessageRcv and MessageResponse
+- Removed unnecessary "endpoint name" field from mapping control messages
+  MessageMap, MessageUnmap, MessageIsmap and MessageSubscribe (no longer
+  used now that map requests must be sent on the same endpoint connection)
+- Added MessageDeclare message type, used by the new declare_schema() call
+- map(), unmap() and ismap() return codes are now correctly sent over
+  the relevant endpoint pipe from wrapper to library, rather than via
+  the bootstrap connection. This makes it safe to call these functions
+  concurrently for different endpoints, in multi-threaded applications
+- Increased protocol version number to 7
+
+Misc API:
+
+- Added instance name of sending component to smessage structure
+- Added clone number of sending endpoint to smessage structure
+- Now that map return codes are sent over the same pipes as endpoint
+  traffic, the library buffers any data messages received on an
+  endpoint whilst it is expecting a map return code (i.e. while blocked
+  inside map(), unmap() or ismapped()). These are subsequently
+  returned by calls to sendpoint::rcv() before checking for any new
+  messages.
+  Calls to select() using the endpoint file descriptor will not
+  unfortunately be aware of these pre-fetched messages.
+  The workaround is for applications to check this condition using
+  the new sendpoint::message_waiting() method.
+  Note that the provided select() wrapper utility class (multiplex)
+  does this for you, if you add endpoint file descriptors to the
+  select set with multiplex::add(sendpoint *).
+  You need to call message_waiting() if you are using the ordinary
+  unwrapped select() call, and expect incoming messages on an
+  endpoint whilst it is being mapped or unmapped (this is more
+  of a problem if the endpoint is mapped to multiple peers).
+
+Error messages:
+
+- Made some error messages more explicit
+- Downgraded "inability to contact a particular RDC" from a warning
+  to an informational message (since $SBUS_RDC_PATH will often list
+  RDCs which are not currently running). Only if *no* RDCs respond is
+  a warning emitted.
+
+Bug fixes:
+
+- Fixed a bug which caused components to crash with an
+  "Inappropriate fdstate 0 for active file descriptor" message whenever
+  another component tried to map a non-existent endpoint (the code
+  did not remove the file descriptor from the set watched by select()
+  after sending the rejection message back to the calling component).
+  
+2-4-2008: Snapshot (interim) release: 0.77
+------------------------------------------
+
+Language bindings:
+
+- Separated the wrapper-specific code into a different directory,
+  as a preparatory step for porting to different languages. The
+  new layout has the following directories:
+  wrapper/ - builds wrapper and libwrap.a
+  library/ - builds libsbus.a
+  tools/   - prebuilt components (require libsbus.a)
+  utils/   - schema utilties (require libsbus.a and libwrap.a)
+  Only the code in library/ (in fact a subset of it) needs to be ported
+  to new languages.
+  Normal components just link with libsbus.a ("the library").
+  Utilties which need to parse schemas directly as well must be
+  written in C++ since they also have to link with libwrap.a.
+  The RDC is unusual because it is a component, resides in tools/,
+  but links with both libraries (like a utility), to enable its
+  schema manipulation.
+
+Packaging:
+
+- Greatly simplified the build and install procedure using a recursive
+  Makefile in the top level directory.
+- Eliminated the SBUS_PREFIX environment variable (the install procedure
+  now prompts for this information when needed, and stores it in the top-
+  level file ".prefix").
+
+Documentation:
+
+- Rewrote the User Guide
+  o Updated installation procedure
+  o Better description of starting the resource discovery component
+  o Better description of SBUS_RDC_PATH and specifying which RDCs to use
+    (partially moved from a section in the metadata document)
+- Formally added the developing "SBUS Hackers Guide" to the documentation
+  collection.
+- Rearranged some sections to more logical places:
+  o Moved the Subscription language from the Overview to the User Guide
+    (far too detailed technical information to appear in the Overview)
+  o Moved the description of Built-in endpoints from the Overview to the
+    Metadata & RDC document (also too much low-level detail for the Overview)
+  o Moved the "Directory Structure Familiarisation" section from the User
+    Guide to the Hackers Guide (normal users don't care about this)
+  o Moved the "Tests" section from the User Guide to the Hackers Guide
+- Withdrew "Roadmap" document (most things on this are now complete)
+
+Quality control:
+
+- Added line numbers to all relevant error messages produced by the
+  schema parser (most already printed the line number within the schema,
+  but not all)
+
+8-2-2008: Released 0.75
+-----------------------
+
+Logging:
+
+- Created warning(), log() and debug() functions to join error().
+- Log files are stored in a directory specified by the environment variable
+  SBUS_LOG_DIR. If this environment variable is not set then the
+  directory $HOME/.sbuslog/ is used by default.
+- Log files are named cptname-instance-X.log or cptname-X.log
+  (the latter if no instance name is set).
+  Here X stands for 'W' or 'L', indicating whether the message arises from
+  the wrapper or the library respectively.
+- syslog() is used for errors which occur before the component name is known.
+- Note: various dump() functions still print directly to stdout.
+- Errors, warnings, log messages and debug messages can each be directed to
+  the log file, to stdout, to both or neither.
+- Log levels are defined as follows:
+  0 = nothing, 1 = errors, 2 = warnings, 4 = log messages, 8 = debugging info
+  You can add these values together to log a mixture of message types.
+- The environment variables SBUS_LOG_LEVEL and SBUS_ECHO_LEVEL, if set,
+  override the initial default log levels. SBUS_LOG_LEVEL determines which
+  kinds of message are sent to the log file, and SBUS_ECHO_LEVEL
+  independently selects what is sent to stdout.
+- Added the API function scomponent::set_log_level(int log, int echo).
+  At present this must be called before scomponent::start(...) is called.
+- Added log and echo level to the sstartwrapper message type.
+- Called the new API function to reduce logging to a quieter level for the
+  standard tools (spoke, speek, sbus, rdc, universalsink).
+- Allowed log levels to also be changed remotely via a built-in endpoint,
+  set_log_level(log, echo).
+- Added the ability to remotely change log levels via spoke as follows:
+  "spoke log <address> log_level echo_level"
+
+Remote shutdown:
+
+- Added a new built-in endpoint terminate(), to remotely stop a component.
+- Added the ability to remotely shut down components to spoke, using
+  "spoke terminate <address>"
+
+Inter-host connections:
+
+- Finally fixed get_local_address, to use getifaddrs(). This should
+  now reasonably portably determine the machine's own "canonical address"
+  (defined as the IP address of the first network interface, ignoring
+  loopback unless the machine isn't networked at all).
+  See the long comment at the top of the get_local_address() routine
+  in the code for net.cpp for an explanation of how and why this method
+  was chosen.
+- Components now read the SBUS_RDC_PATH environment variable to find
+  RDC addresses (local or remote) to use for registering and/or
+  component lookup. This is in addition to RDC addresses added
+  programmatically using the add_rdc() call.
+- Tested operation across the network (simple test just using two
+  machines); all OK.
+
+Resource discovery improvements:
+
+- Implemented the "events" RDC endpoint. This only outputs registration
+  (and deregistration) events this RDC receives directly, not those
+  passed on by an "events" source on another RDC.
+- Merged the two RDC endpoints "register" and "deregister" into one,
+  called "register", which accepts the same data type as the "events"
+  endpoint generates. This has the nice result that RDC cooperation is
+  possible simply by mapping "events" endpoints to the "register"
+  endpoints on other RDC's (via any appropriate mapping mechanism).
+  N.B. the "register" and "deregister" builtin source endpoints in the
+  wrapper have also merged, of course. Don't forget to "make install"
+  in the idl/ directory if you are upgrading.
+- The RDC now has a "-j" (join) option, to join with other existing
+  RDCs. It starts by calling their dump() operation to see what they
+  know, and then interconnects their events streams so that each will
+  be informed of registration events that the other receives.
+  There is also a "-f" option to specify a file containing a list
+  of RDC addresses to try joining with, one per line.
+  The default RDC port number is tried if no port number is specified
+  in the address.
+  It is not an error if some of the RDCs are not running (so you
+  can overspecify the list of possible RDC locations).
+  RDC replication is now fully working.
+  Note the design decision not to have RDCs pass on the /addresses/ of
+  the RDCs they know about to others (so the relation of inter-RDC
+  communication is not transitive). This is beacuse we don't want
+  all the RDCs in the world to try and replicate all the others state!
+- More explicit control of the port number for the RDC to listen on,
+  set via command-line options "-p" and "-a".
+- The "sbus" client now accepts an option to specify the address
+  of the RDC to query. If not given, then the default port on the
+  localhost is assumed.
+- It turns out that the concept of "foreign RDCs" is very useful
+  after all - these are RDCs which are used for looking up other
+  components but with which the component itself does not register.
+  This feature had been removed from the draft API in version 0.5
+  (add_foreign_rdc()) because it was felt to be too subtle for
+  users to have to understand.
+  The solution now adopted is to keep just the ordinary add_rdc()
+  call, but to allow the user to specify an address starting
+  with an exclaimation mark '!'. Such RDC addresses are used
+  for lookup only. If the user is unaware of this feature then
+  its presence in the API is hence unobtrusive. The other big
+  win is that internally instead of maintaining two vectors of
+  RDC addresses (ordinary and foreign) there is a single combined
+  list, differentiated only by the presence or absence of the
+  initial exclaimation mark in each address. This avoids protocol
+  modifications.
+  Exactly the same convention also works for RDCs listed in the
+  SBUS_RDC_PATH environment variable.
+- The RDC now checks whether an address is already registered before
+  adding it to the list (this might happen in the future if a component
+  registers with several RDCs, which are federated).
+
+Protocol:
+
+- Added a "source endpoint name" field to MessageRcv and MessageResponse,
+  and to the smessage data structure. This allows application writers to
+  see for sure which endpoint messages they receive have come from
+  (previously they only knew which component, and could make an educated
+  guess about the endpoint - which was usually, but not always, obvious).
+- Added the canonical machine address to the MessageWelcome message
+  type. This is necessary for detecting when two components are the
+  same, because the address you request may not be the same as
+  the component's true address, due to DNS lookups and expansion
+  of "localhost", etc.
+- Also added the canonical machine address to the MessageRunning
+  message type, sent from the wrapper to the library, so that
+  components such as the RDC may discover their own address.
+  This is exposed in the API via the new scomponent::get_address()
+  function.
+- Finally added a canonical machine address field to MessageReturnCode.
+  This is used in the case of successful map requests to indicate
+  the address of the remote component which has been mapped.
+  In order to make this available within the API, the return type
+  of the sendpoint::map() function has been changed from a
+  boolean integer to a string, which contains the remote address
+  if successful and NULL otherwise.
+- Increased protocol version number to 6.
+
+API:
+
+- As described in the protocol section above, added the
+  scomponent::get_address() method and changed the return type from
+  sendpoint::map() to support canonical machine addresses.
+- Withdrew the MapConstraints form of the map() call, at least for now.
+  This had been unimplemented for some time and was cluttering up the
+  description of map() in the API docs considerably.
+  It is possible to do all the same things using the other form of the
+  map() call, which takes a string argument, by encoding the constraints
+  in the address string using the plus sign notation described in the
+  user guide. The cost of performing string manipulation to set this
+  up in the component is probably not too serious (either for execution
+  speed or programmer effort) in most target languages.
+  The MapConstraints object still exists in the code, but is now
+  only used by the wrapper, which may be of benefit when porting the
+  library to another language binding, since MapConstraints will no
+  longer need to be ported.
+
+Automatic reconnection (preparatory ground work):
+
+- Map requests (via the API or from third parties via the map endpoint)
+  now return success and do nothing if the two endpoints are currently
+  already mapped, from either end. Due to the difficulty in resolving
+  addresses uniquely, the mechanism for this does actually briefly
+  create a second connection to the other component, which then compares
+  canonical addresses and returns AcceptAlreadyMapped. The former
+  component then drops the new connection and returns success.
+  This behaviour will be important for persistent links, because it
+  means that more than one agent can go ahead and try to restart a
+  link, and it does not matter in which order or if more than one of
+  them succeeds.
+
+Schemas:
+  
+- Removed the fastsym optimisation for element names. This never
+  really worked, because it required a copy of the Schema object,
+  which isn't portably available in the library (only the wrapper).
+
+Bug fixes:
+
+- Fixed a small bug in "extract" and "archive" (these hadn't been updated
+  for the new style schema definitions, beginning with an '@' sign)
+- Made it possible to pass NULL to emit(), for source endpoints with
+  an empty message type (such as terminate()). This was already possible
+  for empty queries with rpc().
+- Fixed a bug caused by uninitialised sequence numbers.
+
+Documentation:
+
+- Updated user guide's description of speek, spoke, sbus and rdc
+- Added description of universalsink to the user guide
+- Added a description of the logging architecture to the API document
+- Made the API document considerably more readable
+  (not to mention a little more factually accurate in places)
+- Updated the description of the RDC in the Metadata & RDC document
+- Made the obvious updates to the protocol document to keep it in sync
+
+18-10-2007: Released 0.7
+------------------------
+
+Polymorphism:
+
+- Schemas are now added to the schema cache in the two situations
+  whereby new ones are encountered: at endpoint definition time
+  (application-specific or builtin), and after a lookup_schema.
+- The wrapper now calls the lookup_schema service on other components
+  when sent an unknown hashcode, using a non-blocking disposable
+  (Visitor) message. The incoming message is suspended until the
+  reply from lookup_schema arrives, at which point processing of
+  the original message is restarted.
+- Changed the LITMUS code checks in the connection acceptance routine
+  to allow the connection if /either/ party is polymorphic.
+- Allowed receiving messages of any type at polymorphic endpoints.
+- Changed the action when a polymorphic peer sends a message of
+  incompatible type to a non-polymophic endpoint. Now a warning is
+  issued and the message is discarded. Previously a hard error was
+  generated - but since we have to allow polymorphs to talk to
+  fixed-type components we should expect that sometimes they will
+  send messages of types the fixed-type can't handle.
+- Expanded the notion of matching components within the RDC's lookup_cpt
+  service to include polymorphic types.
+- Added an optional HashCode argument to sendpoint::emit(),
+  sendpoint::rpc() and sendpoint::reply() in the API.
+  This is used by components with polymorphic endpoints to indicate the
+  type of each message they send (since these may vary).
+  For all fixed-type endpoints as before it is omitted, and the
+  predefined type will be used.
+  Updated the event broker to use this argument.
+- Made sure the actual message hashcode is placed into and taken out of
+  smessage and sinternal structures within the wrapper if an endpoint
+  is polymorphic, not just the fixed endpoint hashcode.
+- Polymorphism now fully implemented.
+- Implemented three components to test polymorphism and the event broker:
+  trafficgen, slowcar and universalsink. The first two are specific to
+  the test but the third is generally useful - it can be plugged into
+  any source endpoint and displays messages (of any type) emitted from it.
+- Tested event broker using the above three components. All working OK.
+
+Tools:
+
+- Made the output from "sbus list" clearer, by displaying it as a table
+  rather than dumping the XML.
+- Removed speek's '-a' ("all") option, because it wasn't useful in
+  practice due to information overload.
+- Added a new option '-e' ("endpoints") to speek. This is clearer than
+  the status and metadata options because it presents the results in
+  a table rather than as raw XML. It also focusses on the most commonly
+  required details, listing endpoint name, type, how many peers it is
+  mapped to, whether a subscription is set, and the number of messages
+  it has processed so far.
+- Added proper timing to democpt's "counter" endpoint - it now keeps
+  track properly so that a count is always emitted a second after the
+  previous one, not just a second after the top of the select loop
+  (which meant never, if the component was also listening to another
+  stream and hence always had other things to do each second).
+- Implemented a new option to the "sbus" utility - "sbus links".
+  For each component registered with the RDC this lists the peer
+  components it was connected to last time it was pinged.
+  This allows you to see the topology of the component graph.
+
+Protocol:
+
+- Added a new message (MessageRunning) sent from the wrapper to
+  the library over the bootstrap connection, in reply to MessageStart.
+  This contains some initial status information available within
+  the wrapper but not otherwise known to the library (the wrapper's
+  external listening port number, and the metadata for its built-in
+  endpoints). This is exposed to the API by the new scomponent::
+  functions count_builtins(), get_builtin() and get_listen_port().
+- Added the component instance name to MessageHello and MessageWelcome.
+- Added flags to MessageWelcome which indicate whether the message
+  or reply schemas are polymorphic (without this the other component
+  could not tell whether the schemas satisfied its request due to
+  matching hash codes, or because the endpoint was polymorphic).
+- Added the sending component's address to MessageHello. This is the
+  passive address which listens for new connections, which isn't the
+  same as the address the connection has come from (which will be a
+  particular data connection). The receiver needs to know the true
+  address in case they have to call lookup_schema back to the component
+  which initiated the connection.
+- Increased protocol version number to 5.
+
+IDL:
+
+- Added an instance name field to ^peer in ^component-state.
+
+Resource discovery improvements:
+
+- Mapping by resource discovery instead of port numbers now works when
+  trying to connect to built-in endpoints (previously it only worked
+  with endpoints the components had explicitly added). The RDC makes
+  use of the new get_builtin() function to check that a built-in
+  function does match your map request.
+  Consequently, mapping by instance name and so on now works with
+  the speek and spoke utilities: e.g. "speek -m +Ifoo", or
+  "spoke map +Ifoo counter +Ibar viewer".
+- Added proper timing to RDC's checkalive feature, as for democpt.
+  The RDC now always pings the next component every ten seconds to
+  see if it is still alive, not just ten seconds after the top of
+  the select loop (which only works when nothing else is going on).
+
+Divert feature:
+
+- Completed implementation of the "divert" endpoint in the wrapper.
+  This redirects all current peers of a given endpoint to another
+  component (which is useful when the former component needs to be
+  restarted/upgraded/migrated, for example).
+- Tested "spoke divert"; working, including map constraint strings,
+  e.g. "spoke divert +foo counter +bar counter".
+
+Documentation:
+
+- A few things mentioned in the Overview document which haven't been
+  implemented yet have been moved into the Extensions document.
+  This means that the Overview document is now a fairly accurate
+  description of the capabilities of the current implementation.
+- Added a diagram showing major features not yet implemented:
+  docs/Roadmap.pdf
+  This is useful because the detailed SBUS TODO list is not shipped with
+  the formal releases, and so there was previously no way to see what
+  is planned, and which features are currently missing from the
+  implementation (particularly confusing since they may however be
+  mentioned in the documentation).
+
+Debugging:
+
+- Fixed a bug in the RDC's component lookup service - the check for
+  endpoint type would always succeed, and wasn't correctly flagging
+  mismatches.
+- Fixed a bug which caused programmed maps to an endpoint with a different
+  name to attempt to map to the name of the calling, rather than target
+  endpoint on the other component (and hence fail).
+
+12-09-2007: Released 0.65
+-------------------------
+
+Concurrency model:
+
+- All the local endpoint connections and all peer component connections
+  are now set to operate in non-blocking mode (whether mapped from the
+  local or the remote end).
+  Ordinary data transfer operations (incoming or outgoing) should hence
+  not be able to block the wrapper when their sockets are not ready.
+  The handshake (Hello and Welcome messages) for new connections is also
+  non-blocking at both ends.
+  There is one exception to non-blocking operation; the bootstrap socket
+  is still left in blocking mode, hence AddEndpoint, Start, Stop and
+  ReturnCode message processing may block.
+- Added an option to democlient ("-disrupt") to deliberately emit a
+  partial message, and hence observe how this freezes the peer component's
+  wrapper unless nonblocking mode is used; tested this works
+
+Protocol and schemas:
+
+- Bumped protocol version number to "4"
+- Added MessageFlow to the protocol and networking code
+  (flow control is not enabled yet though)
+- General documentation updates, including a description of special
+  schemas in the "Data Representation" section
+- Changed a minor convention in order to simplify some error-prone code:
+  the response schema is no longer an "optional" element of the component
+  metadata and interface structures.
+  Instead, if an endpoint is of type source or sink (rather than client
+  or server) and hence has no replies, a special schema meaning
+  "inapplicable" is subsituted. This schema is written as "!" and has
+  hashcode "EEEEEEEEEEEE".
+  In effect, where you would write <response>-</response> in your .cpt
+  file previously, you must now write <response>!</response>.
+  This sounds trivial but has the advantage that it can be compared with
+  other hashcodes like any other (but only matches another 'no response'
+  schema), removing special-case testing for the presence of the optional
+  element.  
+  o This change effects the ^component-metadata and ^interface schemas,
+    and the protocol for MessageHello and MessageAddEndpoint, and
+	 all the .cpt files in idl/ which define endpoints of type source or sink
+	 including any added by the user.
+- Added MessageUnavailable to the wrapper-library protocol (sent instead
+  of the response to an RPC if there is no mapped server)
+- Added support for "disposable connections", including the message
+  type MessageVisitor. See the section on disposable connections in the
+  protocol documentation for further details.
+  Briefly, these allow single, one-shot RPCs to be piggybacked
+  on the Hello/Welcome information, bypassing separate mapping stages.
+  They are only used for "internal" RPC's, i.e. those initiated by the
+  /wrapper/ (not the business logic), e.g. for querying or registering with
+  the RDC, or looking up a schema. They are necessary to avoid having a
+  potentially unlimited number of new endpoints to make these calls (if
+  several activities happen concurrently), and to simplify the state
+  management when keeping track of the progress of multiple non-blocking
+  internal RPCs. These must not block, to avoid deadlock situations.
+- Renamed MessageClose to MessageGoodbye, for greater consistency with
+  MessageHello and MessageWelcome, and to avoid confusion with other
+  message types.
+
+Polymorphism:
+
+- Implemented lookup_schema() standard endpoint (for retrieving schemas
+  from polymorphic components): the wrapper responds to lookup_schema
+  requests by searching its schema cache
+- Implemented a schema cache in the wrapper
+- Wrote the standard event broker component
+  (this still requires fully functioning polymorphism and schema lookups
+  support to work, which isn't there yet)
+
+Resource discovery:
+
+- Renamed endpoint "lookup" in the RDC to "lookup_cpt" (I kept confusing
+  it with lookup_schema)
+- Further improvements to the user guide section of the documentation,
+  including information about different ways to specify component addresses
+  (the map constraints string format)
+- RDC now supports lookups according to map constraint strings
+- Updated the "Metadata & RDC" section of the documentation, which was
+  considerably out of date
+- The RDC now has a command-line option to detach and run in the background
+  (until logging is implemented use of this option does mean that error
+  information is not output in the event of a crash)
+- The RDC now periodically pings the components it knows about to check
+  whether they are still alive. If not, it removes them from its lists.
+  This is necessary in cases where a component crashes and hence does
+  not correctly send a deregister message to the RDC.
+  The RDC will therefore stay fairly up to date in such cases.
+  Pinging is done by calling the component's get_status() RPC, hence
+  ensuring the wrapper is able to respond to queries and as a side
+  effect updating the RDC's cached copy of the component's status.
+  Currently the RDC pings one component every 10 seconds, in round
+  robin (it always pings the least recently pinged component).
+  Hence with the current algorithm if there are more registered components
+  they will each be checked less frequently, but RDC ping activity
+  will have a constant overhead.
+  o It was decided not to make the RDC do a spot liveness check for the
+    components it is suggesting in response to a lookup_cpt() RPC.
+    This is because a) the list should be mostly up to date
+    because of the periodic checks, and b) the component calling
+    lookup_cpt() must check if the suggested peers actually exist when
+    it tries to map them anyway, and they could vanish in the
+    time window between the RDC performing its check and the map
+    being attempted by the component, so there is no point in the
+    RDC trying to check on the component's behalf at that time.
+  o Note that if the RDC receives a registration for a component with
+    exactly the same name and other details as one already registered,
+    but at a different port, it registers the new one but does not
+    overwrite the previous registration. Although this /may/ be a case
+    of a component being halted by a user and then restarted (hence
+    changing port), it could also genuinely be two simultaneous copies
+    of the component running on the same machine. It is left to the
+    periodic checks to eventually garbage collect the first record in
+    the former case.
+
+Quality improvements:
+
+- Wrapper no longer aborts when a peer component connection vanishes
+  unexpectedly; instead it issues a warning and removes the peer from
+  its list of connected components
+  (in future versions the code to automatically try and re-establish
+  a connection will also go here).
+  The wrapper also cleans up any pending RPC's queued up to be sent
+  to/from the component which vanished
+- Improved error messages when connections die
+- Removed several unnecessary status/debugging messages
+- Improved "message arrived from network" status message to include
+  message type and endpoint
+- Removed trailing commas from user names (obtained via the gecos field)
+  which are used to set the component creator
+- The sendpoint::rpc() function in the API now returns NULL if the
+  endpoint is not mapped to a server (or if it is mapped to more than
+  one, or if it becomes unmapped during the call due to the server
+  disconnecting). Previously the wrapper would abort in these
+  situations!
+- Wrapper no longer aborts when things go wrong during mapping or
+  whilst receiving new connections: new behaviour prints a warning
+  message if appropriate, cleans up and carries on. N.B. Some of these
+  warnings would still be serious, possibly indicating a wrapper bug,
+  but non-termination provides a bit of protection against rogue
+  components
+
+Debugging:
+
+- Fixed a bug in the multiplex object: if more than one event happened
+  between select() calls, only one of them was being reported. Now
+  they are properly queued up to be returned one at a time
+- Another bug in multiplex! For some reason the expand_capacity()
+  function was half-finished, so would break quietly when there were
+  more than ten file descriptors. Now works for any number
+- Fixed build problems in datatype.h, express.h, builder.h and litmus.h
+  (13 occurrences altogether) due to redundant scope resolution operators
+  in class definitions, which caused trouble for some compilers
+  (thanks to Julien Quintard for pointing this out)
+- Fixed a serious bug which caused getsockname() to crash on some systems
+  (thanks to David Evans for the tip-off)
+
+25-06-2007: Released 0.6
+------------------------
+
+- Quick test of "spoke map" (now easier to orchestrate thanks to instance
+  names and the RDC) on several copies of the demo component's new
+  endpoints. Seems OK
+- Added counter() and viewer() endpoints to the demo component, to create
+  a simple stream for test purposes (counter sends a labelled message once
+  a second)
+- Added a new general admin command, called simply "sbus".
+  Currently this just displays status information from the RDC.
+  o "sbus list" enumerates the registered components
+  o "sbus dump" displays everything it knows about them
+  At the moment this only works with an RDC at the default port on the
+  localhost.
+- Type system fix: unmarshalling empty lists now actually produces an
+  empty list, rather than discarding it altogether
+- Type system fix: unmarshalling missing optional elements now correctly
+  inserts an empty snode with the appropriate name
+- Wrapper now registers with the RDCs on startup, and deregisters on close
+- Redefined RDC API; updated metadata section of documentation accordingly
+- Created a basic resource discovery component in tools/rdc.
+  This is just for information gathering purposes at present - mapping
+  by MapConstraints isn't enabled yet
+- Protocol change: the library to wrapper control messages (MessageMap,
+  MessageUnmap, MessageIsmap and MessageSubscribe) are now sent on the
+  relevant endpoint data connection rather than on the separate control
+  pipe. This fixes the previous crazy out-of-order message handling
+  behaviour, whereby a message emitted before a map command could actually
+  be delivered (because the control connection is handled first by
+  select() when the wrapper is scheduled with several messages waiting),
+  and a message emitted before an unmap command might not be!
+  o Note that this still does not enforce an ordering for messages sent
+    sequentially to /different/ endpoints (but these are subject to
+    network delays anyway, and if you must get confirmation that something
+    has happened you normally use an rpc server endpoint rather than a sink)
+- Cleanups to component-metadata structure:
+  o Removed datatypes field. This was meant to assist with sharing
+    common sub-type definitions, but unfortunately only did so for
+    endpoints on an intra-component basis and the real need for
+    sharing type definitions turns out to be inter-component.
+    A more powerful import mechanism has been added instead to
+    deal with this
+  o Removed creation dates from endpoint definitions (deemed
+    unnecessary clutter - to some extent RDC's can keep track of this)
+  o Added "designer" field to identify the person who wrote the
+    metadata definition
+  o Removed fields "creator" and "admin-email" (superceded by new
+    "designer" field and by "creator" in the state structure)
+- Cleanups to state structure:
+  o Removed component-status (historic states can be collected by
+    the RDC, but don't need to be encoded in the same structure)
+  o Renamed state to component-state for consistency with component-metadata
+  o Added "creator" field to identify the person who instantiated the
+    component
+  o Added current subscription and topic information for each endpoint
+    and connected peer
+  o Added instance name
+- Fixed a bug in the XML parser which occurred when the first element
+  of a structure was an empty tag
+- ALL HASH CODES HAVE CHANGED
+  This was a change planned for some time before 1.0, but it may as well
+  occur sooner rather than later. Hopefully it will never have to be done
+  again. Anyway, be aware that any schemas you have written now evaluate
+  to a different LITMUS code than they did prior to 0.6.
+  This was necessary because although the hashing process sensibly
+  ignored whitespace and comments it didn't properly normalise schemas
+  before hashing.
+  Hence, the same schema with the type definitions in a different order
+  would give a different LITMUS code (so one had to be paranoid about
+  keeping the original text, and couldn't assume LITMUS serialised from
+  a normalised schema would hash to the same thing). Also it wouldn't
+  work at all with the new import directive, and changes in unreferenced
+  types in the same file would also alter the hash code.
+  o The new system of LITMUS code calculation works as follows: the
+    LITMUS source text must first be fully parsed into a Schema object.
+    This has the desirable side effects of resolving imports, tokenizing,
+    resolving dependencies, ignoring order of type definitions, and
+    throwing away unreferenced types. Then the Schema object is turned
+    back into ASCII text, but in a canonical form. The latter text is
+    finally hashed to generate the LITMUS code.
+- Rewritten a moderately large part of the LITMUS parser
+  o To support the new import directive
+  o To allow forward references to user-type definitions later on
+    in the file (previously this didn't work in most cases). Lifting this
+    restriction allows many schemas to be written in a much more natural
+    order for human readers (and is very useful when types are being
+    imported from other files).
+- Added support for an $RDC_PATH environment variable, to automatically
+  specify possible RDC locations to check, in addition to the default and
+  any the component adds programatically. It takes the form of a
+  comma-seperated list of addresses, where each address consists of
+  hostname:port as usual.
+- The wrapper now automatically adds localhost:default_rdc_port to the
+  end of the list of RDC addresses to try.
+- Defined a default port number for RDC services: 50123 (it is
+  perfectly acceptable not to run one on this port, and indeed the
+  port might not be free; this is just meant to be a place where it
+  is quite likely there will be an RDC on certain machines, useful for
+  components with minimal information about possible RDC locations).
+- The "creator" component status field is now set automatically from the
+  user name under which the library is running
+- Change of rules for schemas: the top-level type definition must
+  now begin with an @-sign, just like the user-defined sub-types.
+  This isn't a major burden and simplifies some things by making the
+  syntax more uniform.
+  The top-level type is always the *first* one given in a schema
+  (this was actually the rule before as well, but it's more obviously
+  necessary now, since the main type definition now looks the same as
+  a sub-type definition).
+- Added an "import" directive to LITMUS. This solves the problem of
+  needing to share type definitions between components without
+  cut-and-paste. A file of common types is referenced with @"filename".
+  All types defined in the file (including the top-level one) become
+  available in the importing context.
+- Improved the API part of the documentation:
+  o Moved unnecessary implementation details into an appendix
+  o Completed merging of the "Component API" and "Client API" sections,
+    since the distinction no longer exists
+- Moved the component "uniqueness" mutual exclusion mode setting into the
+  scomponent constructor, and added it to MessageStart in the protocol
+  (it still isn't actually honoured as yet, however)
+- Combined the original four(!) scomponent::start methods into one.
+  If you don't want to register with a RDC, you now don't add any.
+  The wrapper will try to register with all those you list
+  (some may not exist or may refuse, which is not an error).
+  There is no distinction between RDCs used for registration and
+  those used for lookups. Registering with multiple RDCs shouldn't
+  cause problems if some of them are working in concert (replicated
+  RDCs within a domain); the event streams they publish are simply
+  viewed as distributed consistency checks rather than leading to
+  duplicate registration errors
+- Added a concept of "instance names" for components. These are optional
+  and can be used to distinguish multiple replicas of the same component
+  (which share the same component name) for mapping purposes, if desired.
+  This is useful for example when testing remapping between various
+  functionally identical demo components. When an instance name is omitted
+  it is set to the same as the component name.
+  Instance names are now included in the MessageStart protocol
+- Wrote a "spoke" utility program to call map/unmap/divert endpoints on
+  other components
+- Utility programs, demos and other components no longer have to be run
+  from the SBUS build directory (in fact the build directory can safely
+  be deleted after installation)
+- Added a $LITMUS_PATH environment variable, used to look up the master
+  schema and component metadata; it allows a comma-separated list of dirs
+- Added a section to the user manual explaining how to create your own
+  components
+- Re-wrote installation instructions and Makefiles to use "make install"
+  targets and support both root and non-root installations
+- Directory reorganisation: renamed demo/ to tools/, and moved library
+  files into library/
+- Implemented new built-in endpoints map(), unmap() and divert() for
+  third-party reconfiguration of endpoint mappings
+- Added dummy component definition idl/builtin.cpt to describe the
+  schemas for the built-in endpoints
+- Removed some trivial code duplication from net.cpp
+- Bumped protocol version number to "3"
+- Updated protocol documentation accordingly
+- Added MessageDivert, and changed the way MessageClose is handled to
+  create a uniform mechanism for "out-of-band" messages received
+  when normal data messages are expected
+- Fixed some build errors in datatype.cpp reported by David Evans
+
+12-06-2007: Released 0.55
+-------------------------
+
+- The built-in endpoint get_status() now works.
+  The speek utility can be used to invoke it on another component,
+  and hence print amongst other things the counter values which record
+  the number of times each endpoint has been called
+- Added code to get the local DNS name
+- Added code to figure out the address (DNS name and port) of all remote
+  peers, whichever end they are mapped from
+- Did basic test of subscriptions using democpt and democlient; seems OK
+- Fixed a bug when searching for a path of length one whilst matching
+  expressions
+- marshall() now assign names to unnamed elements (named "-" in the snode)
+  from the schema, to allow later subscription evaluation on the snode
+- Added counters for total number of messages processed by each endpoint
+- Redesigned the status structure to be simpler yet again. We don't
+  bother reporting separate statistics for 5 minutes, an hour and a day
+  any more. If these are required then monitoring programs must call
+  get_status() regularly in order to collect this information
+- get_metadata() built-in endpoint now works (and can be accessed
+  with the speek utility)
+- serve_control() now inspects endpoints in reverse order (starting
+  with the most recently added) when deciding which one the user
+  wants to map. This is quick fix for "speek" which needs to map
+  an endpoint with the same name as a built-in, and we don't
+  want it to try mapping the built-in instead. Ultimately we may
+  have to make this control connection more specific to cope
+  with several endpoints at a component having the same name
+- Library now returns map() success value correctly instead of aborting
+  in the case of failure to map
+- Added diagrams of control and data message sequences to the protocol
+  document
+- Changed the way append() works when packing types in C/C++ binding
+- Added some instructions to the user guide section of the documentation
+  explaining precisely how to run democpt and democlient
+- Created a utility client called "speek" to display information returned
+  from components' get_status() and get_metadata() methods
+- Modified democpt and democlient in order to test subscriptions and topics
+- Clarified in the API docs exactly when it is legal to call subscribe()
+- Implemented subscriptions and topics
+- marshall(), unmarshall() and validate() now all behave correctly when
+  the schema is empty, accepting empty messages and otherwise flagging
+  a type error
+- Sorted out FIXME point in democlient.cpp
+- Deleting the scomponent object now gracefully stops the wrapper process
+  and deallocates all resources
+- Fixed a bug where the sstartwrapper::rdc object was treated as a
+  shallow copy in some cases (should have been a deep copy)
+- Tested multiple sequential connections to same component works OK
+- Connection closure now works
+- Bumped protocol version number to "2"
+- Added control messages MessageSubscribe and MessageStop
+- Fixed insiduous bug in multiplex::remove; wrote *count-- and
+  meant (*count)--
+- Fixed bug in democlient - didn't unmap() second endpoint
+- Added code to respond correctly to a MessageClose
+- Fixed bug when unmapping (forgot to remove file descriptor from the
+  select set)
+- Removed some debugging print statements which were accidentally left
+  in 0.5
+- Split "data representation" document into two, with the appendixes
+  becoming a second document called "data examples"
+- Minor documentation clean-ups
+
+6-06-2007: Released 0.5
+-----------------------
+
+- End to end message transfer by stream and RPC now works!
+
+- Now handles the case of empty RPC query messages (if the schema
+  specifies they should be empty) correctly
+
+- The names of mapped endpoint pairs now do not have to be the *same*
+  (just the communication mode and schemas). This wasn't a feature
+  on my todo list, but there seemed to be no real reason for the
+  restriction and some cases where it would be useful if it wasn't
+  the case; hence the flexibility for them to be different has been
+  built into the relevant parts of the protocol
+
+- A note on protocol versions: 0.5 defines protocol version "1".
+  Further protocol changes will definitely be needed prior to 1.0
+  to enable missing features, however from now on since people
+  may actually be sending messages, I will increment the protocol
+  version in any release which changes the protocol, to catch
+  possible mismatches
+
+- Major improvement:
+  The dependence on fork()'s memory copying semantics to create the
+  wrapper thread has been removed, to better support non-POSIX OS'es and
+  remote wrappers for Java.
+  fork() itself is still used, but is immediately followed by an exec(),
+  hence this pair can trivially be replaced with any kind of process
+  launching mechanism.
+  The wrapper is now an executable program in its own right. It accepts
+  as a command-line argument an address and port number on which the
+  application's library is listening, so it can connect back to that.
+  After connecting, the information supplied by the user to the
+  library is packaged up and transmitted across this control connection.
+  Requests to add endpoints result in the wrapper calling back again
+  to the listening endpoint so that another connection can be made.
+
+  In order to make porting to new language bindings easy, the
+  library is now a thin layer which simply sends everying
+  to the wrapper. This has been achieved by packaging data using
+  the XML encoding, which unlike the binary encoding includes explicit
+  element name information and does not require a schema for
+  transmission. This means that the language-specific library
+  *only* has to support the XML import and export parts of the
+  type system - it needs no knowledge of the binary encodings, or
+  how to load and parse schemas and component metadata, or how
+  to validate messages against schemas. Hence it is very lightweight
+  by comparison with the wrapper. The latter is written once in
+  C++ and can be reused by all language bindings.
+
+- Removed add_foreign_rdc(), because the concept of RDC's which
+  are checked when mapping endpoints but which you aren't registered
+  in is probably too subtle for versions <= 1.0.
+  Also changed the interface to add_rdc()
+
+- Removed endpoint grouping for now, to keep things simple. This may
+  be added back at a later date when I've figured out how best to do it
+
+- Very substantial protocol changes (see protocol docs for details)
+
+- The endpoint functions map/unmap/ismapped now operate correctly via
+  the control socket between the application and the wrapper, instead
+  of trying to directly poke things into the scomponent (which won't
+  work when the wrapper doesn't share memory with the application)
+
+- Defined control, close and mapping message types
+
+- Added new message type field and removed unnecessary data length field
+  (which could be inferred from the message length) from protocol handling
+  in net.cpp
+
+- Significant updates to the Overview, API and Protocol documentation
+
+- Created metadata for the demo client in idl/democlient.cpt
+  One of the implications of merging contacts and SAP's to form
+  endpoints is that there is even less difference between pure-client
+  and general-purpose components. Component metadata defines endpoints
+  now, so we might as well use it to define the endpoints for our
+  clients as well as our servers.
+
+- Renamed endpoints in demo component to avoid confusion with new
+  endpoint types
+
+- Removed the unnecessary declaration of the subscription message
+  from pull-stream (now sink) endpoint schema (written as "?"), since
+  this must always exist anyway.
+  The special LITMUS code "111111111111" also no longer has to be
+  passed to add_endpoint().
+  Only client and server (RPC/conversation) endpoints specify a
+  response now; all others specify the message only.
+
+- An explicit subscription message call has been replaced by an
+  API for all endpoints of type sink to set their subscription string
+  and topic with. This subscription is sent to any/all sources they
+  become mapped to. Although this means that each endpoint can only
+  subscribe to one thing at once, it allows subscriptions to
+  survive remapping (because the subscription is automatically resent
+  by the wrapper), unlike an explicit once-off subscription message.
+  Subscription to more than one thing can be handled for now but
+  joining expressions together with the "or" operator inside the
+  subscription string.
+
+- Major change:
+  Reduced the 5 access types and 2 end types (contact vs SAP) to
+  a unified model of "endpoints", each one of 4 types:
+  source, sink, client, server. The first two are for streams, the
+  latter two for RPC's (and conversations).
+  Effectively, the six endpoints for one-shot, push stream and pull
+  stream have coalesced into just two stream-oriented endpoints,
+  namely source and sink.
+  
+  This is much easier to understand; the previous taxonomy was correct
+  but from a protocol standpoint (an analysis based on who sends
+  the first message, and whether there is a reply). The new system
+  takes the user's point of view, so the important thing is whether
+  an endpoint produces or consumes data (not how the protocol works).
+  The user then wants to be able to connect sources and sinks from
+  either end or by a third party in any possible combination.
+  Previous problems where an adapter component was necessary to
+  connect two contacts (plugs) or two SAPs (sockets) no longer occur.
+  
+  This change capitalises on a great deal of similarity between the
+  old saccesspoint and scontact classes, simplifying the wrapper.
+  It also simplifies the API considerably, and in fact increases its
+  power somewhat, because all sources are now mapped to sinks in a
+  *many-many* way, rather than a choice of many-one for push streams
+  or one-many for pull streams.
+  Note that conversations will be achieved by replying to replies,
+  but haven't been fully reinstated yet.
+
+- Many hard-to-locate errors in invalid schemas now print the line
+  number where the problem occurs
+
+- Sorted out the representation of various special types of schema:
+o Empty messages are represented by the special schema "0" and by
+  the LITMUS code "000000000000". "0" replaces "" as the previously
+  acceptable schema. They are also encoded as XML messages with the
+  special string "0" and in the binary encoding have zero length
+o Polymorphic messages are represented by the special schema "*" and
+  by the LITMUS code "FFFFFFFFFFFF". Note that this LITMUS code is
+  only used to describe the schema; all actual messages are sent with
+  a normal LITMUS code which describes the message type actually
+  transmitted in that case
+o Messages which are not present (e.g. replies from one-shot SAPs) are
+  represented by passing NULL to the API if necessary; they have no
+  schema or LITMUS code
+o Subscription expr's have schema "?" and LITMUS code "111111111111"
+
+- Experimented with nonblocking I/O, so that the wrapper can be
+  single-threaded
+
+- Completely removed the concept of "content-format" (which used to be
+  one of native, xml, unvalidated, csv, text, none, expr or the various
+  OOB message types). This was adding a lot of complexity without any
+  real benefit, since all these types can just be encoded in the LITMUS
+  native type system as an appropriately named single raw "txt" field.
+  The OOB message types are all now conveyed by overloading the
+  access-type field
+
+- Added a new built-in SAP called lookup_schema(), to look up a schema
+  by LITMUS code. This is useful for polymorphic components which
+  return types not defined in their component metadata (and hence not
+  obtainable directly from get_metadata()). These schemas will be cached
+  by wrappers to facilitate future parsing anyway; this SAP searches the
+  cache and forwards the results. The schema is returned in a plain text
+  field
+
+- Added proper error reporting to marshall() and unmarshall()
+  (previously errors were detected but dealt with internally in a
+  primitive way; now the error message is returned to the caller)
+
+- Made validate() report errors in the same way as marshall(),
+  unmarshall(), import() and import_file(), for consistency
+
+- Added proper error reporting to Schema creation. To enable this
+  without resorting to exceptions in the API, Schemas are now
+  obtained by calling one of three static "load" and "create" Schema
+  class methods, rather than by calling the Schema constructor
+
+- Some changes to the component "state" structure in the metadata document
+
+22-05-2007: Released 0.48
+-------------------------
+
+- Removed the unnecessary sclient structure to simplify the API
+  (scontacts are now created directly from scomponents)
+
+- Merged client.h into component.h
+
+- Contacts now only include a single service. This corresponds better
+  with the concept that one contact binds to one SAP, and simplifies the
+  API considerably
+
+- The only need to associate multiple contacts together is when they
+  will all be mapped to the same peer component. This is now handled by
+  allowing scontacts to be "grouped". Each group acts as a unit for
+  mapping and unmapping operations, but otherwise is treated as a
+  set of independent contacts
+  
+- Removed the now unnecessary service structure (scontacts now include
+  their own data transfer methods)
+
+- Removed segments entirely from the API, documentation and implementation
+  (we are going to use the more elegant tree matching technique for
+  dealing with schema evolution in future)
+
+- Component to wrapper communication pipes are now set up, and the
+  wrapper thread is forked after the start() method is called
+
+- There is now one pipe between the application and wrapper per contact.
+  This is sufficient in all cases except for multiple simultaneous uses
+  of a pull-stream or conversation contact
+
+- The wrapper's main event loop is in place, and accepts incoming client
+  connections
+
+- Updated API documentation
+
+- Improved error messages when schemas and messages fail validation checks
+  (now more likely to pinpoint the error)
+
+- Split demo/testall into four separate programs: checkschema,
+  checkimport, checkmetadata and checkvalidate. Renamed the rest of
+  testall to misctest. There is now a script called demo/runtests
+  which runs all the check programs on the example messages, schemas
+  and metadata. The script demo/regress calls runtests and compares
+  its output with demo/correct_output, allowing for easy regression
+  testing
+
+- Fixed a serious bug in the LITMUS code calculator (comments weren't
+  ending at the end of the line)
+
+- Fixed bugs connected with signed arithmetic in the hash code
+  and datetime handling procedures
+
+- Moved filehash to demo/litmuscode, to keep all the utility programs
+  together
+
+- Added a new program to demo/ called analysecpt. This takes a component
+  metadata file and extracts the schemas for each SAP, printing a
+  concise plain text summary as well as calculating the litmus codes
+  for each one (ready to be cut and pasted into your program)
+
+- Added a "User Guide" to the documentation, describing installation,
+  testing, demos and utilities
+
+- XML parser can now extract multiple documents from a single file
+
+- Described the disk file format for persistent data in the Protocol
+  document
+  
+- Added new programs "archive" and "extract" to demo/. These understand
+  the data file format for multiple messages, and convert from XML to
+  binary or vice-versa respectively, whilst checking data against a
+  supplied schema from another file
+
+8-05-2007: Released 0.45
+------------------------
+
+- Cleaned up enumerations (string vs integer representations)
+- Removed broken symbol ID optimisation for enumerations and field names
+- Cleaned up memory deallocation
+- Corrected XML binding for empty lists, missing options, and empty strings
+- Added multiplex select() wrapper
+- Fixed many bugs discovered by the test suite
+- Made SBUS a proper link library
+- Switched on all compiler warnings
+- Completed demo component and demo client
+- Made content-format per segment
+- Documentation updates
+
+30-04-2007: Released 0.4
+------------------------
+
+- Added code to read and write the standard network message format
+- Initial draft of the protocol document /may/ join the documentation set
+- Added code to check component capabilities against the metadata
+- Plenty more changes to the API (reflected in the documentation of course)
+- Parser for content-based subscription languages
+  (with proper lexical regexps, grammar and first/follow sets...
+  almost a "real" compiler this time ;-))
+- Minor changes to the subscription language in the light of
+  implementation experience
+- Evaluator to test messages against subscriptions
+- Some thoughts on the interface for standard components such
+  as the broker and stdin/out gateways
+
+Ancient history
+---------------
+
+16-04-2007 - Version 0.3: First release with code!
+11-01-2007 - Version 0.2: Documentation only, first release to group
+Version 0.1: Documentation only, never released
+
+Roadmap
+-------
+
+      > 1.0:  Access control, conversations
+Version 1.0:  First publicly released version; tutorials
+Version 0.95: Feature-complete; test, debug, finish subscriptions,
+              flow control(?)
+0.85 to 0.9:  Second language binding,
+              partial & subtree matching,
+				  ASCIIBUS,
+              stream persistence cpt, xml db cpt
+Version 0.8:  Automatic reconnection
+Version 0.75: Logging, remote case, multiple RDCs
+Version 0.7:  Polymorphic components including the broker;
+  18-10-2007  many improvements to speek/spoke/sbus tools
+Version 0.65: Non-blocking concurrency model for the wrapper
+Version 0.6:  Dynamic remapping; RDC; more powerful LITMUS parser
+Version 0.55: Subscriptions; connection closure; built-in endpoints
+Version 0.5:  First functional version, i.e. it can send a message end-to-end;
+  6-06-2007   refactored the 5 communication modes to 2; achieved a thin
+              language-specific library and a fat reusable wrapper
