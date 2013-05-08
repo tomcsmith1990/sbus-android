@@ -126,7 +126,7 @@ The main difficulty in the project came from porting the messaging middleware to
 %\newpage
 \section*{Declaration}
 
-I Thomas Smith of Sidney Sussex College, being a candidate for Part II of the Computer
+I, Thomas Smith of Sidney Sussex College, being a candidate for Part II of the Computer
 Science Tripos, hereby declare that this dissertation and the work described in it are my own work,
 unaided except as may be specified below, and that the dissertation
 does not contain material that has already been used to any substantial
@@ -903,7 +903,7 @@ The documentation for the NDK offers little more than trivial examples, and few 
 
 A standalone toolchain from the NDK can be used to set the correct compilation variables when running {\tt ./configure}. 
 In setting up the toolchain, the architecture of the device and the Android native API platform must be specified. 
-ARM-based devices, and Android platform 9 where chosen here, since these corresponded to the available device. 
+ARM-based devices, and Android platform 9 were chosen here, since these corresponded to the available device. 
 The standalone toolchain is still in beta which meant there were several problems compiling SBUS directly, typically due to missing libraries. 
 Some SBUS code had to be rewritten to account for this, in many cases using {\tt \#ifdef} statements to substitute blocks of code specific to Android. 
 The toolchain setup contained a bug\footnote{\url{https://code.google.com/p/android/issues/detail?id=35279}} which meant some include paths were missing, in particular {\tt <limits>} could not be referenced. 
@@ -1002,7 +1002,7 @@ This allows the Phone Manager to use any sensor on the device which is exposed b
 This gateway is based on Dirk Trossen's AIRS code\footnote{\url{https://github.com/dirktrossen/AIRS}}. 
 AIRS exposes upwards of 50 sensors, which is being continually expanded, making it infeasible to predefine an endpoint for each sensor. 
 This is handled by dynamically creating an endpoint for each sensor whenever the first reading from that sensor is received, meaning that endpoints will only ever be created as needed. 
-The gateway presents the suer with a list of sensors, which is populated from a message AIRS announcing the available sensors upon connecting to the remote server. 
+The gateway presents the user with a list of sensors, which is populated from a message AIRS announcing the available sensors upon connecting to the remote server. 
 When the user selects a sensor, that sensor is subscribed to, and the endpoint will be created once a reading is received from that sensor. 
 Additionally, the endpoint is automatically mapped to the Phone Manager so can start publishing events to it immediately. 
 Each sensor runs in a different thread, so these endpoints are maintained in a thread-safe repository. 
