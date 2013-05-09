@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11154}
+\newcommand{\wordcount}{11128}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -200,7 +200,8 @@ Some data may be fundamental to the operation of the application, while other pa
 Even once the data is deemed useful, the application may still face the difficulty of data being presented in an unexpected format, simply because of the geographical scale and market which the application might be used in. 
 Different manufacturers might present data in slightly different formats, or data may be presented in different languages in different countries. 
 These factors mean that when comparing similar pieces of data, there may be missing fields, there may be additional fields, or fields may use different names. 
-An application may also wish to specify a subscription filter about the data it should receive, yet without knowledge of the data format, it cannot specify filters on different fields.
+An application may also wish to register a subscription filter with a peer, so that the peer only sends data which the application is interested in. 
+However, these filters are specified in terms of the data format, so without knowledge of that data format, it cannot specify any filters.
 
 % example
 \begin{figure}
@@ -979,10 +980,10 @@ The best approach to use was to include {\tt sbuswrapper} as an asset to an appl
 
 Android uses a sandbox concept for security, where each application has access only to its own resources on the device. 
 This is enforced by assigning each application a unique user ID, and setting the appropriate permissions. 
-Since {\tt sbuswrapper} is approximately \SI{1}{MB}, compared to approximately \SI{30}{MB} available internal memory on the device, it was infeasible to include a copy with every application. 
+Since {\tt sbuswrapper} is approximately \SI{1}{MB}, compared to approximately \SI{30}{MB} available internal storage on the device, it was infeasible to include a copy with every application. 
 Therefore, one copy was included with the Phone Manager, which then modified the permissions to make {\tt sbuswrapper} world executable, so that every application could use this instance. 
 An additional directory was created and made world writable, where SBUS can write log files for all applications. 
-If internal memory was not an issue on the device, each application could store its own copy of {\tt sbuswrapper} in its filespace, and log to its own filespace. 
+If internal storage was not an issue on the device, each application could store its own copy of {\tt sbuswrapper} in its filespace, and log to its own filespace. 
 The path to this filespace can be obtained using an Android library call, which could be used as a parameter to a JNI method to set the location of {\tt sbuswrapper}, avoiding hardcoding any paths. 
 
 Although the device could have been rooted, allowing a much cleaner solution of storing {\tt sbuswrapper} at {\tt /system/bin/sbuswrapper}, it would have devalued the project, because it would only then work on rooted devices.
