@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11160}
+\newcommand{\wordcount}{11155}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -109,18 +109,17 @@ Supervisor:         & Dr Jatinder Singh		\\
 \section*{Original Aims of the Project}
 
 The aim of the project was to investigate how applications can respond to changes in context, primarily those arising as a result of mobility. 
-This requires some system which allows applications on a mobile device to communicate with those in different environments. 
-There must be some mechanism for detecting context changes. 
-Applications need to be able to discover and connect to relevant peers. 
+This requires some system which allows applications on a mobile device to communicate with peers in different environments. 
+When a context change is detected, applications need to be able to discover and connect to relevant peers. 
 Finally, applications should be able to make meaningful use of data which is slightly different to their expectations. 
 This grants applications the ability to interact with a wider range of peers, allowing greater adaptability to different environments.
 
 \section*{Work Completed}
 
-A messaging middleware was modified to allow searching for peers by aspects of their message schema, offering exact matches based on names and types, or looser matches which only consider types.
-This middleware was ported for use on Android, allowing applications on a mobile device to communicate with other systems using the same middleware. 
-An application was created to monitor changes in context through various sensors on the device. 
-Upon detection of a change in context, this application can inform other applications of the change and automatically reconfigure their connections to connect them to new peers, based on policies the appplications define.
+A messaging middleware was modified to support searching for peers by aspects of their message schema, based on the names and types of fields within that schema, and to allow communication between peers with different message schemas. 
+This middleware was ported to Android so that mobile applications could be written which can communicate with any peers using the middleware. 
+A mobile application was created which monitors changes in context through various sensors on the device. 
+Upon detection of a context change, this application can inform other applications of the change and automatically reconfigure their connections, connecting them to relevant peers. 
 
 \section*{Special Difficulties}
 
