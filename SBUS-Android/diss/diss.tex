@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11046}
+\newcommand{\wordcount}{11052}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -227,7 +227,7 @@ While both offer similar data to a large extent, fields are named differently, a
 Alternatively, the application might be used abroad, for example in a French coach station. The data will still be very similar, but fields names may be in French (Figure \ref{fig:french-coach-schema-intro}).
 
 An application developer may be able to account for some of these differences, though given the sheer volume of potential peers, the developer cannot hope to account for every possibility, meaning that the application cannot be truly adaptable. 
-Even if the developer could cover every existing peer, these peers are liable to change over time. 
+Even if the developer could preempt the interactions with all relevant peers, these peers are liable to change over time. 
 New peers may become available and old peers may become unavailable, or peers might change how they present their data. 
 A developer simply cannot cover every current and future possibility, meaning an application cannot truly adapt to {\sl any} environment. 
 However, by specifying how an application should react to changes in context, the application becomes decoupled from the environment, making it more robust to changes in the environment. 
@@ -1122,7 +1122,14 @@ This chapter examines the performance of the system.
 \label{fig:system_overview}
 \end{figure}
 
-Figure \ref{fig:system_overview} shows the interactions that occur within the system, detailing how a transport application which uses the coach schema in Figure \ref{fig:coach-schema} might have its connection reconfigured upon a change in context.
+% example
+\begin{figure}
+\input{schema.coach}
+\caption[Example Schema for a Coach]{A coach schema, showing a stand number, a date and time of departure, and a list of stops, with town names and estimated arrival times}
+\label{fig:coach-schema-eval}
+\end{figure}
+
+Figure \ref{fig:system_overview} shows the interactions that occur within the system, detailing how a transport application which uses the coach schema in Figure \ref{fig:coach-schema-eval} might have its connection reconfigured upon a change in context.
 
 \begin{enumerate}
 
@@ -1226,7 +1233,13 @@ This could further be used to allow the user to set their own policies for appli
 The application developer cannot possibly account for every scenario, however by allowing the user to set their own policies, through which they are specifying context changes they are interested in, the system becomes fully customisable and personal. 
 The user of the transport application might not want to wait for a bus when it is raining. 
 Therefore, they could create a policy using a weather event with the condition ``rain''. 
-The action might be to connect the application to the IP address of a local taxi company, which provides information about when the next taxi will be available using the schema in Figure \ref{fig:taxi-schema}.
+The action might be to connect the application to the IP address of a local taxi company, which provides information about when the next taxi will be available using the schema in Figure \ref{fig:taxi-schema-eval}.
+
+\begin{figure}[h]
+\input{schema.taxi}
+\caption[Example Schema for a Taxi]{A taxi schema, simply showing the next available taxi}
+\label{fig:taxi-schema-eval}
+\end{figure}
 
 %TODO: UI for user to set policy (system can also set policy).
 
@@ -1373,8 +1386,9 @@ The system reformats data so that applications will only ever be presented with 
 Furthermore, applications may specify subscription filters in terms of their own data format, placing restrictions on the data they will be sent, without requiring knowledge of peers' data format.
 When reconfiguring a connection, the system translates these filters to match the peer's data format and applies them to the peer, filtering data as dictated by the application.
 
-%\section{Changes}
+\section{Changes}
 %TODO: changes
+{\sl No changes}
 
 \section{Future Work}
 % other stuff that could be done
@@ -1407,13 +1421,6 @@ This offers some privacy to the user by allowing them to block applications from
 % the appendices
 \begin{appendix}
 
-\chapter{Example Schemas}
-
-\input{schemas}
-
-\cleardoublepage
-
-% should this be an appendix?
 \chapter{Project Proposal}
 
 \input{propbody}
