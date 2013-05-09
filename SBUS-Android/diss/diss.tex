@@ -359,7 +359,28 @@ A component may issue a message to some other component, instructing it to map o
 Resource discovery components (RDCs) are components which act as a component discovery service. 
 An environment may contain several RDCs, or no RDCs, though typically one RDC exists in each environment.
 Components may query an RDC for other components within the environment, using parameters including component name, connected peers, or public key. 
-The RDC will return IP addresses of matching components, allowing the component to establish a direct connection to a match.
+These parameters are specified using a query string. 
+Each type of constraint is represented using a different letter, for example {\tt +NcomponentX} specifies a component named {\tt componentX}. 
+All constraints in the query string must satisfied for a component to match. 
+The RDC returns the IP addresses of matching components, allowing the component to establish a direct connection to a match.
+
+\section{Background}
+
+% other ways to do context
+AWARE\footnote{\url{http://www.awareframework.com/home/}} is a new ``Android framework dedicated to instrument, infer, log and share mobile context information for application developers''. 
+AWARE broadcasts intents to notify applications of the current context, and these broadcasts can be captured by Android BroadcastReceivers\footnote{\url{http://developer.android.com/reference/android/content/BroadcastReceiver.html}}. 
+This allows any application to implement a broadcast receiver to be notified of changes in context, and to perform a callback method upon a change. 
+
+% other messaging middlewares
+Mascolo et al. give an overview of middlewares for mobile computing \cite{mascolo2002mobile}. 
+SBUS is in line with many of their guidelines for a middleware, thus proves an ideal candidate for the project. 
+Direct communication between components means that the middleware supports devices which are short lived on the network just as well as those which are permanently part of the network. 
+Components are written in C++ and already run on most machines, and through the Android port can now be written in Java and run on any Android phone, allowing for heterogeneity in an environment. 
+Communication is not only independent of the device and platform, but also the network connectivity. 
+Components communicate using TCP, which means that the middleware will work over Wi-Fi, 3G, Bluetooth, and any other protocol supporting TCP. 
+Resource discovery is already implemented through the RDCs, and has been extended to support the needs of mobile computing. 
+Finally, SBUS can use SSL to encrypt data, allowing applications to communicate securely if they so desire. 
+
 
 \section{Project Outline}
 
@@ -1146,24 +1167,6 @@ Figure \ref{fig:system_overview} shows the interactions that occur within the sy
 \item The application endpoint then connects to one of the matching components, allowing the user to continue receiving fresh travel data without any interaction needed.
 
 \end{enumerate}
-
-% other ways to do context
-AWARE\footnote{\url{http://www.awareframework.com/home/}} is a new ``Android framework dedicated to instrument, infer, log and share mobile context information for application developers'' which could be used in place of AIRS to detect a change in context.
-AWARE broadcasts intents to notify applications of the current context, and these broadcasts can be captured by Android BroadcastReceivers\footnote{\url{http://developer.android.com/reference/android/content/BroadcastReceiver.html}} in the same way that other intents are already captured. 
-This allows the Phone Manager, or indeed any application, to implement broadcast receivers to be notified of changes in context, rather than using AIRS and the AIRS-SBUS gateway. 
-Some applications might choose to implement broadcast receivers themselves, in order to use this framework in place of the Phone Manager to detect context changes.
-However, the Phone Manager would still be useful because it would provide this service for any application to use, mapping them as per their policies and reducing complexity in the applications themselves.
-
-% other messaging middlewares
-Mascolo et al. give an overview of other middlewares for mobile computing \cite{mascolo2002mobile} which the project might have used. 
-SBUS is in line with many of their guidelines for a middleware, thus proves an ideal candidate for the project. 
-Direct communication between components means that the middleware supports devices connecting to the network for short periods of time just as well as those which are permanently part of the network. 
-Components are written in C++ and already run on most machines, and can now run on any Android phone too, allowing for heterogeneity in an environment. 
-Communication is not only independent of the device and platform, but also the network connectivity. 
-Components communicate using TCP, which means that the middleware will work over Wi-Fi, 3G, Bluetooth, and any other protocol supporting TCP. 
-Resource discovery is already implemented through the RDCs, and has been extended to support the needs of mobile computing. 
-Finally, SBUS can use SSL to encrypt data, allowing applications to communicate securely if they so desire. 
-
 
 % table of example policies
 \begin{table}
