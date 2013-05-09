@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11141}
+\newcommand{\wordcount}{11149}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1052,7 +1052,7 @@ This repository is searched upon receiving a message, returning the endpoint if 
 
 % composite event detector
 Conceptually this AIRS-SBUS gateway could act as a composite event detector. 
-By collating multiple sensor readings, a context change could be defined by multiple different readings satisying some conditions, or by multiple occurrences of an event.
+By collating multiple sensor readings, a context change could be defined by multiple different readings satisfying some conditions, or by multiple occurrences of an event.
 Upon detecting a context change, the gateway would then publish a single event to the Phone Manager. 
 The Phone Manager can respond to any kind of event, so already provides the infrastructure required to support this.
 
@@ -1128,7 +1128,7 @@ The project set out to investigate how applications could automatically connect 
 The project has been successful in this respect, implementing a system which gives applications these capabilities.  
 Sensor readings from the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android intents are used to detect a change in context. 
 Once a change is detected, applications will be connected to peers which satisfy the constraints they have specified and messages will automatically be converted to applications' expected format, allowing operation of the application to continue without interruption. 
-This chapter examines the performance of the system. 
+This chapter demonstrates the feasibility of the approach, and examines its performance. 
 
 \section{System Overview}
 
@@ -1196,8 +1196,8 @@ Both the local component and local endpoint are implicitly set to whichever endp
 The remote address may be an IP address or a query to be resolved by an RDC. 
 An IP address may be useful when the application should always be mapped to the same IP address. 
 In the first example, a healthcare system has registered to have heart rate readings mapped directly to an endpoint at a known IP address, perhaps a relative or emergency response team. 
-However the real flexibility of the system lies in the queries. 
-These will be resolved by some RDC, ensuring components are mapped only to other components satisfying their queries. 
+However, the queries allow applications to be more flexible in their peers. 
+These queries will be resolved by some RDC, ensuring components are mapped only to other components which satisfy their queries. 
 In the second row, the transport application sets a policy for any component named ``Stagecoach'' which has an endpoint named ``Coach'', while in the third row it sets a policy for any endpoint which has a structure matching the type of {\tt coach}. 
 
 % event-condition-action through specifying AIRS sensor + condition
@@ -1268,7 +1268,7 @@ These tests show the kind of performance which can be expected from the system.
 Figure \ref{fig:rdc_search_optimisations} shows the time taken for an RDC to search through all registered components to find those matching schema constraints, for different numbers of registered components and with different optimisations applied. 
 In a real environment, RDCs are likely to have many components registered, so one search must not impact the performance of any other component too greatly.
 As expected, the time taken to search increases linearly with the number of components registered. 
-The structures first optimisation narrowly beats the exact first and exact structures optimisations, all of which peform more efficiently than searching without optimisation. 
+The structures first optimisation narrowly beats the exact first and exact structures optimisations, all of which perform more efficiently than searching without optimisation. 
 These optimisations play a greater role as the number of components increases, becoming more important in order to prevent a bottleneck in the system. 
 However, even in the worst case the RDC can perform the search with 100 other components registered in just over 40 milliseconds, so should not pose a problem given expected usage.
 
@@ -1376,7 +1376,7 @@ Provided an application is calling SBUS functions less frequently than this dela
 
 % summarise
 The project has created a context-aware middleware which enables developers to write applications without prior knowledge of the location of the peers which the application will use, or the format that these peers will present data in, decoupling applications from their specific peers. 
-This is inline with the goals of pervasive computing, achieving scalability by allowing applications to use any relevant peer, and allowing applications to adapt to use heterogeneous content, all while being invisible to both the user and developer.
+This is in line with the goals of pervasive computing, achieving scalability by allowing applications to use any relevant peer, and allowing applications to adapt to use heterogeneous content, all while being invisible to both the user and developer.
 
 An application monitors the environment for events which the system or user believe to represent a change in context.
 Upon detection of an event, this application applies other applications' reconfiguration policies to connect them to different peers. 
