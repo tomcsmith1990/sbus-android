@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11155}
+\newcommand{\wordcount}{11154}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -170,7 +170,7 @@ Applications may typically use data from predetermined central servers, failing 
 This project addresses the issues faced in creating applications which can change to suit different environments, demonstrating how applications can perceive an environmental change, how they can find relevant, local data, and how they can achieve some flexibility in the data which they use. 
 This allows applications to be more adaptable to their environment, and therefore offer a more relevant experience to the user. 
 
-\section{Problem}
+\section{Motivation}
 % what's the problem
 
 % describe current approach
@@ -361,7 +361,7 @@ An environment may contain several RDCs, or no RDCs, though typically one RDC ex
 Components may query an RDC for other components within the environment, using parameters including component name, connected peers, or public key. 
 The RDC will return IP addresses of matching components, allowing the component to establish a direct connection to a match.
 
-\section{System Design}
+\section{Project Outline}
 
 The system will be based upon the SBUS middleware, using and extending it to meet the requirements. 
 Applications will implement an SBUS component, sending and receiving messages on endpoints. 
