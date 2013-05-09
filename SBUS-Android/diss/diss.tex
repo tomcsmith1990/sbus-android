@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11088}
+\newcommand{\wordcount}{11146}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -390,9 +390,10 @@ When searching for components by data, an application may discover some componen
 In the current SBUS implementation, the application would not be able to communicate with this component. 
 % TODO: example
 Even if it were able to, the application will not know the structure of the message, so cannot locate a particular value within it without performing some complex parsing. 
-This is obviously undesirable since this parsing will be required for every single message, and each environment might use a slightly different schema.
+This is obviously undesirable since {\sl every} application would have to implement a parser which could handle peers in {\sl every} environment, all of which might use slightly different schemas.
 To avoid each application implementing such a parser, these differences will be handled by SBUS, before the application receives the message. 
-SBUS will be extended to allow components to communicate despite schema differences by reformatting any incoming message to match the application schema.
+SBUS will be extended to allow components to communicate despite schema differences by reformatting any incoming message to match the application schema. 
+This moves the parsing to the middleware level, which both removes the burden of implementing a parser from the developers of individual applications, and guarantees that all applications can be used with different peers, because they do not need to rely on the developer implementing a parser. 
 This means that an application will only receive messages matching its schema, never facing any uncertainity in the structure of a message. 
 
 % How change in context will be detected
@@ -430,7 +431,7 @@ A secure version of SBUS which uses OpenSSL to encrypt communications between co
 
 This chapter first shows how applications can find peers which offer the data they require, and then demonstrates how they can communicate with these peers despite differences in schemas. 
 It goes on to explain how the SBUS library was ported to Android to allow mobility, and how application developers can use SBUS. 
-It then describes how the Phone Manager is responsible for detecting changes in context and reconfiguring applications' connections upon a change, and how integration with AIRS provides a way to monitor context. 
+It then describes how the Phone Manager is responsible for detecting changes in context and reconfiguring applications' connections upon a change, and how integration with AIRS exposes sensors on the phone to provide a way to monitor context. 
 Finally, some remaining issues and potential solutions are examined, which have not yet been implemented due to time constraints. 
 
 \section{Schema Matching}
