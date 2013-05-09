@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11146}
+\newcommand{\wordcount}{11160}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -352,7 +352,7 @@ Each component consists of one or more {\sl endpoints} which can be connected, o
 Every endpoint has an associated message schema. 
 In order for endpoints to be mapped together, their schemas must match. 
 An endpoint may specify a subscription filter on events it wishes to receive, in terms of its schema. 
-Any connected peers will only publish events to this endpoint if the event matches the subscription.
+This filter specifies conditions on the events which an endpoint is interested in, and any connected peers will only publish events to this endpoint if the event matches the conditions.
 
 These connections and subscriptions are dynamically reconfigurable and may be modified by any other component, allowing third party remapping to occur, subject to security policies. 
 A component may issue a message to some other component, instructing it to map or unmap its endpoints, or to update its subscription filters.
