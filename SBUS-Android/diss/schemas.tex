@@ -1,81 +1,23 @@
 \begin{figure}[h]
-\begin{lstlisting}
-@coach
-{
-    int bay
-    date departure
-    stops
-    (
-    	town
-    	{
-    		txt name
-    		date arrival
-    	}
-    )
-}
-\end{lstlisting}
+\input{schema.coach}
 \caption[Example Schema for a Coach]{A coach schema, showing a stand number, a date and time of departure, and a list of stops, with town names and estimated arrival times}
 \label{fig:coach-schema}
 \end{figure}
 
 \begin{figure}[h]
-\begin{lstlisting}
-@train
-	info
-	{
-		int platform
-		date departure
-		stops
-		(
-			station
-			{
-				txt name
-				date arrival
-			}
-		)
-	}
-	shop
-	{
-		items
-		(
-			txt name
-			dbl price
-		)
-	}
-}
-\end{lstlisting}
+\input{schema.train}
 \caption[Example Schema for a Train]{A train schema, showing a structure containing a stand number, a date and time of departure, and a list of stops, with names and estimated arrival times, as well as an additional structure containing a list of items for sale in the on-board shop}
 \label{fig:train-schema}
 \end{figure}
 
-
 \begin{figure}[h]
-\begin{lstlisting}
-@autobus
-{
-    int aire-de-stationnement
-    date depart
-    arrets
-    (
-    	ville
-    	{
-    		txt nom-de-la-ville
-    		date arrivee
-    	}
-    )
-}
-\end{lstlisting}
+\input{schema.coach.french}
 \caption[Example Schema for a French Coach]{A French coach schema, showing the same fields as the English coach schema, however the field names are in French}
 \label{fig:french-coach-schema}
 \end{figure}
 
 \begin{figure}[h]
-\begin{lstlisting}
-@taxi
-{
-	date available
-}
-\end{lstlisting}
+\input{schema.taxi}
 \caption[Example Schema for a Taxi]{A taxi schema, simply showing the next available taxi}
 \label{fig:taxi-schema}
 \end{figure}

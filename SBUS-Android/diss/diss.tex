@@ -10,15 +10,16 @@
 \usepackage[chapter]{algorithm}
 \usepackage{algpseudocode}
 
-\newcommand{\disstitle}{Automatic Contextual Reconfiguration in Mobile Applications}
+\newcommand{\disstitle}{Dynamic Reconfiguration in Mobile Applications}
 % POTENTIAL TITLES:
 % Automatic Configuration in Mobile Environments
 % Automatic Communication Configuration in Mobile Environments
 % Data Stream Connection and Message Negotiation
 % Flexibile Data Streams in Mobile Environments
 % Automatic Data Stream Configuration in Mobile Environments
+% Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11038}
+\newcommand{\wordcount}{11046}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -37,6 +38,8 @@
 
 % set tab size for lstlisting
 \lstset{tabsize=4,basicstyle=\ttfamily}
+
+\lstdefinestyle{xml}{basicstyle=\ttfamily\footnotesize}
 
 \input{epsf}
 
@@ -114,10 +117,10 @@ This grants applications the ability to interact with a wider range of peers, al
 
 \section*{Work Completed}
 
-A messaging middleware was modified to allow searching for peers by aspects of their schema, offering exact matches based on names and types, or looser matches which only consider types.
+A messaging middleware was modified to allow searching for peers by aspects of their message schema, offering exact matches based on names and types, or looser matches which only consider types.
 This middleware was ported for use on Android, allowing applications on a mobile device to communicate with other systems using the same middleware. 
 An application was created to monitor changes in context through various sensors on the device. 
-Upon detection of a change in context, this application informs other applications of the change or automatically reconfigures their connections to connect them to new peers, based on policies the appplications define.
+Upon detection of a change in context, this application can inform other applications of the change and automatically reconfigure their connections to connect them to new peers, based on policies the appplications define.
 
 \section*{Special Difficulties}
 
@@ -172,7 +175,7 @@ This allows applications to be more adaptable to their environment, and therefor
 % what's the problem
 
 % describe current approach
-Current applications tend to be inflexible in where the data they use comes from, often selecting from some hardcoded list of IP addresses regardless of the environment. 
+Current applications tend to be inflexible in where the data they use comes from, often selecting from some predefined set of addresses regardless of the environment. 
 While some localisation might be achieved by including parameters during connection, such as sending GPS co-ordinates, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
 The format of the data which is being exchanged has also been fixed, restricting applications even further.
 
@@ -201,9 +204,27 @@ These factors mean that when comparing similar pieces of data, there may be miss
 An application may also wish to specify a subscription filter about the data it should receive, yet without knowledge of the data format, it cannot specify filters on different fields.
 
 % example
-For example, a transport application may face differences in the data format for coaches (Figure \ref{fig:coach-schema}) and for trains (Figure \ref{fig:train-schema}). 
+\begin{figure}
+\input{schema.coach}
+\caption[Example Schema for a Coach]{A coach schema, showing a stand number, a date and time of departure, and a list of stops, with town names and estimated arrival times}
+\label{fig:coach-schema-intro}
+\end{figure}
+
+\begin{figure}
+\input{schema.train}
+\caption[Example Schema for a Train]{A train schema, showing a structure containing a stand number, a date and time of departure, and a list of stops, with names and estimated arrival times, as well as an additional structure containing a list of items for sale in the on-board shop}
+\label{fig:train-schema-intro}
+\end{figure}
+
+\begin{figure}
+\input{schema.coach.french}
+\caption[Example Schema for a French Coach]{A French coach schema, showing the same fields as the English coach schema, however the field names are in French}
+\label{fig:french-coach-schema-intro}
+\end{figure}
+
+For example, a transport application may face differences in the data format for coaches (Figure \ref{fig:coach-schema-intro}) and for trains (Figure \ref{fig:train-schema-intro}). 
 While both offer similar data to a large extent, fields are named differently, and the train schema additionally offers a menu for an on-board shop.
-Alternatively, the application might be used abroad, for example in a French coach station. The data will still be very similar, but fields names may be in French (Figure \ref{fig:french-coach-schema}).
+Alternatively, the application might be used abroad, for example in a French coach station. The data will still be very similar, but fields names may be in French (Figure \ref{fig:french-coach-schema-intro}).
 
 An application developer may be able to account for some of these differences, though given the sheer volume of potential peers, the developer cannot hope to account for every possibility, meaning that the application cannot be truly adaptable. 
 Even if the developer could cover every existing peer, these peers are liable to change over time. 
@@ -328,7 +349,7 @@ These constraints are necessary so that any communication between peers remains 
 SBUS \cite{ingram2009reconfigurable} is a messaging middleware written in C++, which can be used for stream based communication. 
 The basic entity in SBUS is a {\sl component}. 
 Each component consists of one or more {\sl endpoints} which can be connected, or {\sl mapped} together allowing direct communication between the two endpoints. 
-Every endpoint has an associated schema. 
+Every endpoint has an associated message schema. 
 In order for endpoints to be mapped together, their schemas must match. 
 An endpoint may specify a subscription filter on events it wishes to receive, in terms of its schema. 
 Any connected peers will only publish events to this endpoint if the event matches the subscription.
@@ -336,7 +357,7 @@ Any connected peers will only publish events to this endpoint if the event match
 These connections and subscriptions are dynamically reconfigurable and may be modified by any other component, allowing third party remapping to occur, subject to security policies. 
 A component may issue a message to some other component, instructing it to map or unmap its endpoints, or to update its subscription filters.
 
-Resource discovery components (RDCs) are components which act as a name service. 
+Resource discovery components (RDCs) are components which act as a component discovery service. 
 An environment may contain several RDCs, or no RDCs, though typically one RDC exists in each environment.
 Components may query an RDC for other components within the environment, using parameters including component name, connected peers, or public key. 
 The RDC will return IP addresses of matching components, allowing the component to establish a direct connection to a match.
@@ -417,7 +438,7 @@ Flexible schema matching refers to components matching peers based on aspects of
 
 % syntax
 The most natural way for a component to query an RDC with data constraints seemed to be to extend the current query mechanism. 
-When searching, a component may be interested in an exact match, where both names and types match, or a weaker match where only types must match. 
+When searching, a component may be interested in an exact match, where both field names and types match, or a weaker match where only field types must match. 
 Since a component only knows about its own schema in advance, these queries must be specified in terms of its own schema.
 Two new query parameters have been introduced to allow this functionality. 
 An exact match is specified by {\tt +H}, representing a schema {\sl has} an item, and a type match is specified by {\tt +S}, representing a schema has a {\sl similar} item.
@@ -473,7 +494,7 @@ Query & Match \\
 The final entry in Table \ref{tab:example_schema_syntax}, {\tt +Sgps+Hlongitude} bears an interesting case. 
 This currently specifies that a schema must contain an item matching the type of {\tt gps} and must also contain the field {\tt longitude} {\sl anywhere} in the schema. 
 An alternative use might be considered where the user wishes to specify that the schema must contain a item matching the type of {\tt gps}, and must also contain the field {\tt longitude} {\sl within that item}. 
-This would allow a query to be specified that would match a item which renames {\tt altitude} as {\tt height}, but not one which renames {\tt longitude} as {\tt long}. 
+This allows a query to be specified that would match a item which renames {\tt altitude} as {\tt height}, but not one which renames {\tt longitude} as {\tt long}. 
 The latter could still be matched in the current case, if the {\tt longitude} field existed elsewhere in that schema. 
 
 This usage is implemented through a nested syntax, where constraints can have child constraints attached. 
@@ -541,7 +562,7 @@ Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would
 
 % nested query representation
 \begin{figure}
-\begin{lstlisting}
+\begin{lstlisting}[style=xml]
 <constraint>
 	<name>"gps"</name>
 	<exact>false</exact>
@@ -577,7 +598,7 @@ These hashes can then be added to the collection, and the contents of the buffer
 Using this method, a collection of hashes is built containing the hash of each item within the overall schema. 
 
 \begin{figure}
-\begin{lstlisting}
+\begin{lstlisting}[style=xml]
 <location has="9791265A42AB" similar="882A3A2DA208">
 	<gps has="55E21713DEAA" similar="931DEF188280">
 		<longitude
@@ -612,7 +633,7 @@ This list can then be sent to the RDC, which uses it to search for matching comp
 
 % nested query hashes representation
 \begin{figure}
-\begin{lstlisting}
+\begin{lstlisting}[style=xml]
 <constraint>
 	<name>"gps"</name>
 	<exact>false</exact>
@@ -696,10 +717,11 @@ Once a match is found the next constraint is tested, and if all nested constrain
 Line \ref{alg:line:constraint_exact} checks whether a constraint is exact before its children are considered, since if it is an exact match, the children must match by definition. 
 
 % optimisations to search
-Queries are automatically optimised by components before being sent to the RDC, to increase performance of the algorithm. This allows the RDC to process the query as quickly as possible, preventing it from becoming a bottleneck in the system. 
+Queries are automatically optimised by components before being sent to the RDC, to increase performance of the algorithm. 
 Any duplicate constraints are first removed, for obvious reasons. 
 Queries are then reordered to place either exact constraints first, constraints on composite items first, or a combination of these. 
 This orders constraints such that those which are more difficult to match are checked first, causing the algorithm to fail earlier rather than later, thereby wasting less time. 
+This allows the RDC to process the query as quickly as possible, preventing it from becoming a bottleneck in the system. 
 The result of these optimisations is explored in the Evaluation. 
 
 %TODO: other ways the search could be optimised - hash table to linked lists, search tree. Potential performance increases + how results might vary.
@@ -820,6 +842,15 @@ Algorithm \ref{alg:repack_message_overall} shows how each message is repackaged.
 Suppose the component receives the message in Figure \ref{fig:locationmessage}. 
 The first stage is to extract the desired message from any additional layers, in this case {\tt place/coordinates}. 
 This message is then repackaged under the names defined by this component's schema using Algorithm \ref{alg:repack_message}. 
+Lines \ref{alg:line:lookup_name_start}--\ref{alg:line:lookup_name_end} find the correct name from the lookup table, returning {\tt null} if it does not exist in the table. 
+Lines \ref{alg:line:check_children_start}--\ref{alg:line:check_children_end} then either pack the message content under the new name, if it is a single field, or start a composite item otherwise. 
+The loop spanning lines \ref{alg:line:repack_children_start}--\ref{alg:line:repack_children_end} then iterates over each item in the message. 
+The name of each item can be used to check if any items are missing from the message, and add them between their siblings. 
+The message is otherwise repackaged in the same way, and added to the composite item if it should appear. 
+Any other siblings missing from the message can be added at the end. 
+Finally, if the component schema had additional layers rather than the peer schema, the message would be wrapped in these missing layers. 
+This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{fig:locationmessagerepack}, which can then be used by the component. 
+
 \begin{algorithm}
 \algnotext{EndIf}
 \begin{algorithmic}[1]
@@ -854,18 +885,10 @@ This message is then repackaged under the names defined by this component's sche
 \caption{Pseudocode to Repackage Message}
 \label{alg:repack_message}
 \end{algorithm}
-Lines \ref{alg:line:lookup_name_start}--\ref{alg:line:lookup_name_end} find the correct name from the lookup table, returning {\tt null} if it does not exist in the table. 
-Lines \ref{alg:line:check_children_start}--\ref{alg:line:check_children_end} then either pack the message content under the new name, if it is a single field, or start a composite item otherwise. 
-The loop spanning lines \ref{alg:line:repack_children_start}--\ref{alg:line:repack_children_end} then iterates over each item in the message. 
-The name of each item can be used to check if any items are missing from the message, and add them between their siblings. 
-The message is otherwise repackaged in the same way, and added to the composite item if it should appear. 
-Any other siblings missing from the message can be added at the end. 
-Finally, if the component schema had additional layers rather than the peer schema, the message would be wrapped in these missing layers. 
-This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{fig:locationmessagerepack}, which can then be used by the component.  
 
 % repackage messages
 \begin{figure}
-\begin{lstlisting}
+\begin{lstlisting}[style=xml]
 <place>
 	<coordinates>
 		<position>
@@ -882,7 +905,7 @@ This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{f
 \end{figure}
 
 \begin{figure}
-\begin{lstlisting}
+\begin{lstlisting}[style=xml]
 <location>
 	<gps>
 		<longitude>0.091732</longitude>
@@ -942,7 +965,7 @@ This is enforced by assigning each application a unique user ID, and setting the
 Since {\tt sbuswrapper} is approximately \SI{1}{MB}, compared to approximately \SI{30}{MB} available internal memory on the device, it was infeasible to include a copy with every application. 
 Therefore, one copy was included with the Phone Manager, which then modified the permissions to make {\tt sbuswrapper} world executable, so that every application could use this instance. 
 An additional directory was created and made world writable, where SBUS can write log files for all applications. 
-If memory was not an issue on the device, each application could store its own copy of {\tt sbuswrapper} in its filespace, and log to its own filespace. 
+If internal memory was not an issue on the device, each application could store its own copy of {\tt sbuswrapper} in its filespace, and log to its own filespace. 
 The path to this filespace can be obtained using an Android library call, which could be used as a parameter to a JNI method to set the location of {\tt sbuswrapper}, avoiding hardcoding any paths. 
 
 Although the device could have been rooted, allowing a much cleaner solution of storing {\tt sbuswrapper} at {\tt /system/bin/sbuswrapper}, it would have devalued the project, because it would only then work on rooted devices.
@@ -992,7 +1015,7 @@ This allows the Phone Manager to register a receiver for these intents, allowing
 % AIRS
 An application has been created to act as a AIRS-SBUS gateway between AIRS and the Phone Manager. 
 This gateway acts as a remote server for sensor readings from AIRS, to which AIRS sends all sensor readings. 
-Once AIRS starts and connects to a remove server, sensors must be subscribed to before AIRS will output any readings. 
+Once AIRS starts and connects to a remote server, sensors must be subscribed to before AIRS will output any readings. 
 AIRS connects to the gateway, and the Phone Manager can then connect to the gateway via an SBUS endpoint, and subscribe to sensors through another ``control endpoint'' on the gateway. 
 Upon receiving a subscription, the gateway relays this subscription to AIRS in the appropriate format. 
 AIRS can then send sensor readings to the gateway, which will convert them to SBUS events and send them to the Phone Manager. 
@@ -1338,8 +1361,8 @@ Provided an application is calling SBUS functions less frequently than this dela
 \chapter{Conclusion}
 
 % summarise
-The project has created a context-aware system which enables developers to write applications without prior knowledge of the location of the peers which the application will use, or the format that these peers will present data in, decoupling applications from their specific peers. 
-This supports the goals of pervasive computing, achieving scalability by allowing applications to use any relevant peer, and allowing applications to adapt to use heterogeneous content, all while being invisible to both the user and developer.
+The project has created a context-aware middleware which enables developers to write applications without prior knowledge of the location of the peers which the application will use, or the format that these peers will present data in, decoupling applications from their specific peers. 
+This is inline with the goals of pervasive computing, achieving scalability by allowing applications to use any relevant peer, and allowing applications to adapt to use heterogeneous content, all while being invisible to both the user and developer.
 
 An application monitors the environment for events which the system or user believe to represent a change in context.
 Upon detection of an event, this application applies other applications' reconfiguration policies to connect them to different peers. 
