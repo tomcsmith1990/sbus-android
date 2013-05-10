@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11149}
+\newcommand{\wordcount}{11140}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -233,7 +233,7 @@ A developer simply cannot cover every current and future possibility, meaning an
 However, by specifying how an application should react to changes in context, the application becomes decoupled from the environment, making it more robust to changes in the environment. 
 
 
-\section{Project}
+\section{Project Overview}
 % what I've done
 
 Schilit et al \cite{schilit1994context}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
@@ -365,7 +365,7 @@ Each type of constraint is represented using a different letter, for example {\t
 All constraints in the query string must satisfied for a component to match. 
 The RDC returns the IP addresses of matching components, allowing the component to establish a direct connection to a match.
 
-\section{Background}
+\section{Related Work}
 
 % other ways to do context
 AWARE\footnote{\url{http://www.awareframework.com/home/}} is a new ``Android framework dedicated to instrument, infer, log and share mobile context information for application developers''. 
@@ -385,35 +385,35 @@ Finally, SBUS can use SSL to encrypt data, allowing applications to communicate 
 
 \section{Project Outline}
 
-The system will be based upon the SBUS middleware, using and extending it to meet the requirements. 
-Applications will implement an SBUS component, sending and receiving messages on endpoints. 
+The system is based upon the SBUS middleware, using and extending it to meet the requirements. 
+Applications implement an SBUS component, sending and receiving messages on endpoints. 
 
 % Android NDK
-SBUS will be ported for use on Android. 
-The Android Native Development Kit\footnote{\url{http://developer.android.com/tools/sdk/ndk/index.html}} (NDK) will be used to compile SBUS for Android, and the Java Native Interface (JNI) framework will be used to allow applications to use this library. 
-Since the NDK offers fairly obscure documentation with little more than trivial examples, some time will be required to understand how the build process works. 
+SBUS has been ported for use on Android, using the Android Native Development Kit\footnote{\url{http://developer.android.com/tools/sdk/ndk/index.html}} (NDK).
+The NDK is used to compile SBUS for Android, and the Java Native Interface (JNI) framework allows applications to use this library. 
+Since the NDK offers fairly obscure documentation with little more than trivial examples, some time was required to understand how the build process works. 
 
 % How applications will find peers relevant to them (constraints in terms of schema)
 When components query the RDC they generally know something about the metadata of components they want, such as names, connected peers, or public keys. 
 In a mobile environment, this is unlikely to be the case. 
 Given the amount of possible environments, and the amount of different companies operating in these environments, an application cannot rely on static information about the components. 
 The components may, and are perhaps even likely to change over time, meaning that a more robust solution is required. 
-To allow applications to find relevant components in any environment, SBUS will be extended to allow RDC queries centred around data. 
-The ability to search for components by the format of their data will allow components to discover other components which provide data they require, without any prior knowledge of the environment. 
+To allow applications to find relevant components in any environment, SBUS has been extended to allow RDC queries centred around data. 
+The ability to search for components by the format of their data allows components to discover other components which provide data they require, without any prior knowledge of the environment. 
 This is well suited to mobile applications because the environment is constantly changing. 
 Furthermore, these environments are not all controlled by a single company and this solution allows resource discovery independent of any corporate differences. 
 
 % How applications will cope with unexpected data format - must be done at system level
-SBUS endpoints can currently only communicate if they share a common schema. 
-This ensures that endpoints only ever receive messages matching their own schema, from which values can be easily extracted since the structure of the message is known. 
+SBUS endpoints could previously only communicate if they share a common schema. 
+This was to ensure that endpoints only ever receive messages matching their own schema, from which values can be easily extracted since the structure of the message is known. 
 Different components in different environments may offer similar data, but they may have schema differences, perhaps due to the company providing the component, or the country which the component is located in. 
 When searching for components by data, an application may discover some component which provides the required data, but nested within a larger schema, or using different field names. 
-In the current SBUS implementation, the application would not be able to communicate with this component. 
+In the previous SBUS implementation, the application would not be able to communicate with this component. 
 % TODO: example
 Even if it were able to, the application will not know the structure of the message, so cannot locate a particular value within it without performing some complex parsing. 
 This is obviously undesirable since {\sl every} application would have to implement a parser which could handle peers in {\sl every} environment, all of which might use slightly different schemas.
-To avoid each application implementing such a parser, these differences will be handled by SBUS, before the application receives the message. 
-SBUS will be extended to allow components to communicate despite schema differences by reformatting any incoming message to match the application schema. 
+To avoid each application implementing such a parser, these differences are now handled by SBUS, before the application receives the message. 
+SBUS has been extended to allow components to communicate despite schema differences by reformatting any incoming message to match the application schema. 
 This moves the parsing to the middleware level, which both removes the burden of implementing a parser from the developers of individual applications, and guarantees that all applications can be used with different peers, because they do not need to rely on the developer implementing a parser. 
 This means that an application will only receive messages matching its schema, never facing any uncertainity in the structure of a message. 
 
@@ -421,27 +421,27 @@ This means that an application will only receive messages matching its schema, n
 A typical smartphone offers many sensors which can be used to determine a context change. 
 Android applications can register to receive intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} which indicate events such as a network change, or an incoming phone call. 
 Furthermore, the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} observes sensor readings, and can output them to a remote server.
-The system can use these intents, and act as a server for AIRS to obtain these sensor readings, allowing it to monitor the environment, and determine context changes. 
+The system uses these intents, and act as a server for AIRS to obtain these sensor readings, allowing it to monitor the environment, and determine context changes. 
 Upon detecting a context change, it can then remap other applications on the phone connecting them to peers suited to the environmental context. 
 
 % How applications' connections will be reconfigured (spoke map)
-In order for the system to remap applications, it will first need to know about them. 
+In order for the system to remap applications, it first needs to know about them. 
 An RDC is well suited for this, because it maintains a list of registered components, which can then be searched when a component queries the RDC. 
 This list can also serve as a list of components which the system can remap.
 
-These two aspects of detecting context change and acting as an RDC can be combined into a Phone Manager application. 
-The Phone Manager will act similarly to an RDC, allowing applications on the device to register with it. 
-It will detect context changes and upon a change will issue messages to registered components to instruct them to remap to other components.
+These two aspects of detecting context change and acting as an RDC have been combined into a Phone Manager application. 
+The Phone Manager acts similarly to an RDC, allowing applications on the device to register with it. 
+It detects context changes, and upon a change issues messages to registered components to instruct them to remap to other components.
 
 % How the Phone Manager knows what to reconfigure to (policies)
-The Phone Manager will remap applications upon a change in context, but must remap them to appropriate places. 
+The Phone Manager remaps applications upon a change in context, but must remap them to appropriate places. 
 The Phone Manager cannot decide what constitutes ``appropriate'' for any given application, as such, the application must decide for itself. 
-Applications will register {\sl policies} with the Phone Manager which dictate how they should be remapped upon a context change. 
+Applications can register {\sl policies} with the Phone Manager which dictate how they should be remapped upon a context change. 
 This policy might be an IP address to map to, or a query which can be performed against an RDC in the environment, which will then return matching components. 
-The Phone Manager will simply remap applications as specified by their policies.
+The Phone Manager simply remaps applications as specified by their policies.
 
 % Security
-This project will not focus on security. 
+This project does not focus on security. 
 A version of SBUS with encrypted connections and authentication and authorisation mechanisms has been developed in parallel with the project. 
 These two branches have been integrated, so that all of the work undertaken in this project could be applied to that version of SBUS.
 
