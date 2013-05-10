@@ -14,16 +14,28 @@ public class Policy {
 
 	public static String sensorCode(AIRS sensor) {
 		switch (sensor) {
+		case NONE:
+			return null;
 		case RANDOM:
 			return "Rd";
+		case WIFI:
+			return "WC";
 		default:
-			return null;
+			return "";
 		}
 	}
 
 	public Policy(String remoteAddress, String remoteEndpoint) {
 		this.m_RemoteAddress = remoteAddress;
 		this.m_RemoteEndpoint = remoteEndpoint;
+	}
+	
+	public Policy(String remoteAddress, String remoteEndpoint, AIRS sensor, Condition condition, int value) {
+		this.m_RemoteAddress = remoteAddress;
+		this.m_RemoteEndpoint = remoteEndpoint;
+		this.m_Sensor = sensor;
+		this.m_Condition = condition;
+		this.m_Value = value;
 	}
 
 	public String getRemoteAddress() { return this.m_RemoteAddress; }
@@ -32,15 +44,4 @@ public class Policy {
 	public AIRS getSensor() { return m_Sensor; }
 	public Condition getCondition() { return m_Condition; }
 	public int getValue() { return m_Value; }
-
-	public void setSensor(AIRS sensor) {
-		m_Sensor = sensor;
-	}
-
-	public void setCondition(Condition condition, int value) {
-		m_Condition = condition;
-		m_Value = value;
-	}
-
-
 }

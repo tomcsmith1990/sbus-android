@@ -1,7 +1,10 @@
 package uk.ac.cam.tcs40.sbus.someconsumer;
 
 import uk.ac.cam.tcs40.sbus.FileBootloader;
+import uk.ac.cam.tcs40.sbus.Policy;
+import uk.ac.cam.tcs40.sbus.Policy.Condition;
 import uk.ac.cam.tcs40.sbus.SComponent;
+import uk.ac.cam.tcs40.sbus.Policy.AIRS;
 import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
 import uk.ac.cam.tcs40.sbus.Multiplex;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
@@ -52,7 +55,9 @@ public class SomeConsumer extends Activity {
 				m_Component.setPermission("SomeSensor", "", true);
 
 				// Register a map policy with the PMC for schemas containing fields with the same type as someval & somestring.
-				m_Endpoint.setAutomapPolicy("+Ssomeval+Ssomestring", "SomeEpt");
+				//m_Endpoint.setAutomapPolicy("+Ssomeval+Ssomestring", "SomeEpt");
+				m_Endpoint.setAutomapPolicy(new Policy("+Ssomeval+SSomestring", "SomeEpt", AIRS.WIFI, Condition.EQUAL, 1));
+				m_Endpoint.setAutomapPolicy(new Policy("+NSomeSensor", "SomeEpt", AIRS.RANDOM, Condition.GREATER_THAN, 60000));
 
 				SMessage message;
 				SNode node;

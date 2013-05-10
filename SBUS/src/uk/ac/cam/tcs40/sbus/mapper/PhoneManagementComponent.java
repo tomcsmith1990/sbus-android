@@ -22,8 +22,8 @@ public class PhoneManagementComponent {
 	private static String s_PhoneIP = "127.0.0.1";	// localhost to begin with.
 	private static SComponent s_PMC;
 	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, 
-								s_RegisterRdc, s_MapPolicy, s_AIRS, s_AIRSSubscribe;
-	
+	s_RegisterRdc, s_MapPolicy, s_AIRS, s_AIRSSubscribe;
+
 	private static String s_AIRSAddress;
 	private static final List<String> s_AIRSSubscriptions = new LinkedList<String>();
 
@@ -34,13 +34,54 @@ public class PhoneManagementComponent {
 	 * @return true if the current RDC exists.
 	 */
 	public static void applyMappingPolicies() {
+		applyMappingPolicies(null, 0);
+	}
+
+	public static void applyMappingPolicies(String sensorCode, int value) {
 		if (s_List == null) return;
 
 		for (Registration registration : RegistrationRepository.list()) {
 
 			for (MapPolicy policy : registration.getMapPolicies()) {
 				// Tell each component to map() as it has specified.
-				map(":" + registration.getPort(), policy.getLocalEndpoint(), policy.getRemoteAddress(), policy.getRemoteEndpoint());
+				boolean map;
+
+				if (sensorCode == null || policy.getSensor() == AIRS.NONE)
+					map = true;
+				else {
+					String policyCode = Policy.sensorCode(policy.getSensor());
+					if (!policyCode.equals(sensorCode)) {
+						// wrong sensor event
+						continue;
+					}
+
+					switch (policy.getCondition()) {
+					case NONE:
+						map = true;
+						break;
+					case EQUAL:
+						map = (policy.getValue() == value);
+						break;
+					case GREATER_THAN:
+						map = (policy.getValue() > value);
+						break;
+					case GREATER_THAN_EQUAL:
+						map = (policy.getValue() >= value);
+						break;
+					case LESS_THAN:
+						map = (policy.getValue() < value);
+						break;
+					case LESS_THAN_EQUAL:
+						map = (policy.getValue() <= value);
+						break;
+					default:
+						map = false;
+						break;
+					}
+				}
+
+				if (map)
+					map(":" + registration.getPort(), policy.getLocalEndpoint(), policy.getRemoteAddress(), policy.getRemoteEndpoint());
 			}
 		}
 	}
@@ -100,18 +141,23 @@ public class PhoneManagementComponent {
 	 * Inform any registered components that we've found/lost an RDC. If found, apply any mapping policies we know about.
 	 * @param register Components can register with this RDC.
 	 */
+
 	public static void informComponentsAboutRDC(boolean register) {
+		informComponentsAboutRDC(register, null, 0);
+	}
+
+	public static void informComponentsAboutRDC(boolean register, String sensorCode, int value) {
 		if (s_RegisterRdc == null || s_List == null) return;
 
 		// Don't do anything if there are no components.
 		if (RegistrationRepository.list().size() == 0) return;
-		
+
 		String mapString = s_List.map(getRemoteRDCAddress(), null);
 
 		// RDC doesn't exist.
 		if (mapString == null)
 			return;
-		
+
 		s_List.unmap();
 
 		// Inform registered components about the new RDC.
@@ -128,7 +174,7 @@ public class PhoneManagementComponent {
 		}
 
 		if (register)
-			applyMappingPolicies();
+			applyMappingPolicies(sensorCode, value);
 	}
 
 	/**
@@ -166,21 +212,21 @@ public class PhoneManagementComponent {
 	public PhoneManagementComponent(Context context) {
 		s_Context = context;
 	}
-	
+
 	private void subscribeToAIRS(String sensorCode) {
 		if (s_AIRSAddress == null || sensorCode == null) 
 			return;
-		
+
 		if (!s_AIRSSubscriptions.contains(sensorCode)) {
 			s_AIRSSubscribe.map(s_AIRSAddress, "subscribe");
 			SNode subscription = s_AIRSSubscribe.createMessage("subscription");
 			subscription.packString(sensorCode, "sensor-code");
 			s_AIRSSubscribe.emit(subscription);
 			s_AIRSSubscribe.unmap();
-			
+
 			s_AIRSSubscriptions.add(sensorCode);
 		}
-			
+
 	}
 
 	private void acceptRegistration() {
@@ -210,9 +256,9 @@ public class PhoneManagementComponent {
 
 			if (sourceComponent.equals("AirsSensor")) {
 				s_AIRSAddress = ":" + port;
-				subscribeToAIRS("WC");
+				//subscribeToAIRS("WC");
 			}
-				
+
 			Registration registration = RegistrationRepository.add(port, sourceComponent, sourceInstance);
 			if (registration != null) {
 				PMCActivity.addStatus("Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
@@ -321,26 +367,35 @@ public class PhoneManagementComponent {
 			} else if (name.equals("AIRS")) {
 				SMessage message = s_AIRS.receive();
 				SNode tree = message.getTree();
-				
+
 				String sensorCode = tree.extractString("sensor");
-				
+
+				if (tree.exists("var")) {
+					int value = tree.extractInt("var");
+
+					if (sensorCode.equals("WC") && value == 0)
+						informComponentsAboutRDC(false);
+					else
+						informComponentsAboutRDC(true, sensorCode, value);
+				}
+				/*
 				if (sensorCode.equals("WC")) {
 					if (tree.extractInt("var") == 1)
 						informComponentsAboutRDC(true);
 					else
 						informComponentsAboutRDC(false);
-					
+
 				} else if (sensorCode.equals("Rd")) {
 					int var = tree.extractInt("var");
 					if (var > 50000)
 						informComponentsAboutRDC(true);
 				}
-				
+				 */
 				message.delete();
 			}
 		}
 	}
-	
+
 	private void lookup() {
 		SMessage query = s_Lookup.receive();
 		//SNode constraints = query.getTree().extractItem("map-constraints");
@@ -361,9 +416,9 @@ public class PhoneManagementComponent {
 		int sensor = snode.extractInt("sensor");
 		int condition = snode.extractInt("condition");
 		int value = snode.extractInt("value");
-		
+
 		MapPolicy policy = new MapPolicy(localEndpoint, remoteAddress, remoteEndpoint, 
-											AIRS.values()[sensor], Condition.values()[condition], value);
+				AIRS.values()[sensor], Condition.values()[condition], value);
 
 		Registration registration = RegistrationRepository.find(message.getSourceComponent(), message.getSourceInstance());
 		if (registration != null) {
@@ -379,7 +434,7 @@ public class PhoneManagementComponent {
 			}
 		}
 		message.delete();
-		
+
 		//subscribeToAIRS("Rd");
 	}
 
@@ -409,9 +464,9 @@ public class PhoneManagementComponent {
 		s_Lookup = s_PMC.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
 
 		s_MapPolicy = s_PMC.addEndpoint("map_policy", EndpointType.EndpointSink, "157EC474FA55");
-		
+
 		s_AIRS = s_PMC.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
-		
+
 		s_AIRSSubscribe = s_PMC.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "8C59332D91B9");
 
 		// Start the component on the default RDC port.
