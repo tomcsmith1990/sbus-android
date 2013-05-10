@@ -540,12 +540,12 @@ public class EventComponent implements Runnable
 		DIALOG_INFO current_dialog;
 		Callback	current_callback;
 
-		debug("EventComponent::Dispatch:dispatch newly arrived method");
+		//debug("EventComponent::Dispatch:dispatch newly arrived method");
 		// handle different methods
 		switch(current_method.method_type)
 		{
 		case method_type.method_SUBSCRIBE:
-			debug("...it's a SUBSCRIBE");
+			//debug("...it's a SUBSCRIBE");
 			// is there an existing dialog?
 			if ((current_dialog = find_Dialog(current_method.sub.dialog_id, true)) != null)
 			{
@@ -579,7 +579,7 @@ public class EventComponent implements Runnable
 			}
 			break;
 		case method_type.method_NOTIFY:
-			debug("...it's a NOTIFY");
+			//debug("...it's a NOTIFY");
 			// is there an existing incoming dialog?
 			if ((current_dialog = find_Dialog(current_method.not.dialog_id, false)) != null)
 			{
@@ -603,7 +603,7 @@ public class EventComponent implements Runnable
 			}
 			break;
 		case method_type.method_PUBLISH:
-			debug("...it's a PUBLISH");
+			//debug("...it's a PUBLISH");
 			if ((current_dialog = find_Dialog(current_method.pub.e_tag, true)) != null) {
 				current_dialog.current_method = current_method;
 				current_dialog.callback.callback(current_dialog);
@@ -620,7 +620,7 @@ public class EventComponent implements Runnable
 			}
 			break;
 		case method_type.method_CONFIRM:
-			debug("...it's a CONFIRM");
+			//debug("...it's a CONFIRM");
 			// is there an existing outgoing dialog?
 			if ((current_dialog = find_Dialog(current_method.conf.dialog.dialog_id, false)) != null)
 
@@ -663,7 +663,7 @@ public class EventComponent implements Runnable
 
 			break;
 		case method_type.method_BYE:
-			debug("...it's a BYE");
+			//debug("...it's a BYE");
 			// is there an existing incoming dialog?
 			if ((current_dialog = find_Dialog(current_method.BYE.dialog_id, true)) != null)
 			{

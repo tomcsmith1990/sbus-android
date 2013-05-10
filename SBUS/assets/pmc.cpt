@@ -149,7 +149,7 @@
 			<message>
 				@subscription
 				{
-					txt sensor-code
+					txt sensor
 				}
 			</message>
 			<response>!</response>
