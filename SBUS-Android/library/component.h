@@ -134,7 +134,7 @@ class sendpoint
 	//wrapper to disconnect all connections on the endpoint (old functionality, calls unmap(NULL,NULL)
 	void unmap();
 	
-	void set_automap_policy(const char *address, const char *endpoint);
+	void set_automap_policy(const char *address, const char *endpoint, int sensor, int condition, int value);
 
 	int ismapped();
 	
