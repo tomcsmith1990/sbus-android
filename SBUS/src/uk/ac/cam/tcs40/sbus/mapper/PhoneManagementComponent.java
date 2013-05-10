@@ -4,8 +4,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import uk.ac.cam.tcs40.sbus.Multiplex;
+import uk.ac.cam.tcs40.sbus.Policy.AIRS;
+import uk.ac.cam.tcs40.sbus.Policy.Condition;
 import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
+import uk.ac.cam.tcs40.sbus.Policy;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.SMessage;
 import uk.ac.cam.tcs40.sbus.SNode;
@@ -165,7 +168,7 @@ public class PhoneManagementComponent {
 	}
 	
 	private void subscribeToAIRS(String sensorCode) {
-		if (s_AIRSAddress == null) 
+		if (s_AIRSAddress == null || sensorCode == null) 
 			return;
 		
 		if (!s_AIRSSubscriptions.contains(sensorCode)) {
@@ -205,8 +208,10 @@ public class PhoneManagementComponent {
 
 		if (register) {
 
-			if (sourceComponent.equals("AirsSensor"))
+			if (sourceComponent.equals("AirsSensor")) {
 				s_AIRSAddress = ":" + port;
+				subscribeToAIRS("WC");
+			}
 				
 			Registration registration = RegistrationRepository.add(port, sourceComponent, sourceInstance);
 			if (registration != null) {
@@ -327,9 +332,7 @@ public class PhoneManagementComponent {
 					
 				} else if (sensorCode.equals("Rd")) {
 					int var = tree.extractInt("var");
-					if (var < 10000)
-						informComponentsAboutRDC(false);
-					else if (var > 50000)
+					if (var > 50000)
 						informComponentsAboutRDC(true);
 				}
 				
@@ -355,22 +358,29 @@ public class PhoneManagementComponent {
 		String remoteAddress = snode.extractString("peer_address");
 		String remoteEndpoint = snode.extractString("peer_endpoint");
 		String localEndpoint = snode.extractString("endpoint");
+		int sensor = snode.extractInt("sensor");
+		int condition = snode.extractInt("condition");
+		int value = snode.extractInt("value");
+		
+		MapPolicy policy = new MapPolicy(localEndpoint, remoteAddress, remoteEndpoint, 
+											AIRS.values()[sensor], Condition.values()[condition], value);
 
 		Registration registration = RegistrationRepository.find(message.getSourceComponent(), message.getSourceInstance());
 		if (registration != null) {
 
 			if (create) {
-				registration.addMapPolicy(localEndpoint, remoteAddress, remoteEndpoint);
+				registration.addMapPolicy(policy);
+				subscribeToAIRS(Policy.sensorCode(AIRS.values()[sensor]));
 				PMCActivity.addStatus("Adding map policy: " + remoteAddress + " for component " + registration.getComponentName());
 			}
 			else {
-				registration.removeMapPolicy(localEndpoint, remoteAddress, remoteEndpoint);
+				registration.removeMapPolicy(policy);
 				PMCActivity.addStatus("Removing map policy: " + remoteAddress + " for component " + registration.getComponentName());
 			}
 		}
 		message.delete();
 		
-		subscribeToAIRS("Rd");
+		//subscribeToAIRS("Rd");
 	}
 
 	public void start() {
@@ -398,7 +408,7 @@ public class PhoneManagementComponent {
 		// For any map lookups the component makes.
 		s_Lookup = s_PMC.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
 
-		s_MapPolicy = s_PMC.addEndpoint("map_policy", EndpointType.EndpointSink, "857FC4B7506D");
+		s_MapPolicy = s_PMC.addEndpoint("map_policy", EndpointType.EndpointSink, "157EC474FA55");
 		
 		s_AIRS = s_PMC.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
 		

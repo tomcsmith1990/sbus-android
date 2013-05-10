@@ -34,12 +34,15 @@ Java_uk_ac_cam_tcs40_sbus_SEndpoint_setAutomapPolicy( JNIEnv* env,
 									                   jobject thiz,
 								                       jlong endpoint,
 								                       jstring addr,
-								                       jstring ept )
+								                       jstring ept,
+								                       jint sensor,  
+								                       jint condition,
+								                       jint value )
 {
 	const char *address = env->GetStringUTFChars(addr, NULL);
 	const char *endpt = (ept == NULL) ? NULL : env->GetStringUTFChars(ept, NULL);
 	
-	((sendpoint *)endpoint)->set_automap_policy(address, endpt);
+	((sendpoint *)endpoint)->set_automap_policy(address, endpt, sensor, condition, value);
 	
 	env->ReleaseStringUTFChars(addr, address);
 	if (ept != NULL) env->ReleaseStringUTFChars(ept, endpt);
