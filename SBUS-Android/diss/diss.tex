@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11307}
+\newcommand{\wordcount}{11348}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -190,9 +190,9 @@ Local peers are more related to applications' environments.
 Furthermore, applications need not predefine a list of peers to use.
 
 % context
-Context refers to any event which the system or the user feels that it is reasonable to respond to, where any happening of interest that can be observed from within a computer is considered an event \cite[p11]{muhl2006distributed}. 
+Context refers to any any happening of interest that can be observed from within a computer which the system or the user feels that it is reasonable to respond to \cite{muhl2006distributed}. 
 Mobile devices constantly operate in different contexts, which dictate how the devices can interact with the environment. 
-Upon a change in context, an application may move out of scope of a given peer, or the data it is providing may no longer be relevant. 
+Upon a change in context, an application may move no longer be able to communicate a given peer, or the data that the peer is providing may no longer be relevant. 
 In this situation, the application must find an alternative peer which can provide similar data, or which provides data which is more relevant to the new context. 
 
 Once this alternate peer has been located, the application must still determine whether it provides useful data. 
@@ -235,9 +235,9 @@ However, by specifying how an application should react to changes in context, th
 \section{Background}
 % what I've done
 
-Schilit et al. \cite{schilit1994context}  define a context-aware system as one which can examine the computing environment and react to changes in the environment. 
+A context-aware system is defined as one which can examine the computing environment and react to changes in the environment \cite{schilit1994context}. 
 This project investigates how automatic contextual reconfiguration can be performed for applications whenever there is a change in the environment. 
-Pascoe \cite{pascoe1998adding} lists four context-aware capabilites. 
+Contextual sensing, contextual adaptation, contextual resource discovery and contextual augmentation are four context-aware capabilities which can be considered \cite{pascoe1998adding}.
 {\sl Contextual sensing} presents environmental state to the user, while {\sl contextual adaptation} allows applications to use this knowledge to adapt their behaviour to integrate with the user's environment.
 {\sl Contextual resource discovery} allows applications to discover and exploit resources which exist in the same context as themselves. 
 {\sl Contextual augmentation} augments reality with digital data. 
@@ -250,7 +250,7 @@ Three kinds of events are defined: physical events, timer events, and a state ch
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (a fall), in which case the application may need to send data to an emergency response team.
 A timer event indicates the progression of real time, which advertisers could use to connect to advertisements for nearby restaurants at lunch time. 
 Finally, there are state changes in the system, such as a change in network connection or location. 
-This project primarly focuses on state changes events, particularly using a change in network connection to indicate a change in context, though in practice any event might be used.  
+This project primarly focuses on state change events, particularly using a change in network connection to indicate a change in context, though in practice any event might be used.  
 Composite events might even be considered to represent a context change. 
 These require the detection of several different events, or one or more occurrences of a single event \cite{chakravarthy1994composite}. 
 
@@ -375,7 +375,7 @@ These constraints are necessary so that any communication between peers remains 
 SBUS \cite{ingram2009reconfigurable} is a messaging middleware written in C++, which can be used for stream based communication. 
 The basic entity in SBUS is a {\sl component}. 
 Each component consists of one or more {\sl endpoints} which can be connected, or {\sl mapped} together allowing direct communication between the two endpoints. 
-Every endpoint has an associated message schema. 
+Every endpoint has an associated message schema, which dictates the format that its data must adhere to. 
 In order for endpoints to be mapped together, their schemas must match. 
 An endpoint may specify a subscription filter on events it wishes to receive, in terms of its schema. 
 This filter specifies conditions on the events which an endpoint is interested in, and any connected peers will only publish events to this endpoint if the event matches the conditions.
@@ -387,7 +387,7 @@ Resource discovery components (RDCs) are components which act as a component dis
 An environment may contain several RDCs, or no RDCs, though typically one RDC exists in each environment.
 Components may query an RDC for other components within the environment, using parameters including component name, connected peers, or public key. 
 These parameters are specified using a query string. 
-Each type of constraint is represented using a different letter, for example {\tt +NcomponentX} specifies a component named {\tt componentX}. 
+Each type of constraint is represented using a different letter, for example {\tt +Nsensor1} specifies a component named {\tt sensor1}. 
 All constraints in the query string must satisfied for a component to match. 
 The RDC returns the IP addresses of matching components, allowing the component to establish a direct connection to a match.
 
@@ -411,7 +411,7 @@ Finally, SBUS can use SSL to encrypt data, allowing applications to communicate 
 
 \section{Project Outline}
 
-The system is based upon the SBUS middleware, using and extending it to meet the requirements. 
+The system extends the SBUS middleware to enable it to function on mobile devices, and to support the exchange of heterogeneous data between peers. 
 Applications implement an SBUS component, sending and receiving messages on endpoints. 
 
 % Android NDK
@@ -630,14 +630,14 @@ Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would
 \end{figure} 
 
 % hashes - overview
-Each SBUS endpoint currently has an associated {\sl message hash} of the canonical representation of its schema. 
+Each SBUS endpoint currently has an associated {\sl message hash} of the canonical representation of its schema, which can be used to efficiently compare its schema to another schema. 
 This hash is computed when the endpoint is created, and determines whether endpoints are able to communicate. 
 To create the hash, the schema is read by a top-down parser, which generates tokens representing different items in the schema. 
 This parser operates recursively on composite items within the schema, and each token is added to a single buffer. 
 Once the parser returns, this buffer contains a canonical representation of the schema, from which a hash can be computed. 
 
 % hashes for subschemas.
-These hashes can be used to compare entire schemas, and indeed this takes place when two endpoints attempt to connect. 
+These hashes can be used to efficiently compare entire schemas, and indeed this takes place when two endpoints attempt to connect. 
 However, to compare {\sl parts} of a schema, the schema must be represented not by a single hash, but by a collection of hashes. 
 This collection of hashes can also be built when parsing the schema. 
 When parsing each individual item, where an item is either a single field or a composite item consisting of multiple fields, a new buffer is used. 
