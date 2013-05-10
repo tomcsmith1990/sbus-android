@@ -81,7 +81,7 @@ public class TCPClient
 			connected=true;
 		} catch (Exception e)
 		{
-			System.out.println("connect: Exception: " + e.toString());
+			e.printStackTrace();
 		}
 	}
 
@@ -111,7 +111,7 @@ public class TCPClient
 		}
 		catch (Exception e) 
 		{
-			debug("Exception: " + e.toString());
+			e.printStackTrace();
 		} 
 	}
 
@@ -172,7 +172,7 @@ public class TCPClient
 		}
 		catch (Exception e) 
 		{
-			debug("write: Exception: " + e.toString());
+			e.printStackTrace();
 		} 
 
 		// create output stream
@@ -258,7 +258,7 @@ public class TCPClient
 		}
 		catch (Exception e) 
 		{
-			debug("TCPClient::write: Exception: " + e.toString());
+			e.printStackTrace();
 		} 
 		return true;
 	}
@@ -376,7 +376,7 @@ public class TCPClient
 		}
 		catch (Exception exception) 
 		{
-			debug("TCPClient::read: Exception: " + exception.toString());
+			exception.printStackTrace();
 		}
 
 		return null;
@@ -391,7 +391,7 @@ public class TCPClient
 		}
 		catch (Exception e) 
 		{
-			debug("TCPClient::writeShort: Exception: " + e.toString());
+			e.printStackTrace();
 		}
 	}
 
@@ -407,7 +407,7 @@ public class TCPClient
 		}
 		catch (Exception e) 
 		{
-			debug("TCPClient::writeShort: Exception: " + e.toString());
+			e.printStackTrace();
 		}
 	}
 
@@ -425,7 +425,7 @@ public class TCPClient
 		}
 		catch (Exception e) 
 		{
-			debug("TCPClient::writeInt: Exception: " + e.toString());
+			e.printStackTrace();
 		}
 	}
 
@@ -441,7 +441,7 @@ public class TCPClient
 		}
 		catch (Exception e) 
 		{
-			debug("TCPClient::read: Exception: " + e.toString());
+			e.printStackTrace();
 			return 0;
 		}
 	}
@@ -456,7 +456,7 @@ public class TCPClient
 		}
 		catch (Exception e) 
 		{
-			debug("TCPClient::read: Exception: " + e.toString());
+			e.printStackTrace();
 		}
 		return (short)((received[0]<<8)|(received[1] & 0xff ));
 	}
@@ -471,7 +471,7 @@ public class TCPClient
 		}
 		catch (Exception e) 
 		{
-			debug("TCPClient::read: Exception: " + e.toString());
+			e.printStackTrace();
 		}
 		return (int)((received[0]<<24)|(received[1]<<16)|(received[2]<<8)|(received[3] & 0xff ));
 	}
