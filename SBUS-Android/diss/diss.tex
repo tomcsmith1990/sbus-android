@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11348}
+\newcommand{\wordcount}{11405}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -415,9 +415,10 @@ The system extends the SBUS middleware to enable it to function on mobile device
 Applications implement an SBUS component, sending and receiving messages on endpoints. 
 
 % Android NDK
-SBUS has been ported for use on Android, using the Android Native Development Kit\footnote{\url{http://developer.android.com/tools/sdk/ndk/index.html}} (NDK).
-The NDK is used to compile SBUS for Android, and the Java Native Interface (JNI) framework allows applications to use this library. 
+The Android Native Development Kit\footnote{\url{http://developer.android.com/tools/sdk/ndk/index.html}} (NDK) can be used to embed the native machine code into applications, and has been used to compile SBUS for Android. 
 Since the NDK offers fairly obscure documentation with little more than trivial examples, some time was required to understand how the build process works. 
+The Java Native Interface framework allows Java applications to call functions implemented in native libraries \cite{liang1999java}. 
+Using the Android NDK and JNI framework, functions in the SBUS library can be called from Android applications implemented in Java, which are running in a virtual machine. 
 
 % How applications will find peers relevant to them (constraints in terms of schema)
 When components query the RDC they generally know something about the metadata of components they want, such as names, connected peers, or public keys. 
@@ -966,7 +967,8 @@ This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{f
 
 \section{Android Port}
 
-The Android NDK was used to compile SBUS to support Android, and embed the native machine code into applications. 
+The Android Native Development Kit (NDK) can be used to embed the native machine code into applications. 
+The NDK was used to compile SBUS to support Android, to allow applications for Android to be written in Java which can also use the SBUS middleware. 
 The documentation for the NDK offers little more than trivial examples, and few other resources exist, so this stage of the project was largely achieved through experimentation. 
 
 A standalone toolchain from the NDK can be used to set the correct compilation variables when running {\tt ./configure}. 
