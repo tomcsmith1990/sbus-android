@@ -40,7 +40,7 @@ void wrapper_failed()
 
 scomponent::scomponent(const char *cpt_name, const char *instance_name,
 		CptUniqueness unique)
-{
+{		
 	name = sdup(cpt_name);
 	if(instance_name == NULL)
 		instance = sdup(cpt_name);
@@ -68,7 +68,7 @@ scomponent::scomponent(const char *cpt_name, const char *instance_name,
 		delete ss;
 	}
 
-	start_wrapper();
+	start_wrapper();		
 }
 
 scomponent::~scomponent()
@@ -166,7 +166,7 @@ sendpoint *scomponent::add_endpoint(const char *name, EndpointType type,
 		
 sendpoint *scomponent::add_endpoint(const char *name, EndpointType type,
 		const char *msg_hash, const char *reply_hash, int flexible_matching)
-{
+{	
 	HashCode *msg_hc, *reply_hc;
 
 	msg_hc = new HashCode();
@@ -775,7 +775,7 @@ char *sendpoint::map(const char *address, const char *endpoint, const char *cons
 	return s; // OK
 }
 
-void sendpoint::set_automap_policy(const char *address, const char *endpoint)
+void sendpoint::set_automap_policy(const char *address, const char *endpoint, int sensor, int condition, int value)
 {
 	scontrol *ctrl;
 	
@@ -786,6 +786,9 @@ void sendpoint::set_automap_policy(const char *address, const char *endpoint)
 	else
 		ctrl->target_endpoint = sdup(endpoint);
 	ctrl->address = sdup(address);
+	ctrl->sensor = sensor;
+	ctrl->condition = condition;
+	ctrl->value = value;
 	if(ctrl->write(fd) < 0)
 		error("Control connection to wrapper disconnected in set_automap_policy");
 	delete ctrl;
@@ -1466,6 +1469,11 @@ void sendpoint::reply(smessage *query, snode *result, int exception,
 
 void sendpoint::emit(snode *sn, const char *topic, HashCode *hc)
 {
+	timeval start, end;
+	long int seconds;
+
+	gettimeofday(&start, NULL);
+	
 	sinternal *sreq;
 
 	sreq = new sinternal();
@@ -1491,6 +1499,14 @@ void sendpoint::emit(snode *sn, const char *topic, HashCode *hc)
 	}
 	
 	delete sreq;
+	
+	gettimeofday(&end, NULL);
+	
+	FILE *file;
+	file = fopen("/data/data/uk.ac.cam.tcs40.sbus.sbus/files/.sbus/jni.txt", "a");
+	seconds = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
+	fprintf(file, "%ld\n", seconds * 1000);
+	fclose(file);
 }
 
 smessage *sendpoint::rpc(snode *query, HashCode *hc)

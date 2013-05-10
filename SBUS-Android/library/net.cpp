@@ -559,6 +559,9 @@ int sinternal::reveal(AbstractMessage *abst)
 		oob_ctrl->address = decode_string(&pos);
 		oob_ctrl->target_endpoint = decode_string(&pos);
 		oob_ctrl->constraints = decode_string(&pos);
+		oob_ctrl->sensor = decode_count(&pos);
+		oob_ctrl->condition = decode_count(&pos);
+		oob_ctrl->value = decode_count(&pos);
 	}
 	else if (type==MessagePrivilege){
 		oob_ctrl = new scontrol();
@@ -1339,6 +1342,9 @@ int scontrol::reveal(AbstractMessage *abst)
 		address = decode_string(&pos);
 		target_endpoint = decode_string(&pos);
 		constraints = decode_string(&pos);
+		sensor = decode_count(&pos);
+		condition = decode_count(&pos);
+		value = decode_count(&pos);
 	}
 	
 	return 0;
@@ -1369,6 +1375,9 @@ AbstractMessage *scontrol::wrap(int fd)
 		sb->cat_string(address); // May be NULL
 		sb->cat_string(target_endpoint); // May be NULL
 		sb->cat_string(constraints); // May be NULL
+		sb->cat(sensor);
+		sb->cat(condition);
+		sb->cat(value);
 	}
 	abst = new AbstractMessage(fd, sb);
 	delete sb;

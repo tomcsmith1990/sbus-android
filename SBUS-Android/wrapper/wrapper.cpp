@@ -41,7 +41,7 @@
 #include "wrapper.h"
 
 // evaluation
-//long int start_time = 0;
+long int start_time = 0;
 
 swrapper *wrap;
 const char *callback_address;
@@ -52,7 +52,7 @@ const char *lookup_cpt_file = "map_constraints.idl";
 
 const char *map_schema_str =
 "@map { txt endpoint txt peer_address txt peer_endpoint txt certificate }";
-const char *map_policy_schema_str = "@event { txt endpoint txt peer_address txt peer_endpoint txt certificate flg create }";
+const char *map_policy_schema_str = "@event { txt endpoint txt peer_address txt peer_endpoint int sensor int condition int value txt certificate flg create }";
 const char *unmap_schema_str = "@unmap { txt endpoint [txt peer_address] [txt peer_endpoint] txt certificate }";
 const char *divert_schema_str =
 "@divert { txt endpoint txt new_address txt new_endpoint [txt peer_address] [txt peer_endpoint] txt certificate }";
@@ -2111,10 +2111,10 @@ void swrapper::serve_sink_builtin(const char *fn_endpoint, snode *sn)
 		peer_endpoint = sn->extract_txt("peer_endpoint");
 		
 		/* EVALUATION */
-		/*timeval start;		
+		timeval start;		
 		gettimeofday(&start, NULL);
 		start_time = start.tv_sec * 1000000 + start.tv_usec;
-*/
+
 		/* EVALUATION */
 		
 		map(mp, peer_address, peer_endpoint, -1);
@@ -2364,7 +2364,7 @@ void swrapper::add_builtin_endpoints()
 	
 	lost_mp = add_builtin("lost", EndpointSource, "B3572388E4A4");
 	
-	map_policy_mp = add_builtin("map_policy", EndpointSource, "857FC4B7506D");
+	map_policy_mp = add_builtin("map_policy", EndpointSource, "157EC474FA55");
 
 	//for AC
 	add_builtin("access_control", EndpointSink, "470551F178B5");
@@ -3574,7 +3574,7 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 	// delete abst;
 	
 	// EVALUATION
-	/*if (start_time != 0)
+	if (start_time != 0)
 	{
 		timeval end;
 		gettimeofday(&end, NULL);
@@ -3591,7 +3591,7 @@ void swrapper::finalise_map(int fd, AbstractMessage *abst)
 		fclose(file);
 		
 		start_time = 0;
-	}*/
+	}
 
 	// Report mapping successful:
 	map_report(report_fd, 1, peer->address);
@@ -3898,13 +3898,28 @@ void swrapper::serve_endpoint(AbstractMessage *abst, smidpoint *mp)
 				load_privileges_from_file(ctrl->filename);
 				break;
 			case MessageMapPolicy:
-				snode *event, *endpoint, *peer_address, *peer_endpoint, *certificate, *create;
+				snode *event, *endpoint, *peer_address, *peer_endpoint, *sensor, *condition, *value, *certificate, *create;
+				event = mklist("event");
+				
 				endpoint = pack(mp->name, "endpoint");
 				peer_address = pack(ctrl->address, "peer_address");
 				peer_endpoint = pack(ctrl->target_endpoint, "peer_endpoint");
+				sensor = pack(ctrl->sensor, "sensor");
+				condition = pack(ctrl->condition, "condition");
+				value = pack(ctrl->value, "value");
 				certificate = pack("", "certificate");
 				create = pack_bool(1, "create");
-				event = pack(endpoint, peer_address, peer_endpoint, certificate, create, "event");
+				
+				event->append(endpoint);
+				event->append(peer_address);
+				event->append(peer_endpoint);
+				event->append(sensor);
+				event->append(condition);
+				event->append(value);
+				event->append(certificate);
+				event->append(create);
+				
+				//event = pack(endpoint, peer_address, peer_endpoint, sensor, condition, value, certificate, create, "event");
 				
 				// TODO: make a new Visit type - just hopping on this one the moment (but it works).
 				const char *rdc_address;

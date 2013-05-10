@@ -153,6 +153,9 @@ class scontrol : public sproto
 	char *address;
 	char *target_endpoint;
 	char *constraints;	// For flexible matching using an IP but specifying constraints.
+	int sensor;
+	int condition;
+	int value;
 	
 	// For MessageSubscribe:
 	char *subs;
