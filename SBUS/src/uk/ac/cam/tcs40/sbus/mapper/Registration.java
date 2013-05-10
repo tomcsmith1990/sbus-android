@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import uk.ac.cam.tcs40.sbus.Policy;
+
 public class Registration {
 
 	private final String m_Port, m_Component, m_Instance;
@@ -38,16 +40,16 @@ public class Registration {
 			this.m_Permissions.add(new Permission(remoteComponent, remoteInstance, allow));
 	}
 	
-	public void addMapPolicy(String localEndpoint, String remoteComponent, String remoteEndpoint) {
-		this.m_MapPolicies.add(new MapPolicy(localEndpoint, remoteComponent, remoteEndpoint));
+	public void addMapPolicy(MapPolicy policy) {
+		this.m_MapPolicies.add(policy);
 	}
 	
-	public void removeMapPolicy(String localEndpoint, String remoteComponent, String remoteEndpoint) {
-		for (MapPolicy policy : this.m_MapPolicies) {
-			if (policy.getLocalEndpoint().equals(localEndpoint) && 
-					policy.getRemoteAddress().equals(remoteComponent) && 
-					policy.getRemoteEndpoint().equals(remoteEndpoint)) {
-				this.m_MapPolicies.remove(policy);
+	public void removeMapPolicy(MapPolicy policy) {
+		for (MapPolicy existingPolicy : this.m_MapPolicies) {
+			if (existingPolicy.getLocalEndpoint().equals(policy.getLocalEndpoint()) && 
+					existingPolicy.getRemoteAddress().equals(policy.getRemoteAddress()) && 
+					existingPolicy.getRemoteEndpoint().equals(policy.getRemoteEndpoint())) {
+				this.m_MapPolicies.remove(existingPolicy);
 			}
 		}
 	}

@@ -120,6 +120,9 @@
 					txt endpoint
 					txt peer_address
 					txt peer_endpoint
+					int sensor
+					int condition
+					int value
 					txt certificate
 					flg create
 				}
