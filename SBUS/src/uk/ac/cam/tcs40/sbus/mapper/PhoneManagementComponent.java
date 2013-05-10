@@ -60,19 +60,19 @@ public class PhoneManagementComponent {
 						map = true;
 						break;
 					case EQUAL:
-						map = (policy.getValue() == value);
+						map = (value == policy.getValue());
 						break;
 					case GREATER_THAN:
-						map = (policy.getValue() > value);
+						map = (value > policy.getValue());
 						break;
 					case GREATER_THAN_EQUAL:
-						map = (policy.getValue() >= value);
+						map = (value >= policy.getValue());
 						break;
 					case LESS_THAN:
-						map = (policy.getValue() < value);
+						map = (value < policy.getValue());
 						break;
 					case LESS_THAN_EQUAL:
-						map = (policy.getValue() <= value);
+						map = (value <= policy.getValue());
 						break;
 					default:
 						map = false;
@@ -143,10 +143,6 @@ public class PhoneManagementComponent {
 	 */
 
 	public static void informComponentsAboutRDC(boolean register) {
-		informComponentsAboutRDC(register, null, 0);
-	}
-
-	public static void informComponentsAboutRDC(boolean register, String sensorCode, int value) {
 		if (s_RegisterRdc == null || s_List == null) return;
 
 		// Don't do anything if there are no components.
@@ -172,9 +168,6 @@ public class PhoneManagementComponent {
 			s_RegisterRdc.emit(node);
 			s_RegisterRdc.unmap();
 		}
-
-		if (register)
-			applyMappingPolicies(sensorCode, value);
 	}
 
 	/**
@@ -220,7 +213,7 @@ public class PhoneManagementComponent {
 		if (!s_AIRSSubscriptions.contains(sensorCode)) {
 			s_AIRSSubscribe.map(s_AIRSAddress, "subscribe");
 			SNode subscription = s_AIRSSubscribe.createMessage("subscription");
-			subscription.packString(sensorCode, "sensor-code");
+			subscription.packString(sensorCode, "sensor");
 			s_AIRSSubscribe.emit(subscription);
 			s_AIRSSubscribe.unmap();
 
@@ -256,6 +249,8 @@ public class PhoneManagementComponent {
 
 			if (sourceComponent.equals("AirsSensor")) {
 				s_AIRSAddress = ":" + port;
+				PMCActivity.addStatus("Found AIRS at :" + port);
+				return;
 				//subscribeToAIRS("WC");
 			}
 
@@ -373,10 +368,10 @@ public class PhoneManagementComponent {
 				if (tree.exists("var")) {
 					int value = tree.extractInt("var");
 
-					if (sensorCode.equals("WC") && value == 0)
-						informComponentsAboutRDC(false);
-					else
-						informComponentsAboutRDC(true, sensorCode, value);
+					if (sensorCode.equals("WC"))
+						informComponentsAboutRDC(value == 1);
+					
+					applyMappingPolicies(sensorCode, value);
 				}
 				/*
 				if (sensorCode.equals("WC")) {
@@ -467,7 +462,7 @@ public class PhoneManagementComponent {
 
 		s_AIRS = s_PMC.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
 
-		s_AIRSSubscribe = s_PMC.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "8C59332D91B9");
+		s_AIRSSubscribe = s_PMC.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
 
 		// Start the component on the default RDC port.
 		s_PMC.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);

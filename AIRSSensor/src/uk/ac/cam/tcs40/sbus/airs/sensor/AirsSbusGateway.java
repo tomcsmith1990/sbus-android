@@ -1,11 +1,14 @@
 package uk.ac.cam.tcs40.sbus.airs.sensor;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.airs.platform.EventComponent;
 import com.airs.platform.Server;
 
 import android.content.Context;
+import android.util.Log;
 import uk.ac.cam.tcs40.sbus.FileBootloader;
 import uk.ac.cam.tcs40.sbus.Multiplex;
 import uk.ac.cam.tcs40.sbus.SComponent;
@@ -21,9 +24,11 @@ public class AirsSbusGateway {
 	private SEndpoint m_SubscriptionEndpoint;
 	private Server m_Server;
 
+	public final List<String> m_Subscriptions = new LinkedList<String>();
+
 	private SensorReadingActivity m_Activity;
 	private Context m_Context;
-	
+
 	private final String m_CptFile = "AirsSensor.cpt";
 
 	public AirsSbusGateway(SensorReadingActivity activity) {
@@ -35,7 +40,7 @@ public class AirsSbusGateway {
 
 		// Create the component.
 		m_Component = new SComponent("AirsSensor", "airs");
-		m_SubscriptionEndpoint = m_Component.addEndpoint("subscribe", EndpointType.EndpointSink, "8C59332D91B9");
+		m_SubscriptionEndpoint = m_Component.addEndpoint("subscribe", EndpointType.EndpointSink, "F03F918E91A3");
 
 		// Register RDC if it is available.
 		//this.m_Component.addRDC("192.168.0.3:50123");
@@ -48,7 +53,11 @@ public class AirsSbusGateway {
 	public void subscribe(String sensorCode) {
 		if (this.m_Server == null) return;
 
-		this.m_Server.subscribe(sensorCode);
+		if (!m_Subscriptions.contains(sensorCode)) {
+			this.m_Server.subscribe(sensorCode);
+			m_Subscriptions.add(sensorCode);
+			Log.i("AIRS", "Subscribe to " + sensorCode);
+		}
 	}
 
 	public void stop() {
@@ -84,7 +93,7 @@ public class AirsSbusGateway {
 
 			Multiplex multi = m_Component.getMultiplex();
 			multi.add(m_SubscriptionEndpoint);
-			
+
 			while (m_Component != null) {
 
 				// Wait until a message is ready.
@@ -98,10 +107,10 @@ public class AirsSbusGateway {
 				SMessage message = m_SubscriptionEndpoint.receive();
 				SNode node = message.getTree();
 
-				String sensorCode = node.extractString("sensor-code");
+				String sensorCode = node.extractString("sensor");
 
 				message.delete();
-				
+
 				subscribe(sensorCode);
 			}
 
