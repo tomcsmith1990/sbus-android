@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11140}
+\newcommand{\wordcount}{11307}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -232,6 +232,35 @@ New peers may become available and old peers may become unavailable, or peers mi
 A developer simply cannot cover every current and future possibility, meaning an application cannot truly adapt to {\sl any} environment. 
 However, by specifying how an application should react to changes in context, the application becomes decoupled from the environment, making it more robust to changes in the environment. 
 
+\section{Project Goals}
+% pervasive computing
+
+The project aims to create a context-aware middleware which is in line with the goals of the pervasive computing vision \cite{weiser1991computer}. 
+The approach taken offers heterogeneity, which allows it to be used {\sl anywhere}, and offers mobility and scalability, which allows it to be used {\sl everywhere}. 
+These factors are important because uniformity and compatibility in every environment cannot be assumed. 
+
+\begin{itemize}
+
+% mobility
+\item
+The project modifies a middleware for use on mobile devices, allowing developers to write applications which can be used in different environments. 
+Mobile computing is fundamentally about increasing our capability to physically move computing services with us \cite{lyytinen2002ubiquitous}, and thus mobility forms a particularly important part of context because people move between different environments. 
+
+% context, reconfiguration
+\item
+The project offers dynamic connection reconfiguration for applications, discovering peers within the environment which are relevant to them, and connecting applications to these peers upon a context change. 
+This reconfiguration is invisible to the user, occurring automatically following a context change. 
+Connections to peers are established on an ad-hoc basis and based entirely upon which peers are available within the environment at that time. 
+The approach is scalable because applications are not bound to particular peers, thus can cope with a dynamically changing set of peers. 
+
+% schema stuff
+\item
+The project allows applications to communicate with peers despite any differences in their data formats. 
+This adaptation to different data formats masks any heterogeneity in the data \cite{saha2003pervasive} from both users and the application developers. 
+This further ensures that the approach is scalable, because applications are not bound to a particular data format. 
+
+\end{itemize}
+
 
 \section{Project Overview}
 % what I've done
@@ -244,11 +273,6 @@ Pascoe \cite{pascoe1998adding} lists four context-aware capabilites.
 {\sl Contextual augmentation} augments reality with digital data. 
 Contextual resource discovery discovers potential peers available within the current context, and contextual adaptation allows applications to adapt to different data formats in order to communicate with these peers. 
 
-% pervasive computing
-Use of local peers ensures that the approach is scalable. 
-Connections are created on an ad-hoc basis, based entirely upon which peers are available within the environment at that time. 
-Adaptation to different data formats masks heterogeneity in the data \cite{saha2003pervasive} from users, and indeed from the application developers. 
-These factors are important because uniformity and compatibility in every environment cannot be assumed, and therefore must be considered by any system which aims to be in line with the goals of the pervasive computing vision \cite{weiser1991computer}.
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
 M\"{u}hl represents changes in context using events, where each context change causes an event to be raised \cite[p11]{muhl2006distributed}.
