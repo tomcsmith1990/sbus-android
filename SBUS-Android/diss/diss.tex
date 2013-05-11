@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11427}
+\newcommand{\wordcount}{11400}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -277,7 +277,7 @@ The approach is scalable because applications are not bound to particular peers,
 
 % schema stuff
 \item
-The project allows applications to communicate with peers despite any differences in their data formats. 
+The project allows applications to communicate with peers despite differences in their data formats. 
 This adaptation to different data formats masks any heterogeneity in the data \cite{saha2003pervasive} from both users and the application developers. 
 This further ensures that the approach is scalable, because applications are not bound to a particular data format. 
 
@@ -289,7 +289,7 @@ This further ensures that the approach is scalable, because applications are not
 % policy engine
 Applications control how their connections should be reconfigured through policies. 
 An application monitors the environment and upon detecting a change in context applies these policies, reconfiguring applications' connections to connect them to different peers, where appropriate.
-These policies may specify the name of peers, or be more complex rules regarding the structure of peers' data. 
+These policies may specify the name of peers to connect to, or be more complex rules regarding the structure of peers' data. 
 Alternatively, applications may opt to be notified of a change in context, rather than have their connection reconfigured, allowing them to perform callback methods upon the change.
 
 % repackaging
@@ -431,7 +431,7 @@ This is well suited to mobile applications because the environment is constantly
 Furthermore, these environments are not all controlled by a single company and this solution allows resource discovery independent of any corporate differences. 
 
 % How applications will cope with unexpected data format - must be done at system level
-SBUS endpoints could previously only communicate if they share a common schema. 
+SBUS endpoints could previously only communicate if they shared a common message schema. 
 This was to ensure that endpoints only ever receive messages matching their own schema, from which values can be easily extracted since the structure of the message is known. 
 Different components in different environments may offer similar data, but they may have schema differences, perhaps due to the company providing the component, or the country which the component is located in. 
 When searching for components by data, an application may discover some component which provides the required data, but nested within a larger schema, or using different field names. 
@@ -1072,7 +1072,7 @@ This allows the Phone Manager to use any sensor on the device which is exposed b
 This gateway is based on Dirk Trossen's AIRS code\footnote{\url{https://github.com/dirktrossen/AIRS}}. 
 AIRS exposes upwards of 50 sensors, which is being continually expanded, making it infeasible to predefine an endpoint for each sensor. 
 This is handled by dynamically creating an endpoint for each sensor whenever the first reading from that sensor is received, meaning that endpoints will only ever be created as needed. 
-The gateway presents the user with a list of sensors, which is populated from a message AIRS announcing the available sensors upon connecting to the remote server. 
+The gateway presents the user with a list of sensors, which is populated from a message AIRS sends upon connecting to the remote server, announcing the available sensors on the device. 
 When the user selects a sensor, that sensor is subscribed to, and the endpoint will be created once a reading is received from that sensor. 
 Additionally, the endpoint is automatically mapped to the Phone Manager so can start publishing events to it immediately. 
 Each sensor runs in a different thread, so these endpoints are maintained in a thread-safe repository. 
@@ -1087,16 +1087,26 @@ The Phone Manager can respond to any kind of event, so already provides the infr
 % registering components + setting policies
 In order to have their connections automatically reconfigured, applications must register with the Phone Manager. 
 This registration occurs in exactly the same way as with an RDC; the Phone Manager is essentially a lightweight RDC which does not offer search functionality. 
-Once an application has registered, it can set {\sl map policies}, which determine how its connection will be reconfigured. 
-A policy contains the application endpoint name, a peer endpoint name, and a peer address in the form of an IP address or an RDC query which will be resolved to an address. 
-The Phone Manager will apply these policies exactly as specified, either instructing an application endpoint to map to another endpoint at some IP address, or to first resolve an RDC query, then map to the endpoint. 
+Once an application has registered, it can set {\sl policies} for its endpoints, which determine how its connection will be reconfigured. 
+These policies are event-condition-action rules \cite{mccarthy1989architecture}. 
+When an event occurs, if the condition is satisfied by that event, the action is taken. 
+A policy contains the type of sensor (event), a condition which that sensor reading must satisfy (condition), and parameters specifying peers which the endpoint should be mapped to (action). 
+These parameters include a peer endpoint name and a peer address, in the form of an IP address or an RDC query which will be resolved to an address. 
+When a sensor reading occurs, the Phone Manager iterates through all registered policies in order to check whether each policy is interested in the sensor, and whether its conditions are satisfied by the sensor reading. 
+For those policies which are satisfied by the sensor reading, the Phone Manager applies the policy action, mapping application endpoints exactly as specified in the policy. 
+To do this, it simply issues map events to application endpoints, containing the peer address and peer endpoint name specified in their policies. 
+If the peer address specifies an IP address, then the endpoint can map directly to the peer endpoint. 
+If the peer address is an RDC query, then the application must first resolve the query against an RDC, then map to the peer endpoint. 
 
 % RDC updates 
 Some context changes may mean that the available RDCs change, for example joining or leaving a network. 
-The Phone Manager informs applications of RDC changes on every context change, publishing an event containing the RDC address, and whether it has became available or unavailable. 
-Currently an RDC is only assumed to become unavailable if the context change is leaving a Wi-Fi network. 
+The Phone Manager informs applications of RDC changes on every network context change, publishing an event containing the RDC address, and whether it has became available or unavailable, according to whether the device has left or joined the network. 
 The RDC change event is published to each registered application via a builtin endpoint. 
-Upon receiving the event, applications can either automatically accept the change, registering with or deregistering from the RDC address, or perform a callback method, perhaps prompting the user to make a decision. 
+Upon receiving the event, applications can automatically accept the change, registering with or deregistering from the RDC address, and perform a callback method, perhaps prompting the user to make a decision. 
+
+% apply map policies
+The Phone Manager sends RDC updates to registered applications before applying any policies. 
+This allows RDC queries specified in policies to be resolved against an RDC in the new environment, allowing endpoints to map to peers within that environment. 
 
 % where to get RDC address from
 This RDC address is currently set by the user in the Phone Manager, however many other ways exist which could be used to find an RDC in the environment. 
@@ -1107,14 +1117,6 @@ This approach retains some level of privacy and security because the user explic
 An even more automated approach might be to include the RDC address as part of DHCP configuration when connecting to a Wi-Fi network, or to broadcast the address on the network. 
 All of these methods must of course be considered from security point of view. 
 
-% apply map policies
-After the Phone Manager sends an RDC update to registered applications, it can apply applications' map policies. 
-To do this, it simply issues map events to application endpoints, containing the peer address and peer endpoint name specified in their policies. 
-If the peer address specifies an IP address, then the endpoint can map directly to the peer endpoint. 
-If the peer address is an RDC query, then the application must first resolve the query, which may be done against a new RDC which has been specified in the update. 
-This allows the query to be resolved in the new environment, allowing endpoints to map to peers within that environment. 
-
-
 \section{Issues}
 % remaining problems
 The system currently faces issues when context is rapidly changing, for example, moving in and out of range of a Wi-Fi network. 
@@ -1122,9 +1124,8 @@ The network connection drops causing the Phone Manager to reconfigure connection
 However, the network connection is almost immediately re-established causing the Phone Manager to reconfigure connections again, possibly connecting applications to these same peers. 
 If this reconnection occurs before disconnection has completed, an application believes itself to still be connected to the peer, thus will not create a new connection.
 
-A solution to this problem might be to implement conditions which must be satisfied by an event before reconfiguration occurs. 
-In a Wi-Fi network, the network signal may be required to be greater than a given threshold, meaning reconfiguration would not occur until the user moves firmly into the network. 
-Alternatively, a composite event detector could trigger events after multiple occurrences of a single event, so that reconfiguration is not performed as frequently. 
+While this problem might be solved by implement a condition requiring the network signal to be greater than a given threshold, meaning reconfiguration would not occur until the user moves firmly into the network, an alternative solution might use a composite event detector. 
+A composite event detector would trigger events after multiple occurrences of a single event, so that reconfiguration is not performed as frequently. 
 For example, a single event could be triggered after three consecutive Wi-Fi events have occurred with increasing signal strength. 
 
 % qualify names if multiple fields in sensor have same name
@@ -1198,67 +1199,44 @@ Figure \ref{fig:system_overview} shows the interactions that occur within the sy
 
 \end{enumerate}
 
-% table of example policies
+% about example policies
+The system is in line with an event-condition-action model, using sensor readings (events) to map application endpoint (actions) whenever the sensor readings satisfy some conditions (conditions). 
+Table \ref{tab:example_policies_eca} shows example policies which components might set with the Phone Manager. 
+Both the local component and local endpoint are implicitly set to whichever endpoint sent the policy, and are not shown here. 
+The remote address may be an IP address or a query to be resolved by an RDC. 
+An IP address may be useful when the application should always be mapped to the same IP address. 
+However, queries allow applications to be more flexible in their peers. 
+Queries will be resolved by some RDC, ensuring components are mapped only to other components which satisfy their queries. 
+
+In the first example, a healthcare system has registered to have heart rate readings mapped directly to an endpoint at a known IP address, perhaps a relative or emergency response team. 
+This will only take place if a high accelerometer value was measured, because the reading may indicate that a fall has occurred.  
+In the second row, an application may display adverts from nearby restaurants if it is around lunchtime. 
+In the third row, the transport application wants to connect specifically to a Stagecoach component with an endpoint named ``Coach'' if a Wi-Fi connection is established. 
+However, if a GPS event indicates that the user were in France, the application is more lenient and willing to connect to any component with an endpoint offering a structure matching the type of {\tt coach}.
+ 
 \begin{table}
 \centering
 
 \begin{tabular}{c c c c}
 \hline\hline
-Component & Endpoint & Remote Address & Remote Endpoint \\
+Event & Condition & \multicolumn{2}{c}{Action} \\
+&& Address & Endpoint \\
 \hline
 
-Healthcare & HeartRate & 128.232.0.20:44444 & HeartRate \\
-Transport & Departures & +NStagecoach & Coach \\
-Transport & Departures & +Scoach & NULL \\
+Accelerometer 	& val $\ge50$ 				& 128.232.0.20:44444 	& HeartRate\\
+Time			& val.hour = 12 			& +IRestaurant			& Advert \\
+Wi-Fi 			& val = true 				& +NStagecoach 			& Coach \\
+GPS 			& location(val) = France 	& +Scoach 				& NULL \\
 
 \hline
 \end{tabular}
 
 \caption{Phone Manager Example Policies}
-\label{tab:example_policies}
+\label{tab:example_policies_eca}
 \end{table}
-
-% about example policies
-Table \ref{tab:example_policies} shows example policies which components might set with the Phone Manager. 
-Both the local component and local endpoint are implicitly set to whichever endpoint sent the policy. 
-The remote address may be an IP address or a query to be resolved by an RDC. 
-An IP address may be useful when the application should always be mapped to the same IP address. 
-In the first example, a healthcare system has registered to have heart rate readings mapped directly to an endpoint at a known IP address, perhaps a relative or emergency response team. 
-However, the queries allow applications to be more flexible in their peers. 
-These queries will be resolved by some RDC, ensuring components are mapped only to other components which satisfy their queries. 
-In the second row, the transport application sets a policy for any component named ``Stagecoach'' which has an endpoint named ``Coach'', while in the third row it sets a policy for any endpoint which has a structure matching the type of {\tt coach}. 
-
-% event-condition-action through specifying AIRS sensor + condition
-The system is in line with an event-condition-action model, where events are the sensor readings and actions are mapping applications according to their policies. 
-The system could easily be extended to allow applications to specify which sensors to use as events, and conditions those events should fulfill for the Phone Manager to apply a mapping policy. 
-% table of example policies with events and conditions
-\begin{table}
-\centering
-
-\begin{tabular}{c c c c}
-\hline\hline
-Event & Condition & Component & Remote Address \\
-\hline
-
-Accelerometer & \begin{math} val \ge50 \end{math} & Healthcare & 128.232.0.20:44444 \\
-Time & \begin{math} 12 \le val.hour \le 14 \end{math} & Adverts & +IRestaurant \\
-Wi-Fi & \begin{math} val = true \end{math} & Transport & +NStagecoach \\
-GPS & \begin{math} location(val) = France \end{math} & Transport & +Scoach \\
-
-\hline
-\end{tabular}
-
-\caption{Phone Manager Example Policies using Event-Condition-Action Model}
-\label{tab:event_condition_action}
-\end{table}
-% end table
-As shown in Table \ref{tab:event_condition_action}, applications would not only specify the action they wish to take through their map constraints, but also the events and conditions in which they wish to take that action.
-The healthcare system could specify that it only wishes for heart rate data to be connected to the IP address if a high accelerometer value was measured, because the reading may indicate that a fall has occurred. 
-The transport application can set different policies for different events. If a Wi-Fi connection is established, the application wants to connect specifically to Stagecoach components, however if a GPS event indicates that the user were in France, the application is more lenient and willing to accept any component offering a structure matching the type of {\tt coach}. 
-The application may display adverts, where policies could be used to determine the source of the adverts, perhaps from nearby restaurants around lunchtime. 
 
 % user policies
-This could further be used to allow the user to set their own policies for applications. 
+While applications can only set policies for themselves, this could be extended to allow the user to set their own policies for applications. 
 The application developer cannot possibly account for every scenario, however by allowing the user to set their own policies, through which they are specifying context changes they are interested in, the system becomes fully customisable and personal. 
 The user of the transport application might not want to wait for a bus when it is raining. 
 Therefore, they could create a policy using a weather event with the condition ``rain''. 
@@ -1422,18 +1400,18 @@ With the benefit of hindsight, there are no substantial changes to the project w
 \section{Future Work}
 % other stuff that could be done
 
-% alternate events for change in context - AIRS
-Applications cannot currently specify {\sl which} changes in context they are interested in, so {\sl all} policies are triggered upon detecting a change.
-The system could easily be extended to allow applications to include a type of context change in a policy, allowing them to specify different policies for different context changes. 
-Upon receiving an event, each policy would only be applied if the event satisfies the conditions of the policy. 
-This would allow applications to specify policies for simple events, such as a Wi-Fi change event, or more complex events, such as a high accelerometer reading followed by no movement to represent a fall. 
+% user defined policies
+Applications can currently only specify policies for their own endpoints. 
+The system could easily be extended to allow applications to specify policies for {\sl other} applications, which would then allow the user to set custom policies for any application. 
+Applications would aim to provide sensible policies for different changes in context, however the user could refine how applications should react by setting their own policies, causing the applications to behave in a way more suited to the user's needs. 
+This would require some ``policy authoring'' application, which provides a simple interface to the user to set policies for any application on the device. 
+This moves futher towards the pervasive vision, providing invisibility \cite{saha2003pervasive} in the system by requiring minimal user intervention, yet allowing the user to fine tune settings so that the system can meet more of the user's expectations. 
 
-As well as applications specifying policies, users could also specify custom policies for applications. 
-This moves the system further towards the pervasive vision. 
-Applications would take sensible actions for different changes in context, however the user could refine how applications should react to changes in context, causing them to behave in a way more suited to the user's needs.
-
-The user may be given the ability to specify which types of events can be used by the system. 
-This offers some privacy to the user by allowing them to block applications from using some part of their context, for example blocking the system from using accelerometer to detect a change in context.
+In addition to the user setting custom policies, the user might also be able define security policies for different applications, which state whether or not an application can use part of their context. 
+This offers some privacy to the user by allowing them to block applications from using some part of their context. 
+For example, an application may register a policy which uses the user's location. 
+Since the application would have a connection reconfigured whenever the user's location changed, it could monitor this, and begin to infer patterns in how the user's context changes. 
+The user may decide that they do not wish for this application to be able to use their location, and thus set a security policy which blocks the application from using this particular part of their context. 
 
 \cleardoublepage
 
