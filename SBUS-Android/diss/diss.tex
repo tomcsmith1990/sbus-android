@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11492}
+\newcommand{\wordcount}{11573}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -166,7 +166,7 @@ I give permission for my dissertation to be made available in the archive area o
 % summarise
 While many applications exist for mobile devices, few applications themselves are truly mobile. 
 The user may happen to be mobile, however applications do not adapt to different environments. 
-Applications may typically use data from predetermined central servers, failing to exploit local data which may be available in the environment. 
+Applications typically use data from predetermined central servers, failing to exploit local data which may be available in the environment. 
 This project addresses the issues faced in creating applications which can change to suit different environments, demonstrating how applications can perceive an environmental change, how they can find relevant, local data, and how they can achieve some flexibility in the data which they use. 
 This allows applications to be more adaptable to their environment, and therefore offer a more relevant experience to the user. 
 
@@ -176,7 +176,7 @@ This allows applications to be more adaptable to their environment, and therefor
 % describe current approach
 Current applications tend to be inflexible in where the data they use comes from, often selecting from some predefined set of addresses regardless of the environment. 
 While some localisation might be achieved by including parameters during connection, such as sending GPS co-ordinates, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
-The format of the data which is being exchanged has also been fixed, restricting applications even further.
+The format of the data, and therefore the content which is being exchanged has also been fixed, restricting applications even further.
 
 This is not in line with the pervasive computing vision \cite{weiser1991computer}, primarily because applications do not use their current environment. 
 The systems are not scalable, because applications are using global servers, and they offer no heterogeneity\cite{saha2003pervasive} in the data they use, since both application and server both use an exact format.
@@ -201,7 +201,7 @@ Even once the data is deemed useful, the application may still face the difficul
 Different manufacturers might present data in slightly different formats, or data may be presented in different languages in different countries. 
 These factors mean that when comparing similar pieces of data, there may be missing fields, there may be additional fields, or fields may use different names. 
 An application may also wish to register a subscription filter with a peer, so that the peer only sends data which the application is interested in. 
-However, these filters are specified in terms of the data format, so without knowledge of that data format, it cannot specify any filters.
+However, these filters are specified in terms of the data format, so without knowledge of that data format, the application cannot specify any filters.
 
 % example
 \begin{figure}
@@ -245,7 +245,7 @@ Contextual resource discovery discovers potential peers available within the cur
 
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
-M\"{u}hl represents changes in context using events, where each context change causes an event to be raised \cite[p11]{muhl2006distributed}.
+M\"{u}hl represents changes in context using events, where each context change causes an event to be raised \cite{muhl2006distributed}.
 Three kinds of events are defined: physical events, timer events, and a state change in the system, all of which may warrant some kind of reconfiguration. 
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (a fall), in which case the application may need to send data to an emergency response team.
 A timer event indicates the progression of real time, which advertisers could use to connect to advertisements for nearby restaurants at lunch time. 
@@ -290,7 +290,8 @@ This further ensures that the approach is scalable, because applications are not
 Applications control how their connections should be reconfigured through policies. 
 An application monitors the environment and upon detecting a change in context applies these policies, reconfiguring applications' connections to connect them to different peers, where appropriate.
 These policies may specify the name of peers to connect to, or be more complex rules regarding the structure of peers' data. 
-Alternatively, applications may opt to be notified of a change in context, rather than have their connection reconfigured, allowing them to perform callback methods upon the change.
+Additionally, policies specify the conditions in which they should be applied. 
+Applications may also opt to be notified of a change in context, allowing them to perform callback methods upon the context change.
 
 % repackaging
 Depending on its policy, an application may be connected to a peer which provides data in a format which differs from its own.
@@ -298,7 +299,7 @@ This can be handled by reformatting the data to match the expected format.
 Any extraneous fields are removed, any absent fields are filled with ``empty'' values, and the policy is used to infer relationships between fields with different names. 
 This reformatted data can then be passed to the application, allowing the application to continue as if the data received has conformed to its own data format. 
 % subscription
-Additionally, any subscription filter which an application has placed on data, in terms of its own format, are converted to match the peer's data format, so that the application can be connected with a working subscription in place. 
+Additionally, any subscription filter which an application has placed on data it should receive, in terms of its own data format, are converted to match the peer's data format, so that the application can be connected with a working subscription in place. 
 
 
 % summarise
@@ -312,7 +313,7 @@ Applications control how they interact with an environment through policies, whi
  
 \chapter{Preparation}
 
-This chapter first outlines the requirements of a context-aware system, going on to summarise related work which the project will build upon, namely the SBUS middleware \cite{ingram2009reconfigurable}, and finally describing how such a system will be implemented to meet these requirements.
+This chapter first outlines the requirements of a context-aware system, going on to summarise related work which the project builds on, namely the SBUS middleware \cite{ingram2009reconfigurable}, and finally describing how such a system has be implemented to meet these requirements.
 
 %TODO: Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
 
@@ -354,7 +355,7 @@ While in a museum, John's phone is connected to the Wi-Fi network, and the appli
 
 \begin{enumerate}
 
-\item The art gallery is trialling a new system which includes relevant links in the data for each exhibit.  
+\item The art gallery is trialling a new system which includes relevant URLs in the data for each exhibit.  
 
 \item John's application does not support this extra field, making the source incompatible with the application.
 
@@ -380,8 +381,8 @@ In order for endpoints to be mapped together, their schemas must match.
 An endpoint may specify a subscription filter on events it wishes to receive, in terms of its schema. 
 This filter specifies conditions on the events which an endpoint is interested in, and any connected peers will only publish events to this endpoint if the event matches the conditions.
 
-These connections and subscriptions are dynamically reconfigurable and may be modified by any other component, allowing third party remapping to occur, subject to security policies. 
-A component may issue a message to some other component, instructing it to map or unmap its endpoints, or to update its subscription filters.
+These connections and subscriptions are dynamically reconfigurable and thus may be modified by any other component at run time, subject to security policies. 
+This allows third party remapping to occur, where a component may issue a message to some other component, instructing it to map or unmap its endpoints, or to update its subscription filters.
 
 Resource discovery components (RDCs) are components which act as a component discovery service. 
 An environment may contain several RDCs, or no RDCs, though typically one RDC exists in each environment.
@@ -417,7 +418,7 @@ Applications implement an SBUS component, sending and receiving messages on endp
 % Android NDK
 The Android Native Development Kit\footnote{\url{http://developer.android.com/tools/sdk/ndk/index.html}} (NDK) can be used to embed the native machine code into applications, and has been used to compile SBUS for Android. 
 Since the NDK offers fairly obscure documentation with little more than trivial examples, some time was required to understand how the build process works. 
-The Java Native Interface framework allows Java applications to call functions implemented in native libraries \cite{liang1999java}. 
+The Java Native Interface (JNI) framework allows Java applications to call functions implemented in native libraries \cite{liang1999java}. 
 Using the Android NDK and JNI framework, functions in the SBUS library can be called from Android applications implemented in Java, which are running in a virtual machine. 
 
 % How applications will find peers relevant to them (constraints in terms of schema)
@@ -437,7 +438,7 @@ Different components in different environments may offer similar data, but they 
 When searching for components by data, an application may discover some component which provides the required data, but nested within a larger schema, or using different field names. 
 In the previous SBUS implementation, the application would not be able to communicate with this component. 
 % TODO: example
-Even if it were able to, the application will not know the structure of the message, so cannot locate a particular value within it without performing some complex parsing. 
+Even if it were able to, the application would not know the structure of the message, so cannot locate a particular value within it without performing some complex parsing. 
 This is obviously undesirable since {\sl every} application would have to implement a parser which could handle peers in {\sl every} environment, all of which might use slightly different schemas.
 To avoid each application implementing such a parser, these differences are now handled by SBUS, before the application receives the message. 
 SBUS has been extended to allow components to communicate despite schema differences by reformatting any incoming message to match the application schema. 
@@ -449,7 +450,7 @@ A typical smartphone offers many sensors which can be used to determine a contex
 Android applications can register to receive intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} which indicate events such as a network change, or an incoming phone call. 
 Furthermore, the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} observes sensor readings, and can output them to a remote server.
 The system uses these intents, and act as a server for AIRS to obtain these sensor readings, allowing it to monitor the environment, and determine context changes. 
-Upon detecting a context change, it can then remap other applications on the phone connecting them to peers suited to the environmental context. 
+Upon detecting a context change, it can then remap other applications on the phone, connecting them to peers suited to the environmental context. 
 
 % How applications' connections will be reconfigured (spoke map)
 In order for the system to remap applications, it first needs to know about them. 
@@ -463,13 +464,14 @@ It detects context changes, and upon a change issues messages to registered comp
 % How the Phone Manager knows what to reconfigure to (policies)
 The Phone Manager remaps applications upon a change in context, but must remap them to appropriate places. 
 The Phone Manager cannot decide what constitutes ``appropriate'' for any given application, as such, the application must decide for itself. 
-Applications can register {\sl policies} with the Phone Manager which dictate how they should be remapped upon a context change. 
-This policy might be an IP address to map to, or a query which can be performed against an RDC in the environment, which will then return matching components. 
+Applications can register {\sl policies} with the Phone Manager which dictate how they should be remapped upon context changes. 
+These policies specify the type of context change they apply to, any conditions which that context change must satisfy, and how the application should be remapped. 
+This may be an IP address to map to, or a query which can be performed against an RDC in the environment, which will then return matching components. 
 The Phone Manager simply remaps applications as specified by their policies.
 
 % Security
 This project does not focus on security. 
-A version of SBUS with encrypted connections and authentication and authorisation mechanisms has been developed in parallel with the project. 
+A version of SBUS which uses encrypted connections, and has authentication and authorisation mechanisms has been developed in parallel with the project. 
 These two branches have been integrated, so that all of the work undertaken in this project could be applied to that version of SBUS.
 
 \cleardoublepage
@@ -608,7 +610,7 @@ An opening bracket causes the list of constraints to be pushed to the stack.
 Subsequent constraints are then added to the child constraints of the last item in that list. 
 A closing bracket pops the list off the stack, and constraints are appended to this list again. 
 Some error checks also exist to ensure that additional opening brackets are ignored if the list is empty, since they have no meaning, and that closing brackets are ignored if there are too many, since there may not be a list on the stack. 
-The checks would reduce {\tt [+Sgps[[+Hlongitude]]]]} to {\tt +Sgps[+Hlongitude]}.
+For example, the checks would reduce {\tt [+Sgps[[+Hlongitude]]]]} to {\tt +Sgps[+Hlongitude]}.
 Figure \ref{fig:nested_query} shows how the query {\tt +Sgps[+Hlongitude]} would be represented.
 
 % nested query representation
@@ -967,7 +969,7 @@ This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{f
 
 \section{Android Port}
 
-The Android Native Development Kit (NDK) can be used to embed the native machine code into applications. 
+The Android Native Development Kit (NDK) can be used to embed native machine code into applications. 
 The NDK was used to compile SBUS to support Android, to allow applications for Android to be written in Java which can also use the SBUS middleware. 
 The documentation for the NDK offers little more than trivial examples, and few other resources exist, so this stage of the project was largely achieved through experimentation. 
 
@@ -981,7 +983,7 @@ The workaround for this was fixing the directory structure of the toolchain so t
 
 The Android version of {\tt pwd.h} which defines {\tt struct passwd} contains no member {\tt pw\_gecos}. 
 This contains the user's full name, which is used by SBUS to set the {\tt creator} field in a component's metadata, allowing components to query an RDC by creator. 
-To remedy this, the creator was simply replaced by the string `Android'. 
+To remedy this, the creator was simply replaced by the string ``Android''. 
 In principle, the user's full name or username could be found in Java using the AccountManager class\footnote{\url{http://developer.android.com/reference/android/accounts/AccountManager.html}}, which could then be passed as a parameter to the component via JNI. 
 This would allow the creator to be set correctly, however it was deemed unimportant to the project. 
 
@@ -1020,7 +1022,7 @@ Although the device could have been rooted, allowing a much cleaner solution of 
 %TODO: write about closing sockets and all those FIN_WAIT2? Nothing actually changed now, but it was a pain.
 
 % JNI.
-The Android NDK was finally used in conjunction with Java Native Interface (JNI) to allow applications to call SBUS functions via Java. 
+The Android NDK was finally used in conjunction with the Java Native Interface (JNI) framework to allow applications to call SBUS functions via Java. 
 This involved writing Java classes for components, endpoints and messages, as well as some helper classes. 
 The SBUS library is linked via an {\tt Android.mk} file, which {\tt ndk-build} then uses to copy the shared library into the application's root project directory. 
 The application can then be built to generate a package file including SBUS which can run on an Android device. 
@@ -1035,16 +1037,16 @@ The application can then be built to generate a package file including SBUS whic
 \end{figure}
 
 % how Android works
-Figure \ref{fig:android_stack} gives an overview of how an application works. 
+Figure \ref{fig:android_stack} gives an overview of how an Android application works. 
 Applications are built using the Application Framework. 
-Every Android application runs in its own process, with its own instance of the Dalvik virtual machine\footnote{\url{http://developer.android.com/about/versions/index.html\#os_architecture}}, which executes Java bytecode. 
+Every application runs in its own process, with its own instance of the Dalvik virtual machine\footnote{\url{http://developer.android.com/about/versions/index.html\#os_architecture}}, which executes Java bytecode. 
 When an SBUS call is made, Dalvik invokes a call to the native JNI code, passing in a {\tt JNIEnv} pointer containing an interface to the Dalvik VM, as well as any other parameters. 
 The JNI methods can then invoke their respective SBUS methods. 
 
 Each Java object has a one-to-one correspondence with a native object. 
 Native methods which create an object return a pointer to that object, cast as an integer. 
-The pointer is passed to the constructor of the Java object representing the native object, to be stored in the object. 
-When a method is invoked on the Java object, the pointer is passed into the native method, which then casts it to a pointer to the native object, to operate on the object. 
+The pointer is passed to the constructor of the Java object representing the native object, to be stored in the Java object. 
+When a method is invoked on the Java object, the pointer is passed into the native method, which then casts it to a pointer to the native object, to operate on that object. 
 The Java classes hide this complexity from the user, simply providing methods with parameters and return values in terms of these other Java classes.
 
 These classes are exported as a JAR file, which applications can then simply import to use the Java SBUS library.
@@ -1073,7 +1075,7 @@ This gateway is based on Dirk Trossen's AIRS code\footnote{\url{https://github.c
 AIRS exposes upwards of 50 sensors, which is being continually expanded, making it infeasible to predefine an endpoint for each sensor. 
 This is handled by dynamically creating an endpoint for each sensor whenever the first reading from that sensor is received, meaning that endpoints will only ever be created as needed. 
 The gateway presents the user with a list of sensors, which is populated from a message AIRS sends upon connecting to the remote server, announcing the available sensors on the device. 
-When the user selects a sensor, that sensor is subscribed to, and the endpoint will be created once a reading is received from that sensor. 
+When the user selects a sensor, or the Phone Manager sends a message subscribing to a sensor, that sensor is subscribed to, and the endpoint will be created once a reading is received from that sensor. 
 Additionally, the endpoint is automatically mapped to the Phone Manager so can start publishing events to it immediately. 
 Each sensor runs in a different thread, so these endpoints are maintained in a thread-safe repository. 
 This repository is searched upon receiving a message, returning the endpoint if it already exists, ensuring that multiple endpoints are not defined for the same sensor. 
@@ -1100,9 +1102,8 @@ If the peer address is an RDC query, then the application must first resolve the
 
 % RDC updates 
 Some context changes may mean that the available RDCs change, for example joining or leaving a network. 
-The Phone Manager informs applications of RDC changes on every network context change, publishing an event containing the RDC address, and whether it has became available or unavailable, according to whether the device has left or joined the network. 
-The RDC change event is published to each registered application via a builtin endpoint. 
-Upon receiving the event, applications can automatically accept the change, registering with or deregistering from the RDC address, and perform a callback method, perhaps prompting the user to make a decision. 
+The Phone Manager informs all registered applications of RDC changes on every network context change, publishing an event containing the RDC address, and whether it has became available or unavailable, according to whether the device has left or joined the network. 
+Upon receiving the event, applications can automatically accept the change, registering with or deregistering from the RDC address, and can perform a callback method, perhaps prompting the user to make a decision. 
 
 % apply map policies
 The Phone Manager sends RDC updates to registered applications before applying any policies. 
@@ -1124,13 +1125,13 @@ The network connection drops causing the Phone Manager to reconfigure connection
 However, the network connection is almost immediately re-established causing the Phone Manager to reconfigure connections again, possibly connecting applications to these same peers. 
 If this reconnection occurs before disconnection has completed, an application believes itself to still be connected to the peer, thus will not create a new connection.
 
-While this problem might be solved by implement a condition requiring the network signal to be greater than a given threshold, meaning reconfiguration would not occur until the user moves firmly into the network, an alternative solution might use a composite event detector. 
+While this problem might be solved by using a condition which requires the network signal to be greater than a given threshold, meaning reconfiguration would not occur until the user moves firmly into the network, an alternative solution might use a composite event detector. 
 A composite event detector would trigger events after multiple occurrences of a single event, so that reconfiguration is not performed as frequently. 
 For example, a single event could be triggered after three consecutive Wi-Fi events have occurred with increasing signal strength. 
 
 % qualify names if multiple fields in sensor have same name
 Components specify RDC schema queries in terms of field names of their own schema.
-While this is sufficient if there are no repeated fields names within the schema, it would fail on a schema such as Figure \ref{fig:repeatednameschema} due to {\tt sensor} being repeated. 
+While this is sufficient if there are no repeated fields names within the schema, it may have unexpected results on a schema such as Figure \ref{fig:repeatednameschema} due to the ambiguity in the {\tt sensor} field name. 
 A solution to this would be to force field names to be fully qualified in a query. 
 A query using {\tt sensor} would refer to the entire structure, while {\tt sensor/sensor} would refer to the text field.
 
@@ -1182,15 +1183,15 @@ These steps detail how a transport application which uses the coach schema in Fi
 
 \begin{enumerate}
 
-\item After the transport application has registered with the Phone Manager, it can send policies to the Phone Manager which specify how its endpoints should be reconfigured upon a change in context. For instance, the application may wish to be connected to any components which offer a structure matching the type of {\tt coach}. In another case, it may simply give an IP address it should be connected to.
+\item After the transport application has registered with the Phone Manager, it can send policies to the Phone Manager which specify how its endpoints should be reconfigured upon a change in context. For instance, the application may wish to be connected to any components which offer a structure matching the type of {\tt coach} whenever the Wi-Fi network changes. In another case, it may simply give an IP address it should be connected to.
 
 \item The AIRS-SBUS gateway acts as a server for sensor readings from AIRS, which then emits the readings as SBUS events, which are consumed by the Phone Manager. The Phone Manager also receives intents from Android, signalling a change in Wi-Fi network.
 
-\item The Phone Manager processes these events to determine whether a change in context has occurred. Once a change happens, the Phone Manager will inform the transport application about the change by sending it details of whether an RDC should be added or removed. 
+\item If the Phone Manager receives an event signalling that the device has connected to a Wi-Fi network, the Phone Manager will inform the transport application about any new RDCs, sending it the address of the RDC to be added. 
 
 \item The transport application receives this message about the RDC change and will either automatically accept this change, registering or deregistering with the RDC, or perform some callback method, perhaps prompting the user to make a decision. The transport application may have chosen to automatically accept the change, but display a message to the user to indicate that the context has changed.
 
-\item The Phone Manager applies all of the policies within its policy table, sending messages to application endpoints, instructing them to connect to different components. The transport application will be sent whatever parameters it set in its policy.
+\item The Phone Manager checks the context change event against all of the policies within its policy table, applying those which are satisfied by the event, sending messages to application endpoints instructing them to connect to different components. The transport application will be sent whatever parameters it set in its policy.
 
 \item If the transport application specified an IP address in its policy, the endpoint will receive this IP address and can connect directly to it to start receiving messages. However, if the policy specified that a component must contain a structure matching the type of {\tt coach}, the endpoint will query the RDC with this constraint to find matching components.
 
@@ -1201,12 +1202,11 @@ These steps detail how a transport application which uses the coach schema in Fi
 \end{enumerate}
 
 % about example policies
-The system is in line with an event-condition-action model, using sensor readings (events) to map application endpoint (actions) whenever the sensor readings satisfy some conditions (conditions). 
+The system is in line with an event-condition-action model, using sensor readings (events) to map application endpoints (actions) whenever the sensor readings satisfy some conditions (conditions). 
 Table \ref{tab:example_policies_eca} shows example policies which components might set with the Phone Manager. 
 Both the local component and local endpoint are implicitly set to whichever endpoint sent the policy, and are not shown here. 
 The remote address may be an IP address or a query to be resolved by an RDC. 
-An IP address may be useful when the application should always be mapped to the same IP address. 
-However, queries allow applications to be more flexible in their peers. 
+An IP address may be useful when the application should always be mapped to the same IP address, however queries allow applications to be more flexible in their peers. 
 Queries will be resolved by some RDC, ensuring components are mapped only to other components which satisfy their queries. 
  
 \begin{table}
@@ -1226,7 +1226,7 @@ Queries will be resolved by some RDC, ensuring components are mapped only to oth
 \rownumber\label{tab:row:transport:wifi} 	&	Wi-Fi 			& val = true 				& +NStagecoach 			& Coach \\
 \rownumber\label{tab:row:transport:gps} 	&	GPS 			& location(val) = France 	& +Scoach 				& NULL \\
 \rownumber\label{tab:row:gps} 				&	GPS				& NONE						& +IAdvert				& NULL \\
-\rownumber\label{tab:row:none} 				&	NONE			& NONE						& localhost				& NULL \\
+\rownumber\label{tab:row:none} 				&	NONE			& NONE						& localhost:44444			& NULL \\
 
 \hline
 \end{tabular}
@@ -1244,7 +1244,7 @@ Row \ref{tab:row:gps} shows a policy which specifies an event, but no condition.
 This is perfectly acceptable, and the action will occur on every GPS event. 
 In this case an application will attempt to connect to any endpoint offering adverts. 
 Finally, row \ref{tab:row:none} shows a ``blank'' policy, with no event or condition specified.  
-This policy will be applied on any event, however this attempts to connect to the loopback address without any endpoint specified, so no connection is made. 
+This policy will be applied on any event, however this attempts to connect to a loopback address without any endpoint specified, so no connection is made. 
 
 % user policies
 While applications can only set policies for themselves, this could be extended to allow the user to set their own policies for applications. 
@@ -1397,8 +1397,8 @@ This is in line with the goals of pervasive computing, achieving scalability by 
 
 An application monitors the environment for events which the system or user believe to represent a change in context.
 Upon detection of an event, this application applies other applications' reconfiguration policies to connect them to different peers. 
-Through these policies, applications can control which peers they should be connected to, without requiring the applications to find the peers themselves.
-Policies may be simple, such as the name of a peer, or more complex, specifying how fields in a peer's schema must match their own. 
+Through these policies, applications can control which peers they should be connected to in which context changes, without requiring the applications to find the peers themselves.
+Peer constraints may be simple, such as the name of a peer, or more complex, specifying how fields in a peer's schema must match their own. 
 
 The system reformats data so that applications will only ever be presented with data conforming to their own format, removing uncertainty about the data representation. 
 Furthermore, applications may specify subscription filters in terms of their own data format, placing restrictions on the data they will be sent, without requiring knowledge of peers' data format.
@@ -1413,9 +1413,9 @@ With the benefit of hindsight, there are no substantial changes to the project w
 
 % user defined policies
 Applications can currently only specify policies for their own endpoints. 
-The system could easily be extended to allow applications to specify policies for {\sl other} applications, which would then allow the user to set custom policies for any application. 
+The system could easily be extended to allow applications to specify policies for {\sl other} applications, subject to any security restrictions, which would allow the user to set custom policies for each application. 
 Applications would aim to provide sensible policies for different changes in context, however the user could refine how applications should react by setting their own policies, causing the applications to behave in a way more suited to the user's needs. 
-This would require some ``policy authoring'' application, which provides a simple interface to the user to set policies for any application on the device. 
+This would require some ``policy authoring'' application, which provides a simple interface to allow the user to set policies for any application on the device. 
 This moves further towards the pervasive vision, providing invisibility \cite{saha2003pervasive} in the system by requiring minimal user intervention, yet allowing the user to fine tune settings so that the system can meet more of the user's expectations. 
 
 In addition to the user setting custom policies, the user might also be able define security policies for different applications, which state whether or not an application can use part of their context. 
