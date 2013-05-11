@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11618}
+\newcommand{\wordcount}{11698}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1413,6 +1413,12 @@ With the benefit of hindsight, there are no substantial changes to the project w
 \section{Future Work}
 % other stuff that could be done
 
+% multiple conditions in policies
+Policies specified by applications can only contain one type of context change, and one condition which that change must satisfy. 
+This might be extended to allow multiple conditions within a policy, combined using first order logic statements. 
+An application could then specify a conjunction of conditions which must be true, or a disjunction of conditions, one of which must be true before applying this policy. 
+Multiple types of context change might also be accepted, allowing complex scenarios to be defined. 
+
 % user defined policies
 Applications can currently only specify policies for their own endpoints. 
 The system could easily be extended to allow applications to specify policies for {\sl other} applications, subject to any security restrictions, which would allow the user to set custom policies for each application. 
@@ -1420,6 +1426,7 @@ Applications would aim to provide sensible policies for different changes in con
 This would require some ``policy authoring'' application, which provides a simple interface to allow the user to set policies for any application on the device. 
 This moves further towards the pervasive vision, providing invisibility \cite{saha2003pervasive} in the system by requiring minimal user intervention, yet allowing the user to fine tune settings so that the system can meet more of the user's expectations. 
 
+% user security policies
 In addition to the user setting custom policies, the user might also be able define security policies for different applications, which state whether or not an application can use part of their context. 
 This offers some privacy to the user by allowing them to block applications from using some part of their context. 
 For example, an application may register a policy which uses the user's location. 
