@@ -609,7 +609,7 @@ Query & Match \\
 % how the parser build up the nested structure of constraints to match
 The existing parser for RDC queries was extended to allow these new constraint types. 
 Upon encountering a {\sl has} or {\sl similar} constraint, the field name, type of match and pointer to a list of children are added to a list. 
-Algorithm \ref{alg:parse_nested} shows how a stack is used to handle nested constraints. 
+Algorithm \ref{alg:parse_nested} shows how a stack is used to handle nested constraints \cite{appel1998modern}. 
 An opening bracket causes the list of constraints to be pushed to the stack.
 Subsequent constraints are then added to the child constraints of the last item in that list. 
 A closing bracket pops the list off the stack, and constraints are appended to this list again. 
@@ -754,7 +754,7 @@ The RDC returns all matching endpoints, not just the first match, so compares th
 \end{algorithm}
 
 Algorithm \ref{alg:compare_schema} shows how the RDC checks whether a schema satisfies a set of constraints. 
-Ignoring lines \ref{alg:line:nested_start}--\ref{alg:line:nested_end}, which check child constraints, the algorithm is simply a depth-first search. 
+Ignoring lines \ref{alg:line:nested_start}--\ref{alg:line:nested_end}, which check child constraints, the algorithm is simply a depth-first search \cite{tarjan1972depth}. 
 Each constraint is checked against the schema. 
 If the constraint hash matches the appropriate schema hash, then the next constraint is checked, or the algorithm returns {\tt true} if there are no more constraints. 
 If the hashes do not match, then the algorithm recursively calls itself using each of the schema's children as the new schema to compare against, until a match is found. 
@@ -1014,7 +1014,7 @@ The SD card ({\tt /mnt/sdcard}) is writable so was considered, however is mounte
 The best approach to use was to include {\tt sbuswrapper} as an asset to an application, and copy it to the application's filespace, invoking it from this filespace for every application. 
 
 Android uses a sandbox concept for security, where each application has access only to its own resources on the device. 
-This is enforced by assigning each application a unique user ID, and setting the appropriate permissions. 
+This is enforced by assigning each application a unique user ID, and setting the appropriate permissions \cite{enck2009understanding}. 
 Since {\tt sbuswrapper} is approximately \SI{1}{MB}, compared to approximately \SI{30}{MB} available internal storage on the device, it was infeasible to include a copy with every application. 
 Therefore, one copy was included with the Phone Manager, which then modified the permissions to make {\tt sbuswrapper} world executable, so that every application could use this instance. 
 An additional directory was created and made world writable, where SBUS can write log files for all applications. 
