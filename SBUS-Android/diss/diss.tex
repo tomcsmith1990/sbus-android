@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11489}
+\newcommand{\wordcount}{11492}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1015,7 +1015,7 @@ An additional directory was created and made world writable, where SBUS can writ
 If internal storage was not an issue on the device, each application could store its own copy of {\tt sbuswrapper} in its filespace, and log to its own filespace. 
 The path to this filespace can be obtained using an Android library call, which could be used as a parameter to a JNI method to set the location of {\tt sbuswrapper}, avoiding hardcoding any paths. 
 
-Although the device could have been rooted, allowing a much cleaner solution of storing {\tt sbuswrapper} at {\tt /system/bin/sbuswrapper}, it would have devalued the project, because it would only then work on rooted devices.
+Although the device could have been rooted, allowing a much cleaner solution of storing {\tt sbuswrapper} at {\tt /system/bin/sbuswrapper}, it would have been less convenient, because the project would only then work on rooted devices. 
 
 %TODO: write about closing sockets and all those FIN_WAIT2? Nothing actually changed now, but it was a pain.
 
@@ -1177,7 +1177,8 @@ This chapter demonstrates the feasibility of the approach, and examines its perf
 \label{fig:coach-schema-eval}
 \end{figure}
 
-Figure \ref{fig:system_overview} shows the interactions that occur within the system, detailing how a transport application which uses the coach schema in Figure \ref{fig:coach-schema-eval} might have its connection reconfigured upon a change in context.
+Figure \ref{fig:system_overview} shows the interactions that occur within the system. 
+These steps detail how a transport application which uses the coach schema in Figure \ref{fig:coach-schema-eval} might have its connection reconfigured upon a change in context. 
 
 \begin{enumerate}
 
