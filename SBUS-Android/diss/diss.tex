@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11698}
+\newcommand{\wordcount}{11731}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -223,11 +223,12 @@ For example, a transport application may face differences in the data format for
 While both offer similar data to a large extent, fields are named differently, and the train schema additionally offers a menu for an on-board shop.
 Alternatively, the application might be used abroad, for example in a French coach station. The data will still be very similar, but fields names may be in French (Figure \ref{fig:french-coach-schema-intro}).
 
-An application developer may be able to account for some of these differences, though given the sheer volume of potential peers, the developer cannot hope to account for every possibility, meaning that the application cannot be truly adaptable. 
+An application developer may be able to account for some of these differences, though given the sheer volume of potential peers which the application might communicate with, the developer cannot hope to account for every possibility, meaning that the application cannot be truly adaptable. 
 Even if the developer could preempt the interactions with all relevant peers, these peers are liable to change over time. 
 New peers may become available and old peers may become unavailable, or peers might change how they present their data. 
 A developer simply cannot cover every current and future possibility, meaning an application cannot truly adapt to {\sl any} environment. 
-However, by specifying how an application should react to changes in context, the application becomes decoupled from the environment, making it more robust to changes in the environment. 
+Furthermore, the application might even be used in ways which the original developer had not even imagined, which would not be possible if it could not adapt to unknown peers. 
+By specifying how an application should react to changes in context, the application becomes decoupled from the environment, making it more robust to changes in the environment. 
 
 \section{Background}
 % what I've done
@@ -242,7 +243,7 @@ Contextual resource discovery discovers potential peers available within the cur
 
 
 % describe context, say only focusing on mobility (Wi-Fi) for now.
-M\"{u}hl represents changes in context using events, where each context change causes an event to be raised \cite{muhl2006distributed}.
+Events are often used to represent changes in context \cite{muhl2006distributed,harter2002anatomy,baldauf2007survey,dey2001conceptual}.
 Three kinds of events are defined: physical events, timer events, and a state change in the system, all of which may warrant some kind of reconfiguration. 
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (a fall), in which case the application may need to send data to an emergency response team.
 A timer event indicates the progression of real time, which advertisers could use to connect to advertisements for nearby restaurants at lunch time. 
@@ -284,7 +285,7 @@ This further ensures that the approach is scalable, because applications are not
 \section{Project Overview}
 
 % policy engine
-Applications control how their connections should be reconfigured through policies. 
+The project provides a way for applications control how their connections should be reconfigured through policies. 
 An application monitors the environment and upon detecting a change in context applies these policies, reconfiguring applications' connections to connect them to different peers, where appropriate.
 These policies may specify the name of peers to connect to, or be more complex rules regarding the structure of peers' data. 
 Additionally, policies specify the conditions in which they should be applied. 
