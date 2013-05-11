@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11573}
+\newcommand{\wordcount}{11618}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -55,9 +55,6 @@
                                         % more readable
 
 \begin{document}
-
-\bibliographystyle{plain}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Title
@@ -313,7 +310,9 @@ Applications control how they interact with an environment through policies, whi
  
 \chapter{Preparation}
 
-This chapter first outlines the requirements of a context-aware system, going on to summarise related work which the project builds on, namely the SBUS middleware \cite{ingram2009reconfigurable}, and finally describing how such a system has be implemented to meet these requirements.
+This chapter first outlines the requirements of a context-aware system. 
+It goes on to summarise related work which the project builds on, namely the SBUS middleware \cite{ingram2009reconfigurable}, as well as other work which might have been used. 
+Finally, it describes how a system has been designed to meet these requirements.
 
 %TODO: Why the recursive discovery through peer inspection hasn't been implemented, and how it could be (should be somewhere else?)
 
@@ -398,17 +397,20 @@ The RDC returns the IP addresses of matching components, allowing the component 
 AWARE\footnote{\url{http://www.awareframework.com/home/}} is a new ``Android framework dedicated to instrument, infer, log and share mobile context information for application developers''. 
 AWARE broadcasts intents to notify applications of the current context, and these broadcasts can be captured by Android BroadcastReceivers\footnote{\url{http://developer.android.com/reference/android/content/BroadcastReceiver.html}}. 
 This allows any application to implement a broadcast receiver to be notified of changes in context, and to perform a callback method upon a change. 
+This could be used to detect context changes, although has not yet been released. 
 
-% other messaging middlewares
-Mascolo et al. give an overview of middlewares for mobile computing \cite{mascolo2002mobile}. 
-SBUS is in line with many of their guidelines for a middleware, thus proves an ideal candidate for the project. 
-Direct communication between components means that the middleware supports devices which are short lived on the network just as well as those which are permanently part of the network. 
-Components are written in C++ and already run on most machines, and through the Android port can now be written in Java and run on any Android phone, allowing for heterogeneity in an environment. 
+% messaging middlewares
+Several messaging middlewares might be considered for the project. 
+A first idea might be the Java Message Service (JMS) \cite{hapner2002java}, which provides an API for sending and receiving messages in Java. 
+The obvious flaw with this approach is that JMS only supports programs written in Java, and thus does not fit the heterogeneous needs of pervasive computing. 
+The Advanced Message Queuing Protocol (AMQP) \cite{vinoski2006advanced} attempts to solve this problem by creating a standard to ensure interoperability between different implementations. 
+Several implementations exist for Java, such as ActiveMQ or RabbitMQ. 
+However, AMQP uses a central broker for peers to communicate, thus cannot scale as well as a decentralised messaging system. 
+
+SBUS components can be written in C++, allowing them to run on most machines, and through the Android port can now be written in Java. 
+Components communicate directly, which allows scalability, and are independent of the device or platform they are running on. 
 Communication is not only independent of the device and platform, but also the network connectivity. 
 Components communicate using TCP, which means that the middleware will work over Wi-Fi, 3G, Bluetooth, and any other protocol supporting TCP. 
-Resource discovery is already implemented through the RDCs, and has been extended to support the needs of mobile computing. 
-Finally, SBUS can use SSL to encrypt data, allowing applications to communicate securely if they so desire. 
-
 
 \section{Project Outline}
 
@@ -1432,6 +1434,7 @@ The user may decide that they do not wish for this application to be able to use
 \addcontentsline{toc}{chapter}{Bibliography}
 % nocite means add all references even if not cited.
 \nocite{*}
+\bibliographystyle{ieeetr}
 \bibliography{refs}
 \cleardoublepage
 
