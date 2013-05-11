@@ -250,7 +250,7 @@ Three kinds of events are defined: physical events, timer events, and a state ch
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (a fall), in which case the application may need to send data to an emergency response team.
 A timer event indicates the progression of real time, which advertisers could use to connect to advertisements for nearby restaurants at lunch time. 
 Finally, there are state changes in the system, such as a change in network connection or location. 
-This project primarly focuses on state change events, particularly using a change in network connection to indicate a change in context, though in practice any event might be used.  
+This project primarily focuses on state change events, particularly using a change in network connection to indicate a change in context, though in practice any event might be used.  
 Composite events might even be considered to represent a context change. 
 These require the detection of several different events, or one or more occurrences of a single event \cite{chakravarthy1994composite}. 
 
@@ -442,7 +442,7 @@ This is obviously undesirable since {\sl every} application would have to implem
 To avoid each application implementing such a parser, these differences are now handled by SBUS, before the application receives the message. 
 SBUS has been extended to allow components to communicate despite schema differences by reformatting any incoming message to match the application schema. 
 This moves the parsing to the middleware level, which both removes the burden of implementing a parser from the developers of individual applications, and guarantees that all applications can be used with different peers, because they do not need to rely on the developer implementing a parser. 
-This means that an application will only receive messages matching its schema, never facing any uncertainity in the structure of a message. 
+This means that an application will only receive messages matching its schema, never facing any uncertainty in the structure of a message. 
 
 % How change in context will be detected
 A typical smartphone offers many sensors which can be used to determine a context change. 
@@ -605,7 +605,7 @@ The existing parser for RDC queries was extended to allow these new constraint t
 Upon encountering a {\sl has} or {\sl similar} constraint, the field name, type of match and pointer to a list of children are added to a list. 
 Algorithm \ref{alg:parse_nested} shows how a stack is used to handle nested constraints. 
 An opening bracket causes the list of constraints to be pushed to the stack.
-Subsquent constraints are then added to the child constraints of the last item in that list. 
+Subsequent constraints are then added to the child constraints of the last item in that list. 
 A closing bracket pops the list off the stack, and constraints are appended to this list again. 
 Some error checks also exist to ensure that additional opening brackets are ignored if the list is empty, since they have no meaning, and that closing brackets are ignored if there are too many, since there may not be a list on the stack. 
 The checks would reduce {\tt [+Sgps[[+Hlongitude]]]]} to {\tt +Sgps[+Hlongitude]}.
@@ -644,7 +644,7 @@ This collection of hashes can also be built when parsing the schema.
 When parsing each individual item, where an item is either a single field or a composite item consisting of multiple fields, a new buffer is used. 
 Before the parser returns, a hash is computed of the item contained in that buffer. 
 Furthermore, an exact hash is computed using both the names and types, and a type hash is computed using only types. 
-This is acheived by using two buffers, with no names being appended to one of them. 
+This is achieved by using two buffers, with no names being appended to one of them. 
 These hashes can then be added to the collection, and the contents of the buffers appended to the parent buffers. 
 Using this method, a collection of hashes is built containing the hash of each item within the overall schema. 
 
@@ -664,7 +664,7 @@ Using this method, a collection of hashes is built containing the hash of each i
 \end{figure}
 
 
-This collection is in fact built using lists, where each composite item contains both its hashes and a pointer to a list of its childrens' hashes.
+This collection is in fact built using lists, where each composite item contains both its hashes and a pointer to a list of its children's hashes.
 This representation retains the overall structure of the schema, which will be used for nested searches. 
 Figure \ref{fig:locationhashes} shows an XML representation of the hash collection which is generated for the schema in Figure \ref{fig:locationschema}.
 
@@ -1416,7 +1416,7 @@ Applications can currently only specify policies for their own endpoints.
 The system could easily be extended to allow applications to specify policies for {\sl other} applications, which would then allow the user to set custom policies for any application. 
 Applications would aim to provide sensible policies for different changes in context, however the user could refine how applications should react by setting their own policies, causing the applications to behave in a way more suited to the user's needs. 
 This would require some ``policy authoring'' application, which provides a simple interface to the user to set policies for any application on the device. 
-This moves futher towards the pervasive vision, providing invisibility \cite{saha2003pervasive} in the system by requiring minimal user intervention, yet allowing the user to fine tune settings so that the system can meet more of the user's expectations. 
+This moves further towards the pervasive vision, providing invisibility \cite{saha2003pervasive} in the system by requiring minimal user intervention, yet allowing the user to fine tune settings so that the system can meet more of the user's expectations. 
 
 In addition to the user setting custom policies, the user might also be able define security policies for different applications, which state whether or not an application can use part of their context. 
 This offers some privacy to the user by allowing them to block applications from using some part of their context. 
