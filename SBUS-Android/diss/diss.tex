@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11400}
+\newcommand{\wordcount}{11489}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1207,26 +1207,25 @@ The remote address may be an IP address or a query to be resolved by an RDC.
 An IP address may be useful when the application should always be mapped to the same IP address. 
 However, queries allow applications to be more flexible in their peers. 
 Queries will be resolved by some RDC, ensuring components are mapped only to other components which satisfy their queries. 
-
-In the first example, a healthcare system has registered to have heart rate readings mapped directly to an endpoint at a known IP address, perhaps a relative or emergency response team. 
-This will only take place if a high accelerometer value was measured, because the reading may indicate that a fall has occurred.  
-In the second row, an application may display adverts from nearby restaurants if it is around lunchtime. 
-In the third row, the transport application wants to connect specifically to a Stagecoach component with an endpoint named ``Coach'' if a Wi-Fi connection is established. 
-However, if a GPS event indicates that the user were in France, the application is more lenient and willing to connect to any component with an endpoint offering a structure matching the type of {\tt coach}.
  
 \begin{table}
 \centering
 
-\begin{tabular}{c c c c}
+\newcounter{row}
+\newcommand\rownumber{\refstepcounter{row}\arabic{row}:}
+
+\begin{tabular}{l c c c c}
 \hline\hline
-Event & Condition & \multicolumn{2}{c}{Action} \\
-&& Address & Endpoint \\
+& Event & Condition & \multicolumn{2}{c}{Action} \\
+&&& Address & Endpoint \\
 \hline
 
-Accelerometer 	& val $\ge50$ 				& 128.232.0.20:44444 	& HeartRate\\
-Time			& val.hour = 12 			& +IRestaurant			& Advert \\
-Wi-Fi 			& val = true 				& +NStagecoach 			& Coach \\
-GPS 			& location(val) = France 	& +Scoach 				& NULL \\
+\rownumber\label{tab:row:heart} 			&	Accelerometer 	& val $\ge50$ 				& 128.232.0.20:44444 	& HeartRate \\
+\rownumber\label{tab:row:advert}			&	Time			& val.hour = 12 			& +IRestaurant			& Advert \\
+\rownumber\label{tab:row:transport:wifi} 	&	Wi-Fi 			& val = true 				& +NStagecoach 			& Coach \\
+\rownumber\label{tab:row:transport:gps} 	&	GPS 			& location(val) = France 	& +Scoach 				& NULL \\
+\rownumber\label{tab:row:gps} 				&	GPS				& NONE						& +IAdvert				& NULL \\
+\rownumber\label{tab:row:none} 				&	NONE			& NONE						& localhost				& NULL \\
 
 \hline
 \end{tabular}
@@ -1234,6 +1233,17 @@ GPS 			& location(val) = France 	& +Scoach 				& NULL \\
 \caption{Phone Manager Example Policies}
 \label{tab:example_policies_eca}
 \end{table}
+
+In row \ref{tab:row:heart}, a healthcare system has registered to have heart rate readings mapped directly to an endpoint at a known IP address, perhaps a relative or emergency response team. 
+This will only take place if a high accelerometer value was measured, because the reading may indicate that a fall has occurred.  
+In row \ref{tab:row:advert}, an application may display adverts from nearby restaurants if it is around lunchtime. 
+In row \ref{tab:row:transport:wifi}, the transport application wants to connect specifically to a Stagecoach component with an endpoint named ``Coach'' if a Wi-Fi connection is established. 
+However, as per row \ref{tab:row:transport:gps}, if a GPS event indicates that the user is in France, the application is more lenient and willing to connect to any component with an endpoint offering a structure matching the type of {\tt coach}. 
+Row \ref{tab:row:gps} shows a policy which specifies an event, but no condition. 
+This is perfectly acceptable, and the action will occur on every GPS event. 
+In this case an application will attempt to connect to any endpoint offering adverts. 
+Finally, row \ref{tab:row:none} shows a ``blank'' policy, with no event or condition specified.  
+This policy will be applied on any event, however this attempts to connect to the loopback address without any endpoint specified, so no connection is made. 
 
 % user policies
 While applications can only set policies for themselves, this could be extended to allow the user to set their own policies for applications. 
