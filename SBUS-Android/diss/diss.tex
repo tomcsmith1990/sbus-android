@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11731}
+\newcommand{\wordcount}{11743}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -248,9 +248,10 @@ Three kinds of events are defined: physical events, timer events, and a state ch
 In a healthcare system, a rapid accelerometer change followed by no movement may represent a physical event (a fall), in which case the application may need to send data to an emergency response team.
 A timer event indicates the progression of real time, which advertisers could use to connect to advertisements for nearby restaurants at lunch time. 
 Finally, there are state changes in the system, such as a change in network connection or location. 
-This project primarily focuses on state change events, particularly using a change in network connection to indicate a change in context, though in practice any event might be used.  
-Composite events might even be considered to represent a context change. 
-These require the detection of several different events, or one or more occurrences of a single event \cite{chakravarthy1994composite}. 
+This project uses all of these types of events to represent a context change. 
+Indeed, any event could be used, where an event could be data from any application on the phone, or even elsewhere in the environment. 
+Composite events might be considered to represent a context change. 
+These emit a single event after the detection of several different events, or one or more occurrences of a single event \cite{chakravarthy1994composite}. 
 
 \section{Project Goals}
 % pervasive computing
