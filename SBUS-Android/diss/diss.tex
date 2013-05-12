@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11499}
+\newcommand{\wordcount}{11554}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -436,8 +436,9 @@ This is well suited to mobile applications because the environment is constantly
 Furthermore, these environments are not all controlled by a single company and this solution allows resource discovery independent of any corporate differences. 
 
 % How applications will cope with unexpected data format - must be done at system level
-SBUS endpoints could previously only communicate if they shared a common message schema. 
-This was to ensure that endpoints only ever receive messages matching their own schema, from which values can be easily extracted since the structure of the message is known. 
+SBUS endpoints could previously only communicate if they shared a common message schema, or if one was a {\sl polymorphic} endpoint, which could accept any message. 
+These polymorphic endpoints are not used in the project, because although they can use messages matching any schema, these messages may be different every time, and thus do not offer a consistent message structure which can be used by an application. 
+Generally endpoints only ever receive messages matching their own schema, from which values can be easily extracted since the structure of the message is known. 
 Different components in different environments may offer similar data, but they may have schema differences, perhaps due to the company providing the component, or the country which the component is located in. 
 When searching for components by data, an application may discover some component which provides the required data, but nested within a larger schema, or using different field names. 
 In the previous SBUS implementation, the application would not be able to communicate with this component. 
@@ -450,9 +451,9 @@ This moves the parsing to the middleware level, which both removes the burden of
 This means that an application will only receive messages matching its schema, never facing any uncertainty in the structure of a message. 
 
 % How change in context will be detected
-A typical smartphone offers many sensors which can be used to determine a context change. 
+A typical smartphone offers around 50 sensors which can be used to determine a context change. 
 Android applications can register to receive intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} which indicate events such as a network change, or an incoming phone call. 
-Furthermore, the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} observes sensor readings, and can output them to a remote server.
+Furthermore, the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} monitors sensors on the phone, and can output sensor readings to a remote server.
 The system uses these intents, and act as a server for AIRS to obtain these sensor readings, allowing it to monitor the environment, and determine context changes. 
 Upon detecting a context change, it can then remap other applications on the phone, connecting them to peers suited to the environmental context. 
 
@@ -1264,7 +1265,7 @@ The action might be to connect the application to the IP address of a local taxi
 
 %TODO: How long to tell a component about context change - long list, might take a while for last one - prioritise?
 
-\section{System Performance}
+\section{Schema Comparison Performance}
 
 This section examines the performance of the system, specifically aspects related to the schema conversion part of the system. 
 The schema conversion plays an important role in mobility because it allows applications to function despite some level of uncertainty, which in turn makes them more adaptable to different environments. 
@@ -1391,12 +1392,12 @@ An application requiring high performance guarantees would be expected to use cu
 The project has created a context-aware middleware which allows developers to focus on functionality when writing applications, rather than on specific details of which peers the application will use, or how peers might format their data. 
 This is in line with the goals of pervasive computing, achieving scalability by allowing applications to use any relevant peer, and allowing applications to adapt to use heterogeneous content, all while being invisible to both the user and developer.
 
-An application monitors the environment for events which the system or user believe to represent a change in context.
-Upon detection of an event, this application applies other applications' reconfiguration policies to connect them to different peers. 
+Applications can monitor the environment for events which the system or user believe to represent a change in context.
+Upon detection of an event, these applications can apply other applications' reconfiguration policies to connect them to different peers. 
 Through these policies, applications can control which peers they should be connected to in each context change, without requiring the applications to find the peers themselves.
 Peer constraints may be simple, such as the name of a peer, or more complex, specifying how fields in a peer's schema must match their own. 
 
-The system reformats data so that applications will only ever be presented with data conforming to their own format, removing uncertainty about the data representation. 
+Data is reformatted so that applications will only ever be presented with data which conforms to their own format, removing uncertainty about the data representation. 
 Furthermore, applications may specify subscription filters in terms of their own data format, placing restrictions on the data they will be sent, without requiring knowledge of peers' data format.
 When reconfiguring a connection, the system translates these filters to match the peer's data format and applies them to the peer, filtering data as dictated by the application.
 
