@@ -27,8 +27,8 @@ disp(std(remote))
 hold all;
 
 errorbar(1, mean(remote), std(remote), '-o');
-errorbar(2, mean(phone), std(phone), '-+');
-errorbar(3, mean(laptop), std(laptop), '-*');
+errorbar(2, mean(laptop), std(laptop), '-+');
+errorbar(3, mean(phone), std(phone), '-*');
 
 xlabel('Producer', 'FontSize', 12);
 ylabel('Time (ms)', 'FontSize', 12);

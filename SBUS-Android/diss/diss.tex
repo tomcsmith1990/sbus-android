@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11554}
+\newcommand{\wordcount}{11546}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1326,20 +1326,20 @@ This section evaluates the performance of using SBUS on a phone in comparison to
 \begin{table}[h]
 \centering
 
-\begin{tabular}{c c c c}
+\begin{tabular}{c c c}
 \hline\hline
 
-Consumer & Producer & Mean (ms) & Standard Deviation (ms) \\
+Producer & Mean (ms) & Standard Deviation (ms) \\
 \hline
 
-Laptop	&	Laptop	& 7.979 	& 9.787 \\
-Laptop	&	Phone	& 20.824 	& 20.064 \\
-Phone	&	Laptop	& 21.834	& 15.705 \\
-Phone	& 	Phone	& 10.933	& 2.810 \\
+Local Machine	&	1.2105	&	2.3849 \\
+Remote Machine	&	21.7935	&	21.7362 \\
+Remote Phone	&	18.0828	&	4.1887 \\
+
 \hline
 \end{tabular}
 
-\caption{Connection Times Between Components on Different Devices}
+\caption{Connection Times for Producers on Different Devices}
 \label{tab:map_times}
 \end{table}
 
@@ -1347,17 +1347,17 @@ Phone	& 	Phone	& 10.933	& 2.810 \\
 \begin{figure}[t]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/map.eps}}
-\caption{Connection Times Between Components on Different Devices}
+\caption{Connection Times for Producers on Different Devices}
 \label{fig:map_times}
 \end{figure}
 
-Table \ref{tab:map_times} and Figure \ref{fig:map_times} show mean times and standard deviations for consumers to connect to producers, across phones and laptops.
-Each consumer first queries an RDC on a remote machine by the producer name, to find the appropriate producer to connect to. 
-Once the consumer receives the IP of the producer from the RDC, it then establishes the connection with it, hence two connections occur within each mapping. 
+Table \ref{tab:map_times} and Figure \ref{fig:map_times} show mean times and standard deviations for producers running on a phone, a remote machine, and the local machine to connect to a consumer. 
+Each producer first queries an RDC running on the same machine as the consumer, to find the consumer. 
+Once the producer receives the IP of the consumer from the RDC, it then establishes the connection with it, hence two connections occur within each mapping. 
 No schema conversion occurs as part of this map. 
-These figures show that a greater time is required when the producer and consumer are on different devices than when they are on the same device. 
+These figures show that a far greater time is required when the producer is on a different device to the consumer. 
 This bears no surprise that local connections are faster than network connections. 
-The mean time taken is slightly greater when both the producer and consumer are on the phone rather than both on the laptop, though the standard deviation is less. 
+The mean time taken when the producer is on a remote phone is slightly less than when the producer is on a remote machine, though the standard deviation is significantly less. 
 Overall, an application written in Java running a phone would see very similar network delays to that of a program written in C++ running on any other machine.
 
 % figure showing jni times
