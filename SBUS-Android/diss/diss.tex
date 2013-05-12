@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11576}
+\newcommand{\wordcount}{11583}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1252,7 +1252,7 @@ The user of the transport application might not want to wait for a bus when it i
 Therefore, they could create a policy using a weather event with the condition ``rain''. 
 The action might be to connect the application to the IP address of a local taxi company, which provides information about when the next taxi will be available using the schema in Figure \ref{fig:taxi-schema-eval}.
 
-\begin{figure}[h]
+\begin{figure}
 \input{schema.taxi}
 \caption[Example Schema for a Taxi]{A taxi schema, simply showing the next available taxi}
 \label{fig:taxi-schema-eval}
@@ -1266,15 +1266,30 @@ The action might be to connect the application to the IP address of a local taxi
 
 %TODO: How long to tell a component about context change - long list, might take a while for last one - prioritise?
 
-\section{Schema Comparison Performance}
+\section{System Performance}
 
-This section examines the performance of the system, specifically aspects related to the schema conversion part of the system. 
+This section examines the performance of the system, specifically aspects related to schema conversion and connection reconfiguration.  
 The schema conversion plays an important role in mobility because it allows applications to function despite some level of uncertainty, which in turn makes them more adaptable to different environments. 
-This schema conversion can only be useful if it can be done in a reasonable time though, since the whole idea behind the system is to provide users with meaningful, {\sl real time} data. 
+Both the schema conversion and connection reconfiguration are only useful if they can be done in reasonable time, since the whole idea behind the system is to provide users with meaningful, {\sl real time} data. 
 These tests show the kind of performance which can be expected from the system. 
 
+% time to apply policies
+\begin{figure}
+\epsfxsize=\hsize
+\centerline{\epsfbox{figs/policy.eps}}
+\caption{Time Taken to Compare Sensor Reading Event to Policies}
+\label{fig:policy_times}
+\end{figure}
+
+Figure \ref{fig:policy_times} shows the time taken between receiving an event from the AIRS-SBUS gateway and comparing the event to all registered policies, for different numbers of policies. 
+After ten policies, the relationship between number of policies and time taken to check these policies is near linear. 
+The upper bound for the time which can be spent servicing policies is determined by the frequency with which AIRS outputs sensor readings. 
+If the Phone Manager is receiving events faster than it can compare the events against all policies, then a more efficient data structure would be required to store the policies. 
+For example, policies could be indexed by sensor type, rather than stored in one list, as they are now. 
+However, the current implementation, which can check 1000 policies in approximately \SI{65}{\milli\second} could support up to 15 sensors being sampled each second. 
+
 % rdc search optimisation
-\begin{figure}[t]
+\begin{figure}
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/rdc_search_optimisations.eps}}
 \caption{RDC Search Optimisations}
@@ -1286,10 +1301,11 @@ In a real environment, RDCs are likely to have many components registered, so on
 As expected, the time taken to search increases linearly with the number of components registered. 
 The structures first optimisation narrowly beats the exact first and exact structures optimisations, all of which perform more efficiently than searching without optimisation. 
 These optimisations play a greater role as the number of components increases, becoming more important in order to prevent a bottleneck in the system. 
-However, even in the worst case the RDC can perform the search with 100 other components registered in just over 40 milliseconds, so should not pose a problem given expected usage.
+While not making a lot of difference here, this only demonstrates one query. 
+In a real world use of the system there may be far more complex queries performed, in which case the optimisations may offer a greater performance increase.  
 
 % construct lookup
-\begin{figure}[t]
+\begin{figure}
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/construct_lookup.eps}}
 \caption[Construct Lookup Times]{Time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers}
@@ -1304,7 +1320,7 @@ This shows that the time taken to construct a lookup table is greater when the p
 In either case, the lookup table is constructed once per connection taking only microseconds, so is not a significant overhead. 
 
 % repack message
-\begin{figure}[t]
+\begin{figure}
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/repack_message.eps}}
 \caption[Repackage Message]{Time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers}
@@ -1323,8 +1339,16 @@ Both Figure \ref{fig:construct_lookup} and Figure \ref{fig:repack_message} use a
 
 This section evaluates the performance of using SBUS on a phone in comparison to using SBUS on a laptop, investigating whether any significant gains or losses occur as a result of using the Android operating system. 
 
+% figure showing map times
+\begin{figure}
+\epsfxsize=\hsize
+\centerline{\epsfbox{figs/map.eps}}
+\caption{Connection Times for Producers on Different Devices}
+\label{fig:map_times}
+\end{figure}
+
 % table showing map times
-\begin{table}[h]
+\begin{table}
 \centering
 
 \begin{tabular}{c c c}
@@ -1344,15 +1368,7 @@ Remote Phone	&	15.9605	&	2.6539 \\
 \label{tab:map_times}
 \end{table}
 
-% figure showing map times
-\begin{figure}[t]
-\epsfxsize=\hsize
-\centerline{\epsfbox{figs/map.eps}}
-\caption{Connection Times for Producers on Different Devices}
-\label{fig:map_times}
-\end{figure}
-
-Table \ref{tab:map_times} and Figure \ref{fig:map_times} show mean times and standard deviations for producers running on a phone, a remote machine, and the local machine to connect to a consumer. 
+Figure \ref{fig:map_times} and Table \ref{tab:map_times} show mean times and standard deviations for producers running on a phone, a remote machine, and the local machine to connect to a consumer. 
 Each producer first queries an RDC running on the same machine as the consumer, to find the consumer. 
 Once the producer receives the IP of the consumer from the RDC, it then establishes the connection with it, hence two connections occur within each mapping. 
 No schema conversion occurs as part of this map. 
@@ -1362,7 +1378,7 @@ The mean time taken when the producer is on a remote phone is slightly less than
 Overall, an application written in Java running a phone would see very similar network delays to that of a program written in C++ running on any other machine.
 
 % figure showing jni times
-\begin{figure}[t]
+\begin{figure}
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/jni.eps}}
 \caption{Function Call via JNI Timing Breakdown}
