@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11642}
+\newcommand{\wordcount}{11650}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1077,14 +1077,14 @@ Additionally, this endpoint is automatically mapped to the Phone Manager so can 
 Endpoints are maintained in a repository, which is searched upon receiving a sensor reading, to ensure that multiple endpoints are not defined for the same sensor. 
 
 % composite event detector
-Conceptually this AIRS-SBUS gateway could act as a composite event detector. 
+Conceptually this AIRS-SBUS gateway could act as a composite event detector \cite{chakravarthy1994composite}, or provide the data for some other composite event detector. 
 By collating multiple sensor readings, a context change could be defined by multiple different readings satisfying some conditions, or by multiple occurrences of an event.
-Upon detecting a context change, the gateway would then publish a single event to the Phone Manager. 
+Upon detecting a context change, a single event would be published to the Phone Manager. 
 The Phone Manager can respond to any kind of event, so already provides the infrastructure required to support this.
 
 % registering components + setting policies
 In order to have their connections automatically reconfigured, applications must register with the Phone Manager. 
-This registration occurs in exactly the same way as with an RDC; the Phone Manager is essentially a lightweight RDC which does not offer search functionality. 
+This registration occurs in exactly the same way as with an RDC. 
 Once an application has registered, it can set {\sl policies} for its endpoints, which determine how its connection will be reconfigured. 
 These policies are event-condition-action rules \cite{mccarthy1989architecture}. 
 When an event occurs, if the condition is satisfied by that event, the action is taken. 
@@ -1116,7 +1116,8 @@ Prompting the user may be sufficient on a home network, and additionally this al
 Alternatively, the address could be coded in a QR code or RFID tag. 
 The user could scan one of these, for example when making a purchase in a coffee shop, and the Phone Manager would automatically send an RDC update based on the encoded address. 
 This approach retains some level of privacy and security because the user explicitly chooses to scan the QR code or RFID tag. 
-An even more automated approach might be to include the RDC address as part of DHCP configuration when connecting to a Wi-Fi network, or to broadcast the address on the network. 
+An even more automated approach might be for a DHCP server to encode the RDC address in the options of a DHCP Offer message \cite{droms1997dynamic} sent to the device when it connects to a Wi-Fi network. 
+Alternatively, the RDC address might be broadcast on the network. 
 All of these methods must of course be considered from security point of view. 
 
 \section{Issues}
@@ -1438,8 +1439,6 @@ The user may decide that they do not wish for this application to be able to use
 % the bibliography
 
 \addcontentsline{toc}{chapter}{Bibliography}
-% nocite means add all references even if not cited.
-\nocite{*}
 \bibliographystyle{ieeetr}
 \bibliography{refs}
 \cleardoublepage
