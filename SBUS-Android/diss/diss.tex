@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11743}
+\newcommand{\wordcount}{11642}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1058,31 +1058,23 @@ These classes are exported as a JAR file, which applications can then simply imp
 \section{Phone Manager}
 
 The Phone Manager is an Android application which is responsible for detecting changes in context and reconfiguring other applications' connections. 
-
-% detecting context
-The Phone Manager uses the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} and Android system intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} to detect changes in context. 
-These intents are broadcast across the system upon specific events, and by implementing a receiver, these intents can be captured and an action can be taken. 
-In particular, an intent with the action {\tt NETWORK\_STATE\_CHANGED\_ACTION} is broadcast upon a Wi-Fi change.
-This allows the Phone Manager to register a receiver for these intents, allowing it to reconfigure connections after a change in network. 
+The Phone Manager uses the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} to detect changes in context, however could easily incorporate data from any other source, especially if presented in the form of an SBUS message. 
 
 % AIRS
-An application has been created to act as a AIRS-SBUS gateway between AIRS and the Phone Manager. 
-This gateway acts as a remote server for sensor readings from AIRS, to which AIRS sends all sensor readings. 
-Once AIRS starts and connects to a remote server, sensors must be subscribed to before AIRS will output any readings. 
-AIRS connects to the gateway, and the Phone Manager can then connect to the gateway via an SBUS endpoint, and subscribe to sensors through another ``control endpoint'' on the gateway. 
-Upon receiving a subscription, the gateway relays this subscription to AIRS in the appropriate format. 
-AIRS can then send sensor readings to the gateway, which will convert them to SBUS events and send them to the Phone Manager. 
-This allows the Phone Manager to use any sensor on the device which is exposed by AIRS, yet ensures that the Phone Manager only receives readings from sensors that it is interested in. 
+An application has been created to act as an AIRS-SBUS gateway between AIRS and the Phone Manager, allowing the Phone Manager to use any sensor on the device which is exposed by AIRS. 
+The Phone Manager sends messages to an endpoint on the gateway to instruct it to subscribe to particular sensors. 
+Upon receiving a message, the gateway subscribes to the appropriate sensor in AIRS. 
+AIRS then monitors the relevant sensors, and sends sensor readings to the gateway, which converts them into SBUS messages. 
+These messages can then be published to the Phone Manager, or indeed any other application. 
  
  % AIRS-SBUS gateway
 This gateway is based on Dirk Trossen's AIRS code\footnote{\url{https://github.com/dirktrossen/AIRS}}. 
 AIRS exposes upwards of 50 sensors, which is being continually expanded, making it infeasible to predefine an endpoint for each sensor. 
-This is handled by dynamically creating an endpoint for each sensor whenever the first reading from that sensor is received, meaning that endpoints will only ever be created as needed. 
-The gateway presents the user with a list of sensors, which is populated from a message AIRS sends upon connecting to the remote server, announcing the available sensors on the device. 
-When the user selects a sensor, or the Phone Manager sends a message subscribing to a sensor, that sensor is subscribed to, and the endpoint will be created once a reading is received from that sensor. 
-Additionally, the endpoint is automatically mapped to the Phone Manager so can start publishing events to it immediately. 
-Each sensor runs in a different thread, so these endpoints are maintained in a thread-safe repository. 
-This repository is searched upon receiving a message, returning the endpoint if it already exists, ensuring that multiple endpoints are not defined for the same sensor. 
+%The available sensors on a device are announced in a message which AIRS sends when connecting to the gateway. 
+Since the sensors which will be subscribed to are initially unknown, endpoints are created dynamically for each sensor as needed. 
+When the Phone Manager subscribes to a sensor, via the gateway, an endpoint is created for that sensor as soon as the first reading for that sensor is received from AIRS. 
+Additionally, this endpoint is automatically mapped to the Phone Manager so can start publishing events to it immediately. 
+Endpoints are maintained in a repository, which is searched upon receiving a sensor reading, to ensure that multiple endpoints are not defined for the same sensor. 
 
 % composite event detector
 Conceptually this AIRS-SBUS gateway could act as a composite event detector. 
@@ -1106,8 +1098,13 @@ If the peer address is an RDC query, then the application must first resolve the
 
 % RDC updates 
 Some context changes may mean that the available RDCs change, for example joining or leaving a network. 
+The Phone Manager monitors network changes using Android intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}}. 
+Intents are broadcast across the system to indicate that something has happened, and by implementing a receiver, intents can be captured and an action can be taken. 
+An intent with the action {\tt NETWORK\_STATE\_CHANGED\_ACTION} is broadcast upon a network change. 
+The Phone Manager registers a receiver for these intents, allowing it take an action after a network change. 
 The Phone Manager informs all registered applications of RDC changes on every network context change, publishing an event containing the RDC address, and whether it has became available or unavailable, according to whether the device has left or joined the network. 
 Upon receiving the event, applications can automatically accept the change, registering with or deregistering from the RDC address, and can perform a callback method, perhaps prompting the user to make a decision. 
+
 
 % apply map policies
 The Phone Manager sends RDC updates to registered applications before applying any policies. 
