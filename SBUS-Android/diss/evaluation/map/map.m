@@ -32,6 +32,9 @@ errorbar(3, mean(phone), std(phone), '-*');
 
 xlabel('Producer', 'FontSize', 12);
 ylabel('Time (ms)', 'FontSize', 12);
+yaxis = ylim;
+yaxis(1) = 0;
+ylim(yaxis);
 title('Connection Times Between Producers on Different Devices', 'FontSize', 12);
 set(gca, 'XTick', [1 2 3]);
 set(gca, 'XTickLabel', {'Local Machine', 'Remote Machine', 'Remote Phone'});
