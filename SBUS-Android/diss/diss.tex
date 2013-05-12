@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11583}
+\newcommand{\wordcount}{11728}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1334,21 +1334,24 @@ As with constructing the lookup table, messages are repackaged within microsecon
 In general, messages should still be relevant after the time taken for repackaging, for any realistic use of the system.
 
 Both Figure \ref{fig:construct_lookup} and Figure \ref{fig:repack_message} use a schema constraint which matches the type of the smallest schema, to ensure that a match is made in every case. 
+These schemas are shown in Appendix \ref{appendix:schemas}. 
 
 \section{Android Port}
 
 This section evaluates the performance of using SBUS on a phone in comparison to using SBUS on a laptop, investigating whether any significant gains or losses occur as a result of using the Android operating system. 
 
 % figure showing map times
-\begin{figure}
+\begin{figure}[t]
 \epsfxsize=\hsize
 \centerline{\epsfbox{figs/map.eps}}
 \caption{Connection Times for Producers on Different Devices}
 \label{fig:map_times}
 \end{figure}
 
+Figure \ref{fig:map_times} and Table \ref{tab:map_times} show mean times and standard deviations for producers running on a phone, a remote machine, and the local machine to connect to a consumer. 
+
 % table showing map times
-\begin{table}
+\begin{table}[h]
 \centering
 
 \begin{tabular}{c c c}
@@ -1368,7 +1371,6 @@ Remote Phone	&	15.9605	&	2.6539 \\
 \label{tab:map_times}
 \end{table}
 
-Figure \ref{fig:map_times} and Table \ref{tab:map_times} show mean times and standard deviations for producers running on a phone, a remote machine, and the local machine to connect to a consumer. 
 Each producer first queries an RDC running on the same machine as the consumer, to find the consumer. 
 Once the producer receives the IP of the consumer from the RDC, it then establishes the connection with it, hence two connections occur within each mapping. 
 No schema conversion occurs as part of this map. 
@@ -1377,13 +1379,6 @@ This bears no surprise that local connections are faster than network connection
 The mean time taken when the producer is on a remote phone is slightly less than when the producer is on a remote machine, though the standard deviation is significantly less. 
 Overall, an application written in Java running a phone would see very similar network delays to that of a program written in C++ running on any other machine.
 
-% figure showing jni times
-\begin{figure}
-\epsfxsize=\hsize
-\centerline{\epsfbox{figs/jni.eps}}
-\caption{Function Call via JNI Timing Breakdown}
-\label{fig:jni_times}
-\end{figure}
 
 Figure \ref{fig:jni_times} shows the breakdown of time taken to perform an SBUS function call via Java compared to C++. 
 In this case, the function call is to emit a message. 
@@ -1392,6 +1387,14 @@ Each call to an SBUS function via Java will incur some delay, meaning that appli
 Application developers can expect this delay, which is likely to show less variance than any network delay, and can build their applications to take account of it. 
 This delay is unlikely to cause a significant problem for most applications. 
 An application requiring high performance guarantees would be expected to use custom hardware and software, or to develop the application in native code. 
+
+% figure showing jni times
+\begin{figure}
+\epsfxsize=\hsize
+\centerline{\epsfbox{figs/jni.eps}}
+\caption{Function Call via JNI Timing Breakdown}
+\label{fig:jni_times}
+\end{figure}
 
 %TODO: JNI times for other method calls?
 
@@ -1458,6 +1461,15 @@ The user may decide that they do not wish for this application to be able to use
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the appendices
 \begin{appendix}
+
+\chapter{Example Schemas}
+\label{appendix:schemas}
+
+These are the example schemas used in part of the Evaluation. 
+
+\input{schemas.evaluation}
+
+\cleardoublepage
 
 \chapter{Project Proposal}
 
