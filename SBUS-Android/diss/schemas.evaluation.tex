@@ -1,0 +1,66 @@
+\begin{figure}[h]
+\begin{lstlisting}
+@reading
+{
+	x
+	{
+		txt somestring
+		int val
+		fields
+		{
+			more
+			{
+				num ( int n )
+			}
+		}
+	}
+	z
+	{
+		int integer
+		list ( txt word )
+	}
+}
+\end{lstlisting}
+\caption{Giant Schema}
+\end{figure}
+
+\begin{figure}[t]
+\begin{lstlisting}
+@reading
+{
+	txt string
+	int val
+	struc
+	{
+		more
+		{
+			num ( int n )
+		}
+	}
+}
+\end{lstlisting}
+\caption{Big Schema}
+\end{figure}
+
+\begin{figure}[t]
+\begin{lstlisting}
+@reading
+{
+	more
+	{
+		num ( int foo )
+	}
+}
+\end{lstlisting}
+\caption{Small Schema}
+\end{figure}
+
+\begin{figure}[t]
+\begin{lstlisting}
+@more
+{
+	numbers ( int n )
+}
+\end{lstlisting}
+\caption{Tiny Schema}
+\end{figure}
