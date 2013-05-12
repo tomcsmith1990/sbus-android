@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11621}
+\newcommand{\wordcount}{11499}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1173,33 +1173,28 @@ This chapter demonstrates the feasibility of the approach, and examines its perf
 \label{fig:system_overview}
 \end{figure}
 
-% example
-\begin{figure}
-\input{schema.coach}
-\caption[Example Schema for a Coach]{A coach schema, showing a stand number, a date and time of departure, and a list of stops, with town names and estimated arrival times}
-\label{fig:coach-schema-eval}
-\end{figure}
-
 Figure \ref{fig:system_overview} shows the interactions that occur within the system. 
-These steps detail how a transport application which uses the coach schema in Figure \ref{fig:coach-schema-eval} might have its connection reconfigured upon a change in context. 
+These steps detail how a transport application might have its connection reconfigured upon a change in context. 
 
 \begin{enumerate}
 
-\item After the transport application has registered with the Phone Manager, it can send policies to the Phone Manager which specify how its endpoints should be reconfigured upon a change in context. For instance, the application may wish to be connected to any components which offer a structure matching the type of {\tt coach} whenever the Wi-Fi network changes. In another case, it may simply give an IP address it should be connected to.
+\item The transport application has registered with the Phone Manager, and sets a policy specifying that whenever the Wi-Fi SSID changes to ``National\_Express'', indicating that the user is using a Wi-Fi network in a coach station, it should be connected to any component named ``Coach'' (using the query string {\tt +Ncoach}).   
 
-\item The AIRS-SBUS gateway acts as a server for sensor readings from AIRS, which then emits the readings as SBUS events, which are consumed by the Phone Manager. The Phone Manager also receives intents from Android, signalling a change in Wi-Fi network.
+\item The Phone Manager sends a message to the AIRS-SBUS gateway to subscribe to Wi-Fi SSID sensor readings. The gateway then subscribes to these sensor readings from AIRS. 
 
-\item If the Phone Manager receives an event signalling that the device has connected to a Wi-Fi network, the Phone Manager will inform the transport application about any new RDCs, sending it the address of the RDC to be added. 
+\item The AIRS-SBUS gateway sends an SBUS event to the Phone Manager whenever a sensor reading is received from AIRS, which is then checked against the policy table. The Phone Manager also receives intents from the Android system which signal a network change. 
 
-\item The transport application receives this message about the RDC change and will either automatically accept this change, registering or deregistering with the RDC, or perform some callback method, perhaps prompting the user to make a decision. The transport application may have chosen to automatically accept the change, but display a message to the user to indicate that the context has changed.
+\item The user walks in to the coach station, and connects to the Wi-Fi network. The Phone Manager receives an intent indicating that the device has connected to the Wi-Fi network, and informs the transport application of an RDC in the network. 
 
-\item The Phone Manager checks the context change event against all of the policies within its policy table, applying those which are satisfied by the event, sending messages to application endpoints instructing them to connect to different components. The transport application will be sent whatever parameters it set in its policy.
+\item The transport application receives the RDC update, and automatically registers with the RDC. It additionally performs a callback method, simply displaying a message that a new RDC has been added. 
 
-\item If the transport application specified an IP address in its policy, the endpoint will receive this IP address and can connect directly to it to start receiving messages. However, if the policy specified that a component must contain a structure matching the type of {\tt coach}, the endpoint will query the RDC with this constraint to find matching components.
+\item The Phone Manager receives an event from the gateway which indicates that the Wi-Fi SSID is now ``National\_Express''. It applies the transport application's policy, instructing its endpoint to map using the query string {\tt +Ncoach}.
 
-\item The RDC searches components registered with it for those matching the constraints. In this case, it might find only a component sending coach data, while in other cases it may find components offering train data. In both cases, these components contain a structure matching the type of {\tt coach}, so the RDC returns the IP addresses to the application.
+\item The endpoint must first resolve this query, so sends the query to all RDCs which it is registered with. 
 
-\item The application endpoint then connects to one of the matching components, allowing the user to continue receiving fresh travel data without any interaction needed.
+\item RDCs resolve this query, returning a list of addresses of registered components which match the query. An RDC returns a matching component on the Wi-Fi network. 
+
+\item The endpoint connects to this matching component, allowing the user to continue receiving fresh travel data without any interaction needed.
 
 \end{enumerate}
 
