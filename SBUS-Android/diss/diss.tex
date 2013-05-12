@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11546}
+\newcommand{\wordcount}{11576}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -974,10 +974,27 @@ This repackages the message in Figure \ref{fig:locationmessage} to Figure \ref{f
 
 \section{Android Port}
 
-The Android Native Development Kit (NDK) can be used to embed native machine code into applications. 
-The NDK was used to compile SBUS to support Android, to allow applications for Android to be written in Java which can also use the SBUS middleware. 
+The Android Native Development Kit (NDK) can be used to embed native machine code into applications, and the Java Native Interface (JNI) framework provides a way for applications written in Java to call functions implemented in this native code.
+The NDK was used to compile SBUS to support Android, and the JNI framework was used to allow applications for Android to be written in Java, which can use the SBUS middleware. 
 The documentation for the NDK offers little more than trivial examples, and few other resources exist, so this stage of the project was largely achieved through experimentation. 
 
+ % overview of Android architecture
+\begin{figure}[h]
+%set the image x size to the width of the page
+\epsfxsize=8cm
+\centerline{\epsfbox{figs/android_stack.eps}}
+\caption[Android System Architecture]{A brief overview of the Android system architecture, based on the image at \url{http://developer.android.com/images/system-architecture.jpg}}
+\label{fig:android_stack}
+\end{figure}
+
+% how Android works
+Figure \ref{fig:android_stack} gives an overview of how an Android application works. 
+Applications are built using the Application Framework. 
+Every application runs in its own process, with its own instance of the Dalvik virtual machine\footnote{\url{http://developer.android.com/about/versions/index.html\#os_architecture}}, which executes Java bytecode. 
+When an SBUS call is made in Java, Dalvik invokes a call to the native JNI code, passing in a {\tt JNIEnv} pointer containing an interface to the Dalvik VM, as well as any other parameters. 
+The JNI methods can then invoke their respective SBUS methods.
+
+% how NDK was done.
 A standalone toolchain from the NDK can be used to set the correct compilation variables when running {\tt ./configure}. 
 In setting up the toolchain, the architecture of the device and the Android native API platform must be specified. 
 ARM-based devices, and Android platform 9 were chosen here, since these corresponded to the available device. 
@@ -1031,22 +1048,6 @@ The Android NDK was finally used in conjunction with the Java Native Interface (
 This involved writing Java classes for components, endpoints and messages, as well as some helper classes. 
 The SBUS library is linked via an {\tt Android.mk} file, which {\tt ndk-build} then uses to copy the shared library into the application's root project directory. 
 The application can then be built to generate a package file including SBUS which can run on an Android device. 
- 
- % overview of Android architecture
-\begin{figure}[h]
-%set the image x size to the width of the page
-\epsfxsize=8cm
-\centerline{\epsfbox{figs/android_stack.eps}}
-\caption[Android System Architecture]{A brief overview of the Android system architecture, based on the image at \url{http://developer.android.com/images/system-architecture.jpg}}
-\label{fig:android_stack}
-\end{figure}
-
-% how Android works
-Figure \ref{fig:android_stack} gives an overview of how an Android application works. 
-Applications are built using the Application Framework. 
-Every application runs in its own process, with its own instance of the Dalvik virtual machine\footnote{\url{http://developer.android.com/about/versions/index.html\#os_architecture}}, which executes Java bytecode. 
-When an SBUS call is made, Dalvik invokes a call to the native JNI code, passing in a {\tt JNIEnv} pointer containing an interface to the Dalvik VM, as well as any other parameters. 
-The JNI methods can then invoke their respective SBUS methods. 
 
 Each Java object has a one-to-one correspondence with a native object. 
 Native methods which create an object return a pointer to that object, cast as an integer. 
