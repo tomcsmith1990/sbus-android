@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11650}
+\newcommand{\wordcount}{11621}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -1300,8 +1300,7 @@ However, even in the worst case the RDC can perform the search with 100 other co
 \end{figure}
 
 Figure \ref{fig:construct_lookup} shows the time taken to construct a lookup table between schemas of different sized producers and schemas of different sized consumers. 
-The lookup table is created before any messages can be exchanged between peers with different schemas. 
-If this were to take too long, important messages be missed, or messages could become stale, no longer containing correct data.
+The lookup table is created before any messages can be exchanged between peers with different schemas, to allow messages to be repackaged to fit the consumer's schema. 
 The general increase in time from left to right shows that more time is taken to construct a lookup table as the size of the producer schema increases, as expected, since there are more fields. 
 The greater values in the upper right half of the graph show a disparity with the smaller values in the lower left half of the graph. 
 This shows that the time taken to construct a lookup table is greater when the producer's schema is larger than the consumer's schema, corresponding to searching in the larger producer schema for the smaller consumer schema to be matched, as opposed to identifying the missing outer structures if the consumer schema were larger.
@@ -1317,7 +1316,6 @@ In either case, the lookup table is constructed once per connection taking only 
 
 Figure \ref{fig:repack_message} shows the time taken to repackage a message between schemas of different sized producers and schemas of different sized consumers. 
 This repackaging happens once per message, thus will cause a delay on every single message received. 
-Should this delay be too large, then messages may contain stale data by the time they have been repackaged. 
 The general increase in time from top to bottom shows that more time is taken when the consumer schema is larger, as expected because more fields are being repackaged under the appropriate names. 
 As with constructing the lookup table, messages are repackaged within microseconds, which is an insignificant overhead. 
 In general, messages should still be relevant after the time taken for repackaging, for any realistic use of the system.
@@ -1326,7 +1324,7 @@ Both Figure \ref{fig:construct_lookup} and Figure \ref{fig:repack_message} use a
 
 \section{Android Port}
 
-This section evaluates the performance of using SBUS on a phone in comparison to using SBUS on a laptop, investigating whether any significant gains or losses occur as a result of the port.
+This section evaluates the performance of using SBUS on a phone in comparison to using SBUS on a laptop, investigating whether any significant gains or losses occur as a result of using the Android operating system. 
 
 % table showing map times
 \begin{table}[h]
@@ -1379,7 +1377,8 @@ In this case, the function call is to emit a message.
 This shows that the function call in C++ takes slightly over one millisecond, while using Java to call the native method via JNI takes almost six milliseconds, almost a five millisecond delay. 
 Each call to an SBUS function via Java will incur some delay, meaning that applications written in Java for a phone will never operate as quickly as those written in C++.
 Application developers can expect this delay, which is likely to show less variance than any network delay, and can build their applications to take account of it. 
-Provided an application is calling SBUS functions less frequently than this delay, such as a emitting a message less than once every ten milliseconds, it is unlikely to cause any problems.
+This delay is unlikely to cause a significant problem for most applications. 
+An application requiring high performance guarantees would be expected to use custom hardware and software, or to develop the application in native code. 
 
 %TODO: JNI times for other method calls?
 
@@ -1394,7 +1393,7 @@ Provided an application is calling SBUS functions less frequently than this dela
 \chapter{Conclusion}
 
 % summarise
-The project has created a context-aware middleware which enables developers to write applications without prior knowledge of the location of the peers which the application will use, or the format that these peers will present data in, decoupling applications from their specific peers. 
+The project has created a context-aware middleware which allows developers to focus on functionality when writing applications, rather than on specific details of which peers the application will use, or how peers might format their data. 
 This is in line with the goals of pervasive computing, achieving scalability by allowing applications to use any relevant peer, and allowing applications to adapt to use heterogeneous content, all while being invisible to both the user and developer.
 
 An application monitors the environment for events which the system or user believe to represent a change in context.
