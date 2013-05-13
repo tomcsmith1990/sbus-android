@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11728}
+\newcommand{\wordcount}{11770}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -163,8 +163,8 @@ I give permission for my dissertation to be made available in the archive area o
 % summarise
 While many applications exist for mobile devices, few applications themselves are truly mobile. 
 The user may happen to be mobile, however applications do not adapt to different environments. 
-Applications typically use data from predetermined central servers, failing to exploit local data which may be available in the environment. 
-This project addresses the issues faced in creating applications which can change to suit different environments, demonstrating how applications can perceive an environmental change, how they can find relevant, local data, and how they can achieve some flexibility in the data which they use. 
+Applications typically use data from predetermined, often centralised servers, failing to exploit local data which may be available in the environment. 
+This project addresses the issues faced in creating applications which can change to suit different environments, demonstrating how applications can perceive an environmental change, how they can find relevant, local data, and how they can achieve some flexibility in the data which they can use. 
 This allows applications to be more adaptable to their environment, and therefore offer a more relevant experience to the user. 
 
 \section{Motivation}
@@ -178,7 +178,7 @@ The format of the data, and therefore the content which is being exchanged has a
 This is not in line with the pervasive computing vision \cite{weiser1991computer}, primarily because applications do not use their current environment. 
 The systems are not scalable, because applications are using global servers, and they offer no heterogeneity\cite{saha2003pervasive} in the data they use, since both application and server both use an exact format.
 
-Applications can gain more relevant data by connecting to local peers, due to the fact that these peers reside within the same environment.
+Peers which reside in the same environment as an application may be able to provide data which is more relevant to the environment, when compared to a global server, and therefore may be more useful to an application. 
 Given an application which requires the current temperature, a global server may use current GPS co-ordinates to determine the nearest weather station and return its most recent reading. 
 Yet if the application were being used indoors, a value from a local temperature sensor might not only suffice, but be more appropriate. 
 Perhaps this could be achieved otherwise, if the server had known about the temperature sensor, however why should the application need to connect to a global server in order to use local data? Perhaps there isn't even an Internet connection available. 
@@ -235,7 +235,7 @@ By specifying how an application should react to changes in context, the applica
 
 A context-aware system is defined as one which can examine the computing environment and react to changes in the environment \cite{schilit1994context}. 
 This project investigates how automatic contextual reconfiguration can be performed for applications whenever there is a change in the environment. 
-Contextual sensing, contextual adaptation, contextual resource discovery and contextual augmentation are four context-aware capabilities which can be considered \cite{pascoe1998adding}.
+Context-awareness can be divided into several categories: contextual sensing, contextual adaptation, contextual resource discovery and contextual augmentation \cite{pascoe1998adding}.
 {\sl Contextual sensing} presents environmental state to the user, while {\sl contextual adaptation} allows applications to use this knowledge to adapt their behaviour to integrate with the user's environment.
 {\sl Contextual resource discovery} allows applications to discover and exploit resources which exist in the same context as themselves. 
 {\sl Contextual augmentation} augments reality with digital data. 
@@ -303,7 +303,7 @@ Additionally, any subscription filter which an application has placed on data it
 
 % summarise
 Applications' connections can be automatically reconfigured upon a change in context, and data is automatically repackaged to comply with the format which an application expects. 
-Local peers can provide data relevant to the environment, and by repackaging this data applications are no longer bound to exact data formats. 
+Local peers can provide data relevant to the environment, and this data can be converted to fit each application's expected format, so that applications are no longer bound to exact data formats. 
 This grants applications flexibility in the peers which they connect to, making them more adaptable to the environment. 
 Applications control how they interact with an environment through policies, while still seamlessly communicating within that environment.
 
@@ -451,7 +451,7 @@ This moves the parsing to the middleware level, which both removes the burden of
 This means that an application will only receive messages matching its schema, never facing any uncertainty in the structure of a message. 
 
 % How change in context will be detected
-A typical smartphone offers around 50 sensors which can be used to determine a context change. 
+A typical smartphone offers a growing set of sensors \cite{lane2010survey} which can be used to determine a context change. 
 Android applications can register to receive intents\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}} which indicate events such as a network change, or an incoming phone call. 
 Furthermore, the AIRS application\footnote{\url{https://play.google.com/store/apps/details?id=com.airs}} monitors sensors on the phone, and can output sensor readings to a remote server.
 The system uses these intents, and act as a server for AIRS to obtain these sensor readings, allowing it to monitor the environment, and determine context changes. 
