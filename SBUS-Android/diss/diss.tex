@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11752}
+\newcommand{\wordcount}{11798}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -383,7 +383,7 @@ An endpoint may specify a subscription filter on events it wishes to receive, in
 This filter specifies conditions on the events which an endpoint is interested in, and any connected peers will only publish events to this endpoint if the event matches the conditions.
 
 These connections and subscriptions are dynamically reconfigurable and thus may be modified by any other component at run time, subject to security policies. 
-This allows third party remapping to occur, where a component may issue a message to some other component, instructing it to map or unmap its endpoints, or to update its subscription filters.
+This allows third party remapping to occur, where a component may issue a message to some other component, instructing it to map or unmap its endpoints, or to update its subscription filters. 
 
 \begin{table}
 \centering
@@ -421,12 +421,15 @@ This allows any application to implement a broadcast receiver to be notified of 
 This could be used to detect context changes, although has not yet been released. 
 
 % messaging middlewares
-Several messaging middlewares might be considered for the project. 
-A first idea might be the Java Message Service (JMS) \cite{hapner2002java}, which provides an API for sending and receiving messages in Java. 
-The obvious flaw with this approach is that JMS only supports programs written in Java, and thus does not fit the heterogeneous needs of pervasive computing. 
-The Advanced Message Queuing Protocol (AMQP) \cite{vinoski2006advanced} attempts to solve this problem by creating a standard to ensure interoperability between different implementations. 
+Several other messaging middlewares exist, such as the Java Message Service (JMS) \cite{hapner2002java}, or the Advanced Message Queuing Protocol (AMQP) \cite{vinoski2006advanced}.
+JMS provides an API for sending and receiving messages in Java, and thus the obvious flaw is that it only supports programs written in Java, which does not fit the heterogeneous needs of pervasive computing. 
+AMQP attempts to solve this problem by creating a standard to ensure interoperability between different implementations. 
 Several implementations exist for Java, such as ActiveMQ or RabbitMQ. 
 However, AMQP uses a central broker for peers to communicate, thus cannot scale as well as a decentralised messaging system. 
+
+The key aspect missing from both of these is the ability to perform third party reconfiguration. 
+This is fundamental to the project, because applications manage connections on behalf of others, performing reconfiguration according to application policies, rather than requiring each application to enforce its own policies. 
+SBUS allows this reconfiguration to take place. 
 
 SBUS components can be written in C++, allowing them to run on most machines, and through the Android port can now be written in Java. 
 Components communicate directly, which allows scalability, and are independent of the device or platform they are running on. 
