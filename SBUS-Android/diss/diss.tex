@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11770}
+\newcommand{\wordcount}{11752}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -385,19 +385,38 @@ This filter specifies conditions on the events which an endpoint is interested i
 These connections and subscriptions are dynamically reconfigurable and thus may be modified by any other component at run time, subject to security policies. 
 This allows third party remapping to occur, where a component may issue a message to some other component, instructing it to map or unmap its endpoints, or to update its subscription filters.
 
+\begin{table}
+\centering
+
+\begin{tabular}{l l l}
+\hline\hline
+Code	&	Parameter 	& Example Query\\
+\hline
+
+{\tt +N}	&	Component Name	& +Ntemperature \\
+{\tt +I}	&	Instance Name	& +Igreenhouse \\
+{\tt +X}	&	Public Key		& +Xkey \\
+{\tt +K}	&	Keywords		& +Kecosystem \\
+{\tt +P}	&	Peers 			& +Phumitidy \\
+
+\hline
+\hline
+\end{tabular}
+
+\caption{RDC Query Types}
+\label{tab:rdc_queries}
+\end{table}
+
 Resource discovery components (RDCs) are components which act as a component discovery service. 
 An environment may contain several RDCs, or no RDCs, though typically one RDC exists in each environment.
-Components may query an RDC for other components within the environment, using parameters including component name, connected peers, or public key. 
-These parameters are specified using a query string. 
-Each type of constraint is represented using a different letter, for example {\tt +Nsensor1} specifies a component named {\tt sensor1}. 
-All constraints in the query string must satisfied for a component to match. 
+Components may query an RDC for other components within the environment, using the parameters shown in Table \ref{tab:rdc_queries}.
+These constraints are specified using a query string, and a component must match all constraints. 
 The RDC returns the IP addresses of matching components, allowing the component to establish a direct connection to a match.
 
 \section{Related Work}
 
 % other ways to do context
-AWARE\footnote{\url{http://www.awareframework.com/home/}} is a new ``Android framework dedicated to instrument, infer, log and share mobile context information for application developers''. 
-AWARE broadcasts {\sl intents} to notify applications of the current context, and these broadcasts can be captured by Android BroadcastReceivers\footnote{\url{http://developer.android.com/reference/android/content/BroadcastReceiver.html}}. 
+AWARE\footnote{\url{http://www.awareframework.com/home/}} is a new Android framework which can notify applications of the current context by broadcasting {\sl intents}, which can be can be captured by Android BroadcastReceivers\footnote{\url{http://developer.android.com/reference/android/content/BroadcastReceiver.html}}. 
 This allows any application to implement a broadcast receiver to be notified of changes in context, and to perform a callback method upon a change. 
 This could be used to detect context changes, although has not yet been released. 
 
