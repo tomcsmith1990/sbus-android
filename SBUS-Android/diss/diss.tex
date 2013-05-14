@@ -188,13 +188,21 @@ Furthermore, applications need not predefine a list of peers to use.
 
 % context
 Context refers to any any happening of interest that can be observed from within a computer which the system or the user feels that it is reasonable to respond to \cite{muhl2006distributed}. 
-Mobile devices constantly operate in different contexts, which dictate how the devices can interact with the environment. 
-Upon a change in context, an application may move no longer be able to communicate a given peer, or the data that the peer is providing may no longer be relevant. 
-In this situation, the application must find an alternative peer which can provide similar data, or which provides data which is more relevant to the new context. 
+Mobile devices constantly move between different environments, and these environments determine part of the context which the devices operate in. 
+Upon a change in context, an application may move no longer be able to communicate with a given peer, or the data that the peer is providing may no longer be relevant. 
+This change in context may require the application to find new peers to interact with, which may be peers providing similar data, or peers providing data more relevant to the new context. 
+Each of these peers may offer data which does not meet the application's exact requirements, but can still be useful to the application. 
+%The application must determine whether each peer offers useful data, because peers may offer data which does not match the application's expectations exactly, but is still useful. 
+%The change of context may mean that the application does not require any more data. 
+%However, the application may often need to find an alternative peer which can provide similar data, or which provides data which is more relevant to the new context.
+%In this situation, the application may need to find an alternative peer which can provide similar data, or which provides data which is more relevant to the new context. 
+%Once this alternate peer has been located, the application must still determine whether it provides useful data. 
+%Some data may be fundamental to the operation of the application, while other parts may be desired, but not crucial.  
+Some data may be fundamental to the operation of the application, while other parts may be desired, but not crucial. 
+Therefore, the application must determine whether each peer offers useful data. 
 
-Once this alternate peer has been located, the application must still determine whether it provides useful data. 
-Some data may be fundamental to the operation of the application, while other parts may be desired, but not crucial.  
-Even once the data is deemed useful, the application may still face the difficulty of data being presented in an unexpected format, simply because of the geographical scale and market which the application might be used in. 
+%Even once the data is deemed useful, the application may still face the difficulty of data being presented in an unexpected format, simply because of the geographical scale and market which the application might be used in. 
+Even if a peer does offer useful data, the application may still face the difficulty of data being presented in an unexpected format, simply because of the geographical scale and market which the application might be used in. 
 Different manufacturers might present data in slightly different formats, or data may be presented in different languages in different countries. 
 These factors mean that when comparing similar pieces of data, there may be missing fields, there may be additional fields, or fields may use different names. 
 An application may also wish to register a subscription filter with a peer, so that the peer only sends data which the application is interested in. 
