@@ -175,7 +175,7 @@ Current applications tend to be inflexible in where the data they use comes from
 While some localisation might be achieved by including parameters during connection, such as sending GPS co-ordinates, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
 The format of the data, and therefore the content which is being exchanged has also been fixed, restricting applications even further.
 
-This is not in line with the pervasive computing vision \cite{weiser1991computer}, primarily because applications do not use their current environment. 
+This is not in line with the pervasive computing vision \cite{weiser1991computer}, where applications can seamlessly interact within an environment, primarily because applications do not use their current environment. 
 The systems are not scalable, because applications are using global servers, and they offer no heterogeneity\cite{saha2003pervasive} in the data they use, since both application and server both use an exact format.
 
 Peers which reside in the same environment as an application may be able to provide data which is more relevant to the environment, when compared to a global server, and therefore may be more useful to an application. 
@@ -191,17 +191,10 @@ Context refers to any any happening of interest that can be observed from within
 Mobile devices constantly move between different environments, and these environments determine part of the context which the devices operate in. 
 Upon a change in context, an application may move no longer be able to communicate with a given peer, or the data that the peer is providing may no longer be relevant. 
 This change in context may require the application to find new peers to interact with, which may be peers providing similar data, or peers providing data more relevant to the new context. 
-Each of these peers may offer data which does not meet the application's exact requirements, but can still be useful to the application. 
-%The application must determine whether each peer offers useful data, because peers may offer data which does not match the application's expectations exactly, but is still useful. 
-%The change of context may mean that the application does not require any more data. 
-%However, the application may often need to find an alternative peer which can provide similar data, or which provides data which is more relevant to the new context.
-%In this situation, the application may need to find an alternative peer which can provide similar data, or which provides data which is more relevant to the new context. 
-%Once this alternate peer has been located, the application must still determine whether it provides useful data. 
-%Some data may be fundamental to the operation of the application, while other parts may be desired, but not crucial.  
+Each of these peers may offer data which does not meet the application's exact requirements, but can still be useful to the application.  
 Some data may be fundamental to the operation of the application, while other parts may be desired, but not crucial. 
 Therefore, the application must determine whether each peer offers useful data. 
 
-%Even once the data is deemed useful, the application may still face the difficulty of data being presented in an unexpected format, simply because of the geographical scale and market which the application might be used in. 
 Even if a peer does offer useful data, the application may still face the difficulty of data being presented in an unexpected format, simply because of the geographical scale and market which the application might be used in. 
 Different manufacturers might present data in slightly different formats, or data may be presented in different languages in different countries. 
 These factors mean that when comparing similar pieces of data, there may be missing fields, there may be additional fields, or fields may use different names. 
@@ -354,9 +347,9 @@ While in a museum, John's phone is connected to the Wi-Fi network, and the appli
 
 \item John chooses to visit a nearby art gallery, and upon entering the gallery connects his phone to the Wi-Fi network.
 
-\item The system detects this change, and searches for a source providing ``museum data''.
+\item The system detects this change, and searches for sources providing ``museum data''.
 
-\item Once the system finds a source, it connects the application to it, allowing John to use the application for a guided tour of the art gallery. 
+\item Once the system finds a source, it connects the application to the source, filtering data based on John's location, so that he only receives data relevant to the exhibit which he is viewing.  
 
 \end{enumerate}
 
@@ -364,7 +357,7 @@ While in a museum, John's phone is connected to the Wi-Fi network, and the appli
 
 \begin{enumerate}
 
-\item The art gallery is trialling a new system which includes relevant URLs in the data for each exhibit.  
+\item The art gallery is trialling a new system which includes data for items available in the gift shop which are relevant to each exhibit. 
 
 \item John's application does not support this extra field, making the source incompatible with the application.
 
