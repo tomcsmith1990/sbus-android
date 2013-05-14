@@ -19,7 +19,7 @@
 % Automatic Data Stream Configuration in Mobile Environments
 % Automatic Contextual Reconfiguration in Mobile Applications
 
-\newcommand{\wordcount}{11844}
+\newcommand{\wordcount}{11845}
 
 % create extra algorithm commands
 \algnewcommand\algorithmiccontinue{\textbf{continue}}
@@ -175,8 +175,8 @@ Current applications tend to be inflexible in where the data they use comes from
 While some localisation might be achieved by including parameters during connection, such as sending GPS co-ordinates, the possible parameters which will be accepted have already been fixed, restricting how well applications can adapt to their environment. 
 The format of the data, and therefore the content which is being exchanged has also been fixed, restricting applications even further.
 
-This is not in line with the pervasive computing vision \cite{weiser1991computer}, where applications can seamlessly interact within an environment, primarily because applications do not use their current environment. 
-The systems are not scalable, because applications are using global servers, and they offer no heterogeneity\cite{saha2003pervasive} in the data they use, since both application and server both use an exact format.
+This is not in line with the pervasive computing vision \cite{weiser1991computer}, where applications seamlessly interact within an environment, primarily because applications do not use their current environment. 
+The systems are not scalable, because applications are using global servers, and they offer no heterogeneity \cite{saha2003pervasive} in the data they use, since both application and server both use an exact format.
 
 Peers which reside in the same environment as an application may be able to provide data which is more relevant to the environment, when compared to a global server, and therefore may be more useful to an application. 
 Given an application which requires the current temperature, a global server may use current GPS co-ordinates to determine the nearest weather station and return its most recent reading. 
@@ -297,7 +297,7 @@ Applications may also opt to be notified of a change in context, allowing them t
 Depending on its policy, an application may be connected to a peer which provides data in a format which differs from its own.
 This can be handled by reformatting the data to match the expected format. 
 Any extraneous fields are removed, any absent fields are filled with ``empty'' values, and the policy is used to infer relationships between fields with different names. 
-This converted data can then be passed to the application, allowing the application to continue as if the data received has conformed to its own data format. 
+This converted data can then be passed to the application, allowing the application to continue as if the data received had conformed to its own data format. 
 % subscription
 Additionally, any subscription filter which an application has placed on data it should receive, in terms of its own data format, are converted to match the peer's data format, so that the application can be connected with a working subscription in place. 
 
@@ -411,7 +411,7 @@ Code	&	Parameter 	& Example Query\\
 Resource discovery components (RDCs) are components which act as a component discovery service. 
 An environment may contain several RDCs, or no RDCs, though typically one RDC exists in each environment.
 Components may query an RDC for other components within the environment, using the parameters shown in Table \ref{tab:rdc_queries}.
-These constraints are specified using a query string, and a component must match all constraints. 
+These constraints are specified using a query string, and a component must match all constraints in a query. 
 The RDC returns the IP addresses of matching components, allowing the component to establish a direct connection to a match.
 
 \section{Related Work}
@@ -890,7 +890,7 @@ These are stored so that the message can be wrapped in them.
 % updating subscriptions
 After the lookup table has been created, any predefined subscription filter can be applied to the peer. 
 These filters are specified in terms of field names, for example the filter {\tt location/gps/latitude > 0.0} specifies the northern hemisphere. 
-If the component schema has additional ancestors, then these are removed from the filter, while if the target schema has additional ancestors, the filter is prepended with these, replacing the top level node to make the filter {\tt place/coordinates/gps/latitude > 0.0}.
+If the component schema has additional ancestors, then these are removed from the filter, while if the target schema has additional ancestors, the filter is prefixed with these, replacing the top level node to make the filter {\tt place/coordinates/gps/latitude > 0.0}.
 Other field names are then replaced with their corresponding entry in the lookup table, creating a filter which when applied to the target schema, has the expected effect, namely {\tt place/coordinates/position/latitude > 0.0}.
 Any filters on fields which do not exist in the target schema are applied as specified, so developers must ensure that fields which they intend to filter on are included within their schema query. 
 This converted filter will be applied in the final stage of the connection setup, and of course can be updated at any later time. 
@@ -1266,7 +1266,7 @@ Row \ref{tab:row:gps} shows a policy which specifies an event, but no condition.
 This is perfectly acceptable, and the action will occur on every GPS event. 
 In this case an application will attempt to connect to any endpoint offering adverts. 
 Finally, row \ref{tab:row:none} shows a ``blank'' policy, with no event or condition specified.  
-This policy will be applied on any event, however this attempts to connect to a loopback address without any endpoint specified, so no connection is made. 
+This policy will be applied on any event, however this attempts to connect to an address without any endpoint specified, so no connection is made. 
 
 % user policies
 While applications can only set policies for themselves, this could be extended to allow the user to set their own policies for applications. 
