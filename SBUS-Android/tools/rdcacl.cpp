@@ -1124,42 +1124,7 @@ void rdc::lookup(sendpoint *ep)
 	sn_interface = query->tree->extract_item("interface");
 	result = mklist("results"); // @results ( txt address )
 	pthread_mutex_lock(&live_mutex);
-/*
-	// ***EVALUATION***
-	
-	timeval start, end;
-	long seconds;
-	
-	const int iter = 100;
-	const int runs = 100;
-	
-	FILE *file;
-	char filename[strlen("/home/tom/rdc-results-s0e0.txt") + 1];
-	sprintf(filename, "/home/tom/rdc-results-s%de%d.txt", MapConstraints::structs_first, MapConstraints::exact_first);
-	file = fopen((const char *)filename, "a");
-	fprintf(file, "=== RDC TIME WITH %d COMPONENTS TO CHECK, %d RUNS, %d ITER ===\n", live->count() - 1, runs, iter);
-	fclose(file);
-	
-	for (int k = 0; k < runs; k++)
-	{
-		file = fopen((const char *)filename, "a");
-		matches = mklist("endpoints");
-		gettimeofday(&start, NULL);
-		for (int j = 0; j < iter; j++)
-		{
-			for(int i = 0; i < live->count(); i++)
-			{
-				img = live->item(i);
-				img->match(sn_interface, sn_constraints, matches, com, query->source_cpt, query->source_inst);
-			}
-		}
-		gettimeofday(&end, NULL);
-		seconds = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
-		fprintf(file, "%ld\n",  seconds / iter);
-		fclose(file);
-	}
-	// ***END EVALUATION***
-*/
+
 	for(int i = 0; i < live->count(); i++)
 	{
 
