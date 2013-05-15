@@ -44,7 +44,7 @@ public class SomeSensor extends Activity
 				
 				// 10.0.2.2 is the development machine when running in AVD.
 				//scomponent.addRDC("10.0.2.2:50123");
-				
+
 				// Start the component on a random port, and register with the local RDC.
 				m_Component.start(getApplicationContext().getFilesDir() + "/" + cptFile, -1, true);
 				
