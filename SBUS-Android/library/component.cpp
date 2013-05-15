@@ -1468,12 +1468,7 @@ void sendpoint::reply(smessage *query, snode *result, int exception,
 }
 
 void sendpoint::emit(snode *sn, const char *topic, HashCode *hc)
-{
-	timeval start, end;
-	long int seconds;
-
-	gettimeofday(&start, NULL);
-	
+{	
 	sinternal *sreq;
 
 	sreq = new sinternal();
@@ -1499,14 +1494,6 @@ void sendpoint::emit(snode *sn, const char *topic, HashCode *hc)
 	}
 	
 	delete sreq;
-	
-	gettimeofday(&end, NULL);
-	
-	FILE *file;
-	file = fopen("/data/data/uk.ac.cam.tcs40.sbus.sbus/files/.sbus/jni.txt", "a");
-	seconds = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
-	fprintf(file, "%ld\n", seconds * 1000);
-	fclose(file);
 }
 
 smessage *sendpoint::rpc(snode *query, HashCode *hc)
