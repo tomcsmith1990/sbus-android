@@ -15,7 +15,7 @@ import uk.ac.cam.tcs40.sbus.SNode;
 import android.content.Context;
 
 public class PhoneManagementComponent {
-
+	
 	private static final int DEFAULT_RDC_PORT = 50123;
 	public static final String CPT_FILE = "pmc.cpt";
 
@@ -38,6 +38,7 @@ public class PhoneManagementComponent {
 	}
 
 	public static void applyMappingPolicies(String sensorCode, int value) {
+		
 		if (s_List == null) return;
 
 		for (Registration registration : RegistrationRepository.list()) {
@@ -169,30 +170,6 @@ public class PhoneManagementComponent {
 			s_RegisterRdc.unmap();
 		}
 	}
-
-	/**
-	 * Search the message to see if it contains an entry for the specified component.
-	 * @param reply The message to search.
-	 * @param componentName The component name to match.
-	 * @return The address of the first component matching, or null if there are none.
-	 */
-	/*private static String search(SMessage reply, MapConstraint constraints) {
-		SNode snode = reply.getTree();
-		SNode item;
-		String address = null;
-
-		for (int i = 0; i < snode.count(); i++) {
-			item = snode.extractItem(i);
-			if (constraints.match(item)) {
-				address = item.extractString("address");
-				// If address is local, let's just take the port so it preserves between WiFi on/off.
-				if (address.split(":")[0].equals(s_PhoneIP))
-					address = ":" + address.split(":")[1];
-				break;
-			}
-		}
-		return address;
-	}*/
 
 	/**
 	 * Update the phone's IP.
@@ -370,22 +347,10 @@ public class PhoneManagementComponent {
 
 					if (sensorCode.equals("WC"))
 						informComponentsAboutRDC(value == 1);
-					
+
 					applyMappingPolicies(sensorCode, value);
 				}
-				/*
-				if (sensorCode.equals("WC")) {
-					if (tree.extractInt("var") == 1)
-						informComponentsAboutRDC(true);
-					else
-						informComponentsAboutRDC(false);
 
-				} else if (sensorCode.equals("Rd")) {
-					int var = tree.extractInt("var");
-					if (var > 50000)
-						informComponentsAboutRDC(true);
-				}
-				 */
 				message.delete();
 			}
 		}
