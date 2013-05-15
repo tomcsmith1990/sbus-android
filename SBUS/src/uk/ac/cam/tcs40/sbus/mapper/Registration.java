@@ -5,8 +5,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import uk.ac.cam.tcs40.sbus.Policy;
-
 public class Registration {
 
 	private final String m_Port, m_Component, m_Instance;
