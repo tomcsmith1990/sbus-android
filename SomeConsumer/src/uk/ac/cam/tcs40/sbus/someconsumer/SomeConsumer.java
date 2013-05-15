@@ -57,7 +57,7 @@ public class SomeConsumer extends Activity {
 				// Register a map policy with the PMC for schemas containing fields with the same type as someval & somestring.
 				//m_Endpoint.setAutomapPolicy("+Ssomeval+Ssomestring", "SomeEpt");
 				//m_Endpoint.setAutomapPolicy(new Policy("+Ssomeval+SSomestring", "SomeEpt", AIRS.WIFI, Condition.EQUAL, 1));
-				m_Endpoint.setAutomapPolicy(new Policy("+NSomeSensor", "SomeEpt", AIRS.RANDOM, Condition.GREATER_THAN, 60000));
+				m_Endpoint.setAutomapPolicy(new Policy("+Ssomeval+SSomestring", "SomeEpt", AIRS.RANDOM, Condition.GREATER_THAN, 60000));
 
 				SMessage message;
 				SNode node;
