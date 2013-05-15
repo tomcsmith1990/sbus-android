@@ -189,7 +189,7 @@ void log(const char *format, ...)
 {
 	#ifdef __ANDROID__
 	// this is to stop large log files in internal memory of phone.
-	//log_level = echo_level = LogErrors | LogWarnings;
+	log_level = echo_level = LogErrors | LogWarnings;
 	#endif
 	
 	const int MAX_ERR_LEN = 200;
