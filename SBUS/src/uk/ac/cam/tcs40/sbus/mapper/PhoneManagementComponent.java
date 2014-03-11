@@ -441,8 +441,8 @@ public class PhoneManagementComponent {
 		s_RegisterRdc.unmap();
 		m_SetACL.unmap();
 		m_Status.unmap();
-		m_MapPolicy.unmap();
 		
+		m_PolicyDirectory.unmapPolicySinkEndpoint();		
 		m_AirsEndpointManager.unmapDataSinkEndpoint();
 		m_AirsEndpointManager.unmapSubscriptionEndpoint();
 
