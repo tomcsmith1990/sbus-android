@@ -188,48 +188,7 @@ public class PhoneManagementComponent {
 	}
 
 	private void acceptRegistration() {
-		String address, host, port, sourceComponent, sourceInstance;
-		boolean register;
-		SMessage message;
-		SNode snode;
-
-		message = m_Register.receive();
-		sourceComponent = message.getSourceComponent();
-		sourceInstance = message.getSourceInstance();
-
-		snode = message.getTree();
-		address = snode.extractString("address");
-		register = snode.extractBoolean("arrived");
-
-		message.delete();
-
-		host = address.split(":")[0];
-		port = address.split(":")[1];
-
-		// Check this is a component on the phone.
-		if (!host.equals(s_PhoneIP) && !host.equals("127.0.0.1") && !host.equals("") && !host.equals("10.0.2.15"))
-			return;
-
-		if (register) {
-
-			if (sourceComponent.equals("AirsSensor")) {
-				m_AirsEndpointManager.setAirsServerAddress(":" + port);
-				PMCActivity.addStatus("Found AIRS at :" + port);
-				return;
-				//subscribeToAIRS("WC");
-			}
-
-			Registration registration = RegistrationRepository.add(port, sourceComponent, sourceInstance);
-			if (registration != null) {
-				PMCActivity.addStatus("Registered component " + sourceComponent + " instance " + sourceInstance + ", at :" + port);
-			} else {
-				PMCActivity.addStatus("Attempting to register already registered component " + sourceComponent + ":" + sourceInstance);
-			}
-
-		} else {
-			Registration deregistration = RegistrationRepository.remove(port);
-			PMCActivity.addStatus("Deregistered component " + deregistration.getComponentName() + ":" + deregistration.getInstanceName() + " at :" + port);
-		}
+		m_ComponentRegister.acceptRegistration(s_PhoneIP);
 	}
 
 	private void changePermissions() {
@@ -368,7 +327,7 @@ public class PhoneManagementComponent {
 			final AIRS airsSensor = policy.getSensor();
 			final String sensorCode = Policy.sensorCode(airsSensor);
 			
-			m_AirsEndpointManager.subscribeToAIRS(sensorCode);
+			m_AirsEndpointManager.subscribeToAIRS(m_ComponentRegister.getAirsServerAddress(), sensorCode);
 		}
 	}
 
