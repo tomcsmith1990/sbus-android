@@ -1,6 +1,5 @@
 package uk.ac.cam.tcs40.sbus.mapper;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import uk.ac.cam.tcs40.sbus.Multiplex;
@@ -30,8 +29,6 @@ public class PhoneManagementComponent {
 	private static SEndpoint s_RegisterRdc;
 	private static SEndpoint s_MapPolicy;
 	private SEndpoint m_AIRS;
-	private SEndpoint m_AIRSSubscribe;
-
 	private String m_AirsAddress;
 
 	private final Context m_Context;
@@ -447,7 +444,7 @@ public class PhoneManagementComponent {
 		
 		m_AIRS = m_AirsEndpointManager.addDataSinkEndpoint();
 		
-		m_AIRSSubscribe = m_AirsEndpointManager.addSubscriptionEndpoint();
+		m_AirsEndpointManager.addSubscriptionEndpoint();
 	}
 
 	public void stop() {
@@ -474,8 +471,6 @@ public class PhoneManagementComponent {
 		m_Status = null;
 		s_MapPolicy = null;
 		m_AIRS = null;
-		m_AIRSSubscribe = null;
-
 		m_Component = null;
 
 		s_PhoneIP = "127.0.0.1";
