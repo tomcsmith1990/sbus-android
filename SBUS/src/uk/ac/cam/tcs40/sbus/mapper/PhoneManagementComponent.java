@@ -20,7 +20,7 @@ public class PhoneManagementComponent {
 	public static final String CPT_FILE = "pmc.cpt";
 
 	private static String s_PhoneIP = "127.0.0.1";	// localhost to begin with.
-	private static SComponent s_PMC;
+	private SComponent m_Component;
 	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, 
 	s_RegisterRdc, s_MapPolicy, s_AIRS, s_AIRSSubscribe;
 
@@ -275,7 +275,7 @@ public class PhoneManagementComponent {
 
 		if (targetComponent.equals("rdc")) {
 			// local rule, handled by wrapper.
-			s_PMC.setPermission(remoteComponent, remoteInstance, allow);
+			m_Component.setPermission(remoteComponent, remoteInstance, allow);
 		} else {
 			Registration registration = RegistrationRepository.find(targetComponent, targetInstance);
 			if (registration != null) {
@@ -285,7 +285,7 @@ public class PhoneManagementComponent {
 	}
 
 	private void checkAlive() {
-		while (s_PMC != null) {
+		while (m_Component != null) {
 			Registration registration = RegistrationRepository.getOldest();
 			if (registration != null) {
 				String port = registration.getPort();
@@ -308,7 +308,7 @@ public class PhoneManagementComponent {
 	}
 
 	private void receive() {
-		Multiplex multi = s_PMC.getMultiplex();
+		Multiplex multi = m_Component.getMultiplex();
 		multi.add(s_Register);
 		multi.add(s_SetACL);
 		multi.add(s_MapPolicy);
@@ -317,7 +317,7 @@ public class PhoneManagementComponent {
 		SEndpoint endpoint;
 		String name;
 
-		while (s_PMC != null) {
+		while (m_Component != null) {
 			try {
 				endpoint = multi.waitForMessage();
 			} catch (Exception e) {
@@ -400,40 +400,40 @@ public class PhoneManagementComponent {
 
 	public void start() {
 		// Our mapping/rdc component.
-		s_PMC = new SComponent("rdc", "phone");
+		m_Component = new SComponent("rdc", "phone");
 
 		// For components registering to the rdc.
-		s_Register = s_PMC.addEndpoint("register", EndpointType.EndpointSink, "B3572388E4A4");
+		s_Register = m_Component.addEndpoint("register", EndpointType.EndpointSink, "B3572388E4A4");
 
 		// For components sending permissions after registering.
-		s_SetACL = s_PMC.addEndpoint("set_acl", EndpointType.EndpointSink, "6AF2ED96750B");
+		s_SetACL = m_Component.addEndpoint("set_acl", EndpointType.EndpointSink, "6AF2ED96750B");
 
 		// Fpr checking components are still alive.
-		s_Status = s_PMC.addEndpoint("get_status", EndpointType.EndpointClient, "000000000000", "253BAC1C33C7");
+		s_Status = m_Component.addEndpoint("get_status", EndpointType.EndpointClient, "000000000000", "253BAC1C33C7");
 
 		// For mapping components to other components.
-		s_Map = s_PMC.addEndpoint("map", EndpointType.EndpointSource, "F46B9113DB2D");
+		s_Map = m_Component.addEndpoint("map", EndpointType.EndpointSource, "F46B9113DB2D");
 
 		// For getting a list of components to map by name.
-		s_List = s_PMC.addEndpoint("list", EndpointType.EndpointClient, "000000000000", "46920F3551F9");
+		s_List = m_Component.addEndpoint("list", EndpointType.EndpointClient, "000000000000", "46920F3551F9");
 
 		// For telling components to connect to an RDC.
-		s_RegisterRdc = s_PMC.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
+		s_RegisterRdc = m_Component.addEndpoint("register_rdc", EndpointType.EndpointSource, "13ACF49714C5");
 
 		// For any map lookups the component makes.
-		s_Lookup = s_PMC.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
+		s_Lookup = m_Component.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
 
-		s_MapPolicy = s_PMC.addEndpoint("map_policy", EndpointType.EndpointSink, "157EC474FA55");
+		s_MapPolicy = m_Component.addEndpoint("map_policy", EndpointType.EndpointSink, "157EC474FA55");
 
-		s_AIRS = s_PMC.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
+		s_AIRS = m_Component.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
 
-		s_AIRSSubscribe = s_PMC.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
+		s_AIRSSubscribe = m_Component.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
 
 		// Start the component on the default RDC port.
-		s_PMC.start(m_Context.getFilesDir() + "/" + CPT_FILE, m_DefaultRdcPort, false);
+		m_Component.start(m_Context.getFilesDir() + "/" + CPT_FILE, m_DefaultRdcPort, false);
 
 		// Allow all components to connect to endpoints (for register).
-		s_PMC.setPermission("", "", true);
+		m_Component.setPermission("", "", true);
 
 		// Start receiving messages.
 		new Thread() {
@@ -464,7 +464,7 @@ public class PhoneManagementComponent {
 		s_AIRS.unmap();
 		s_AIRSSubscribe.unmap();
 
-		s_PMC.delete();
+		m_Component.delete();
 
 		s_Map = null;
 		s_List = null;
@@ -477,7 +477,7 @@ public class PhoneManagementComponent {
 		s_AIRS = null;
 		s_AIRSSubscribe = null;
 
-		s_PMC = null;
+		m_Component = null;
 
 		s_PhoneIP = "127.0.0.1";
 	}
