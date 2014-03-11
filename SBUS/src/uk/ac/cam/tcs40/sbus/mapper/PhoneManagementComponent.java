@@ -16,7 +16,7 @@ import android.content.Context;
 
 public class PhoneManagementComponent {
 	
-	private static final int DEFAULT_RDC_PORT = 50123;
+	private final int m_DefaultRdcPort = 50123;
 	public static final String CPT_FILE = "pmc.cpt";
 
 	private static String s_PhoneIP = "127.0.0.1";	// localhost to begin with.
@@ -430,7 +430,7 @@ public class PhoneManagementComponent {
 		s_AIRSSubscribe = s_PMC.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
 
 		// Start the component on the default RDC port.
-		s_PMC.start(m_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
+		s_PMC.start(m_Context.getFilesDir() + "/" + CPT_FILE, m_DefaultRdcPort, false);
 
 		// Allow all components to connect to endpoints (for register).
 		s_PMC.setPermission("", "", true);
