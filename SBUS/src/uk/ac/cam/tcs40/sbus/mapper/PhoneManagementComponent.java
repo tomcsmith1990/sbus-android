@@ -25,7 +25,7 @@ public class PhoneManagementComponent {
 	s_RegisterRdc, s_MapPolicy, s_AIRS, s_AIRSSubscribe;
 
 	private static String s_AIRSAddress;
-	private static final List<String> s_AIRSSubscriptions = new LinkedList<String>();
+	private final List<String> m_AirsSubscriptions = new LinkedList<String>();
 
 	private final Context m_Context;
 
@@ -187,14 +187,14 @@ public class PhoneManagementComponent {
 		if (s_AIRSAddress == null || sensorCode == null) 
 			return;
 
-		if (!s_AIRSSubscriptions.contains(sensorCode)) {
+		if (!m_AirsSubscriptions.contains(sensorCode)) {
 			s_AIRSSubscribe.map(s_AIRSAddress, "subscribe");
 			SNode subscription = s_AIRSSubscribe.createMessage("subscription");
 			subscription.packString(sensorCode, "sensor");
 			s_AIRSSubscribe.emit(subscription);
 			s_AIRSSubscribe.unmap();
 
-			s_AIRSSubscriptions.add(sensorCode);
+			m_AirsSubscriptions.add(sensorCode);
 		}
 
 	}
