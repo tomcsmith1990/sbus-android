@@ -355,6 +355,7 @@ public class PhoneManagementComponent {
 	}
 
 	private void changeMapPolicy() {
+		PolicyDirectory policyDirectory = new PolicyDirectory();
 		SMessage message = m_MapPolicy.receive();
 		SNode snode = message.getTree();
 
