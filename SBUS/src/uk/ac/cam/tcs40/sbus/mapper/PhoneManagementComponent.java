@@ -433,9 +433,7 @@ public class PhoneManagementComponent {
 
 		s_MapPolicy = m_Component.addEndpoint("map_policy", EndpointType.EndpointSink, "157EC474FA55");
 
-		m_AIRS = m_Component.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
-
-		m_AIRSSubscribe = m_Component.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
+		addAirsEndpoints();
 
 		// Start the component on the default RDC port.
 		m_Component.start(m_Context.getFilesDir() + "/" + CPT_FILE, m_DefaultRdcPort, false);
@@ -458,6 +456,12 @@ public class PhoneManagementComponent {
 				checkAlive();
 			}
 		}.start();
+	}
+
+	private void addAirsEndpoints() {
+		m_AIRS = m_Component.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
+
+		m_AIRSSubscribe = m_Component.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
 	}
 
 	public void stop() {
