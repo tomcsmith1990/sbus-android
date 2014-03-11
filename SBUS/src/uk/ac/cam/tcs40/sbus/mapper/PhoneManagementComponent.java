@@ -21,16 +21,16 @@ public class PhoneManagementComponent {
 
 	private static String s_PhoneIP = "127.0.0.1";	// localhost to begin with.
 	private SComponent m_Component;
-	private static SEndpoint s_Register;
-	private static SEndpoint s_SetACL;
-	private static SEndpoint s_Status;
+	private SEndpoint m_Register;
+	private SEndpoint m_SetACL;
+	private SEndpoint m_Status;
 	private static SEndpoint s_Map;
 	private static SEndpoint s_List;
 	private static SEndpoint s_Lookup;
 	private static SEndpoint s_RegisterRdc;
 	private static SEndpoint s_MapPolicy;
-	private static SEndpoint s_AIRS;
-	private static SEndpoint s_AIRSSubscribe;
+	private SEndpoint m_AIRS;
+	private SEndpoint m_AIRSSubscribe;
 
 	private String m_AirsAddress;
 	private final List<String> m_AirsSubscriptions = new LinkedList<String>();
@@ -196,11 +196,11 @@ public class PhoneManagementComponent {
 			return;
 
 		if (!m_AirsSubscriptions.contains(sensorCode)) {
-			s_AIRSSubscribe.map(m_AirsAddress, "subscribe");
-			SNode subscription = s_AIRSSubscribe.createMessage("subscription");
+			m_AIRSSubscribe.map(m_AirsAddress, "subscribe");
+			SNode subscription = m_AIRSSubscribe.createMessage("subscription");
 			subscription.packString(sensorCode, "sensor");
-			s_AIRSSubscribe.emit(subscription);
-			s_AIRSSubscribe.unmap();
+			m_AIRSSubscribe.emit(subscription);
+			m_AIRSSubscribe.unmap();
 
 			m_AirsSubscriptions.add(sensorCode);
 		}
@@ -213,7 +213,7 @@ public class PhoneManagementComponent {
 		SMessage message;
 		SNode snode;
 
-		message = s_Register.receive();
+		message = m_Register.receive();
 		sourceComponent = message.getSourceComponent();
 		sourceInstance = message.getSourceInstance();
 
@@ -261,7 +261,7 @@ public class PhoneManagementComponent {
 		SMessage message;
 		SNode snode;
 
-		message = s_SetACL.receive();
+		message = m_SetACL.receive();
 		sourceComponent = message.getSourceComponent();
 		sourceInstance = message.getSourceInstance();
 
@@ -297,14 +297,14 @@ public class PhoneManagementComponent {
 			Registration registration = RegistrationRepository.getOldest();
 			if (registration != null) {
 				String port = registration.getPort();
-				String status = s_Status.map(":" + port, "get_status");
+				String status = m_Status.map(":" + port, "get_status");
 				if (status == null) {
 					// Have lost contact with this component.
 					RegistrationRepository.remove(port);
 					PMCActivity.addStatus("Ping indicates component " + registration.getComponentName() + " at :" + port +  
 							" vanished without deregistering; removing it from list");
 				}
-				s_Status.unmap();
+				m_Status.unmap();
 			}
 
 			try {
@@ -317,10 +317,10 @@ public class PhoneManagementComponent {
 
 	private void receive() {
 		Multiplex multi = m_Component.getMultiplex();
-		multi.add(s_Register);
-		multi.add(s_SetACL);
+		multi.add(m_Register);
+		multi.add(m_SetACL);
 		multi.add(s_MapPolicy);
-		multi.add(s_AIRS);
+		multi.add(m_AIRS);
 
 		SEndpoint endpoint;
 		String name;
@@ -345,7 +345,7 @@ public class PhoneManagementComponent {
 				// There's some problem with components reading these messages, they're currently not using it.
 				lookup();
 			} else if (name.equals("AIRS")) {
-				SMessage message = s_AIRS.receive();
+				SMessage message = m_AIRS.receive();
 				SNode tree = message.getTree();
 
 				String sensorCode = tree.extractString("sensor");
@@ -411,13 +411,13 @@ public class PhoneManagementComponent {
 		m_Component = new SComponent("rdc", "phone");
 
 		// For components registering to the rdc.
-		s_Register = m_Component.addEndpoint("register", EndpointType.EndpointSink, "B3572388E4A4");
+		m_Register = m_Component.addEndpoint("register", EndpointType.EndpointSink, "B3572388E4A4");
 
 		// For components sending permissions after registering.
-		s_SetACL = m_Component.addEndpoint("set_acl", EndpointType.EndpointSink, "6AF2ED96750B");
+		m_SetACL = m_Component.addEndpoint("set_acl", EndpointType.EndpointSink, "6AF2ED96750B");
 
 		// Fpr checking components are still alive.
-		s_Status = m_Component.addEndpoint("get_status", EndpointType.EndpointClient, "000000000000", "253BAC1C33C7");
+		m_Status = m_Component.addEndpoint("get_status", EndpointType.EndpointClient, "000000000000", "253BAC1C33C7");
 
 		// For mapping components to other components.
 		s_Map = m_Component.addEndpoint("map", EndpointType.EndpointSource, "F46B9113DB2D");
@@ -433,9 +433,9 @@ public class PhoneManagementComponent {
 
 		s_MapPolicy = m_Component.addEndpoint("map_policy", EndpointType.EndpointSink, "157EC474FA55");
 
-		s_AIRS = m_Component.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
+		m_AIRS = m_Component.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
 
-		s_AIRSSubscribe = m_Component.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
+		m_AIRSSubscribe = m_Component.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
 
 		// Start the component on the default RDC port.
 		m_Component.start(m_Context.getFilesDir() + "/" + CPT_FILE, m_DefaultRdcPort, false);
@@ -464,26 +464,26 @@ public class PhoneManagementComponent {
 		s_Map.unmap();
 		s_List.unmap();
 		s_Lookup.unmap();
-		s_Register.unmap();
+		m_Register.unmap();
 		s_RegisterRdc.unmap();
-		s_SetACL.unmap();
-		s_Status.unmap();
+		m_SetACL.unmap();
+		m_Status.unmap();
 		s_MapPolicy.unmap();
-		s_AIRS.unmap();
-		s_AIRSSubscribe.unmap();
+		m_AIRS.unmap();
+		m_AIRSSubscribe.unmap();
 
 		m_Component.delete();
 
 		s_Map = null;
 		s_List = null;
 		s_Lookup = null;
-		s_Register = null;
+		m_Register = null;
 		s_RegisterRdc = null;
-		s_SetACL = null;
-		s_Status = null;
+		m_SetACL = null;
+		m_Status = null;
 		s_MapPolicy = null;
-		s_AIRS = null;
-		s_AIRSSubscribe = null;
+		m_AIRS = null;
+		m_AIRSSubscribe = null;
 
 		m_Component = null;
 
