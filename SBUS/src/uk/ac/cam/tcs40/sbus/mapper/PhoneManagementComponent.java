@@ -36,6 +36,7 @@ public class PhoneManagementComponent {
 	private final List<String> m_AirsSubscriptions = new LinkedList<String>();
 
 	private final Context m_Context;
+	private AirsEndpointManager m_AirsEndpointManager;
 
 	/**
 	 * Apply any mapping policies which any of the registered components have sent us.
@@ -459,9 +460,11 @@ public class PhoneManagementComponent {
 	}
 
 	private void addAirsEndpoints() {
-		m_AIRS = m_Component.addEndpoint("AIRS", EndpointType.EndpointSink, "6187707D4CCE");
-
-		m_AIRSSubscribe = m_Component.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
+		m_AirsEndpointManager = new AirsEndpointManager(m_Component);
+		
+		m_AIRS = m_AirsEndpointManager.addDataSinkEndpoint();
+		
+		m_AIRSSubscribe = m_AirsEndpointManager.addSubscriptionEndpoint();
 	}
 
 	public void stop() {
