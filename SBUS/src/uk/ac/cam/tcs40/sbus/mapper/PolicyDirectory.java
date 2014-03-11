@@ -22,6 +22,11 @@ class PolicyDirectory {
 		return m_PolicySink;
 	}
 	
+	void unmapPolicySinkEndpoint() {
+		m_PolicySink.unmap();
+		m_PolicySink = null;
+	}
+	
 	MapPolicy readPolicy() throws Exception {
 		
 		SMessage message = m_PolicySink.receive();
