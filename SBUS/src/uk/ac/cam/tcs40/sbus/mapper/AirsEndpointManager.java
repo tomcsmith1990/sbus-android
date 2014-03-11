@@ -35,7 +35,7 @@ class AirsEndpointManager {
 	
 	void unmapSubscriptionEndpoint() {
 		m_SubscriptionEndpoint.unmap();
-		m_SubscriptionEndpoint.unmap();
+		m_SubscriptionEndpoint = null;
 	}
 	
 	void subscribeToAIRS(String airsAddress, String sensorCode) {
