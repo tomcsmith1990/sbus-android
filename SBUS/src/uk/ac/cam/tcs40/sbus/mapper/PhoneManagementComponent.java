@@ -27,7 +27,7 @@ public class PhoneManagementComponent {
 	private static String s_AIRSAddress;
 	private static final List<String> s_AIRSSubscriptions = new LinkedList<String>();
 
-	private static Context s_Context;
+	private final Context m_Context;
 
 	/**
 	 * Apply any mapping policies which any of the registered components have sent us.
@@ -180,7 +180,7 @@ public class PhoneManagementComponent {
 	}
 
 	public PhoneManagementComponent(Context context) {
-		s_Context = context;
+		m_Context = context;
 	}
 
 	private void subscribeToAIRS(String sensorCode) {
@@ -430,7 +430,7 @@ public class PhoneManagementComponent {
 		s_AIRSSubscribe = s_PMC.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
 
 		// Start the component on the default RDC port.
-		s_PMC.start(s_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
+		s_PMC.start(m_Context.getFilesDir() + "/" + CPT_FILE, DEFAULT_RDC_PORT, false);
 
 		// Allow all components to connect to endpoints (for register).
 		s_PMC.setPermission("", "", true);
