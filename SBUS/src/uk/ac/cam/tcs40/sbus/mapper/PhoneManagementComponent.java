@@ -476,8 +476,9 @@ public class PhoneManagementComponent {
 		m_SetACL.unmap();
 		m_Status.unmap();
 		s_MapPolicy.unmap();
-		m_AIRS.unmap();
-		m_AIRSSubscribe.unmap();
+		
+		m_AirsEndpointManager.unmapDataSinkEndpoint();
+		m_AirsEndpointManager.unmapSubscriptionEndpoint();
 
 		m_Component.delete();
 
