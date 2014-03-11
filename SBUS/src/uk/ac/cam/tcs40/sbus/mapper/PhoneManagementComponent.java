@@ -356,36 +356,22 @@ public class PhoneManagementComponent {
 	}
 
 	private void changeMapPolicy() {
-		SMessage message = m_MapPolicy.receive();
-		SNode snode = message.getTree();
-
-		boolean create = snode.extractBoolean("create");
-		String remoteAddress = snode.extractString("peer_address");
-		String remoteEndpoint = snode.extractString("peer_endpoint");
-		String localEndpoint = snode.extractString("endpoint");
-		int sensor = snode.extractInt("sensor");
-		int condition = snode.extractInt("condition");
-		int value = snode.extractInt("value");
-
-		MapPolicy policy = new MapPolicy(localEndpoint, remoteAddress, remoteEndpoint, 
-				AIRS.values()[sensor], Condition.values()[condition], value);
-
-		Registration registration = RegistrationRepository.find(message.getSourceComponent(), message.getSourceInstance());
-		if (registration != null) {
-
-			if (create) {
-				registration.addMapPolicy(policy);
-				m_AirsEndpointManager.subscribeToAIRS(m_AirsAddress, Policy.sensorCode(AIRS.values()[sensor]));
-				PMCActivity.addStatus("Adding map policy: " + remoteAddress + " for component " + registration.getComponentName());
-			}
-			else {
-				registration.removeMapPolicy(policy);
-				PMCActivity.addStatus("Removing map policy: " + remoteAddress + " for component " + registration.getComponentName());
-			}
+		
+		MapPolicy policy;
+		try {
+			policy = m_PolicyDirectory.readPolicy();
+			
+		} catch (Exception e) {
+			// probably not found a registration.
+			return;
 		}
-		message.delete();
-
-		//subscribeToAIRS("Rd");
+		
+		if (policy.createPolicy()) {
+			final AIRS airsSensor = policy.getSensor();
+			final String sensorCode = Policy.sensorCode(airsSensor);
+			
+			m_AirsEndpointManager.subscribeToAIRS(m_AirsAddress, sensorCode);
+		}
 	}
 
 	public void start() {
