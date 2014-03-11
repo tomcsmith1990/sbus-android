@@ -193,14 +193,6 @@ public class PhoneManagementComponent {
 		m_Context = context;
 	}
 
-	private void acceptRegistration() {
-		m_ComponentRegister.acceptRegistration(s_PhoneIP);
-	}
-
-	private void changePermissions() {
-		m_ComponentPermissions.changePermissions();
-	}
-
 	private void checkAlive() {
 		while (m_Component != null) {
 			Registration registration = RegistrationRepository.getOldest();
@@ -245,9 +237,9 @@ public class PhoneManagementComponent {
 			name = endpoint.getEndpointName();
 
 			if (name.equals("register")) {
-				acceptRegistration();
+				m_ComponentRegister.acceptRegistration(s_PhoneIP);
 			} else if (name.equals("set_acl")) {
-				changePermissions();
+				m_ComponentPermissions.changePermissions();
 			} else if (name.equals("map_policy")) {
 				changeMapPolicy();
 			} else if (name.equals("lookup_cpt")) {
