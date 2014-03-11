@@ -33,6 +33,7 @@ public class PhoneManagementComponent {
 
 	private final Context m_Context;
 	private AirsEndpointManager m_AirsEndpointManager;
+	private final PolicyDirectory m_PolicyDirectory;
 
 	/**
 	 * Apply any mapping policies which any of the registered components have sent us.
@@ -186,6 +187,7 @@ public class PhoneManagementComponent {
 
 	public PhoneManagementComponent(Context context) {
 		m_Context = context;
+		m_PolicyDirectory = new PolicyDirectory();
 	}
 
 	private void acceptRegistration() {
@@ -355,7 +357,6 @@ public class PhoneManagementComponent {
 	}
 
 	private void changeMapPolicy() {
-		PolicyDirectory policyDirectory = new PolicyDirectory();
 		SMessage message = m_MapPolicy.receive();
 		SNode snode = message.getTree();
 
