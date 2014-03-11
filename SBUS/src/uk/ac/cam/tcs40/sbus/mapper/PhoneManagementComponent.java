@@ -21,8 +21,16 @@ public class PhoneManagementComponent {
 
 	private static String s_PhoneIP = "127.0.0.1";	// localhost to begin with.
 	private SComponent m_Component;
-	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, 
-	s_RegisterRdc, s_MapPolicy, s_AIRS, s_AIRSSubscribe;
+	private static SEndpoint s_Register;
+	private static SEndpoint s_SetACL;
+	private static SEndpoint s_Status;
+	private static SEndpoint s_Map;
+	private static SEndpoint s_List;
+	private static SEndpoint s_Lookup;
+	private static SEndpoint s_RegisterRdc;
+	private static SEndpoint s_MapPolicy;
+	private static SEndpoint s_AIRS;
+	private static SEndpoint s_AIRSSubscribe;
 
 	private String m_AirsAddress;
 	private final List<String> m_AirsSubscriptions = new LinkedList<String>();
