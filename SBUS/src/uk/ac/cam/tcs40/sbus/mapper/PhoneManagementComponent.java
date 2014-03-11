@@ -27,7 +27,7 @@ public class PhoneManagementComponent {
 	private static SEndpoint s_List;
 	private static SEndpoint s_Lookup;
 	private static SEndpoint s_RegisterRdc;
-	private static SEndpoint s_MapPolicy;
+	private SEndpoint m_MapPolicy;
 	private SEndpoint m_AIRS;
 	private String m_AirsAddress;
 
@@ -300,7 +300,7 @@ public class PhoneManagementComponent {
 		Multiplex multi = m_Component.getMultiplex();
 		multi.add(m_Register);
 		multi.add(m_SetACL);
-		multi.add(s_MapPolicy);
+		multi.add(m_MapPolicy);
 		multi.add(m_AIRS);
 
 		SEndpoint endpoint;
@@ -355,7 +355,7 @@ public class PhoneManagementComponent {
 	}
 
 	private void changeMapPolicy() {
-		SMessage message = s_MapPolicy.receive();
+		SMessage message = m_MapPolicy.receive();
 		SNode snode = message.getTree();
 
 		boolean create = snode.extractBoolean("create");
@@ -412,7 +412,7 @@ public class PhoneManagementComponent {
 		// For any map lookups the component makes.
 		s_Lookup = m_Component.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
 
-		s_MapPolicy = m_Component.addEndpoint("map_policy", EndpointType.EndpointSink, "157EC474FA55");
+		m_MapPolicy = m_Component.addEndpoint("map_policy", EndpointType.EndpointSink, "157EC474FA55");
 
 		addAirsEndpoints();
 
@@ -455,7 +455,7 @@ public class PhoneManagementComponent {
 		s_RegisterRdc.unmap();
 		m_SetACL.unmap();
 		m_Status.unmap();
-		s_MapPolicy.unmap();
+		m_MapPolicy.unmap();
 		
 		m_AirsEndpointManager.unmapDataSinkEndpoint();
 		m_AirsEndpointManager.unmapSubscriptionEndpoint();
@@ -469,7 +469,7 @@ public class PhoneManagementComponent {
 		s_RegisterRdc = null;
 		m_SetACL = null;
 		m_Status = null;
-		s_MapPolicy = null;
+		m_MapPolicy = null;
 		m_AIRS = null;
 		m_Component = null;
 
