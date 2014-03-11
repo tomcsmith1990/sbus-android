@@ -306,10 +306,13 @@ public class PhoneManagementComponent {
 		m_Component = new SComponent("rdc", "phone");
 
 		m_ComponentRegister = new ComponentRegister(m_Component);
+		m_ComponentPermissions = new ComponentPermissions(m_Component);
+		m_PolicyDirectory = new PolicyDirectory(m_Component);
+		m_AirsEndpointManager = new AirsEndpointManager(m_Component);
+		
 		// For components registering to the rdc.
 		m_Register = m_ComponentRegister.createRegistrationEndpoint();
 
-		m_ComponentPermissions = new ComponentPermissions(m_Component);
 		// For components sending permissions after registering.
 		m_SetACL = m_ComponentPermissions.createPermissionsEndpoint();
 
@@ -328,11 +331,11 @@ public class PhoneManagementComponent {
 		// For any map lookups the component makes.
 		s_Lookup = m_Component.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
 
-		m_PolicyDirectory = new PolicyDirectory(m_Component);
-
 		m_MapPolicy = m_PolicyDirectory.addPolicySinkEndpoint();
 
-		addAirsEndpoints();
+		m_AIRS = m_AirsEndpointManager.addDataSinkEndpoint();
+		
+		m_AirsEndpointManager.addSubscriptionEndpoint();
 
 		// Start the component on the default RDC port.
 		m_Component.start(m_Context.getFilesDir() + "/" + CPT_FILE, m_DefaultRdcPort, false);
@@ -355,14 +358,6 @@ public class PhoneManagementComponent {
 				checkAlive();
 			}
 		}.start();
-	}
-
-	private void addAirsEndpoints() {
-		m_AirsEndpointManager = new AirsEndpointManager(m_Component);
-		
-		m_AIRS = m_AirsEndpointManager.addDataSinkEndpoint();
-		
-		m_AirsEndpointManager.addSubscriptionEndpoint();
 	}
 
 	public void stop() {
