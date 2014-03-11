@@ -24,7 +24,7 @@ public class PhoneManagementComponent {
 	private static SEndpoint s_Register, s_SetACL, s_Status, s_Map, s_List, s_Lookup, 
 	s_RegisterRdc, s_MapPolicy, s_AIRS, s_AIRSSubscribe;
 
-	private static String s_AIRSAddress;
+	private String m_AirsAddress;
 	private final List<String> m_AirsSubscriptions = new LinkedList<String>();
 
 	private final Context m_Context;
@@ -184,11 +184,11 @@ public class PhoneManagementComponent {
 	}
 
 	private void subscribeToAIRS(String sensorCode) {
-		if (s_AIRSAddress == null || sensorCode == null) 
+		if (m_AirsAddress == null || sensorCode == null) 
 			return;
 
 		if (!m_AirsSubscriptions.contains(sensorCode)) {
-			s_AIRSSubscribe.map(s_AIRSAddress, "subscribe");
+			s_AIRSSubscribe.map(m_AirsAddress, "subscribe");
 			SNode subscription = s_AIRSSubscribe.createMessage("subscription");
 			subscription.packString(sensorCode, "sensor");
 			s_AIRSSubscribe.emit(subscription);
@@ -225,7 +225,7 @@ public class PhoneManagementComponent {
 		if (register) {
 
 			if (sourceComponent.equals("AirsSensor")) {
-				s_AIRSAddress = ":" + port;
+				m_AirsAddress = ":" + port;
 				PMCActivity.addStatus("Found AIRS at :" + port);
 				return;
 				//subscribeToAIRS("WC");
