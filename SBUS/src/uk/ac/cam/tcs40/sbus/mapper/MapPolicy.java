@@ -6,8 +6,8 @@ public class MapPolicy extends Policy {
 
 	private final String m_LocalEndpoint;
 
-	public MapPolicy(String localEndpoint, String remoteAddress, String remoteEndpoint, AIRS sensor, Condition condition, int value) {
-		super(remoteAddress, remoteEndpoint, sensor, condition, value);
+	public MapPolicy(String localEndpoint, String remoteAddress, String remoteEndpoint, AIRS sensor, Condition condition, int value, boolean create) {
+		super(remoteAddress, remoteEndpoint, sensor, condition, value, create);
 		this.m_LocalEndpoint = localEndpoint;
 	}
 
