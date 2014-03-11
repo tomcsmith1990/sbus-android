@@ -415,7 +415,7 @@ public class PhoneManagementComponent {
 
 		m_PolicyDirectory = new PolicyDirectory(m_Component);
 
-		m_MapPolicy = m_Component.addEndpoint("map_policy", EndpointType.EndpointSink, "157EC474FA55");
+		m_MapPolicy = m_PolicyDirectory.addPolicySinkEndpoint();
 
 		addAirsEndpoints();
 
