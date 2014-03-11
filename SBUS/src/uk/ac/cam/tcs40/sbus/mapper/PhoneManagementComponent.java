@@ -33,7 +33,7 @@ public class PhoneManagementComponent {
 
 	private final Context m_Context;
 	private AirsEndpointManager m_AirsEndpointManager;
-	private final PolicyDirectory m_PolicyDirectory;
+	private PolicyDirectory m_PolicyDirectory;
 
 	/**
 	 * Apply any mapping policies which any of the registered components have sent us.
@@ -187,7 +187,6 @@ public class PhoneManagementComponent {
 
 	public PhoneManagementComponent(Context context) {
 		m_Context = context;
-		m_PolicyDirectory = new PolicyDirectory();
 	}
 
 	private void acceptRegistration() {
@@ -413,6 +412,8 @@ public class PhoneManagementComponent {
 
 		// For any map lookups the component makes.
 		s_Lookup = m_Component.addEndpoint("lookup_cpt", EndpointType.EndpointServer, "18D70E4219C8", "F96D2B7A73C1");
+
+		m_PolicyDirectory = new PolicyDirectory(m_Component);
 
 		m_MapPolicy = m_Component.addEndpoint("map_policy", EndpointType.EndpointSink, "157EC474FA55");
 
