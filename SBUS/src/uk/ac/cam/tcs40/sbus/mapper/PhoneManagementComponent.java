@@ -28,8 +28,6 @@ public class PhoneManagementComponent {
 	private static SEndpoint s_RegisterRdc;
 	private SEndpoint m_MapPolicy;
 	private SEndpoint m_AIRS;
-	private String m_AirsAddress;
-
 	private final Context m_Context;
 	private AirsEndpointManager m_AirsEndpointManager;
 	private PolicyDirectory m_PolicyDirectory;
@@ -214,7 +212,7 @@ public class PhoneManagementComponent {
 		if (register) {
 
 			if (sourceComponent.equals("AirsSensor")) {
-				m_AirsAddress = ":" + port;
+				m_AirsEndpointManager.setAirsServerAddress(":" + port);
 				PMCActivity.addStatus("Found AIRS at :" + port);
 				return;
 				//subscribeToAIRS("WC");
@@ -369,7 +367,7 @@ public class PhoneManagementComponent {
 			final AIRS airsSensor = policy.getSensor();
 			final String sensorCode = Policy.sensorCode(airsSensor);
 			
-			m_AirsEndpointManager.subscribeToAIRS(m_AirsAddress, sensorCode);
+			m_AirsEndpointManager.subscribeToAIRS(sensorCode);
 		}
 	}
 

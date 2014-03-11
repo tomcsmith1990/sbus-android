@@ -14,6 +14,7 @@ class AirsEndpointManager {
 	private SEndpoint m_DataSinkEndpoint;
 	private SEndpoint m_SubscriptionEndpoint;
 	private final List<String> m_AirsSubscriptions = new LinkedList<String>();
+	private String m_ServerAddress;
 
 	AirsEndpointManager(SComponent component) {
 		m_Component = component;
@@ -38,12 +39,12 @@ class AirsEndpointManager {
 		m_SubscriptionEndpoint = null;
 	}
 	
-	void subscribeToAIRS(String airsAddress, String sensorCode) {
-		if (airsAddress == null || sensorCode == null) 
+	void subscribeToAIRS(String sensorCode) {
+		if (m_ServerAddress == null || sensorCode == null) 
 			return;
 
 		if (!m_AirsSubscriptions.contains(sensorCode)) {
-			m_SubscriptionEndpoint.map(airsAddress, "subscribe");
+			m_SubscriptionEndpoint.map(m_ServerAddress, "subscribe");
 			SNode subscription = m_SubscriptionEndpoint.createMessage("subscription");
 			subscription.packString(sensorCode, "sensor");
 			m_SubscriptionEndpoint.emit(subscription);
@@ -51,6 +52,10 @@ class AirsEndpointManager {
 
 			m_AirsSubscriptions.add(sensorCode);
 		}
+	}
+
+	void setAirsServerAddress(String airsServerAddress) {
+		m_ServerAddress = airsServerAddress;		
 	}
 
 }
