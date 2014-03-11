@@ -18,17 +18,22 @@ public class PhoneManagementComponent {
 	public static final String CPT_FILE = "pmc.cpt";
 
 	private static String s_PhoneIP = "127.0.0.1";	// localhost to begin with.
+	
 	private SComponent m_Component;
+	
 	private SEndpoint m_Register;
 	private SEndpoint m_SetACL;
 	private SEndpoint m_Status;
+	private SEndpoint m_MapPolicy;
+	private SEndpoint m_AIRS;
+	
 	private static SEndpoint s_Map;
 	private static SEndpoint s_List;
 	private static SEndpoint s_Lookup;
 	private static SEndpoint s_RegisterRdc;
-	private SEndpoint m_MapPolicy;
-	private SEndpoint m_AIRS;
+	
 	private final Context m_Context;
+	
 	private AirsEndpointManager m_AirsEndpointManager;
 	private PolicyDirectory m_PolicyDirectory;
 	private ComponentRegister m_ComponentRegister;
