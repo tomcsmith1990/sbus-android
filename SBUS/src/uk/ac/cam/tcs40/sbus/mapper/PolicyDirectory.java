@@ -1,6 +1,5 @@
 package uk.ac.cam.tcs40.sbus.mapper;
 
-import uk.ac.cam.tcs40.sbus.Policy;
 import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.SEndpoint;
 import uk.ac.cam.tcs40.sbus.SMessage;

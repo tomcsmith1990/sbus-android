@@ -4,7 +4,6 @@ import java.util.List;
 
 import uk.ac.cam.tcs40.sbus.Multiplex;
 import uk.ac.cam.tcs40.sbus.Policy.AIRS;
-import uk.ac.cam.tcs40.sbus.Policy.Condition;
 import uk.ac.cam.tcs40.sbus.SComponent;
 import uk.ac.cam.tcs40.sbus.SComponent.EndpointType;
 import uk.ac.cam.tcs40.sbus.Policy;
