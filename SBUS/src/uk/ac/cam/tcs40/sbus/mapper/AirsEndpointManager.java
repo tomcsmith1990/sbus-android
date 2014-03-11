@@ -23,5 +23,15 @@ public class AirsEndpointManager {
 		m_SubscriptionEndpoint = m_Component.addEndpoint("airs_subscribe", EndpointType.EndpointSource, "F03F918E91A3");
 		return m_SubscriptionEndpoint;
 	}
+	
+	public void unmapDataSinkEndpoint() {
+		m_DataSinkEndpoint.unmap();
+		m_DataSinkEndpoint = null;
+	}
+	
+	public void unmapSubscriptionEndpoint() {
+		m_SubscriptionEndpoint.unmap();
+		m_SubscriptionEndpoint.unmap();
+	}
 
 }
