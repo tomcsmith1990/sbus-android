@@ -31,6 +31,7 @@ public class PhoneManagementComponent {
 	private final Context m_Context;
 	private AirsEndpointManager m_AirsEndpointManager;
 	private PolicyDirectory m_PolicyDirectory;
+	private ComponentRegister m_ComponentRegister;
 
 	/**
 	 * Apply any mapping policies which any of the registered components have sent us.
@@ -375,8 +376,9 @@ public class PhoneManagementComponent {
 		// Our mapping/rdc component.
 		m_Component = new SComponent("rdc", "phone");
 
+		m_ComponentRegister = new ComponentRegister(m_Component);
 		// For components registering to the rdc.
-		m_Register = m_Component.addEndpoint("register", EndpointType.EndpointSink, "B3572388E4A4");
+		m_Register = m_ComponentRegister.createRegistrationEndpoint();
 
 		// For components sending permissions after registering.
 		m_SetACL = m_Component.addEndpoint("set_acl", EndpointType.EndpointSink, "6AF2ED96750B");
@@ -437,7 +439,9 @@ public class PhoneManagementComponent {
 		s_Map.unmap();
 		s_List.unmap();
 		s_Lookup.unmap();
-		m_Register.unmap();
+				
+		m_ComponentRegister.unmapRegistrationEndpoint();
+		
 		s_RegisterRdc.unmap();
 		m_SetACL.unmap();
 		m_Status.unmap();
