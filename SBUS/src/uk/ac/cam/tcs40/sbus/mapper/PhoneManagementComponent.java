@@ -33,7 +33,6 @@ public class PhoneManagementComponent {
 	private SEndpoint m_AIRSSubscribe;
 
 	private String m_AirsAddress;
-	private final List<String> m_AirsSubscriptions = new LinkedList<String>();
 
 	private final Context m_Context;
 	private AirsEndpointManager m_AirsEndpointManager;
@@ -190,22 +189,6 @@ public class PhoneManagementComponent {
 
 	public PhoneManagementComponent(Context context) {
 		m_Context = context;
-	}
-
-	private void subscribeToAIRS(String sensorCode) {
-		if (m_AirsAddress == null || sensorCode == null) 
-			return;
-
-		if (!m_AirsSubscriptions.contains(sensorCode)) {
-			m_AIRSSubscribe.map(m_AirsAddress, "subscribe");
-			SNode subscription = m_AIRSSubscribe.createMessage("subscription");
-			subscription.packString(sensorCode, "sensor");
-			m_AIRSSubscribe.emit(subscription);
-			m_AIRSSubscribe.unmap();
-
-			m_AirsSubscriptions.add(sensorCode);
-		}
-
 	}
 
 	private void acceptRegistration() {
@@ -394,7 +377,7 @@ public class PhoneManagementComponent {
 
 			if (create) {
 				registration.addMapPolicy(policy);
-				subscribeToAIRS(Policy.sensorCode(AIRS.values()[sensor]));
+				m_AirsEndpointManager.subscribeToAIRS(m_AirsAddress, Policy.sensorCode(AIRS.values()[sensor]));
 				PMCActivity.addStatus("Adding map policy: " + remoteAddress + " for component " + registration.getComponentName());
 			}
 			else {
